@@ -1,3 +1,4 @@
+from utils import contains_link
 import discord
 import glob
 import sys
@@ -35,7 +36,8 @@ async def on_member_join(self, member):
 
 @bot.event
 async def on_message(message):
-    #code and sh*t
+    if (contains_link(message)):
+        #actions
 
 
 if __name__ == '__main__':
