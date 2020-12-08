@@ -33,6 +33,10 @@ async def on_member_join(self, member):
         to_send = 'Welcome {0.mention} to {1.name}!'.format(member, guild)
         await guild.system_channel.send(to_send)
 
+@bot.event
+async def on_message(message):
+    #code and sh*t
+
 
 if __name__ == '__main__':
     bot.run(config.BOT_TOKEN)
