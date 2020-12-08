@@ -1,8 +1,7 @@
-import discord
-import sys
 from discord.ext import commands
 
 import utils  # pylint: disable=import-error
+
 
 class SettingsCog(commands.Cog):
     def __init__(self, bot):
@@ -17,16 +16,6 @@ class SettingsCog(commands.Cog):
     @settings.command(name="setjoin")
     async def set_joins_channel(self, ctx, channel):
         ctx.send(channel.mention)
-        return NotImplementedError
-
-    @commands.check(utils.is_owner)
-    @settings.command()
-    async def set_leaves_channel(self, ctx, channel):
-        return NotImplementedError
-
-    @commands.check(utils.is_owner)
-    @settings.command()
-    async def set_count_channel(self, ctx, channel):
         return NotImplementedError
 
 
