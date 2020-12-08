@@ -1,7 +1,8 @@
-from utils import contains_link
+from utils import contains_link, has_attachment
 import discord
 import glob
 import sys
+import config
 
 from discord.ext import commands
 
@@ -36,8 +37,9 @@ async def on_member_join(self, member):
 
 @bot.event
 async def on_message(message):
-    if (contains_link(message)):
-        #actions
+    if message.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(message) or has_attachment(message)):
+        print(message)
+        await message.delete()
 
 
 if __name__ == '__main__':
