@@ -139,3 +139,4 @@ cython_debug/
 
 # Chiya
 config.py
+.vscode/
