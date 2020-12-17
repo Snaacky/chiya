@@ -1,12 +1,11 @@
-from utils import contains_link, has_attachment
-import discord
 import glob
-import sys
-import config
-import background
 
+import discord
 from discord.ext import commands
 
+import background
+import config
+from utils import contains_link, has_attachment
 
 cogs = ["cogs.settings"]
 intents = discord.Intents.default()
