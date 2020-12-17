@@ -11,7 +11,7 @@ class UtilitiesCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
-    @commands.check(utils.is_owner)
+    @commands.is_owner()
     @commands.group()
     async def utilities(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -22,12 +22,12 @@ class UtilitiesCog(commands.Cog):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is:{round(self.bot.latency*1000)}ms.")
     
-    @commands.check(utils.is_owner)
+    @commands.is_owner()
     @utilities.command(name="say")
     async def _say(self, ctx, *, args):
         await ctx.send(args)
 
-    @commands.check(utils.is_owner)
+    @commands.is_owner()
     @utilities.command(name="eval")
     async def _eval(self, ctx, *, args):
         embedVar = discord.Embed(title="Evaluating...", color=0xAA45FC).set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
