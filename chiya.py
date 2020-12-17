@@ -4,6 +4,7 @@ import glob
 import discord
 from discord.ext import commands
 
+import background
 import config
 import embeds
 from utils import contains_link, has_attachment
@@ -23,6 +24,14 @@ async def on_ready():
         bot.load_extension(f"cogs.{cog[5:-3]}")
         print(f"  -> {cog[5:-3]}")
 
+    print("Done loading cogs.")
+
+
+async def on_member_join(self, member):
+    guild = member.guild
+    if guild.system_channel is not None:
+        to_send = 'Welcome {0.mention} to {1.name}!'.format(member, guild)
+        await guild.system_channel.send(to_send)
 
 @bot.event
 async def on_message(ctx):
@@ -38,6 +47,8 @@ async def on_message(ctx):
         await asyncio.sleep(10)
         await warning.delete()
 
+    await bot.process_commands(message)   
 
 if __name__ == '__main__':
+    bot.loop.create_task(background.check_for_posts(bot))
     bot.run(config.BOT_TOKEN)
