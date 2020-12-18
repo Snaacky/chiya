@@ -32,7 +32,7 @@ async def on_ready():
     # Adding in a activity message when the bot begins
     await bot.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.listening, 
+            type=discord.ActivityType.listening,
             name=f"{config.PREFIX}help",
             url="https://www.reddit.com/r/animepiracy",
             start=bot.user.created_at,
