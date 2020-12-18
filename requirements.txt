@@ -8,5 +8,8 @@
 
 ###### Requirements without Version Specifiers ######`
 
+
 ###### Requirements with Version Specifiers ######`
-discord.py==1.5.1                   # http://discordpy.readthedocs.io/
+discord.py==1.5.1                   # https://discordpy.readthedocs.io/
+praw==7.1.0                         # https://praw.readthedocs.io/
+discord==1.0.1
