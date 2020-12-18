@@ -14,9 +14,8 @@ class error_handle(commands.Cog):
     async def on_command_error(self, ctx, exception):
 
         try:
-            
-            await ctx.send(exception)
-        except discord.errors.Forbidden:
+            await embeds.error_message(ctx, description=exception)
+        except discord.errors.Forbidden: # This would happend if bot does not have the perms to post embeds.
             await ctx.send(exception)
 
 
