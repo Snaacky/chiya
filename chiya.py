@@ -12,7 +12,11 @@ from utils import contains_link, has_attachment
 
 cogs = ["cogs.settings"]
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix='?', intents=intents)
+bot = commands.Bot(
+    command_prefix=config.PREFIX, 
+    intents=intents,
+    description="Chiya",
+    case_insensitive=True)
 
 
 @bot.event
