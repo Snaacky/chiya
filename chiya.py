@@ -29,8 +29,6 @@ async def on_ready():
         f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
     print(f"Successfully logged in and booted...!")
 
-    test = bot.user.created_at
-
     # Adding in a activity message when the bot begins
     await bot.change_presence(
         activity=discord.Activity(
