@@ -68,12 +68,10 @@ async def on_message(ctx):
     await bot.process_commands(ctx)
 
 if __name__ == '__main__':
-    print("Loading Cogs:")
     # filtered to only load .py files that do not start with '__'
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
         #log.info("  -> " + cog.replace("\\", ".")[:-3])
         bot.load_extension(cog.replace("\\", ".")[:-3])
-    print("Done Loading Cogs:")
 
     bot.loop.create_task(background.check_for_posts(bot))
     bot.run(config.BOT_TOKEN)

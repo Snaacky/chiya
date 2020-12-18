@@ -1,8 +1,15 @@
-import discord
 import sys
+import logging
+
+import discord
 from discord.ext import commands
 
 import utils  # pylint: disable=import-error
+
+
+# Enabling logs
+log = logging.getLogger(__name__)
+
 
 class Vote(commands.Cog):
     def __init__(self, bot):
@@ -31,7 +38,7 @@ class Vote(commands.Cog):
         #remove reactions from the message ID passed.
             
 
-    
-
-def setup(bot):
+def setup(bot) -> None:
+    """Load the Vote cog."""
     bot.add_cog(Vote(bot))
+    log.info("Cog loaded: Vote")

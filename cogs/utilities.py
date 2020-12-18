@@ -1,11 +1,17 @@
 from inspect import trace
-import discord
 import sys
-import utils
-from discord.ext import commands
 import traceback
+import logging
+
+import discord
+from discord.ext import commands
 
 import utils  # pylint: disable=import-error
+
+
+# Enabling logs
+log = logging.getLogger(__name__)
+
 
 class UtilitiesCog(commands.Cog):
     def __init__(self, bot):
@@ -43,5 +49,8 @@ class UtilitiesCog(commands.Cog):
             embedVar.add_field(name="Errors:", value=e, inline=False)
         await ctx.send(embed=embedVar)
 
-def setup(bot):
+
+def setup(bot) -> None:
+    """Load the UtilitiesCog cog."""
     bot.add_cog(UtilitiesCog(bot))
+    log.info("Cog loaded: UtilitiesCog")

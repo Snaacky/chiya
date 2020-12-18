@@ -1,7 +1,13 @@
+import logging
+
 from discord.ext import commands
+import discord
 
 import embeds
-import discord
+
+
+# Enabling logs
+log = logging.getLogger(__name__)
 
 
 class error_handle(commands.Cog):
@@ -19,5 +25,7 @@ class error_handle(commands.Cog):
             await ctx.send(exception)
 
 
-def setup(bot):
+def setup(bot) -> None:
+    """Load the error_handle cog."""
     bot.add_cog(error_handle(bot))
+    log.info("Cog loaded: error_handle")

@@ -1,6 +1,12 @@
+import logging
+
 from discord.ext import commands
 
 import utils  # pylint: disable=import-error
+
+
+# Enabling logs
+log = logging.getLogger(__name__)
 
 
 class SettingsCog(commands.Cog):
@@ -19,5 +25,7 @@ class SettingsCog(commands.Cog):
         return NotImplementedError
 
 
-def setup(bot):
+def setup(bot) -> None:
+    """Load the SettingsCog cog."""
     bot.add_cog(SettingsCog(bot))
+    log.info("Cog loaded: SettingsCog")
