@@ -24,7 +24,7 @@ class SettingsCog(commands.Cog):
     @commands.check(utils.is_owner)
     @settings.command(name="setjoin")
     async def set_joins_channel(self, ctx, channel):
-        ctx.send(channel.mention)
+        ctx.send(channel)
         return NotImplementedError
 
 
