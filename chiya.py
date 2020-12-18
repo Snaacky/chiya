@@ -5,10 +5,13 @@ import logging
 import discord
 from discord.ext import commands
 
+import __init__
 import background
 import config
 import embeds
 from utils import contains_link, has_attachment
+
+log = logging.getLogger(__name__)
 
 cogs = ["cogs.settings"]
 intents = discord.Intents.default()
@@ -27,7 +30,7 @@ async def on_ready():
     # Recursively going though cogs folder and loading them in.
     print("Loading Cogs:")
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True): # filtered to only load .py files that do not start with '__'
-        print("  -> " + cog.rsplit('\\', 1)[-1][:-3])
+        log.info("  -> " + cog.replace("\\", ".")[:-3])
         bot.load_extension(cog.replace("\\", ".")[:-3])
     print("Done Loading Cogs:")
 
