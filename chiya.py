@@ -1,5 +1,6 @@
 import asyncio
 import glob
+import logging
 
 import discord
 from discord.ext import commands
@@ -19,12 +20,12 @@ async def on_ready():
     print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
     print("Loaded cogs:")
 
-    # Load each cog and print the cog loaded
-    for cog in glob.glob("cogs/*.py"):
-        bot.load_extension(f"cogs.{cog[5:-3]}")
-        print(f"  -> {cog[5:-3]}")
-
-    print("Done loading cogs.")
+    # Recursively going though cogs folder and loading them in.
+    print("Printing Cogs:")
+    for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True): # filtered to only load .py files that do not start with '__'
+        print("  -> " + cog.rsplit('\\', 1)[-1][:-3])
+        bot.load_extension(cog.replace("\\", ".")[:-3])
+    print("Done Printing Cogs:")
 
 
 async def on_member_join(self, member):
