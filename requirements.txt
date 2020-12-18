@@ -7,6 +7,10 @@
 
 
 ###### Requirements without Version Specifiers ######`
+coloredlogs                         # https://coloredlogs.readthedocs.io/en/latest/
+
 
 ###### Requirements with Version Specifiers ######`
-discord.py==1.5.1                   # http://discordpy.readthedocs.io/
+discord==1.0.1
+discord.py==1.5.1                   # https://discordpy.readthedocs.io/
+praw==7.1.0                         # https://praw.readthedocs.io/
