@@ -1,9 +1,7 @@
 from discord.ext import commands
-# from utils import utils
-# import logging
-import discord
 
-# log = logging.getLogger(__name__)
+import embeds
+import discord
 
 
 class error_handle(commands.Cog):
@@ -14,7 +12,6 @@ class error_handle(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, exception):
-        # log.error(f"on_command_error: {ctx.author} | {exception}")
 
         try:
             

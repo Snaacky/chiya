@@ -23,16 +23,29 @@ def make_embed(ctx: discord.ext.commands.Context=None, color='dark_theme', title
         embed = discord.Embed(color=color,
                         title=title, description=description)
 
+    # Setting the author field and setting their profile pic as the image.
     if author:
         embed.set_author(icon_url=ctx.author.avatar_url,
                     name=str(ctx.author))
 
+    # Setting the embed side image if a url was given.
     if image_url:
         embed.set_thumbnail(url=image_url)
 
+    # Adding Timestamp for ease of tracking when embeds are posted.
     embed.timestamp = ctx.created_at
 
     return embed
+
+
+async def error_message(ctx: discord.ext.commands.Context, description: str, author:bool=True):
+    """Base Error message"""
+    await ctx.send(embed=embed(ctx, color='dark_red', title='ERROR', description=f'📢 **{description}**', author=author))
+
+
+async def warning_message(ctx: discord.ext.commands.Context, description: str, author:bool=True):
+    """Base Warning message"""
+    await ctx.send(embed=embed(ctx, color="dark_gold", title='WARNING', description=f'📢 **{description}**', author=author))
 
 
 def files_and_links_only(ctx: discord.ext.commands.Context) -> discord.Embed:
