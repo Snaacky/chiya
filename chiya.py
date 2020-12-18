@@ -47,7 +47,7 @@ async def on_message(ctx):
         await asyncio.sleep(10)
         await warning.delete()
 
-    await bot.process_commands(message)   
+    await bot.process_commands(ctx)   
 
 if __name__ == '__main__':
     bot.loop.create_task(background.check_for_posts(bot))
