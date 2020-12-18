@@ -6,6 +6,7 @@ import logging
 
 from discord.ext import commands
 import embeds
+from record import record_usage
 
 
 # Enabling logs
@@ -19,7 +20,7 @@ class SimpleCog(commands.Cog):
         self.bot = bot
 
 
-    @commands.before_invoke(embed.record_usage)
+    @commands.before_invoke(record_usage)
 
     @commands.command(name='repeat', aliases=['copy', 'mimic'])
     async def do_repeat(self, ctx, *, our_input: str):
@@ -30,7 +31,7 @@ class SimpleCog(commands.Cog):
 
 
     # This is an example of a guild only command
-    @commands.before_invoke(embed.record_usage)
+    @commands.before_invoke(record_usage)
     @commands.command(name='add', aliases=['plus'])
     @commands.guild_only()
     async def do_addition(self, ctx, first: int, second: int):
@@ -41,7 +42,7 @@ class SimpleCog(commands.Cog):
 
 
     # This is an example of a Owner only command
-    @commands.before_invoke(embed.record_usage)
+    @commands.before_invoke(record_usage)
     @commands.command(name='me')
     @commands.is_owner()
     async def only_me(self, ctx):
@@ -51,7 +52,7 @@ class SimpleCog(commands.Cog):
 
 
     # This is an example of a embed command
-    @commands.before_invoke(embed.record_usage)
+    @commands.before_invoke(record_usage)
     @commands.command(name='embeds')
     async def example_embed(self, ctx):
         """A simple command which showcases the use of embeds.
@@ -87,7 +88,7 @@ class SimpleCog(commands.Cog):
         print(f'{user.name}-{user.id} was banned from {guild.name}-{guild.id}')
 
     # Here is an example of nested commands
-    @commands.before_invoke(embed.record_usage)
+    @commands.before_invoke(record_usage)
     @commands.group()
     async def what(self, ctx):
         if ctx.invoked_subcommand is None:

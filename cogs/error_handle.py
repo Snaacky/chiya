@@ -4,6 +4,7 @@ from discord.ext import commands
 import discord
 
 import embeds
+from record import record_usage
 
 
 # Enabling logs

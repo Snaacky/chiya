@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 import utils  # pylint: disable=import-error
+from record import record_usage # pylint: disable=import-error
 
 
 # Enabling logs
@@ -15,6 +16,7 @@ class Vote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.before_invoke(record_usage)
     @commands.group()
     async def vote(self, ctx, msgId : int):
         if (msgId is None):
@@ -30,11 +32,12 @@ class Vote(commands.Cog):
         return
         # add the check and cross to the previous message.
 
+    @commands.before_invoke(record_usage)
     @vote.command(name="remove")
-    async def remove(ctx, msgId : int):
+    async def remove(self, ctx, msgId : int):
         msg = await ctx.fetch_message(msgId)
-        msgId.clear_reactions(":yes:778724405333196851")
-        msgId.clear_reactions(":no:778724416230129705")
+        msg.clear_reactions(":yes:778724405333196851")
+        msg.clear_reactions(":no:778724416230129705")
         #remove reactions from the message ID passed.
             
 
