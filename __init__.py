@@ -64,6 +64,3 @@ logging.getLogger("chardet").setLevel(logging.WARNING)
 logging.getLogger("prawcore").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger(__name__)
-
-if __name__ == "__main__":
-    print("Hello")

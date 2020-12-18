@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 cogs = ["cogs.settings"]
 intents = discord.Intents.default()
 bot = commands.Bot(
-    command_prefix=config.PREFIX, 
+    command_prefix=config.PREFIX,
     intents=intents,
     description="Chiya",
     case_insensitive=True)
@@ -24,15 +24,20 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    print(f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
+    print(
+        f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
     print(f"Successfully logged in and booted...!")
 
-    # Recursively going though cogs folder and loading them in.
-    print("Loading Cogs:")
-    for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True): # filtered to only load .py files that do not start with '__'
-        log.info("  -> " + cog.replace("\\", ".")[:-3])
-        bot.load_extension(cog.replace("\\", ".")[:-3])
-    print("Done Loading Cogs:")
+    # Adding in a activity message when the bot begins
+
+    # Making a custom activity
+    activity = discord.Activity(name="Test", type=5)
+
+    await bot.change_presence(
+        activity=discord.Activity(
+            type=discord.ActivityType.listening, name=f"{config.PREFIX}help"
+        )
+    )
 
 
 async def on_member_join(self, member):
@@ -40,6 +45,7 @@ async def on_member_join(self, member):
     if guild.system_channel is not None:
         to_send = 'Welcome {0.mention} to {1.name}!'.format(member, guild)
         await guild.system_channel.send(to_send)
+
 
 @bot.event
 async def on_message(ctx):
@@ -56,8 +62,15 @@ async def on_message(ctx):
         await warning.delete()
 
     # If message does not follow with the above code, treat it as a potential command.
-    await bot.process_commands(ctx)   
+    await bot.process_commands(ctx)
 
 if __name__ == '__main__':
+    print("Loading Cogs:")
+    # filtered to only load .py files that do not start with '__'
+    for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
+        #log.info("  -> " + cog.replace("\\", ".")[:-3])
+        bot.load_extension(cog.replace("\\", ".")[:-3])
+    print("Done Loading Cogs:")
+
     bot.loop.create_task(background.check_for_posts(bot))
     bot.run(config.BOT_TOKEN)
