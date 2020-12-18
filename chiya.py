@@ -2,6 +2,7 @@ import asyncio
 import glob
 import logging
 
+
 import discord
 from discord.ext import commands
 
@@ -28,14 +29,16 @@ async def on_ready():
         f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
     print(f"Successfully logged in and booted...!")
 
+    test = bot.user.created_at
+
     # Adding in a activity message when the bot begins
-
-    # Making a custom activity
-    activity = discord.Activity(name="Test", type=5)
-
     await bot.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.listening, name=f"{config.PREFIX}help"
+            type=discord.ActivityType.listening, 
+            name=f"{config.PREFIX}help",
+            url="https://www.reddit.com/r/animepiracy",
+            start=bot.user.created_at,
+            details = f"Type {config.PREFIX}help to view all bot's commands and features."
         )
     )
 
