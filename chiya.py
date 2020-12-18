@@ -47,6 +47,7 @@ async def on_message(ctx):
         await asyncio.sleep(10)
         await warning.delete()
 
+    # If message does not follow with the above code, treat it as a potential command.
     await bot.process_commands(ctx)   
 
 if __name__ == '__main__':
