@@ -17,15 +17,15 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
-    print("Loaded cogs:")
+    print(f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
+    print(f"Successfully logged in and booted...!")
 
     # Recursively going though cogs folder and loading them in.
-    print("Printing Cogs:")
+    print("Loading Cogs:")
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True): # filtered to only load .py files that do not start with '__'
         print("  -> " + cog.rsplit('\\', 1)[-1][:-3])
         bot.load_extension(cog.replace("\\", ".")[:-3])
-    print("Done Printing Cogs:")
+    print("Done Loading Cogs:")
 
 
 async def on_member_join(self, member):
