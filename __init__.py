@@ -1,7 +1,11 @@
 import logging
 
-logging.basicConfig(level=0) # can only be configured once
+import config
 
+# setting the global log level
+logging.basicConfig(level=config.) # can only be configured once
+
+# muffling "type" logs unless >= setLevel
 logging.getLogger("discord").setLevel(logging.WARNING)
 logging.getLogger("websockets").setLevel(logging.WARNING)
 logging.getLogger("chardet").setLevel(logging.WARNING)
