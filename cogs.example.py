@@ -5,8 +5,8 @@ This File is for demonstrating and used as a template for future cogs.
 import logging
 
 from discord.ext import commands
-import embeds
-from record import record_usage
+from utils import embeds
+from utils.record import record_usage
 
 
 # Enabling logs

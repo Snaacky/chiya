@@ -7,10 +7,10 @@ import discord
 from discord.ext import commands
 
 import __init__
-import background
+from tasks import background
 import config
-import embeds
-from utils import contains_link, has_attachment
+from utils import embeds
+from utils.utils import contains_link, has_attachment
 
 log = logging.getLogger(__name__)
 
@@ -61,9 +61,9 @@ async def on_message(ctx):
         warning = await ctx.channel.send(embed=embeds.files_and_links_only(ctx))
         await asyncio.sleep(10)
         await warning.delete()
-
-    # If message does not follow with the above code, treat it as a potential command.
-    await bot.process_commands(ctx)
+    else:
+        # If message does not follow with the above code, treat it as a potential command.
+        await bot.process_commands(ctx)
 
 if __name__ == '__main__':
     # filtered to only load .py files that do not start with '__'
