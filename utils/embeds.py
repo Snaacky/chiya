@@ -1,9 +1,25 @@
 import discord
+from discord.ext.commands import Context
 
 
-def make_embed(ctx: discord.ext.commands.Context=None, color='dark_theme', title: str = None, description: str = None,
+def make_embed(title: str = None, description: str = None, context: Context = None, color='dark_theme',
           image_url: str = None, author=True) -> discord.Embed:
-    """Global embed template"""
+    """
+    # General embed template
+
+    Args: \n
+        title (str, optional): Title of your embed. Defaults to None.
+        description (str, optional): Secondary text of your embed. Defaults to None.
+        context (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        color (str, optional): Use a predefined name or use a hex color value. Defaults to 'dark_theme'.
+        image_url (str, optional): URL for the side image of embed. Defaults to None.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+
+    Returns: \n
+        discord.Embed: discord embed object
+    """
+    
+
 
     # This is a list of colors that can be referenced by name rather than by hex value.
     colors = dict(default=0, teal=0x1abc9c, dark_teal=0x11806a, green=0x2ecc71, dark_green=0x1f8b4c, blue=0x3498db,
@@ -16,47 +32,83 @@ def make_embed(ctx: discord.ext.commands.Context=None, color='dark_theme', title
                   downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699)
 
     # If the color given was a valid name, use the corresponding hex value, else assume the value is already in hex form.
-    if color in colors:
-        embed = discord.Embed(color=colors[color],
+    if color.lower() in colors:
+        embed = discord.Embed(color=colors[color.lower()],
                         title=title, description=description)
     else:
         embed = discord.Embed(color=color,
                         title=title, description=description)
 
     # Setting the author field and setting their profile pic as the image.
-    if author and ctx is not None:
-        embed.set_author(icon_url=ctx.author.avatar_url,
-                    name=str(ctx.author))
+    if author and context is not None:
+        embed.set_author(icon_url=context.author.avatar_url,
+                    name=str(context.author))
 
     # Setting the embed side image if a url was given.
     if image_url:
         embed.set_thumbnail(url=image_url)
 
     # Adding Timestamp for ease of tracking when embeds are posted.
-    if ctx:
+    if context:
         try: # this try is because there is a bug in discordpy that the created_at value is in the message object but the message object does not exist in regular messages.
-            embed.timestamp = ctx.created_at
+            embed.timestamp = context.created_at
         except:
-            embed.timestamp = ctx.message.created_at
+            embed.timestamp = context.message.created_at
 
     return embed
 
 
-async def error_message(ctx: discord.ext.commands.Context, description: str, author:bool=True):
-    """Base Error message"""
-    await ctx.send(embed=make_embed(ctx, color='dark_red', title='ERROR', description=f'📢 **{description}**', author=author))
+async def error_message(description: str, ctx: Context, author:bool=True):
+    """
+    ## Send basic error message
+    ### You must await this function
 
-def error_embed(ctx: discord.ext.commands.Context, title: str, description: str, author:bool=True) -> discord.Embed:
-    """Base Error message embed"""
-    return make_embed(ctx, color='dark_red', title=f'ERROR: {title}', description=f'📢 **{description}**', author=author)
+    Args: \n
+        description (str): Error description.
+        ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    await ctx.send(embed=make_embed(title='ERROR', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author))
+
+def error_embed(title: str, description: str, ctx: Context, author:bool=True) -> discord.Embed:
+    """
+    ## Make a basic Error message embed
+
+    Args: \n
+        title (str): Name of error.
+        description (str): Error description.
+        ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+
+    Returns: \n
+        discord.Embed: discord embed object.
+    """
+    return make_embed(title=f'ERROR: {title}', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author)
 
 
-async def warning_message(ctx: discord.ext.commands.Context, description: str, author:bool=True):
-    """Base Warning message"""
-    await ctx.send(embed=make_embed(ctx, color="dark_gold", title='WARNING', description=f'📢 **{description}**', author=author))
+async def warning_message(ctx: Context, description: str, author:bool=True):
+    """
+    ## Send a basic warning message
+
+    Args: \n
+        description (str): Warning description
+        ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    await ctx.send(embed=make_embed(title='WARNING', description=f'📢 **{description}**', context = ctx, color="dark_gold", author=author))
 
 
-def files_and_links_only(ctx: discord.ext.commands.Context) -> discord.Embed:
-    embed = make_embed(ctx, description="This channel is for submissions only! All messages that do not contain an image or a link are automatically removed.", color="reddit")
+def files_and_links_only(ctx: Context) -> discord.Embed:
+    """
+    ## Standard messsage for when files or links are only used in the channel
+
+    Args: \n
+        ctx (Context): Discord context object, needed for author and timestamps.
+
+    Returns: \n
+        discord.Embed: discord embed object.
+    """
+
+    embed = make_embed(description="This channel is for submissions only! All messages that do not contain an image or a link are automatically removed.", context=ctx, color="reddit")
     embed.set_footer(text="This message will self-destruct in 10 seconds.")
     return embed
