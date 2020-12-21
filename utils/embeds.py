@@ -24,7 +24,7 @@ def make_embed(ctx: discord.ext.commands.Context=None, color='dark_theme', title
                         title=title, description=description)
 
     # Setting the author field and setting their profile pic as the image.
-    if author:
+    if author and ctx is not None:
         embed.set_author(icon_url=ctx.author.avatar_url,
                     name=str(ctx.author))
 
@@ -33,10 +33,11 @@ def make_embed(ctx: discord.ext.commands.Context=None, color='dark_theme', title
         embed.set_thumbnail(url=image_url)
 
     # Adding Timestamp for ease of tracking when embeds are posted.
-    try: # this try is because there is a bug in discordpy that the created_at value is in the message object but the message object does not exist in regular messages.
-        embed.timestamp = ctx.created_at
-    except:
-        embed.timestamp = ctx.message.created_at
+    if ctx:
+        try: # this try is because there is a bug in discordpy that the created_at value is in the message object but the message object does not exist in regular messages.
+            embed.timestamp = ctx.created_at
+        except:
+            embed.timestamp = ctx.message.created_at
 
     return embed
 
@@ -44,6 +45,10 @@ def make_embed(ctx: discord.ext.commands.Context=None, color='dark_theme', title
 async def error_message(ctx: discord.ext.commands.Context, description: str, author:bool=True):
     """Base Error message"""
     await ctx.send(embed=make_embed(ctx, color='dark_red', title='ERROR', description=f'📢 **{description}**', author=author))
+
+def error_embed(ctx: discord.ext.commands.Context, title: str, description: str, author:bool=True) -> discord.Embed:
+    """Base Error message embed"""
+    return make_embed(ctx, color='dark_red', title=f'ERROR: {title}', description=f'📢 **{description}**', author=author)
 
 
 async def warning_message(ctx: discord.ext.commands.Context, description: str, author:bool=True):
