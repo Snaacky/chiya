@@ -63,8 +63,8 @@ class error_handle(Cog):
             ctx, "invoked_from_error_handler"
         ):
             await embeds.error_message(
-                ctx,
                 description=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
+                ctx=ctx
             )
             log.debug(
                 f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
@@ -82,15 +82,15 @@ class error_handle(Cog):
 
         elif isinstance(error, errors.DisabledCommand):
             await embeds.error_message(
-                ctx,
-                description="Command Disabled"
+                description="Command Disabled",
+                ctx=ctx
             )
 
         else:
             await embeds.error_message(
-                ctx,
                 description=f"Sorry, an unexpected error occurred. Please let us know!\n\n"
-                + f"```{error.__class__.__name__}: {error}```",
+                    + f"```{error.__class__.__name__}: {error}```",
+                ctx=ctx
             )
             log.error(
                 f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
@@ -100,51 +100,65 @@ class error_handle(Cog):
     async def handle_user_input_error(
         self, ctx: Context, error: errors.UserInputError
     ) -> None:
-        """### Send an error message in `ctx` for UserInputError, sometimes
-        invoking the help command too. \n.
+        """
+        ### Send an error message in `ctx` for UserInputError.
 
-        - MissingRequiredArgument: send an error message with arg name \n
-        - TooManyArguments: send an error message \n
-        - BadArgument: send an error message \nr message with arg name \n
-        - TooManyArguments: send an error message \n
-        - BadArgument: send an error message \n
-        - BadUnionArgument: send an error message including the error produced by the last converter \n
-        - ArgumentParsingError: send an error message \n
-        - Other: send an error message \n
+        Handled errors:
+            MissingRequiredArgument
+            TooManyArguments
+            BadArgument
+            BadUnionArgument
+            ArgumentParsingError
+            Other
         """
 
         if isinstance(error, errors.MissingRequiredArgument):
             # TODO: Display correct syntax of command
             embed = self._get_error_embed(
-                ctx, "Missing required argument", error.param.name
+                title="Missing required argument",
+                body=error.param.name,
+                ctx=ctx
             )
             await ctx.send(embed=embed)
 
         elif isinstance(error, errors.TooManyArguments):
             # TODO: Display correct syntax of command
-            embed = self._get_error_embed(ctx, "Too many arguments", str(error))
+            embed = self._get_error_embed(
+                title="Too many arguments", 
+                body=str(error), 
+                ctx=ctx
+                )
             await ctx.send(embed=embed)
 
         elif isinstance(error, errors.BadArgument):
             # TODO: Display correct syntax of command
-            embed = self._get_error_embed(ctx, "Bad argument", str(error))
+            embed = self._get_error_embed(
+                title="Bad argument",
+                body=str(error),
+                ctx=ctx)
             await ctx.send(embed=embed)
 
         elif isinstance(error, errors.BadUnionArgument):
             # TODO: Display correct syntax of command
-            embed = self._get_error_embed(ctx, "Bad argument", f"{error}\n{error.errors[-1]}")
+            embed = self._get_error_embed(
+                title="Bad argument", 
+                body=f"{error}\n{error.errors[-1]}", 
+                ctx=ctx)
             await ctx.send(embed=embed)
 
         elif isinstance(error, errors.ArgumentParsingError):
             # TODO: Display correct syntax of command
-            embed = self._get_error_embed(ctx, "Argument parsing error", str(error))
+            embed = self._get_error_embed(
+                title="Argument parsing error", 
+                body=str(error), 
+                ctx=ctx)
             await ctx.send(embed=embed)
 
         else:
             embed = self._get_error_embed(
-                ctx,
-                "Input error",
-                "Something about your input seems off. Check the arguments and try again.",
+                title="Input error",
+                body="Something about your input seems off. Check the arguments and try again.",
+                ctx=ctx
             )
 
     # Handle errors with deal with user or bot permissions.
@@ -170,7 +184,9 @@ class error_handle(Cog):
 
         if isinstance(error, bot_missing_errors):
             embed = self._get_error_embed(
-                ctx, "Missing required permissions or roles", error.param.name
+                title="Missing required permissions or roles", 
+                body=error.param.name,
+                ctx=ctx
             )
             try:
                 await ctx.send(embed=embed)
