@@ -18,8 +18,6 @@ def make_embed(title: str = None, description: str = None, context: Context = No
     Returns: \n
         discord.Embed: discord embed object
     """
-    
-
 
     # This is a list of colors that can be referenced by name rather than by hex value.
     colors = dict(default=0, teal=0x1abc9c, dark_teal=0x11806a, green=0x2ecc71, dark_green=0x1f8b4c, blue=0x3498db,
