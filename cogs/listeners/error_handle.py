@@ -1,11 +1,10 @@
 import logging
-import typing as t
 
-from discord.ext.commands import Cog, Context, errors
 import discord
+from discord.ext.commands import Cog, Context, errors
 
 from utils import embeds
-from utils.record import record_usage
+#from utils.record import record_usage
 
 
 # Enabling logs
@@ -19,36 +18,41 @@ log = logging.getLogger(__name__)
 
 
 class error_handle(Cog):
-    """error_handle"""
+    """error_handle."""
 
     def __init__(self, bot):
         self.bot = bot
 
-    def _get_error_embed(self, title: str, body: str) -> discord.Embed:
+    def _get_error_embed(self, ctx: Context, title: str, body: str) -> discord.Embed:
         """Return an embed that contains the exception."""
-        return discord.Embed(
-            title=title,
-            color=discord.Color.dark_red,
-            description=body
-        )
+        log.trace(f"{title}, {body}")
+        return embeds.error_embed(ctx, title=title, description=body)
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: errors.CommandError) -> None:
-        """
-        Provides generic command error handling.
-        """
+        """Provides generic command error handling."""
 
         command = ctx.command
 
         # Checking if error hasn't already been handled locally
         if hasattr(error, "handled"):
-            log.trace(f"Command {command} had its error already handled locally; ignoring.")
+            log.trace(
+                f"Command {command} had its error already handled locally; ignoring."
+            )
             return
 
         # Going through diffrent types of errors to handle them differently.
-        if isinstance(error, errors.CommandNotFound) and not hasattr(ctx, "invoked_from_error_handler"):
-            await embeds.error_message(ctx, description=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```")
-            log.debug(f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}", exc_info=error)
+        if isinstance(error, errors.CommandNotFound) and not hasattr(
+            ctx, "invoked_from_error_handler"
+        ):
+            await embeds.error_message(
+                ctx,
+                description=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
+            )
+            log.debug(
+                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
+                exc_info=error,
+            )
 
         elif isinstance(error, errors.UserInputError):
             await self.handle_user_input_error(ctx, error)
@@ -61,81 +65,105 @@ class error_handle(Cog):
 
         elif not isinstance(error, errors.DisabledCommand):
             # ConversionError, MaxConcurrencyReached, ExtensionError
-            await embeds.error_message(ctx, 
-            description=f"Sorry, an unexpected error occurred. Please let us know!\n\n" + \
-                        f"```{error.__class__.__name__}: {error}```")
-            log.error(f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}", exc_info=error)
+            await embeds.error_message(
+                ctx,
+                description=f"Sorry, an unexpected error occurred. Please let us know!\n\n"
+                + f"```{error.__class__.__name__}: {error}```",
+            )
+            log.error(
+                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
+                exc_info=error,
+            )
+        else:
+            await embeds.error_message(
+                ctx,
+                description=f"Sorry, an unexpected error occurred. Please let us know!\n\n"
+                + f"```{error.__class__.__name__}: {error}```",
+            )
+            log.error(
+                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
+                exc_info=error,
+            )
+    async def handle_user_input_error(
+        self, ctx: Context, error: errors.UserInputError
+    ) -> None:
+        """### Send an error message in `ctx` for UserInputError, sometimes
+        invoking the help command too. \n.
 
-
-    async def handle_user_input_error(self, ctx: Context, e: errors.UserInputError) -> None:
+        - MissingRequiredArgument: send an error message with arg name \n
+        - TooManyArguments: send an error message \n
+        - BadArgument: send an error message \nr message with arg name \n
+        - TooManyArguments: send an error message \n
+        - BadArgument: send an error message \n
+        - BadUnionArgument: send an error message including the error produced by the last converter \n
+        - ArgumentParsingError: send an error message \n
+        - Other: send an error message \n
         """
-        Send an error message in `ctx` for UserInputError, sometimes invoking the help command too.
-        * MissingRequiredArgument: send an error message with arg name and the help command
-        * TooManyArguments: send an error message and the help command
-        * BadArgument: send an error message and the help command
-        * BadUnionArgument: send an error message including the error produced by the last converter
-        * ArgumentParsingError: send an error message
-        * Other: send an error message and the help command
-        """
 
-        if isinstance(e, errors.MissingRequiredArgument):
-            embed = self._get_error_embed("Missing required argument", e.param.name)
+        if isinstance(error, errors.MissingRequiredArgument):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(
+                ctx, "Missing required argument", error.param.name
+            )
             await ctx.send(embed=embed)
-            self.bot.stats.incr("errors.missing_required_argument")
 
-        elif isinstance(e, errors.TooManyArguments):
-            embed = self._get_error_embed("Too many arguments", str(e))
+        elif isinstance(error, errors.TooManyArguments):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(ctx, "Too many arguments", str(error))
             await ctx.send(embed=embed)
-            self.bot.stats.incr("errors.too_many_arguments")
 
-        elif isinstance(e, errors.BadArgument):
-            embed = self._get_error_embed("Bad argument", str(e))
+        elif isinstance(error, errors.BadArgument):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(ctx, "Bad argument", str(error))
             await ctx.send(embed=embed)
-            self.bot.stats.incr("errors.bad_argument")
 
-        elif isinstance(e, errors.BadUnionArgument):
-            embed = self._get_error_embed("Bad argument", f"{e}\n{e.errors[-1]}")
+        elif isinstance(error, errors.BadUnionArgument):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(ctx, "Bad argument", f"{error}\n{error.errors[-1]}")
             await ctx.send(embed=embed)
-            self.bot.stats.incr("errors.bad_union_argument")
 
-        elif isinstance(e, errors.ArgumentParsingError):
-            embed = self._get_error_embed("Argument parsing error", str(e))
+        elif isinstance(error, errors.ArgumentParsingError):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(ctx, "Argument parsing error", str(error))
             await ctx.send(embed=embed)
-            self.bot.stats.incr("errors.argument_parsing_error")
 
         else:
             embed = self._get_error_embed(
+                ctx,
                 "Input error",
-                "Something about your input seems off. Check the arguments and try again."
+                "Something about your input seems off. Check the arguments and try again.",
             )
-            await ctx.send(embed=embed)
-            self.bot.stats.incr("errors.other_user_input_error")
 
-    # Handle errors with permissions.
-    @staticmethod
-    async def handle_check_failure(ctx: Context, error: errors.CheckFailure) -> None:
-        """
-        Send an error message in `ctx` for certain types of CheckFailure.
-        The following types are handled:
-        * BotMissingPermissions
-        * BotMissingRole
-        * BotMissingAnyRole
-        * NoPrivateMessage
-        * InWhitelistCheckFailure
+    # Handle errors with deal with user or bot permissions.
+    async def handle_check_failure(self, ctx: Context, error: errors.CheckFailure) -> None:
+        """### Send an error message in `ctx` for certain types of
+        CheckFailure. The following types are handled:
+
+        - BotMissingPermissions
+        - BotMissingRole
+        - BotMissingAnyRole
+        - BotMissingAnyRole
+        - NoPrivateMessage
         """
         bot_missing_errors = (
             errors.BotMissingPermissions,
             errors.BotMissingRole,
-            errors.BotMissingAnyRole
+            errors.BotMissingAnyRole,
         )
 
         if isinstance(error, bot_missing_errors):
-            ctx.bot.stats.incr("errors.bot_permission_error")
-            await ctx.send(
-                "Sorry, it looks like I don't have the permissions or roles I need to do that."
+            embed = self._get_error_embed(
+                ctx, "Missing required permissions or roles", error.param.name
             )
+            try:
+                await ctx.send(embed=embed)
+            except: # this will likely fail if the error to begin with is not able to post embeds
+                await ctx.send(
+                    "Sorry, it looks like I don't have the permissions or roles I need to do that.\n" +
+                        f"Missing: `{error.param.name}`"
+                )
+
         elif isinstance(error, (errors.NoPrivateMessage)):
-            ctx.bot.stats.incr("errors.wrong_channel_or_dm_error")
             await ctx.send(error)
 
     # General HTTP error handle
@@ -145,20 +173,23 @@ class error_handle(Cog):
         if error.status == 404:
             await ctx.send("There does not seem to be anything matching your query.")
             log.debug(f"API responded with 404 for command {ctx.command}")
-            ctx.bot.stats.incr("errors.api_error_404")
+
         elif error.status == 400:
-            content = await error.response.json()
-            log.debug(f"API responded with 400 for command {ctx.command}: %r.", content)
             await ctx.send("According to the API, your request is malformed.")
-            ctx.bot.stats.incr("errors.api_error_400")
+            content = await error.response.json()
+            log.debug(f"API responded with 400 for command {ctx.command}: %r.", content)    
+
         elif 500 <= error.status < 600:
             await ctx.send("Sorry, there seems to be an internal issue with the API.")
             log.warning(f"API responded with {error.status} for command {ctx.command}")
-            ctx.bot.stats.incr("errors.api_internal_server_error")
+
         else:
-            await ctx.send(f"Got an unexpected status code from the API (`{error.status}`).")
-            log.warning(f"Unexpected API response for command {ctx.command}: {error.status}")
-            ctx.bot.stats.incr(f"errors.api_error_{error.status}")
+            await ctx.send(
+                f"Got an unexpected status code from the API (`{error.status}`)."
+            )
+            log.warning(
+                f"Unexpected API response for command {ctx.command}: {error.status}"
+            )
 
 
 def setup(bot) -> None:
