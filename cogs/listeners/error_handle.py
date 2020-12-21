@@ -4,7 +4,6 @@ import discord
 from discord.ext.commands import Cog, Context, errors
 
 from utils import embeds
-#from utils.record import record_usage
 
 
 # Enabling logs
@@ -23,14 +22,32 @@ class error_handle(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def _get_error_embed(self, ctx: Context, title: str, body: str) -> discord.Embed:
-        """Return an embed that contains the exception."""
+    def _get_error_embed(self, title: str, body: str, ctx: Context) -> discord.Embed:
+        """
+        ## Return an embed that contains the exception.
+
+        Args: \n
+            title (str): Name of error.
+            body (str): Error message.
+            ctx (Context): Discord context object, needed for author and timestamps.
+
+        Returns: \n
+            discord.Embed: discord embed object.
+        """
         log.trace(f"{title}, {body}")
-        return embeds.error_embed(ctx, title=title, description=body)
+        return embeds.error_embed(title=title, description=body, ctx=ctx)
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: errors.CommandError) -> None:
-        """Provides generic command error handling."""
+        """
+        An error handler that is called when an error is raised inside a command either through user input error, check failure, or an error in your own code.
+
+        For more info: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=on_command_error#discord.on_command_error
+
+        Args:\n
+            ctx (Context): The invocation context.
+            error (errors.CommandError): The error that was raised.
+        """
 
         command = ctx.command
 
@@ -63,17 +80,12 @@ class error_handle(Cog):
         elif isinstance(error, errors.CommandOnCooldown):
             await ctx.send(error)
 
-        elif not isinstance(error, errors.DisabledCommand):
-            # ConversionError, MaxConcurrencyReached, ExtensionError
+        elif isinstance(error, errors.DisabledCommand):
             await embeds.error_message(
                 ctx,
-                description=f"Sorry, an unexpected error occurred. Please let us know!\n\n"
-                + f"```{error.__class__.__name__}: {error}```",
+                description="Command Disabled"
             )
-            log.error(
-                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
-                exc_info=error,
-            )
+
         else:
             await embeds.error_message(
                 ctx,
@@ -84,6 +96,7 @@ class error_handle(Cog):
                 f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
                 exc_info=error,
             )
+
     async def handle_user_input_error(
         self, ctx: Context, error: errors.UserInputError
     ) -> None:
@@ -136,15 +149,19 @@ class error_handle(Cog):
 
     # Handle errors with deal with user or bot permissions.
     async def handle_check_failure(self, ctx: Context, error: errors.CheckFailure) -> None:
-        """### Send an error message in `ctx` for certain types of
-        CheckFailure. The following types are handled:
+        """Send an error message in `ctx` for certain types of CheckFailure.
 
-        - BotMissingPermissions
-        - BotMissingRole
-        - BotMissingAnyRole
-        - BotMissingAnyRole
-        - NoPrivateMessage
+        Handled errors:
+            BotMissingPermissions
+            BotMissingRole
+            BotMissingAnyRole
+            NoPrivateMessage
+
+        Args:
+            ctx (Context): Discord context object, needed for author and timestamps.
+            error (errors.CheckFailure): The error that was raised.
         """
+
         bot_missing_errors = (
             errors.BotMissingPermissions,
             errors.BotMissingRole,
@@ -167,9 +184,16 @@ class error_handle(Cog):
             await ctx.send(error)
 
     # General HTTP error handle
+    # TODO: implement this
     @staticmethod
     async def handle_api_error(ctx: Context, error) -> None:
-        """Send an error message in `ctx` and log it."""
+        """
+        Send an error message in `ctx` and log it.
+
+        Args:
+            ctx (Context): [description]
+            error (errors.CheckFailure): The error that was raised.
+        """
         if error.status == 404:
             await ctx.send("There does not seem to be anything matching your query.")
             log.debug(f"API responded with 404 for command {ctx.command}")
