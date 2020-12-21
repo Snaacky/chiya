@@ -63,7 +63,7 @@ async def error_message(description: str, ctx: Context, author:bool=True):
 
     Args: \n
         description (str): Error description.
-        ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
     await ctx.send(embed=make_embed(title='ERROR', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author))
@@ -75,7 +75,7 @@ def error_embed(title: str, description: str, ctx: Context, author:bool=True) ->
     Args: \n
         title (str): Name of error.
         description (str): Error description.
-        ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
 
     Returns: \n
@@ -87,10 +87,11 @@ def error_embed(title: str, description: str, ctx: Context, author:bool=True) ->
 async def warning_message(ctx: Context, description: str, author:bool=True):
     """
     ## Send a basic warning message
+    ### You must await this function
 
     Args: \n
         description (str): Warning description
-        ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
+        ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
     await ctx.send(embed=make_embed(title='WARNING', description=f'📢 **{description}**', context = ctx, color="dark_gold", author=author))
