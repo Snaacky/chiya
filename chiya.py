@@ -47,6 +47,16 @@ async def on_member_join(self, member):
         to_send = 'Welcome {0.mention} to {1.name}!'.format(member, guild)
         await guild.system_channel.send(to_send)
 
+@bot.event
+async def on_message_edit(before: discord.Message, after: discord.Message):
+    """Event Listener which is called when a message is edited.
+
+        For more information:
+        https://discordpy.readthedocs.io/en/rewrite/api.html#discord.on_message_edit
+    """
+    # Act as if its a new message rather than an a edit
+    await on_message(after)
+
 
 @bot.event
 async def on_message(ctx):
