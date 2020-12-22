@@ -2,8 +2,7 @@ import logging
 
 from discord.ext import commands
 
-import utils  # pylint: disable=import-error
-from record import record_usage
+from utils.record import record_usage
 
 
 # Enabling logs
@@ -21,7 +20,7 @@ class SettingsCog(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send('No settings subcommand specified.')
 
-    @commands.check(utils.is_owner)
+    @commands.is_owner()
     @settings.command(name="setjoin")
     async def set_joins_channel(self, ctx, channel):
         ctx.send(channel)
