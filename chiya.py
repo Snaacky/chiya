@@ -59,7 +59,7 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
 
 
 @bot.event
-async def on_message(ctx):
+async def on_message(ctx: discord.ext.commands.Context):
     # Remove messages that don't contain links or files from our submissions only channels
     if ctx.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(ctx) or has_attachment(ctx)):
         # Ignore messages from self or bots to avoid loops and other oddities
@@ -68,9 +68,7 @@ async def on_message(ctx):
 
         # Deletes message and send self-destructing warning embed
         await ctx.delete()
-        warning = await ctx.channel.send(embed=embeds.files_and_links_only(ctx))
-        await asyncio.sleep(10)
-        await warning.delete()
+        await ctx.channel.send(embed=embeds.files_and_links_only(ctx), delete_after=10)
     else:
         # If message does not follow with the above code, treat it as a potential command.
         await bot.process_commands(ctx)
