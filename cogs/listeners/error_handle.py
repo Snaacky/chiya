@@ -15,6 +15,8 @@ log = logging.getLogger(__name__)
     commands.Cog, commands.context, and commands.errors
 """
 
+# The time, in seconds, for a message to be displayed
+AUTO_DELETE_TIME=30
 
 class error_handle(Cog):
     """error_handle."""
@@ -23,15 +25,14 @@ class error_handle(Cog):
         self.bot = bot
 
     def _get_error_embed(self, title: str, body: str, ctx: Context) -> discord.Embed:
-        """
-        ## Return an embed that contains the exception.
+        """Return an embed that contains the exception.
 
-        Args: \n
+        Args:
             title (str): Name of error.
             body (str): Error message.
             ctx (Context): Discord context object, needed for author and timestamps.
 
-        Returns: \n
+        Returns:
             discord.Embed: discord embed object.
         """
         log.trace(f"{title}, {body}")
@@ -39,12 +40,13 @@ class error_handle(Cog):
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: errors.CommandError) -> None:
-        """
-        An error handler that is called when an error is raised inside a command either through user input error, check failure, or an error in your own code.
+        """An error handler that is called when an error is raised inside a command either 
+        through user input error, check failure, or an error in your own code.
 
-        For more info: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=on_command_error#discord.on_command_error
+        For more information:
+            https://discordpy.readthedocs.io/en/stable/ext/commands/api.html?highlight=on_command_error#discord.on_command_error
 
-        Args:\n
+        Args:
             ctx (Context): The invocation context.
             error (errors.CommandError): The error that was raised.
         """
@@ -78,7 +80,10 @@ class error_handle(Cog):
             await self.handle_check_failure(ctx, error)
 
         elif isinstance(error, errors.CommandOnCooldown):
-            await ctx.send(error)
+            await embeds.error_message(
+                description=error,
+                ctx=ctx
+            )
 
         elif isinstance(error, errors.DisabledCommand):
             await embeds.error_message(
@@ -100,8 +105,7 @@ class error_handle(Cog):
     async def handle_user_input_error(
         self, ctx: Context, error: errors.UserInputError
     ) -> None:
-        """
-        ### Send an error message in `ctx` for UserInputError.
+        """Send an error message embed for UserInputError.
 
         Handled errors:
             MissingRequiredArgument
@@ -119,7 +123,7 @@ class error_handle(Cog):
                 body=error.param.name,
                 ctx=ctx
             )
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.TooManyArguments):
             # TODO: Display correct syntax of command
@@ -128,7 +132,7 @@ class error_handle(Cog):
                 body=str(error), 
                 ctx=ctx
                 )
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.BadArgument):
             # TODO: Display correct syntax of command
@@ -136,7 +140,7 @@ class error_handle(Cog):
                 title="Bad argument",
                 body=str(error),
                 ctx=ctx)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.BadUnionArgument):
             # TODO: Display correct syntax of command
@@ -144,7 +148,7 @@ class error_handle(Cog):
                 title="Bad argument", 
                 body=f"{error}\n{error.errors[-1]}", 
                 ctx=ctx)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.ArgumentParsingError):
             # TODO: Display correct syntax of command
@@ -152,7 +156,7 @@ class error_handle(Cog):
                 title="Argument parsing error", 
                 body=str(error), 
                 ctx=ctx)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         else:
             embed = self._get_error_embed(
@@ -163,7 +167,7 @@ class error_handle(Cog):
 
     # Handle errors with deal with user or bot permissions.
     async def handle_check_failure(self, ctx: Context, error: errors.CheckFailure) -> None:
-        """Send an error message in `ctx` for certain types of CheckFailure.
+        """Send an error message embed for certain types of CheckFailure.
 
         Handled errors:
             BotMissingPermissions
@@ -189,11 +193,12 @@ class error_handle(Cog):
                 ctx=ctx
             )
             try:
-                await ctx.send(embed=embed)
+                await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
             except: # this will likely fail if the error to begin with is not able to post embeds
                 await ctx.send(
                     "Sorry, it looks like I don't have the permissions or roles I need to do that.\n" +
-                        f"Missing: `{error.param.name}`"
+                        f"Missing: `{error.param.name}`", 
+                    delete_after=AUTO_DELETE_TIME
                 )
 
         elif isinstance(error, (errors.NoPrivateMessage)):
@@ -211,21 +216,25 @@ class error_handle(Cog):
             error (errors.CheckFailure): The error that was raised.
         """
         if error.status == 404:
-            await ctx.send("There does not seem to be anything matching your query.")
+            await ctx.send("There does not seem to be anything matching your query.", 
+                delete_after=AUTO_DELETE_TIME)
             log.debug(f"API responded with 404 for command {ctx.command}")
 
         elif error.status == 400:
-            await ctx.send("According to the API, your request is malformed.")
+            await ctx.send("According to the API, your request is malformed.", 
+                delete_after=AUTO_DELETE_TIME)
             content = await error.response.json()
             log.debug(f"API responded with 400 for command {ctx.command}: %r.", content)    
 
         elif 500 <= error.status < 600:
-            await ctx.send("Sorry, there seems to be an internal issue with the API.")
+            await ctx.send("Sorry, there seems to be an internal issue with the API.", 
+                delete_after=AUTO_DELETE_TIME)
             log.warning(f"API responded with {error.status} for command {ctx.command}")
 
         else:
             await ctx.send(
-                f"Got an unexpected status code from the API (`{error.status}`)."
+                f"Got an unexpected status code from the API (`{error.status}`).", 
+                delete_after=AUTO_DELETE_TIME
             )
             log.warning(
                 f"Unexpected API response for command {ctx.command}: {error.status}"
