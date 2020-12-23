@@ -27,7 +27,6 @@ class UtilitiesCog(commands.Cog):
 
     @utilities.command(name="ping")
     async def _ping(self ,ctx):
-        print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is:{round(self.bot.latency*1000)}ms.")
 
 
