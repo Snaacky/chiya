@@ -33,7 +33,7 @@ class UtilitiesCog(commands.Cog):
 
     @commands.before_invoke(record_usage)
     @commands.is_owner()
-    @commands.group()
+    @commands.group(aliases=["u", "ul"])
     async def utilities(self, ctx):
         if ctx.invoked_subcommand is None:
             await ctx.send('No utilities subcommand specified.')
