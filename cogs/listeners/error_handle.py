@@ -219,7 +219,7 @@ class error_handle(Cog):
         )
 
         check_errors = (
-            errors.CheckAnyFailure
+            errors.CheckAnyFailure,
             errors.CheckFailure
         )
 
