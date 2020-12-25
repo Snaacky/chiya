@@ -36,7 +36,11 @@ class error_handle(Cog):
             discord.Embed: discord embed object.
         """
         log.trace(f"{title}, {body}")
-        return embeds.error_embed(title=title, description=body, ctx=ctx)
+        embed = embeds.error_embed(title=title, description=body, ctx=ctx)
+        embed.set_footer(
+            text=f"This message will self-destruct in {AUTO_DELETE_TIME} seconds.", 
+            icon_url="https://cdn.discordapp.com/emojis/477907608057937930.png")
+        return embed
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: errors.CommandError) -> None:
@@ -75,9 +79,13 @@ class error_handle(Cog):
         if isinstance(error, errors.CommandNotFound) and not hasattr(
             ctx, "invoked_from_error_handler"
         ):
-            await embeds.error_message(
-                description=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
-                ctx=ctx
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Error",
+                    body=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
+                    ctx=ctx
+                ), 
+                delete_after=AUTO_DELETE_TIME
             )
             log.debug(
                 f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
@@ -91,23 +99,35 @@ class error_handle(Cog):
             await self.handle_check_failure(ctx, error)
 
         elif isinstance(error, errors.CommandOnCooldown):
-            await embeds.error_message(
-                description=error,
-                ctx=ctx
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Command On Cooldown",
+                    body=error,
+                    ctx=ctx
+                ),
+                delete_after=AUTO_DELETE_TIME
             )
 
         elif isinstance(error, errors.DisabledCommand):
-            await embeds.error_message(
-                description="Command Disabled",
-                ctx=ctx
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Error",
+                    body="Command Disabled",
+                    ctx=ctx
+                ),
+                delete_after=AUTO_DELETE_TIME
             )
 
             log.debug("test")
 
         elif isinstance(error, errors.MaxConcurrencyReached):
-            await embeds.error_message(
-                description="max simultaneous users for command reached",
-                ctx=ctx
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Error",
+                    body="max simultaneous users for command reached",
+                    ctx=ctx
+                ),
+                delete_after=AUTO_DELETE_TIME
             )
         
         elif isinstance(error, errors.CommandInvokeError):
