@@ -42,6 +42,10 @@ class UtilitiesCog(commands.Cog):
     async def _ping(self, ctx):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is:{round(self.bot.latency*1000)}ms.")
+    
+    @utilities.command(name="count")
+    async def count(self, ctx):
+        await ctx.send(ctx.guild.member_count)
 
     @utilities.command(name="say")
     async def _say(self, ctx, *, args):
@@ -129,6 +133,10 @@ class UtilitiesCog(commands.Cog):
         else:
             await ctx.message.add_reaction("✔")
             await ctx.send(f"Reloaded the {module} module.")
+    
+    @commands.command(name="count")
+    async def count(self, ctx):
+        await ctx.send(ctx.guild.member_count)
 
 
 def setup(bot) -> None:
