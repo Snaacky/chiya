@@ -1,0 +1,238 @@
+import logging
+
+import discord
+from discord.ext.commands import Cog, Context, errors
+
+from utils import embeds
+
+
+# Enabling logs
+log = logging.getLogger(__name__)
+
+
+"""
+    Note, the import is diffrent from regular cogs because of the heavy-useage of:
+    commands.Cog, commands.context, and commands.errors
+"""
+
+
+class error_handle(Cog):
+    """error_handle."""
+
+    def __init__(self, bot):
+        self.bot = bot
+
+    def _get_error_embed(self, title: str, body: str, ctx: Context) -> discord.Embed:
+        """
+        ## Return an embed that contains the exception.
+
+        Args: \n
+            title (str): Name of error.
+            body (str): Error message.
+            ctx (Context): Discord context object, needed for author and timestamps.
+
+        Returns: \n
+            discord.Embed: discord embed object.
+        """
+        log.trace(f"{title}, {body}")
+        return embeds.error_embed(title=title, description=body, ctx=ctx)
+
+    @Cog.listener()
+    async def on_command_error(self, ctx: Context, error: errors.CommandError) -> None:
+        """
+        An error handler that is called when an error is raised inside a command either through user input error, check failure, or an error in your own code.
+
+        For more info: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=on_command_error#discord.on_command_error
+
+        Args:\n
+            ctx (Context): The invocation context.
+            error (errors.CommandError): The error that was raised.
+        """
+
+        command = ctx.command
+
+        # Checking if error hasn't already been handled locally
+        if hasattr(error, "handled"):
+            log.trace(
+                f"Command {command} had its error already handled locally; ignoring."
+            )
+            return
+
+        # Going through diffrent types of errors to handle them differently.
+        if isinstance(error, errors.CommandNotFound) and not hasattr(
+            ctx, "invoked_from_error_handler"
+        ):
+            await embeds.error_message(
+                description=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
+                ctx=ctx
+            )
+            log.debug(
+                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
+                exc_info=error,
+            )
+
+        elif isinstance(error, errors.UserInputError):
+            await self.handle_user_input_error(ctx, error)
+
+        elif isinstance(error, errors.CheckFailure):
+            await self.handle_check_failure(ctx, error)
+
+        elif isinstance(error, errors.CommandOnCooldown):
+            await ctx.send(error)
+
+        elif isinstance(error, errors.DisabledCommand):
+            await embeds.error_message(
+                description="Command Disabled",
+                ctx=ctx
+            )
+
+        else:
+            await embeds.error_message(
+                description=f"Sorry, an unexpected error occurred. Please let us know!\n\n"
+                    + f"```{error.__class__.__name__}: {error}```",
+                ctx=ctx
+            )
+            log.error(
+                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
+                exc_info=error,
+            )
+
+    async def handle_user_input_error(
+        self, ctx: Context, error: errors.UserInputError
+    ) -> None:
+        """
+        ### Send an error message in `ctx` for UserInputError.
+
+        Handled errors:
+            MissingRequiredArgument
+            TooManyArguments
+            BadArgument
+            BadUnionArgument
+            ArgumentParsingError
+            Other
+        """
+
+        if isinstance(error, errors.MissingRequiredArgument):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(
+                title="Missing required argument",
+                body=error.param.name,
+                ctx=ctx
+            )
+            await ctx.send(embed=embed)
+
+        elif isinstance(error, errors.TooManyArguments):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(
+                title="Too many arguments", 
+                body=str(error), 
+                ctx=ctx
+                )
+            await ctx.send(embed=embed)
+
+        elif isinstance(error, errors.BadArgument):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(
+                title="Bad argument",
+                body=str(error),
+                ctx=ctx)
+            await ctx.send(embed=embed)
+
+        elif isinstance(error, errors.BadUnionArgument):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(
+                title="Bad argument", 
+                body=f"{error}\n{error.errors[-1]}", 
+                ctx=ctx)
+            await ctx.send(embed=embed)
+
+        elif isinstance(error, errors.ArgumentParsingError):
+            # TODO: Display correct syntax of command
+            embed = self._get_error_embed(
+                title="Argument parsing error", 
+                body=str(error), 
+                ctx=ctx)
+            await ctx.send(embed=embed)
+
+        else:
+            embed = self._get_error_embed(
+                title="Input error",
+                body="Something about your input seems off. Check the arguments and try again.",
+                ctx=ctx
+            )
+
+    # Handle errors with deal with user or bot permissions.
+    async def handle_check_failure(self, ctx: Context, error: errors.CheckFailure) -> None:
+        """Send an error message in `ctx` for certain types of CheckFailure.
+
+        Handled errors:
+            BotMissingPermissions
+            BotMissingRole
+            BotMissingAnyRole
+            NoPrivateMessage
+
+        Args:
+            ctx (Context): Discord context object, needed for author and timestamps.
+            error (errors.CheckFailure): The error that was raised.
+        """
+
+        bot_missing_errors = (
+            errors.BotMissingPermissions,
+            errors.BotMissingRole,
+            errors.BotMissingAnyRole,
+        )
+
+        if isinstance(error, bot_missing_errors):
+            embed = self._get_error_embed(
+                title="Missing required permissions or roles", 
+                body=error.param.name,
+                ctx=ctx
+            )
+            try:
+                await ctx.send(embed=embed)
+            except: # this will likely fail if the error to begin with is not able to post embeds
+                await ctx.send(
+                    "Sorry, it looks like I don't have the permissions or roles I need to do that.\n" +
+                        f"Missing: `{error.param.name}`"
+                )
+
+        elif isinstance(error, (errors.NoPrivateMessage)):
+            await ctx.send(error)
+
+    # General HTTP error handle
+    # TODO: implement this
+    @staticmethod
+    async def handle_api_error(ctx: Context, error) -> None:
+        """
+        Send an error message in `ctx` and log it.
+
+        Args:
+            ctx (Context): [description]
+            error (errors.CheckFailure): The error that was raised.
+        """
+        if error.status == 404:
+            await ctx.send("There does not seem to be anything matching your query.")
+            log.debug(f"API responded with 404 for command {ctx.command}")
+
+        elif error.status == 400:
+            await ctx.send("According to the API, your request is malformed.")
+            content = await error.response.json()
+            log.debug(f"API responded with 400 for command {ctx.command}: %r.", content)    
+
+        elif 500 <= error.status < 600:
+            await ctx.send("Sorry, there seems to be an internal issue with the API.")
+            log.warning(f"API responded with {error.status} for command {ctx.command}")
+
+        else:
+            await ctx.send(
+                f"Got an unexpected status code from the API (`{error.status}`)."
+            )
+            log.warning(
+                f"Unexpected API response for command {ctx.command}: {error.status}"
+            )
+
+
+def setup(bot) -> None:
+    """Load the error_handle cog."""
+    bot.add_cog(error_handle(bot))
+    log.info("Cog loaded: error_handle")
