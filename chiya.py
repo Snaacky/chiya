@@ -1,12 +1,9 @@
-import asyncio
 import glob
 import logging
-
 
 import discord
 from discord.ext import commands
 
-import __init__
 from tasks import background
 import config
 from utils import embeds
@@ -25,28 +22,20 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    """Called when the client is done preparing the data received from Discord.
-
-    For more information:
-    https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
-    """
-    print(
-        f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
-    print(f"Successfully logged in and booted...!")
+    print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
 
     # Adding in a activity message when the bot begins
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.PREFIX}help",
-            url="https://www.reddit.com/r/animepiracy",
-            start=bot.user.created_at,
-            details = f"Type {config.PREFIX}help to view all bot's commands and features."
+            name=f"{config.PREFIX}help"
         )
     )
 
 
+@bot.event
 async def on_member_join(self, member):
+    # Defining for future use but removed unused code
     """Called when a Member leaves or joins a Guild.
 
     Parameters:
@@ -55,10 +44,15 @@ async def on_member_join(self, member):
     For more information:
     https://discordpy.readthedocs.io/en/stable/api.html#discord.on_member_join
     """
-    guild = member.guild
-    if guild.system_channel is not None:
-        welcome_text = f"Welcome {member.mention} to {guild.name}!"
-        await guild.system_channel.send(welcome_text)
+    return
+
+
+@bot.event
+async def on_member_update(before, after):
+    # Defining for future use, below is a psuedo on_nitro_boost event
+    if before.premium_since is None and after.premium_since is not None:
+        return
+
 
 @bot.event
 async def on_message_edit(before: discord.Message, after: discord.Message):
@@ -85,7 +79,7 @@ async def on_message(ctx: discord.ext.commands.Context):
     Note:
         This requires Intents.messages to be enabled.
 
-    Warning: 
+    Warning:
         Your bot’s own messages and private messages are sent through this event.
 
     Parameters:
@@ -112,7 +106,6 @@ if __name__ == '__main__':
     # Load in all the cogs in the folder named cogs, recurively.
     # filtered to only load .py files that do not start with '__'
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        #log.info("  -> " + cog.replace("\\", ".")[:-3])
         bot.load_extension(cog.replace("\\", ".")[:-3])
 
     # Load backgound tasks
