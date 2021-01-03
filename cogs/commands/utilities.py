@@ -1,5 +1,3 @@
-from inspect import trace
-import sys
 import traceback
 import logging
 import io
@@ -93,7 +91,7 @@ class UtilitiesCog(commands.Cog):
         try:
             with redirect_stdout(stdout):
                 ret = await func()
-        except Exception as e:
+        except Exception:
             # in case there's an error, add it to the embed, send and stop
             value = stdout.getvalue()
             errors = f'```py\n{value}{traceback.format_exc()}\n```'
