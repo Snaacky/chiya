@@ -18,7 +18,7 @@ class Vote(commands.Cog):
 
     @commands.before_invoke(record_usage)
     @commands.group()
-    async def vote(self, ctx, msgId : int):
+    async def vote(self, ctx, msgId: int):
         if (msgId is None):
             last_message_ID = self.bot.cached_messages[len(self.bot.cached_messages)-1]
             await last_message_ID.add_reaction(":yes:778724405333196851")

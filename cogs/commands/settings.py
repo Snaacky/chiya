@@ -13,7 +13,6 @@ class SettingsCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.before_invoke(record_usage)
     @commands.group()
     async def settings(self, ctx):

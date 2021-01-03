@@ -25,31 +25,33 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    print(
-        f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
-    print(f"Successfully logged in and booted...!")
+    print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
 
     # Adding in a activity message when the bot begins
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.PREFIX}help",
-            url="https://www.reddit.com/r/animepiracy",
-            start=bot.user.created_at,
-            details = f"Type {config.PREFIX}help to view all bot's commands and features."
+            name=f"{config.PREFIX}help"
         )
     )
 
 
+@bot.event
 async def on_member_join(self, member):
-    guild = member.guild
-    if guild.system_channel is not None:
-        to_send = 'Welcome {0.mention} to {1.name}!'.format(member, guild)
-        await guild.system_channel.send(to_send)
+    # Defining for future use but removed unused code
+    return
+
+
+@bot.event
+async def on_member_update(before, after):
+    # Defining for future use, below is a psuedo on_nitro_boost event
+    if before.premium_since is None and after.premium_since is not None:
+        return
 
 
 @bot.event
 async def on_message(ctx):
+    # TODO: This whole block can probably be moved into its own function
     # Remove messages that don't contain links or files from our submissions only channels
     if ctx.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(ctx) or has_attachment(ctx)):
         # Ignore messages from self or bots to avoid loops and other oddities
@@ -68,7 +70,6 @@ async def on_message(ctx):
 if __name__ == '__main__':
     # filtered to only load .py files that do not start with '__'
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        #log.info("  -> " + cog.replace("\\", ".")[:-3])
         bot.load_extension(cog.replace("\\", ".")[:-3])
 
     bot.loop.create_task(background.check_for_posts(bot))

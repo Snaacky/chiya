@@ -3,9 +3,9 @@ import os
 import sys
 from logging import Logger, handlers
 from pathlib import Path
- 
+
 import coloredlogs
- 
+
 import config
 
 
@@ -17,6 +17,7 @@ log_level = config.LOGLEVEL
 TRACE_LEVEL = logging.TRACE = 5
 logging.addLevelName(TRACE_LEVEL, "TRACE")
 
+
 def monkeypatch_trace(self: logging.Logger, msg: str, *args, **kwargs) -> None:
     """
     Log 'msg % args' with severity 'TRACE'.\n
@@ -25,6 +26,7 @@ def monkeypatch_trace(self: logging.Logger, msg: str, *args, **kwargs) -> None:
     """
     if self.isEnabledFor(TRACE_LEVEL):
         self._log(TRACE_LEVEL, msg, args, **kwargs)
+
 
 # Initializing Trace
 Logger.trace = monkeypatch_trace

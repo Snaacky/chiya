@@ -39,20 +39,20 @@ class UtilitiesCog(commands.Cog):
             await ctx.send('No utilities subcommand specified.')
 
     @utilities.command(name="ping")
-    async def _ping(self, ctx):
+    async def ping(self, ctx):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is:{round(self.bot.latency*1000)}ms.")
-    
-    @utilities.command(name="count")
-    async def count(self, ctx):
+
+    @utilities.command(name="members")
+    async def members(self, ctx):
         await ctx.send(ctx.guild.member_count)
 
     @utilities.command(name="say")
-    async def _say(self, ctx, *, args):
+    async def say(self, ctx, *, args):
         await ctx.send(args)
 
     @utilities.command(name="eval")
-    async def _eval(self, ctx, *, body: str):
+    async def eval(self, ctx, *, body: str):
         """Evaluates a code"""
 
         # required environment variables
@@ -122,7 +122,7 @@ class UtilitiesCog(commands.Cog):
                 await ctx.send(embed=embedVar)
 
     @utilities.command(name="reload")
-    async def _reload_cog(self, ctx, *, module):
+    async def reload_cog(self, ctx, *, module):
         """Reloads specified cog/module. Remember the directory structures."""
         try:
             self.bot.reload_extension(module)
@@ -133,7 +133,7 @@ class UtilitiesCog(commands.Cog):
         else:
             await ctx.message.add_reaction("✔")
             await ctx.send(f"Reloaded the {module} module.")
-    
+
     @commands.command(name="count")
     async def count(self, ctx):
         await ctx.send(ctx.guild.member_count)
