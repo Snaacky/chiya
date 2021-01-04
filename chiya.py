@@ -22,7 +22,13 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
+    """Called when the client is done preparing the data received from Discord.
+
+    For more information:
+    https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
+    """
     print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
+    print(f"discord.py Version: {discord.__version__}\n")
 
     # Adding in a activity message when the bot begins
     await bot.change_presence(
