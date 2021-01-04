@@ -132,10 +132,10 @@ class error_handle(Cog):
         
         elif isinstance(error, errors.CommandInvokeError):
             # Raised when the command being invoked raised an custom exception.
-            if isinstance(error.original, ResponseCodeError):
+            '''if isinstance(error.original, ResponseCodeError):
                 await self.handle_api_error(ctx, error.original)
-            else:
-                await handle_unknown_error
+            else:'''
+            await self.handle_unexpected_error(ctx, error)
         else:
             await self.handle_unexpected_error(ctx, error)
 
@@ -368,7 +368,7 @@ class error_handle(Cog):
         """
         await ctx.send(
             f"Sorry, an unexpected error occurred. Please let us know!\n\n"
-            f"```{e.__class__.__name__}: {e}```"
+            f"```{error.__class__.__name__}: {error}```"
         )
 
         #TODO: Make channel to report these errors.
