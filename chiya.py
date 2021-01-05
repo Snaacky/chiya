@@ -4,6 +4,7 @@ import logging
 import discord
 from discord.ext import commands
 
+import __init__
 from tasks import background
 import config
 from utils import embeds
@@ -32,7 +33,7 @@ async def on_ready():
             type=discord.ActivityType.listening,
             name=f"{config.PREFIX}help"
         )
-    )   
+    )
 
 
 @bot.event
@@ -51,6 +52,12 @@ async def on_member_join(self, member):
 
 @bot.event
 async def on_member_update(before, after):
+    """ Event listener which is called when a member updates their profile.
+
+    Parameters:
+        before (discord.Member): The updated member’s old info.
+        after (discord.Member): The updated member’s updated info.
+    """
     # Defining for future use, below is a psuedo on_nitro_boost event
     if before.premium_since is None and after.premium_since is not None:
         return

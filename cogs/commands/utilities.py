@@ -41,8 +41,8 @@ class UtilitiesCog(commands.Cog):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is:{round(self.bot.latency*1000)}ms.")
 
-    @utilities.command(name="members")
-    async def members(self, ctx):
+    @utilities.command(name="count")
+    async def count(self, ctx):
         await ctx.send(ctx.guild.member_count)
 
     @utilities.command(name="say")
