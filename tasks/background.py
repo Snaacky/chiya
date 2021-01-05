@@ -29,7 +29,7 @@ async def check_for_posts(bot):
                 # Skips over any posts already stored in cache
                 if submission.id in cache:
                     continue
-                
+
                 # Skips over any posts from before the bot started to avoid infinite loops
                 if submission.created_utc <= bot_started_at:
                     continue
@@ -38,7 +38,7 @@ async def check_for_posts(bot):
 
                 # Builds and stylizes the embed
                 embed = discord.Embed(
-                    title="r/" + subreddit + " - " + submission.title,
+                    title="r/" + subreddit + " - " + submission.title[0:253],
                     url=f"https://reddit.com{submission.permalink}",
                     description=submission.selftext[0:350],  # Cuts off the description
                 )
