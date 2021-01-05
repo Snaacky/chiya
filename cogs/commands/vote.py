@@ -7,8 +7,6 @@ from discord.ext import commands
 import utils  # pylint: disable=import-error
 from utils.record import record_usage # pylint: disable=import-error
 
-
-# Enabling logs
 log = logging.getLogger(__name__)
 
 
