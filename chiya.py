@@ -112,7 +112,10 @@ if __name__ == '__main__':
     # Load in all the cogs in the folder named cogs, recurively.
     # filtered to only load .py files that do not start with '__'
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        bot.load_extension(cog.replace("\\", ".")[:-3])
+        if "\\" in cog:  # Fix paths on Windows
+            bot.load_extension(cog.replace("\\", ".")[:-3])
+        else:  # Fix paths on Linux
+            bot.load_extension(cog.replace("/", ".")[:-3])
 
     # Load backgound tasks
     # TODO: Execute all files in the tasks folder and run in background.
