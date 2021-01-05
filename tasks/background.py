@@ -48,16 +48,19 @@ async def check_for_posts(bot):
                 )
                 embed.set_thumbnail(url=submission.author.icon_img)
 
-                # Adds ellipsis if the description is too long to signify cutoff
+                # Adds ellipsis if the data is too long to signify cutoff
                 if len(submission.selftext) > 350:
                     embed.description = embed.description + "..."
+
+                if len(submission.title) > 253:
+                    embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate
                 channel = bot.get_channel(config.REDDIT_POSTS_CHANNEL_ID)
                 if not channel:
                     print(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue
-                
+
                 # Sends embed into the Discord channel and adds to cache to avoid dupes in the future
                 await channel.send(embed=embed)
                 cache.append(submission.id)
