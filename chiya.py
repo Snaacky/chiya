@@ -9,16 +9,12 @@ import config
 from utils import embeds
 from utils.utils import contains_link, has_attachment
 
-log = logging.getLogger(__name__)
-
-cogs = ["cogs.settings"]
-intents = discord.Intents(messages=True, guilds=True, members=True)
 bot = commands.Bot(
     command_prefix=config.PREFIX,
-    intents=intents,
-    description="Chiya",
+    intents=discord.Intents(messages=True, guilds=True, members=True),
     case_insensitive=True)
 
+log = logging.getLogger(__name__)
 
 @bot.event
 async def on_ready():
@@ -28,7 +24,7 @@ async def on_ready():
     https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
     """
     print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
-    print(f"discord.py Version: {discord.__version__}\n")
+    print(f"discord.py version: {discord.__version__}\n")
 
     # Adding in a activity message when the bot begins
     await bot.change_presence(
@@ -36,7 +32,7 @@ async def on_ready():
             type=discord.ActivityType.listening,
             name=f"{config.PREFIX}help"
         )
-    )
+    )   
 
 
 @bot.event
