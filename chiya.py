@@ -12,7 +12,7 @@ from utils.utils import contains_link, has_attachment
 log = logging.getLogger(__name__)
 
 cogs = ["cogs.settings"]
-intents = discord.Intents.default()
+intents = discord.Intents(messages=True, guilds=True, members=True)
 bot = commands.Bot(
     command_prefix=config.PREFIX,
     intents=intents,

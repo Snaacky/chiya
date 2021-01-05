@@ -132,10 +132,6 @@ class UtilitiesCog(commands.Cog):
             await ctx.message.add_reaction("✔")
             await ctx.send(f"Reloaded the {module} module.")
 
-    @commands.command(name="count")
-    async def count(self, ctx):
-        await ctx.send(ctx.guild.member_count)
-
 
 def setup(bot) -> None:
     """Load the UtilitiesCog cog."""

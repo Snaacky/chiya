@@ -18,13 +18,20 @@ class GeneralCommandsCog(commands.Cog):
 
     @commands.before_invoke(record_usage)
     @commands.command(name='pfp')
-    async def pfp(self, ctx):
-        embed = discord.Embed(name="Profile Picture", description=f"[Link]({ctx.author.avatar_url})")
-        embed.set_author(name=ctx.author,
-                         icon_url=ctx.author.avatar_url)
-        embed.set_image(url=ctx.author.avatar_url)
-
-        await ctx.send(embed=embed)
+    async def pfp(self, ctx, mention=None):
+        # Return the mentioned users profile picture
+        if mention:
+            user = ctx.message.guild.get_member(ctx.message.mentions[0].id)
+            embed = discord.Embed(name="Profile Picture", description=f"[Link]({user.avatar_url})")
+            embed.set_author(name=user, icon_url=user.avatar_url)
+            embed.set_image(url=user.avatar_url)
+            await ctx.send(embed=embed)
+        else:
+            # Returns the user who invoked the commands profile picture
+            embed = discord.Embed(name="Profile Picture", description=f"[Link]({ctx.author.avatar_url})")
+            embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+            embed.set_image(url=ctx.author.avatar_url)
+            await ctx.send(embed=embed)
 
 
 # The setup function below is necessary. Remember we give bot.add_cog() the name of the class in this case SimpleCog.
