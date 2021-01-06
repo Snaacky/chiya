@@ -180,7 +180,7 @@ class CustomHelpCommand(HelpCommand):
             )
 
         await self.context.send(embed=embed)
-        log.info(pages)
+        log.trace(pages)
 
     async def send_cog_help (self, cog: Cog) -> None:
         """Handles the implementation of the cog page in the help command.
