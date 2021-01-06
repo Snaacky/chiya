@@ -6,8 +6,6 @@ from discord.ext import commands
 
 import __init__
 import config
-from utils import embeds
-from utils.utils import contains_link, has_attachment
 
 bot = commands.Bot(
     command_prefix=config.PREFIX,
@@ -32,82 +30,6 @@ async def on_ready():
             name=f"{config.PREFIX}help"
         )
     )
-
-
-@bot.event
-async def on_member_join(self, member):
-    # Defining for future use but removed previous unused code.
-    """Called when a Member leaves or joins a Guild.
-
-    Parameters:
-        member – The Member that joined or left.
-
-    For more information:
-    https://discordpy.readthedocs.io/en/stable/api.html#discord.on_member_join
-    """
-    return
-
-
-@bot.event
-async def on_member_update(before, after):
-    """ Event listener which is called when a member updates their profile.
-
-    Parameters:
-        before (discord.Member): The updated member’s old info.
-        after (discord.Member): The updated member’s updated info.
-    """
-    # Defining for future use, below is a psuedo on_nitro_boost event.
-    if before.premium_since is None and after.premium_since is not None:
-        return
-
-
-@bot.event
-async def on_message_edit(before: discord.Message, after: discord.Message):
-    """Event Listener which is called when a message is edited.
-
-    Note:
-        This requires Intents.messages to be enabled.
-
-    Parameters:
-        before (discord.Message): The previous version of the message.
-        after (discord.Message): The current version of the message.
-
-    For more information:
-        https://discordpy.readthedocs.io/en/stable/api.html#discord.on_message_edit
-    """
-    # Act as if its a new message rather than an a edit.
-    await on_message(after)
-
-
-@bot.event
-async def on_message(ctx: discord.ext.commands.Context):
-    """Event Listener which is called when a Message is created and sent.
-
-    Note:
-        This requires Intents.messages to be enabled.
-
-    Warning:
-        Your bot’s own messages and private messages are sent through this event.
-
-    Parameters:
-        ctx (discord.ext.commands.Context): A Message of the current message.
-
-    For more information:
-        https://discordpy.readthedocs.io/en/stable/api.html#discord.on_message
-    """
-    # Remove messages that don't contain links or files from our submissions only channels.
-    if ctx.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(ctx) or has_attachment(ctx)):
-        # Ignore messages from all bots (this includes itself).
-        if ctx.author.bot:
-            return
-
-        # Deletes message and sends a self-destructing warning embed.
-        await ctx.delete()
-        await ctx.channel.send(embed=embeds.files_and_links_only(ctx), delete_after=10)
-    else:
-        # If message does not follow with the above code, treat it as a potential command.
-        await bot.process_commands(ctx)
-
 
 if __name__ == '__main__':
     # Recursively loads in all the cogs in the folder named cogs.
