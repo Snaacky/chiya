@@ -4,10 +4,9 @@ from discord.ext.commands import Context
 
 def make_embed(title: str = None, description: str = None, context: Context = None, color='dark_theme',
           image_url: str = None, author=True) -> discord.Embed:
-    """
-    # General embed template
+    """General embed template
 
-    Args: \n
+    Args:
         title (str, optional): Title of your embed. Defaults to None.
         description (str, optional): Secondary text of your embed. Defaults to None.
         context (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
@@ -15,7 +14,7 @@ def make_embed(title: str = None, description: str = None, context: Context = No
         image_url (str, optional): URL for the side image of embed. Defaults to None.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
 
-    Returns: \n
+    Returns:
         discord.Embed: discord embed object
     """
 
@@ -58,54 +57,54 @@ def make_embed(title: str = None, description: str = None, context: Context = No
 
 
 async def error_message(description: str, ctx: Context, author:bool=True):
-    """
-    ## Send basic error message
-    ### You must await this function
+    """Send basic error message
 
-    Args: \n
+    Note:
+        You must await this function
+
+    Args:
         description (str): Error description.
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    await ctx.send(embed=make_embed(title='ERROR', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author))
+    await ctx.send(embed=make_embed(title='ERROR', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author), delete_after=30)
 
 def error_embed(title: str, description: str, ctx: Context, author:bool=True) -> discord.Embed:
-    """
-    ## Make a basic Error message embed
+    """Make a basic Error message embed
 
-    Args: \n
+    Args:
         title (str): Name of error.
         description (str): Error description.
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
 
-    Returns: \n
+    Returns:
         discord.Embed: discord embed object.
     """
     return make_embed(title=f'ERROR: {title}', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author)
 
 
 async def warning_message(ctx: Context, description: str, author:bool=True):
-    """
-    ## Send a basic warning message
-    ### You must await this function
+    """Send a basic warning message
+    
+    Note:
+        You must await this function
 
-    Args: \n
+    Args:
         description (str): Warning description
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    await ctx.send(embed=make_embed(title='WARNING', description=f'📢 **{description}**', context = ctx, color="dark_gold", author=author))
+    await ctx.send(embed=make_embed(title='WARNING', description=f'📢 **{description}**', context = ctx, color="dark_gold", author=author), delete_after=30)
 
 
 def files_and_links_only(ctx: Context) -> discord.Embed:
-    """
-    ## Standard messsage for when files or links are only used in the channel
+    """Standard messsage for when files or links are only used in the channel
 
-    Args: \n
+    Args:
         ctx (Context): Discord context object, needed for author and timestamps.
 
-    Returns: \n
+    Returns:
         discord.Embed: discord embed object.
     """
 

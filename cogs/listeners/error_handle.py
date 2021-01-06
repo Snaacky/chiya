@@ -15,6 +15,8 @@ log = logging.getLogger(__name__)
     commands.Cog, commands.context, and commands.errors
 """
 
+# The time, in seconds, for a message to be displayed
+AUTO_DELETE_TIME=30
 
 class error_handle(Cog):
     """error_handle."""
@@ -23,28 +25,43 @@ class error_handle(Cog):
         self.bot = bot
 
     def _get_error_embed(self, title: str, body: str, ctx: Context) -> discord.Embed:
-        """
-        ## Return an embed that contains the exception.
+        """Return an embed that contains the exception.
 
-        Args: \n
+        Args:
             title (str): Name of error.
             body (str): Error message.
             ctx (Context): Discord context object, needed for author and timestamps.
 
-        Returns: \n
+        Returns:
             discord.Embed: discord embed object.
         """
         log.trace(f"{title}, {body}")
-        return embeds.error_embed(title=title, description=body, ctx=ctx)
+        embed = embeds.error_embed(title=title, description=body, ctx=ctx)
+        embed.set_footer(
+            text=f"This message will self-destruct in {AUTO_DELETE_TIME} seconds.", 
+            icon_url="https://cdn.discordapp.com/emojis/477907608057937930.png")
+        return embed
 
     @Cog.listener()
     async def on_command_error(self, ctx: Context, error: errors.CommandError) -> None:
-        """
-        An error handler that is called when an error is raised inside a command either through user input error, check failure, or an error in your own code.
+        """An error handler that is called when an error is raised inside a command either 
+        through user input error, check failure, or an error in your own code.
 
-        For more info: https://discordpy.readthedocs.io/en/latest/ext/commands/api.html?highlight=on_command_error#discord.on_command_error
+        Handled errors:
+            CommandNotFound
+            UserInputError
+            CheckFailure
+            CommandOnCooldown
+            DisabledCommand
 
-        Args:\n
+
+        CommandInvokeError
+        MaxConcurrencyReached
+
+        For more information:
+            https://discordpy.readthedocs.io/en/stable/ext/commands/api.html?highlight=on_command_error#discord.on_command_error
+
+        Args:
             ctx (Context): The invocation context.
             error (errors.CommandError): The error that was raised.
         """
@@ -62,9 +79,13 @@ class error_handle(Cog):
         if isinstance(error, errors.CommandNotFound) and not hasattr(
             ctx, "invoked_from_error_handler"
         ):
-            await embeds.error_message(
-                description=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
-                ctx=ctx
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Error",
+                    body=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
+                    ctx=ctx
+                ), 
+                delete_after=AUTO_DELETE_TIME
             )
             log.debug(
                 f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
@@ -78,30 +99,50 @@ class error_handle(Cog):
             await self.handle_check_failure(ctx, error)
 
         elif isinstance(error, errors.CommandOnCooldown):
-            await ctx.send(error)
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Command On Cooldown",
+                    body=error,
+                    ctx=ctx
+                ),
+                delete_after=AUTO_DELETE_TIME
+            )
 
         elif isinstance(error, errors.DisabledCommand):
-            await embeds.error_message(
-                description="Command Disabled",
-                ctx=ctx
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Error",
+                    body="Command Disabled",
+                    ctx=ctx
+                ),
+                delete_after=AUTO_DELETE_TIME
             )
 
+            log.debug("test")
+
+        elif isinstance(error, errors.MaxConcurrencyReached):
+            await ctx.send(
+                embed=self._get_error_embed(
+                    title="Error",
+                    body="max simultaneous users for command reached",
+                    ctx=ctx
+                ),
+                delete_after=AUTO_DELETE_TIME
+            )
+        
+        elif isinstance(error, errors.CommandInvokeError):
+            # Raised when the command being invoked raised an custom exception.
+            '''if isinstance(error.original, ResponseCodeError):
+                await self.handle_api_error(ctx, error.original)
+            else:'''
+            await self.handle_unexpected_error(ctx, error)
         else:
-            await embeds.error_message(
-                description=f"Sorry, an unexpected error occurred. Please let us know!\n\n"
-                    + f"```{error.__class__.__name__}: {error}```",
-                ctx=ctx
-            )
-            log.error(
-                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
-                exc_info=error,
-            )
+            await self.handle_unexpected_error(ctx, error)
 
     async def handle_user_input_error(
         self, ctx: Context, error: errors.UserInputError
     ) -> None:
-        """
-        ### Send an error message in `ctx` for UserInputError.
+        """Send an error message embed for UserInputError.
 
         Handled errors:
             MissingRequiredArgument
@@ -109,9 +150,11 @@ class error_handle(Cog):
             BadArgument
             BadUnionArgument
             ArgumentParsingError
-            Other
-        """
 
+        Args:
+            ctx (Context): Discord context object, needed for author and timestamps.
+            error (errors.CheckFailure): The error that was raised.
+        """
         if isinstance(error, errors.MissingRequiredArgument):
             # TODO: Display correct syntax of command
             embed = self._get_error_embed(
@@ -119,7 +162,7 @@ class error_handle(Cog):
                 body=error.param.name,
                 ctx=ctx
             )
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.TooManyArguments):
             # TODO: Display correct syntax of command
@@ -128,7 +171,7 @@ class error_handle(Cog):
                 body=str(error), 
                 ctx=ctx
                 )
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.BadArgument):
             # TODO: Display correct syntax of command
@@ -136,7 +179,7 @@ class error_handle(Cog):
                 title="Bad argument",
                 body=str(error),
                 ctx=ctx)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.BadUnionArgument):
             # TODO: Display correct syntax of command
@@ -144,7 +187,7 @@ class error_handle(Cog):
                 title="Bad argument", 
                 body=f"{error}\n{error.errors[-1]}", 
                 ctx=ctx)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         elif isinstance(error, errors.ArgumentParsingError):
             # TODO: Display correct syntax of command
@@ -152,24 +195,31 @@ class error_handle(Cog):
                 title="Argument parsing error", 
                 body=str(error), 
                 ctx=ctx)
-            await ctx.send(embed=embed)
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
 
         else:
-            embed = self._get_error_embed(
-                title="Input error",
-                body="Something about your input seems off. Check the arguments and try again.",
-                ctx=ctx
-            )
+            await self.handle_unexpected_error(ctx, error)
 
     # Handle errors with deal with user or bot permissions.
     async def handle_check_failure(self, ctx: Context, error: errors.CheckFailure) -> None:
-        """Send an error message in `ctx` for certain types of CheckFailure.
+        """Send an error message embed for certain types of CheckFailure.
 
         Handled errors:
-            BotMissingPermissions
-            BotMissingRole
-            BotMissingAnyRole
+            Bot missing errors:
+                BotMissingPermissions
+                BotMissingRole
+                BotMissingAnyRole
+            User missing errors:
+                MissingPermission
+                MissingRole
+                MissingAnyRole
+            Check Errors:
+                CheckFailure
+                CheckAnyFailure
+            NotOwner
             NoPrivateMessage
+            PrivateMessageOnly
+            NSFWChannelRequired
 
         Args:
             ctx (Context): Discord context object, needed for author and timestamps.
@@ -182,55 +232,148 @@ class error_handle(Cog):
             errors.BotMissingAnyRole,
         )
 
+        user_missing_errors = (
+            errors.MissingPermissions,
+            errors.MissingRole,
+            errors.MissingAnyRole,
+        )
+
+        check_errors = (
+            errors.CheckAnyFailure,
+            errors.CheckFailure
+        )
+
         if isinstance(error, bot_missing_errors):
             embed = self._get_error_embed(
-                title="Missing required permissions or roles", 
-                body=error.param.name,
+                title="Bot is missing required permissions or roles", 
+                body=f"Missing: `{error.param.name}`",
                 ctx=ctx
             )
             try:
-                await ctx.send(embed=embed)
+                await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
             except: # this will likely fail if the error to begin with is not able to post embeds
                 await ctx.send(
                     "Sorry, it looks like I don't have the permissions or roles I need to do that.\n" +
-                        f"Missing: `{error.param.name}`"
+                        f"Missing: `{error.param.name}`", 
+                    delete_after=AUTO_DELETE_TIME
                 )
+            log.info(f"Bot missing permissions {error.param.name=} in {ctx.guild.name=}")
+
+        elif isinstance(error, user_missing_errors):
+            embed = self._get_error_embed(
+                title="You are missing required permissions or roles", 
+                body=f"Missing: `{error.param.name}`",
+                ctx=ctx
+            )
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
+            log.debug(f"{ctx.author} missing permissions {error.param.name=} in {ctx.guild.name=}")
+        
+        elif isinstance(error, user_missing_errors):
+            embed = self._get_error_embed(
+                title="Check Failed", 
+                body=f"Checks: `{error.param.name}`",
+                ctx=ctx
+            )
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
+            log.debug(f"{ctx.author} missing permissions {error.param.name=} in {ctx.guild.name=}")
+        
+        elif isinstance(error, (errors.NotOwner)):
+            embed = self._get_error_embed(
+                title="You are not the owner of this bot", 
+                body=f"Only the owner can use `{ctx.command}`",
+                ctx=ctx
+            )
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
+            log.debug(f"{ctx.author} Tried to run a IsOwner command '{ctx.command}'")
 
         elif isinstance(error, (errors.NoPrivateMessage)):
-            await ctx.send(error)
+            embed = self._get_error_embed(
+                title="Cannot run in private", 
+                body=f"`{ctx.command}` cannot be ran as a private message, you must run command in a guild",
+                ctx=ctx
+            )
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
+            log.debug(f"{ctx.author} Tried to run NoPrivateMessage command '{ctx.command}'")
+
+        elif isinstance(error, (errors.PrivateMessageOnly)):
+            embed = self._get_error_embed(
+                title="Can run only in private",
+                body=f"You must run `{ctx.command}` as a direct message to this bot",
+                ctx=ctx
+            )
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
+            log.debug(f"{ctx.author} Tried to run PrivateMessageOnly command '{ctx.command}'")
+        
+        elif isinstance(error, (errors.NSFWChannelRequired)):
+            embed = self._get_error_embed(
+                title="Not a NSFW channel",
+                body=f"You must run `{ctx.command}` in a NSFW channel to work",
+                ctx=ctx
+            )
+            await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
+            log.debug(f"{ctx.author} Tried to run NSFWChannelRequired command '{ctx.command}'")
+
+        else:
+            await self.handle_unexpected_error(ctx, error)
 
     # General HTTP error handle
-    # TODO: implement this
     @staticmethod
     async def handle_api_error(ctx: Context, error) -> None:
         """
-        Send an error message in `ctx` and log it.
+        Send an error message embed and log it.
+
+        Handled errors:
+            404 - Not Found
+            400 - Bad Request
+            500:599 - Server errors
 
         Args:
-            ctx (Context): [description]
+            ctx (Context): Discord context object, needed for author and timestamps.
             error (errors.CheckFailure): The error that was raised.
         """
         if error.status == 404:
-            await ctx.send("There does not seem to be anything matching your query.")
+            await ctx.send("There does not seem to be anything matching your query.", 
+                delete_after=AUTO_DELETE_TIME)
             log.debug(f"API responded with 404 for command {ctx.command}")
 
         elif error.status == 400:
-            await ctx.send("According to the API, your request is malformed.")
+            await ctx.send("According to the API, your request is malformed.", 
+                delete_after=AUTO_DELETE_TIME)
             content = await error.response.json()
             log.debug(f"API responded with 400 for command {ctx.command}: %r.", content)    
 
         elif 500 <= error.status < 600:
-            await ctx.send("Sorry, there seems to be an internal issue with the API.")
+            await ctx.send("Sorry, there seems to be an internal issue with the API.", 
+                delete_after=AUTO_DELETE_TIME)
             log.warning(f"API responded with {error.status} for command {ctx.command}")
 
         else:
             await ctx.send(
-                f"Got an unexpected status code from the API (`{error.status}`)."
+                f"Got an unexpected status code from the API (`{error.status}`).", 
+                delete_after=AUTO_DELETE_TIME
             )
             log.warning(
                 f"Unexpected API response for command {ctx.command}: {error.status}"
             )
 
+
+    # Ceatch all for unknown errors
+    @staticmethod
+    async def handle_unexpected_error(ctx: Context, error: errors.CommandError) -> None:
+        """Send a generic error message and log the exception as an error.
+
+        Args:
+            ctx (Context): Discord context object, needed for author and timestamps.
+            error (errors.CheckFailure): The error that was raised.
+        """
+        await ctx.send(
+            f"Sorry, an unexpected error occurred. Please let us know!\n\n"
+            f"```{error.__class__.__name__}: {error}```"
+        )
+
+        #TODO: Make channel to report these errors.
+
+        log.error(f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}", exc_info=error)
 
 def setup(bot) -> None:
     """Load the error_handle cog."""
