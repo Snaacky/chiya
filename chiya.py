@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 
 import __init__
-from tasks import background
 import config
 from utils import embeds
 from utils.utils import contains_link, has_attachment
@@ -118,10 +117,6 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("\\", ".")[:-3])
         else:  # Fix pathing on Linux:
             bot.load_extension(cog.replace("/", ".")[:-3])
-
-    # Load backgound tasks.
-    # TODO: Execute all files in the tasks folder and run in background.
-    bot.loop.create_task(background.check_for_posts(bot))
 
     # Finally, run the bot.
     bot.run(config.BOT_TOKEN)

@@ -1,12 +1,15 @@
 import asyncio
 import time
 import traceback
+import logging
 
 import discord
+from discord.ext import tasks, commands
 import praw
 
 import config
 
+log = logging.getLogger(__name__)
 
 reddit = praw.Reddit(
     client_id=config.REDDIT_API_CLIENT_ID,
@@ -16,13 +19,22 @@ reddit = praw.Reddit(
 
 subreddit = config.SUBREDDIT_NAME
 
+class RedditTask(commands.Cog):
+    """Reddit Background Task"""
+    def __init__(self, bot):
+        self.bot = bot
+        self.check_for_posts.start()
 
-async def check_for_posts(bot):
-    await bot.wait_until_ready()
-    bot_started_at = time.time()
-    cache = []
+    def cog_unload(self):
+        self.check_for_posts.cancel()
 
-    while True:
+    # loop 3 seconds to avoid ravaging the CPU and Reddit's API
+    @tasks.loop(seconds=3.0)
+    async def check_for_posts(self):
+        """Checking for new reddit posts"""
+        bot_started_at = time.time()
+        cache = []
+
         try:
             # Grabs 10 latest posts, we should never get more than 10 new submissions in <10 seconds
             for submission in reddit.subreddit(subreddit).new(limit=10):
@@ -34,7 +46,7 @@ async def check_for_posts(bot):
                 if submission.created_utc <= bot_started_at:
                     continue
 
-                print(f"{submission.title} was posted by /u/{submission.author.name}")
+                log.info(f"{submission.title} was posted by /u/{submission.author.name}")
 
                 # Builds and stylizes the embed
                 embed = discord.Embed(
@@ -56,7 +68,7 @@ async def check_for_posts(bot):
                     embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate
-                channel = bot.get_channel(config.REDDIT_POSTS_CHANNEL_ID)
+                channel = self.bot.get_channel(config.REDDIT_POSTS_CHANNEL_ID)
                 if not channel:
                     print(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue
@@ -65,12 +77,12 @@ async def check_for_posts(bot):
                 await channel.send(embed=embed)
                 cache.append(submission.id)
 
-            # Sleep 3 seconds in between loops to avoid ravaging the CPU and Reddit's API
-            await asyncio.sleep(3)
-
         # Catch all exceptions to avoid crashing and print the traceback for future debugging
         except Exception as e:
             print(e)
             traceback.print_exc()
-            time.sleep(30)
-            pass
+
+def setup(bot) -> None:
+    """ Load the GeneralCog cog. """
+    bot.add_cog(RedditTask(bot))
+    log.info("Cog loaded: RedditTask")
