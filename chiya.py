@@ -1,7 +1,5 @@
-import asyncio
 import glob
 import logging
-
 
 import discord
 from discord.ext import commands
@@ -12,16 +10,11 @@ import config
 from utils import embeds
 from utils.utils import contains_link, has_attachment
 
-log = logging.getLogger(__name__)
-
-cogs = ["cogs.settings"]
-intents = discord.Intents.default()
 bot = commands.Bot(
     command_prefix=config.PREFIX,
-    intents=intents,
-    description="Chiya",
+    intents=discord.Intents(messages=True, guilds=True, members=True),
     case_insensitive=True)
-
+log = logging.getLogger(__name__)
 
 @bot.event
 async def on_ready():
@@ -30,23 +23,21 @@ async def on_ready():
     For more information:
     https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
     """
-    print(
-        f"\n\nLogged in as: {bot.user.name} - {bot.user.id}\nDiscord.py Version: {discord.__version__}\n")
-    print(f"Successfully logged in and booted...!")
+    print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
+    print(f"discord.py version: {discord.__version__}\n")
 
-    # Adding in a activity message when the bot begins
+    # Adding in a activity message when the bot begins.
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.PREFIX}help",
-            url="https://www.reddit.com/r/animepiracy",
-            start=bot.user.created_at,
-            details = f"Type {config.PREFIX}help to view all bot's commands and features."
+            name=f"{config.PREFIX}help"
         )
     )
 
 
+@bot.event
 async def on_member_join(self, member):
+    # Defining for future use but removed previous unused code.
     """Called when a Member leaves or joins a Guild.
 
     Parameters:
@@ -55,10 +46,21 @@ async def on_member_join(self, member):
     For more information:
     https://discordpy.readthedocs.io/en/stable/api.html#discord.on_member_join
     """
-    guild = member.guild
-    if guild.system_channel is not None:
-        welcome_text = f"Welcome {member.mention} to {guild.name}!"
-        await guild.system_channel.send(welcome_text)
+    return
+
+
+@bot.event
+async def on_member_update(before, after):
+    """ Event listener which is called when a member updates their profile.
+
+    Parameters:
+        before (discord.Member): The updated member’s old info.
+        after (discord.Member): The updated member’s updated info.
+    """
+    # Defining for future use, below is a psuedo on_nitro_boost event.
+    if before.premium_since is None and after.premium_since is not None:
+        return
+
 
 @bot.event
 async def on_message_edit(before: discord.Message, after: discord.Message):
@@ -74,7 +76,7 @@ async def on_message_edit(before: discord.Message, after: discord.Message):
     For more information:
         https://discordpy.readthedocs.io/en/stable/api.html#discord.on_message_edit
     """
-    # Act as if its a new message rather than an a edit
+    # Act as if its a new message rather than an a edit.
     await on_message(after)
 
 
@@ -85,7 +87,7 @@ async def on_message(ctx: discord.ext.commands.Context):
     Note:
         This requires Intents.messages to be enabled.
 
-    Warning: 
+    Warning:
         Your bot’s own messages and private messages are sent through this event.
 
     Parameters:
@@ -94,13 +96,13 @@ async def on_message(ctx: discord.ext.commands.Context):
     For more information:
         https://discordpy.readthedocs.io/en/stable/api.html#discord.on_message
     """
-    # Remove messages that don't contain links or files from our submissions only channels
+    # Remove messages that don't contain links or files from our submissions only channels.
     if ctx.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(ctx) or has_attachment(ctx)):
-        # Ignore messages from all bots (this includes itself)
+        # Ignore messages from all bots (this includes itself).
         if ctx.author.bot:
             return
 
-        # Deletes message and send self-destructing warning embed
+        # Deletes message and sends a self-destructing warning embed.
         await ctx.delete()
         await ctx.channel.send(embed=embeds.files_and_links_only(ctx), delete_after=10)
     else:
@@ -109,15 +111,17 @@ async def on_message(ctx: discord.ext.commands.Context):
 
 
 if __name__ == '__main__':
-    # Load in all the cogs in the folder named cogs, recurively.
-    # filtered to only load .py files that do not start with '__'
+    # Recursively loads in all the cogs in the folder named cogs.
+    # Skips over any cogs that start with '__' or do not end with .py.
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        #log.info("  -> " + cog.replace("\\", ".")[:-3])
-        bot.load_extension(cog.replace("\\", ".")[:-3])
+        if "\\" in cog:  # Fix pathing on Windows
+            bot.load_extension(cog.replace("\\", ".")[:-3])
+        else:  # Fix pathing on Linux:
+            bot.load_extension(cog.replace("/", ".")[:-3])
 
-    # Load backgound tasks
+    # Load backgound tasks.
     # TODO: Execute all files in the tasks folder and run in background.
     bot.loop.create_task(background.check_for_posts(bot))
 
-    # Finnaly, run the bot
+    # Finally, run the bot.
     bot.run(config.BOT_TOKEN)
