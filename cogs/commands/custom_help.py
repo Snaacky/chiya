@@ -2,15 +2,16 @@ import logging
 import itertools
 from typing import List, Union
 
-from discord.ext.commands import Bot, Cog, Command, Group, HelpCommand
+from discord import Embed
+from discord.ext.commands import Bot, Cog, Command, Group, HelpCommand, CommandError
 from utils import embeds
 import config
 
 
-# Enabling logs
+# Enabling logs.
 log = logging.getLogger(__name__)
 
-COMMANDS_PER_PAGE = 8
+COMMANDS_PER_PAGE = 14 # TODO: set this to a more reasonable ammount when pagination is setup
 PREFIX = config.PREFIX
 
 
@@ -18,7 +19,7 @@ class CustomHelpCommand(HelpCommand):
     """CustomHelpCommand"""
 
     def __init__(self):
-        # Info about the help command
+        # Info about the help command.
         super().__init__(command_attrs={"help": "Shows help for bot commands"})
 
     @staticmethod
@@ -69,6 +70,49 @@ class CustomHelpCommand(HelpCommand):
             return details
         return "".join(details)
 
+    async def command_formatting(self, command: Command) -> Embed:
+        """Takes a command and turns it into an embed.
+        It will add an author, command signature + help, aliases and a note if the user can't run the command.
+
+        Args:
+            command (Command): Command to be formatted.
+
+        Returns:
+            Embed: Embed object of the formatted command.
+        """
+
+        embed = embeds.make_embed(
+            title="Command Help",
+            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            context=self.context
+            )
+
+        # Retrieves the fully qualified parent command name.
+        # For example, in `?one two three` the parent name would be `one two`.
+        parent = command.full_parent_name
+
+        name = str(command) if not parent else f"{parent} {command.name}"
+        command_details = f"**```{PREFIX}{name} {command.signature}```**\n"
+
+        # Show command's aliases.
+        aliases = [f"`{alias}`" if not parent else f"`{parent} {alias}`" for alias in command.aliases]
+        aliases += [f"`{alias}`" for alias in getattr(command, "root_aliases", ())]
+        aliases = ", ".join(sorted(aliases))
+        if aliases:
+            command_details += f"**Can also use:** {aliases}\n\n"
+
+        # Check if the user is allowed to run the command, such as is_owner() or disabled.
+        # If can_run() is false, then it raises an excepion, in this case, we do not want that.
+        try:
+            await command.can_run(self.context)
+        except CommandError:
+            command_details += "***You cannot run this command.***\n\n"
+
+        command_details += f"*{command.help or 'No details provided.'}*\n"
+        embed.description = command_details
+
+        return embed
+
     async def send_bot_help (self, mapping: dict) -> None:
         """ Handles the implementation of the bot command page in the help command.
         This function is called when the help command is called with no arguments.
@@ -87,19 +131,20 @@ class CustomHelpCommand(HelpCommand):
         """
         bot = self.context.bot
 
-        # If the user can't use it, then it doesn't show. such as IsOwner()
+        # If the user can't use it, then it doesn't show. such as IsOwner().
         filtered_commands = await self.filter_commands(bot.commands, sort=True, key=self._category_key)
 
         cog_or_category_pages = []
 
+        # Grouping commands together based on cog or category.
         for cog_or_category, _commands in itertools.groupby(filtered_commands, key=self._category_key):
             sorted_commands = sorted(_commands, key=lambda c: c.name)
 
             if len(sorted_commands) == 0:
                 continue
 
+            # Get each command's info from the cog/category.
             command_detail_lines = self.get_commands_brief_details(sorted_commands, return_as_list=True)
-
 
             # Split cogs or categories which have too many commands to fit in one page.
             # The length of commands is included for later use when aggregating into pages for the paginator.
@@ -126,12 +171,14 @@ class CustomHelpCommand(HelpCommand):
             # add any remaining command help that didn't get added in the last iteration above.
             pages.append(page)
 
+        # TODO: put this into a pageinator, for now, display only first page
         embed = embeds.make_embed(
             title="Command: Help",
             description=pages[0],
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png"
+            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            context=self.context
             )
-        #embed.add_field(name="test", value=pages[0])
+
         await self.context.send(embed=embed)
         log.info(pages)
 
@@ -145,7 +192,22 @@ class CustomHelpCommand(HelpCommand):
         Args:
             cog (Cog): The cog that was requested for help.
         """
-        # TODO: Write this function.
+        # Sort commands by name and if the user can't use it, then it doesn't show. Such as IsOwner().
+        commands_ = await self.filter_commands(cog.get_commands(), sort=True)
+
+        embed = embeds.make_embed(
+            title="Command Help",
+            description=f"**{cog.qualified_name}**\n*{cog.description}*",
+            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            context=self.context
+            )
+
+        # Overwrite description if there is more info.
+        command_details = self.get_commands_brief_details(commands_)
+        if command_details:
+            embed.description += f"\n\n**Commands:**\n{command_details}"
+
+        await self.context.send(embed=embed)
 
     async def send_group_help (self, group: Group) -> None:
         """Handles the implementation of the group page in the help command.
@@ -157,7 +219,25 @@ class CustomHelpCommand(HelpCommand):
         Args:
             group (Group): The group that was requested for help.
         """
-        # TODO: Write this function.
+        subcommands = group.commands
+
+        if len(subcommands) == 0:
+            # No subcommands, just treat it like a regular command.
+            await self.send_command_help(group)
+            return
+
+        # Remove subcommands that the user can't run or are hidden, and sort by name.
+        # Note: Only checks the subcommands themselves for checks, not the root command.
+        commands_ = await self.filter_commands(subcommands, sort=True)
+
+        embed = await self.command_formatting(group)
+
+        # Add subcommands, if any, to the end of the embed.
+        command_details = self.get_commands_brief_details(commands_)
+        if command_details:
+            embed.description += f"\n**Subcommands:**\n{command_details}"
+
+        await self.context.send(embed=embed)
 
     async def send_command_help (self, command: Command) -> None:
         """Handles the implementation of the single command page in the help command.
@@ -169,7 +249,8 @@ class CustomHelpCommand(HelpCommand):
         Args:
             command (Command): The command that was requested for help.
         """
-        # TODO: Write this function.
+        embed = await self.command_formatting(command)
+        await self.context.send(embed=embed)
 
 class Help(Cog):
     """Custom Embed Pagination Help feature."""
