@@ -9,7 +9,7 @@ import config
 
 bot = commands.Bot(
     command_prefix=config.PREFIX,
-    intents=discord.Intents(messages=True, guilds=True, members=True),
+    intents=discord.Intents(messages=True, guilds=True, members=True, bans=True),
     case_insensitive=True)
 log = logging.getLogger(__name__)
 
