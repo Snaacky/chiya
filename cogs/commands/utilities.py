@@ -32,9 +32,8 @@ class UtilitiesCog(commands.Cog):
     @commands.group(aliases=["u", "ul"])
     async def utilities(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('No utilities subcommand specified.')
-        # Send the help command for this group
-        await ctx.send_help(ctx.command)
+            # Send the help command for this group
+            await ctx.send_help(ctx.command)
 
     @utilities.command(name="ping")
     async def ping(self, ctx):
