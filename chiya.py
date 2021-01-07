@@ -31,6 +31,15 @@ async def on_ready():
         )
     )
 
+@bot.event
+async def on_message(message: discord.Message):
+    """This event listener has been moved to message_updates.py
+
+    Unfortuneatley, this listener has to remain and do nothing, otherwise,
+    any message will be ran twice and cause issues. Lame, i know
+    """
+    # Do nothing
+
 if __name__ == '__main__':
     # Recursively loads in all the cogs in the folder named cogs.
     # Skips over any cogs that start with '__' or do not end with .py.

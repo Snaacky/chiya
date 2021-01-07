@@ -91,6 +91,12 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_message_edit
         """
+        if after.author.bot:
+            # Ignore bots
+            return
+        if before.clean_content == after.clean_content:
+            # Links that have embeds, such as picture URL's are considered edits and need to be ignored.
+            return
         # Act as if its a new message rather than an a edit.
         await self.on_message(after)
 
@@ -124,12 +130,11 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_message
         """
+        # Ignore messages from all bots (this includes itself).
+        if message.author.bot:
+            return
         # Remove messages that don't contain links or files from our submissions only channels.
         if message.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(message) or has_attachment(message)):
-            # Ignore messages from all bots (this includes itself).
-            if message.author.bot:
-                return
-
             # Deletes message and sends a self-destructing warning embed.
             await message.delete()
             await message.channel.send(embed=embeds.files_and_links_only(message), delete_after=10)
