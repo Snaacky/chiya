@@ -13,6 +13,7 @@ log = logging.getLogger(__name__)
 
 COMMANDS_PER_PAGE = 14 # TODO: set this to a more reasonable ammount when pagination is setup
 PREFIX = config.PREFIX
+TIME_TO_LIVE = 120 # In seconds, how long an embed should remain until self-destruct.
 
 
 class CustomHelpCommand(HelpCommand):
@@ -179,7 +180,7 @@ class CustomHelpCommand(HelpCommand):
             context=self.context
             )
 
-        await self.context.send(embed=embed)
+        await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
         log.trace(pages)
 
     async def send_cog_help (self, cog: Cog) -> None:
@@ -207,7 +208,7 @@ class CustomHelpCommand(HelpCommand):
         if command_details:
             embed.description += f"\n\n**Commands:**\n{command_details}"
 
-        await self.context.send(embed=embed)
+        await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
 
     async def send_group_help (self, group: Group) -> None:
         """Handles the implementation of the group page in the help command.
@@ -237,7 +238,7 @@ class CustomHelpCommand(HelpCommand):
         if command_details:
             embed.description += f"\n**Subcommands:**\n{command_details}"
 
-        await self.context.send(embed=embed)
+        await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
 
     async def send_command_help (self, command: Command) -> None:
         """Handles the implementation of the single command page in the help command.
@@ -250,7 +251,7 @@ class CustomHelpCommand(HelpCommand):
             command (Command): The command that was requested for help.
         """
         embed = await self.command_formatting(command)
-        await self.context.send(embed=embed)
+        await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
 
 class Help(Cog):
     """Custom Embed Pagination Help feature."""
