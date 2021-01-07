@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 
 class GeneralCommandsCog(commands.Cog):
     """GeneralCommandsCog"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -21,8 +22,7 @@ class GeneralCommandsCog(commands.Cog):
 
         # Attempt to return the avatar of a mentioned user if the parameter was not none.
         if user is not None:
-            user_strip = int(user.strip("<@!>"))
-            member = ctx.message.guild.get_member(user_strip)
+            member = await commands.MemberConverter().convert(ctx, user)
             if member:
                 embed.set_image(url=member.avatar_url)
             else:

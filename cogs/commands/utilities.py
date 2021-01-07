@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 class UtilitiesCog(commands.Cog):
     """UtilitiesCog"""
+
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
