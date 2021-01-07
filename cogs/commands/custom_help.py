@@ -64,9 +64,13 @@ class CustomHelpCommand(HelpCommand):
 
         for command in commands:
             signature = f" {command.signature}" if command.signature else ""
-            details.append(
-                f"\n**`{PREFIX}{command.qualified_name}{signature}`**\n*"
-                f"{command.short_doc or 'No details provided'}*")
+            details.append(f"\n**`{PREFIX}{command.qualified_name}{signature}`**\n*")
+
+            if command.help is None:
+                details.append("No details provided*")
+            else:
+                details.append(f"{command.short_doc.strip()}*")
+
         if return_as_list:
             return details
         return "".join(details)
@@ -109,7 +113,12 @@ class CustomHelpCommand(HelpCommand):
         except CommandError:
             command_details += "***You cannot run this command.***\n\n"
 
-        command_details += f"*{command.help or 'No details provided.'}*\n"
+
+        if command.help is None:
+            command_details += "*No details provided.*\n"
+        else:
+            command_details += f"*{command.help.strip()}*\n"
+
         embed.description = command_details
 
         return embed
@@ -198,12 +207,16 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command Help",
-            description=f"**{cog.qualified_name}**\n*{cog.description}*",
             image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             context=self.context
             )
 
-        # Overwrite description if there is more info.
+        if cog.description is None:
+            embed.description = f"**{cog.qualified_name}**\n*No details provided.*"
+        else:
+            embed.description = f"**{cog.qualified_name}**\n*{cog.description.strip()}*"
+
+        # Append description if there is more info.
         command_details = self.get_commands_brief_details(commands_)
         if command_details:
             embed.description += f"\n\n**Commands:**\n{command_details}"
