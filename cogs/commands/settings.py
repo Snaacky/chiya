@@ -15,7 +15,8 @@ class SettingsCog(commands.Cog):
     @commands.group()
     async def settings(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('No settings subcommand specified.')
+            # Send the help command for this group
+            await ctx.send_help(ctx.command)
 
 
 def setup(bot) -> None:
