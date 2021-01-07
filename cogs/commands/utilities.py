@@ -3,17 +3,19 @@ import logging
 import io
 import textwrap
 from contextlib import redirect_stdout
+
 import discord
 from discord.ext import commands
 from discord.ext.commands.core import is_owner
 
-import utils  # pylint: disable=import-error
 from utils.record import record_usage  # pylint: disable=import-error
+
 
 log = logging.getLogger(__name__)
 
 
 class UtilitiesCog(commands.Cog):
+    """UtilitiesCog"""
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
@@ -37,18 +39,18 @@ class UtilitiesCog(commands.Cog):
 
     @utilities.command(name="ping")
     async def ping(self, ctx):
-        """ Returns the Discord WebSocket latency. """
+        """Returns the Discord WebSocket latency."""
         print("Ping subcommand invoked.")
-        await ctx.send(f"Client Latency is:{round(self.bot.latency * 1000)}ms.")
+        await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
     @utilities.command(name="count")
     async def count(self, ctx):
-        """ Returns the current guild member count. """
+        """Returns the current guild member count."""
         await ctx.send(ctx.guild.member_count)
 
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
-        """ Echos the input argument. """
+        """Echos the input argument."""
         await ctx.send(args)
 
     @utilities.command(name="eval")
@@ -122,7 +124,7 @@ class UtilitiesCog(commands.Cog):
 
     @utilities.command(name="reload")
     async def reload_cog(self, ctx, *, module):
-        """ Reloads specified cog/module. Remember the directory structures. """
+        """Reloads specified cog/module. Remember the directory structures."""
         try:
             self.bot.reload_extension(module)
         except commands.ExtensionError as e:
@@ -134,6 +136,6 @@ class UtilitiesCog(commands.Cog):
 
 
 def setup(bot) -> None:
-    """ Load the UtilitiesCog cog. """
+    """Load the UtilitiesCog cog."""
     bot.add_cog(UtilitiesCog(bot))
     log.info("Cog loaded: UtilitiesCog")
