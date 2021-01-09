@@ -25,7 +25,7 @@ class ModerationCog(commands.Cog):
     @commands.has_role("Discord Mod")
     @commands.before_invoke(record_usage)
     @commands.command(name="ban")
-    async def ban_member(self, ctx, user, reason: str, delete_message_days: int = 0):
+    async def ban_member(self, ctx, user, *reason: str, delete_message_days: int = 0):
         """ Bans user from guild """
         member = await commands.converter.UserConverter().convert(ctx, user)
 
@@ -51,6 +51,9 @@ class ModerationCog(commands.Cog):
         except discord.errors.NotFound:
             pass
 
+        # Converts reason from a list of strings into a full sentence string.
+        reason = " ".join(reason)
+
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=member, reason=reason, delete_message_days=delete_message_days)
 
@@ -67,7 +70,7 @@ class ModerationCog(commands.Cog):
     @commands.has_role("Discord Mod")
     @commands.before_invoke(record_usage)
     @commands.command(name="unban")
-    async def unban_member(self, ctx, user, reason: str):
+    async def unban_member(self, ctx, user, *reason: str):
         """ Unbans user from guild """
         member = await commands.converter.UserConverter().convert(ctx, user)
 
@@ -85,8 +88,12 @@ class ModerationCog(commands.Cog):
             await ctx.reply("Unable to find ban for that user!")
             return  # TODO: Implement error embed here.
 
+        # Converts reason from a list of strings into a full sentence string.
+        reason = " ".join(reason)
+
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
         await ctx.guild.unban(user=member, reason=reason)
+        
 
         # Add the unban to the mod_log database.
         with dataset.connect(utils.database.get_db()) as tx:
@@ -99,7 +106,7 @@ class ModerationCog(commands.Cog):
     @commands.has_role("Discord Mod")
     @commands.before_invoke(record_usage)
     @commands.command(name="kick")
-    async def kick_member(self, ctx, user, reason: str):
+    async def kick_member(self, ctx, user, *reason: str):
         """ Kicks user from guild. """
         member = await commands.converter.UserConverter().convert(ctx, user)
         if member is None:
@@ -120,6 +127,9 @@ class ModerationCog(commands.Cog):
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
         await ctx.guild.kick(user=member, reason=reason)
+
+        # Converts reason from a list of strings into a full sentence string.
+        reason = " ".join(reason)
 
         # Add the kick to the mod_log database.
         with dataset.connect(utils.database.get_db()) as tx:
@@ -149,7 +159,7 @@ class ModerationCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @commands.command(name="warn")
     async def warn(self, ctx, user, *reason: str):
-        """ Kicks user from guild. """
+        """ Sends user a warning DM and logs to database. """
         member = await commands.converter.UserConverter().convert(ctx, user)
         if member is None:
             raise commands.UserNotFound(user)
@@ -173,7 +183,7 @@ class ModerationCog(commands.Cog):
         
 Reason: {reason}
 
-You do not have to acknowledge or respond to this warning but please keep in mind that contentious bad behavior will result in more severe punishment in the future.
+You do not have to respond to this warning. Contentious bad behavior will result in more severe punishment.
 """)  # TODO: Replace with an embed!
 
         # Add the warning to the mod_log database.
@@ -189,14 +199,53 @@ You do not have to acknowledge or respond to this warning but please keep in min
     @commands.has_role("Discord Mod")
     @commands.before_invoke(record_usage)
     @commands.command(name="notes")
-    async def notes(self, ctx):
-        return NotImplementedError
+    async def notes(self, ctx, user):
+        member = await commands.converter.UserConverter().convert(ctx, user)
+
+        if member is None:
+            raise commands.UserNotFound(user)
+
+        if ctx.guild.fetch_member(member) is None:
+            await ctx.reply("That user is not in the server.")
+            return  # TODO: Implement error embed here.
+
+        with dataset.connect(utils.database.get_db()) as tx:
+            results = tx["mod_notes"].find(user_id=member.id)
+
+        if results is None:
+            await ctx.reply("That user does not have any notes.")
+            return
+
+        # TODO: Build proper embed
+        await ctx.reply(results)
+        
 
     @commands.has_role("Discord Mod")
     @commands.before_invoke(record_usage)
     @commands.command(name="addnote")
-    async def add_note(self, ctx):
-        return NotImplementedError
+    async def add_note(self, ctx, user, *note):
+        """ Adds a moderator note to a user. """
+        member = await commands.converter.UserConverter().convert(ctx, user)
+        if member is None:
+            raise commands.UserNotFound(user)
+
+        if ctx.guild.fetch_member(member) is None:
+            await ctx.reply("That user is not in the server.")
+            return  # TODO: Implement error embed here.
+
+        # Converts reason from a list of strings into a full sentence string.
+        note = " ".join(note)
+
+        # Add the note to the mod_notes database.
+        with dataset.connect(utils.database.get_db()) as tx:
+            tx["mod_notes"].insert(dict(
+                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
+            ))
+        
+        # Respond to the context that the user was kicked.
+        await ctx.reply(f"Added note to {member}.")
+        # TODO: Return successfully kicked user embed.
+
 
     @commands.is_owner()
     @commands.before_invoke(record_usage)
