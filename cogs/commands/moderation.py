@@ -1,7 +1,9 @@
+import datetime
 import itertools
 import logging
 import os
 import time
+
 
 import dataset
 import discord
@@ -111,7 +113,8 @@ class ModerationCog(commands.Cog):
         member = await commands.converter.UserConverter().convert(ctx, user)
         if member is None:
             raise commands.UserNotFound(user)
-
+        
+        # Stops the user from kicking themselves.
         if ctx.author.id == member.id:
             await ctx.reply("You cannot unban yourself!")
             return  # TODO: Implement error embed here
@@ -121,9 +124,9 @@ class ModerationCog(commands.Cog):
             await ctx.reply("... Excuse me?")
             return  # TODO: Implement error embed here.
 
-        if ctx.guild.fetch_member(member) is None:
-            await ctx.reply("That user is not in the server.")
-            return  # TODO: Implement error embed here.
+        # User is not currently in the guild.
+        if await ctx.guild.fetch_member(member.id) is None:
+            raise commands.UserNotFound(user)
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
         await ctx.guild.kick(user=member, reason=reason)
@@ -169,9 +172,9 @@ class ModerationCog(commands.Cog):
         #    await ctx.reply("You cannot warn yourself!")
         #    return  # TODO: Implement error embed here
 
-        if ctx.guild.fetch_member(member) is None:
-            await ctx.reply("That user is not in the server.")
-            return  # TODO: Implement error embed here.
+        # User is not currently in the guild.
+        if await ctx.guild.fetch_member(member.id) is None:
+            raise commands.UserNotFound(user)
 
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
@@ -204,20 +207,35 @@ You do not have to respond to this warning. Contentious bad behavior will result
 
         if member is None:
             raise commands.UserNotFound(user)
-
-        if ctx.guild.fetch_member(member) is None:
-            await ctx.reply("That user is not in the server.")
-            return  # TODO: Implement error embed here.
+        
+        # User is not currently in the guild.
+        if await ctx.guild.fetch_member(member.id) is None:
+            raise commands.UserNotFound(user)
 
         with dataset.connect(utils.database.get_db()) as tx:
-            results = tx["mod_notes"].find(user_id=member.id)
+            notes = tx["mod_notes"].find(user_id=member.id, order_by="timestamp")
 
-        if results is None:
+        if notes is None:
             await ctx.reply("That user does not have any notes.")
             return
 
+        embed = discord.Embed()
+        description = ""
+        description += "**__Mod Actions__**\n"
+        for index, entry, in enumerate(notes):
+            user = await commands.converter.UserConverter().convert(ctx, str(entry["user_id"]))
+            mod_user = await commands.converter.UserConverter().convert(ctx, str(entry["mod_id"]))
+            timestamp = datetime.datetime.fromtimestamp(entry["timestamp"])
+            note = entry["note"]
+            embed.set_author(name=f"Mod notes for {user} ({user.id})", icon_url=user.avatar_url)
+            description += f"{index + 1}. {mod_user} ({mod_user.id}) ・ {timestamp:%B %d, %Y %I:%M %p}"
+            description += f"```{note}```\n"
+        embed.description = description
+        await ctx.reply(embed=embed)
+
         # TODO: Build proper embed
-        await ctx.reply(results)
+        #    embed.add_field(name=result["timestamp"], value=f"```{result['note']}```", inline=False)
+        #await ctx.reply(embed=embed)
         
 
     @commands.has_role("Discord Mod")
@@ -229,9 +247,9 @@ You do not have to respond to this warning. Contentious bad behavior will result
         if member is None:
             raise commands.UserNotFound(user)
 
-        if ctx.guild.fetch_member(member) is None:
-            await ctx.reply("That user is not in the server.")
-            return  # TODO: Implement error embed here.
+        # User is not currently in the guild.
+        if await ctx.guild.fetch_member(member.id) is None:
+            raise commands.UserNotFound(user)
 
         # Converts reason from a list of strings into a full sentence string.
         note = " ".join(note)

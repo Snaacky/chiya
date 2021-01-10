@@ -24,9 +24,9 @@ class RedditTask(commands.Cog):
     """Reddit Background Task"""
     def __init__(self, bot):
         self.bot = bot
-        self.check_for_posts.start()
         self.cache = []
         self.bot_started_at = time.time()
+        self.check_for_posts.start()
 
     def cog_unload(self):
         self.check_for_posts.cancel()
@@ -35,6 +35,9 @@ class RedditTask(commands.Cog):
     @tasks.loop(seconds=3.0)
     async def check_for_posts(self):
         """Checking for new reddit posts"""
+        # Wait before starting because if Reddit is down when the bot starts, the bot will never get to on_ready().
+        await self.bot.wait_until_ready()
+
         try:
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
             for submission in reddit.subreddit(subreddit).new(limit=10):
@@ -48,7 +51,7 @@ class RedditTask(commands.Cog):
 
                 log.info(f"{submission.title} was posted by /u/{submission.author.name}")
 
-                # Builds and stylizes the embed
+                # Builds and stylizes the embed.
                 embed = discord.Embed(
                     title="r/" + subreddit + " - " + submission.title[0:253],
                     url=f"https://reddit.com{submission.permalink}",
