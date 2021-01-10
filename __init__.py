@@ -60,7 +60,11 @@ coloredlogs.DEFAULT_LOG_LEVEL = log_level
 coloredlogs.install(logger=root_log, stream=sys.stdout)
 
 # muffling "type" logs unless >= setLevel
-logging.getLogger("discord").setLevel(logging.WARNING)
+if log_level < 20:
+    # Getting tired of the heartbeat blocked warning when debugging.
+    logging.getLogger("discord").setLevel(logging.ERROR)
+else:
+    logging.getLogger("discord").setLevel(logging.WARNING)
 logging.getLogger("websockets").setLevel(logging.WARNING)
 logging.getLogger("chardet").setLevel(logging.WARNING)
 logging.getLogger("prawcore").setLevel(logging.WARNING)
