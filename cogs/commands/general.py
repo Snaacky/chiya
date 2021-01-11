@@ -34,16 +34,17 @@ class GeneralCommandsCog(commands.Cog):
 
     @commands.before_invoke(record_usage)
     @commands.command(name='addemoji', aliases=['ae', 'adde'    ])
-    async def addemoji(self, ctx, emoji=None, msg_id=None):
-        """ Add the given emoji as a reaction to the specified message, or the previous message. """
-        if emoji:
-            if msg_id:
-                msg = await ctx.fetch_message(msg_id)
-                await msg.add_reaction(emoji)
-                return
-
-            msg = (await ctx.channel.history(limit=3).flatten())[2]
+    async def addemoji(self, ctx, *emojis):
+        """ Add the given emojis as a reaction to the specified message, or the previous message. """
+        
+        msg = (await ctx.channel.history(limit=3).flatten())[2]
+        for emoji in emojis:
+            if emoji.isnumeric():
+                msg = await ctx.fetch_message(int(emoji))
+                continue
+            
             await msg.add_reaction(emoji)
+            
 
         
 
