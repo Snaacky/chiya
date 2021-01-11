@@ -32,6 +32,22 @@ class GeneralCommandsCog(commands.Cog):
             embed.set_image(url=ctx.message.author.avatar_url)
         await ctx.send(embed=embed)
 
+    @commands.before_invoke(record_usage)
+    @commands.command(name='addemoji', aliases=['ae', 'adde'    ])
+    async def addemoji(self, ctx, emoji=None, msg_id=None):
+        """ Add the given emoji as a reaction to the specified message, or the previous message. """
+        if emoji:
+            if msg_id:
+                msg = await ctx.fetch_message(msg_id)
+                await msg.add_reaction(emoji)
+                return
+
+            msg = (await ctx.channel.history(limit=3).flatten())[2]
+            await msg.add_reaction(emoji)
+
+        
+
+
 
 def setup(bot) -> None:
     """ Load the GeneralCog cog. """
