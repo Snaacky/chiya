@@ -186,6 +186,7 @@ class LinePaginator(Paginator):
         footer_text: str = None,
         url: str = None,
         exception_on_empty_embed: bool = False,
+        time_to_delete: int = None,
     ) -> typing.Optional[discord.Message]:
         """
         Use a paginator and set of reactions to provide pagination over a set of lines.
@@ -262,7 +263,7 @@ class LinePaginator(Paginator):
                 log.trace(f"Setting embed url to '{url}'")
 
             log.debug("There's less than two pages, so we won't paginate - sending single page on its own")
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, delete_after=time_to_delete)
         else:
             if footer_text:
                 embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
@@ -275,7 +276,7 @@ class LinePaginator(Paginator):
                 log.trace(f"Setting embed url to '{url}'")
 
             log.debug("Sending first page to channel...")
-            message = await ctx.send(embed=embed)
+            message = await ctx.send(embed=embed, delete_after=time_to_delete)
 
         log.debug("Adding emoji reactions to message...")
 
