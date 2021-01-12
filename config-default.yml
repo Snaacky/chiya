@@ -10,15 +10,9 @@
 # Be sure you add it to constants.py Dataclasses as well.
 
 bot:
-    prefix: !ENV    "BOT_PREFIX"
-    token:  !ENV    "BOT_TOKEN"
-
-reddit:
-    subreddit:              "animepiracy"
-    client_id:      !ENV    "REDDIT_CLIENT_ID"
-    secret:         !ENV    "REDDIT_SECRET"
-    reddit_posts:           623809718011297792
-    poll_rate:              3 # In seconds.
+    prefix:     !ENV    "BOT_PREFIX"
+    token:      !ENV    "BOT_TOKEN"
+    log_level:  !ENV    "LOG_LEVEL" # NOTSET | TRACE | DEBUG | INFO | WARN | ERROR | CRITICAL
 
 style:
     colours:
@@ -142,6 +136,9 @@ guild:
         - *COMMAND_CHANNEL
         - *VOTE_CHANNEL
 
+    submission_channels:
+        - *REDDIT_CHANNEL
+
     roles:
         # common roles.
         perverts:                           745670444606029915
@@ -162,6 +159,12 @@ guild:
         - *DISCORD_MOD_ROLE
         - *REDDIT_MOD_ROLE
 
+reddit:
+    subreddit:              "animepiracy"
+    client_id:      !ENV    "REDDIT_CLIENT_ID"
+    secret:         !ENV    "REDDIT_SECRET"
+    reddit_posts:           *REDDIT_CHANNEL
+    poll_rate:              3 # In seconds.
 
 config:
     required_keys: ['bot.token']

@@ -6,11 +6,13 @@ from pathlib import Path
 
 import coloredlogs
 
-import config
+import constants
 
 
-log_level = config.LOGLEVEL
+log_level = constants.Bot.log_level
 
+if log_level is None:
+    log_level = "NOTSET"
 
 # Adding Trace to enchance debugging verbose logs. DO NOT USE FOR PRODUCTION
 
@@ -60,13 +62,14 @@ coloredlogs.DEFAULT_LOG_LEVEL = log_level
 coloredlogs.install(logger=root_log, stream=sys.stdout)
 
 # muffling "type" logs unless >= setLevel
-if log_level < 20:
-    # Getting tired of the heartbeat blocked warning when debugging.
-    logging.getLogger("discord").setLevel(logging.ERROR)
-else:
-    logging.getLogger("discord").setLevel(logging.WARNING)
-logging.getLogger("websockets").setLevel(logging.WARNING)
-logging.getLogger("chardet").setLevel(logging.WARNING)
-logging.getLogger("prawcore").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
-logging.getLogger(__name__)
+if root_log.level != 0:
+    if root_log.level < 20:
+        # Getting tired of the heartbeat blocked warning when debugging.
+        logging.getLogger("discord").setLevel(logging.ERROR)
+    else:
+        logging.getLogger("discord").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+    logging.getLogger("chardet").setLevel(logging.WARNING)
+    logging.getLogger("prawcore").setLevel(logging.WARNING)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger(__name__)

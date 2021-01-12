@@ -3,7 +3,7 @@ import logging
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
 
-import config
+import constants
 from utils import embeds
 from utils.utils import contains_link, has_attachment
 
@@ -134,7 +134,7 @@ class MessageUpdates(commands.Cog):
         if message.author.bot:
             return
         # Remove messages that don't contain links or files from our submissions only channels.
-        if message.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(message) or has_attachment(message)):
+        if message.channel.id in constants.Guild.submission_channels and not (contains_link(message) or has_attachment(message)):
             # Deletes message and sends a self-destructing warning embed.
             await message.delete()
             await message.channel.send(embed=embeds.files_and_links_only(message), delete_after=10)

@@ -5,11 +5,10 @@ import discord
 from discord.ext import commands
 
 import __init__
-import config
 import constants
 
 bot = commands.Bot(
-    command_prefix=config.PREFIX,
+    command_prefix=constants.Bot.prefix,
     intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
     case_insensitive=True)
 log = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.PREFIX}help"
+            name=f"{constants.Bot.prefix}help"
         )
     )
 

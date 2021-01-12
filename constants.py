@@ -12,7 +12,7 @@ import logging
 import os
 from collections.abc import Mapping
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import yaml
 
@@ -193,6 +193,7 @@ class Bot(metaclass=YAMLGetter):
 
     prefix: str
     token: str
+    log_level: Union[str, int]
 
 
 class Reddit(metaclass=YAMLGetter):
@@ -290,6 +291,7 @@ class Guild(metaclass=YAMLGetter):
     id: int
     invite: str
     moderation_channels: List[int]
+    submission_channels: List[int]
     staff_roles: List[int]
 
 
