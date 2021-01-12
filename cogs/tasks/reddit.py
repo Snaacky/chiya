@@ -7,32 +7,37 @@ import discord
 from discord.ext import tasks, commands
 import praw
 
-import config
+import constants
 
 log = logging.getLogger(__name__)
 
 reddit = praw.Reddit(
-    client_id=config.REDDIT_API_CLIENT_ID,
-    client_secret=config.REDDIT_API_CLIENT_SECRET,
-    user_agent=f"Chiya (for /r/{config.SUBREDDIT_NAME})"
+    client_id=constants.Reddit.client_id,
+    client_secret=constants.Reddit.secret,
+    user_agent=f"Chiya (for /r/{constants.Reddit.subreddit})"
 )
 
-subreddit = config.SUBREDDIT_NAME
+subreddit = constants.Reddit.subreddit
 
 
 class RedditTask(commands.Cog):
     """Reddit Background Task"""
     def __init__(self, bot):
         self.bot = bot
-        self.check_for_posts.start()
-        self.cache = []
-        self.bot_started_at = time.time()
+        if constants.Reddit.subreddit:
+            # Only start if there is a place to post
+            log.info("Starting loop for polling reddit")
+            self.check_for_posts.start()
+            self.cache = []
+            self.bot_started_at = time.time()
+        else:
+            log.warning("Channel to post reddit posts not found.")
 
     def cog_unload(self):
         self.check_for_posts.cancel()
 
     # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
-    @tasks.loop(seconds=3.0)
+    @tasks.loop(seconds=constants.Reddit.poll_rate)
     async def check_for_posts(self):
         """Checking for new reddit posts"""
         try:
@@ -68,10 +73,9 @@ class RedditTask(commands.Cog):
                     embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate.
-                channel = self.bot.get_channel(config.REDDIT_POSTS_CHANNEL_ID)
+                channel = self.bot.get_channel(constants.Reddit.reddit_posts)
                 if not channel:
-                    # TODO: Port print() to logging system.
-                    print(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
+                    log.warning(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue
 
                 # Sends embed into the Discord channel and adds to cache to avoid dupes in the future.
