@@ -3,20 +3,28 @@
 # in `config-default.yml` when the program runs. If not mentioned in `config.yml`,
 # `config-default.yml` will serve as the default value for the variable.
 
+# !ENV - Takes variable from enviroment variables.
+# !JOIN - Join fellow config variables together. https://bit.ly/3qakxSR
+
+# If you add a new default config variable. 
+# Be sure you add it to constants.py Dataclasses as well.
+
 bot:
-    prefix:      !ENV "BOT_PREFIX"
-    token:       !ENV "BOT_TOKEN"
+    prefix: !ENV    "BOT_PREFIX"
+    token:  !ENV    "BOT_TOKEN"
 
 reddit:
-    subreddits:  "r/animepiracy"
-    client_id:   !ENV "REDDIT_CLIENT_ID"
-    secret:      !ENV "REDDIT_SECRET"
+    subreddit:              "animepiracy"
+    client_id:      !ENV    "REDDIT_CLIENT_ID"
+    secret:         !ENV    "REDDIT_SECRET"
+    reddit_posts:           623809718011297792
+    poll_rate:              3 # In seconds.
 
 style:
     colours:
-        soft_red: 0xcd6d6d
-        soft_green: 0x68c290
-        soft_orange: 0xf9cb54
+        soft_red:     0xcd6d6d
+        soft_green:   0x68c290
+        soft_orange:  0xf9cb54
         bright_green: 0x01d277
 
     emojis:
@@ -76,9 +84,84 @@ style:
 
         questionmark: "https://cdn.discordapp.com/emojis/512367613339369475.png"
 
-        voice_state_blue: "https://cdn.discordapp.com/emojis/656899769662439456.png"
+        voice_state_blue:  "https://cdn.discordapp.com/emojis/656899769662439456.png"
         voice_state_green: "https://cdn.discordapp.com/emojis/656899770094452754.png"
-        voice_state_red: "https://cdn.discordapp.com/emojis/656899769905709076.png"
+        voice_state_red:   "https://cdn.discordapp.com/emojis/656899769905709076.png"
+
+guild:
+    id:     622243127435984927
+    invite: "https://discord.gg/piracy"
+
+    categories:
+        server:                         622243127435984928
+        community:                      622248916888322058
+        moderation:   &MOD_CATEGORY     624255126089236503
+        development:                    787280267349983282
+        logs:         &LOGS_CATEGORY    758178210642395137
+        archive:                        708521071493644339
+
+    channels:
+        # server
+        rules:                          623100638812962816
+        announcements:                  624256442085539855
+
+        # community
+        general:                        631919775613845504
+        shitposts:                      706852554062954628
+        bots:                           650855150407254016
+        art:                            796225669998444574
+
+        # moderation
+        reddit_posts: &REDDIT_CHANNEL   623809718011297792
+        moderation:   &MOD_CHANNEL      624253391563915264
+        commands:     &COMMAND_CHANNEL  787029607210680331
+        votes:        &VOTE_CHANNEL     778724263929577513
+
+        # development
+        chiya_dev:                      798322374905692162
+        bot_testing:                    787280381111173120
+        chiya_todo:                     788062322500436009
+        chiya_github:                   798372298607296583
+        index_dev:                      798322401389445130
+        index_editors:                  788082651469840436
+        index_todo:                     785127927884152852
+        index_github:                   798372253934682143
+        wiki_github:                    798372362708844574
+
+        # logs
+        joins_leaves:                   781788303770255371
+
+        # archive
+        development:                    787031443011403797
+        tools_guides:                   660973607132069958
+        wallpapers:                     785755715494477834
+
+    moderation_channels:
+        - *REDDIT_CHANNEL
+        - *MOD_CHANNEL
+        - *COMMAND_CHANNEL
+        - *VOTE_CHANNEL
+
+    roles:
+        # common roles.
+        perverts:                           745670444606029915
+
+        # staff roles.
+        admin:          &ADMIN_ROLE         758145222017286205
+        staff:          &STAFF_ROLE         763031634379276308
+        discord_mod:    &DISCORD_MOD_ROLE   794473938373705758
+        reddit_mod:     &REDDIT_MOD_ROLE    794681529145753612
+
+        # special roles
+        developer:      &DEVELOPER_ROLE     778474062619082753
+        booster:                            660678752245645317
+    
+    staff_roles:
+        - *ADMIN_ROLE
+        - *STAFF_ROLE
+        - *DISCORD_MOD_ROLE
+        - *REDDIT_MOD_ROLE
+
 
 config:
     required_keys: ['bot.token']
