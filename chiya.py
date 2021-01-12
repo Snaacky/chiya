@@ -6,6 +6,7 @@ from discord.ext import commands
 
 import __init__
 import config
+import constants
 
 bot = commands.Bot(
     command_prefix=config.PREFIX,
@@ -44,10 +45,10 @@ if __name__ == '__main__':
     # Recursively loads in all the cogs in the folder named cogs.
     # Skips over any cogs that start with '__' or do not end with .py.
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        if "\\" in cog:  # Fix pathing on Windows
+        if "\\" in cog:  # Fix pathing on Windows.
             bot.load_extension(cog.replace("\\", ".")[:-3])
-        else:  # Fix pathing on Linux:
+        else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
 
     # Finally, run the bot.
-    bot.run(config.BOT_TOKEN)
+    bot.run(constants.Bot.token)
