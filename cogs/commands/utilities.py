@@ -123,16 +123,45 @@ class UtilitiesCog(commands.Cog):
                 await ctx.send(embed=embed)
 
     @utilities.command(name="reload")
-    async def reload_cog(self, ctx, *, module):
-        """Reloads specified cog/module. Remember the directory structures."""
-        try:
-            self.bot.reload_extension(module)
-        except commands.ExtensionError as e:
-            await ctx.send(f'{e.__class__.__name__}: {e}')
+    async def reload_cog(self, ctx: commands.Context, name_of_cog: str = None):
+        """ Reloads specified cog or all cogs. """
+
+        regex = r"(?<=<).*(?=\..* object at 0x.*>)"
+        if name_of_cog is not None and name_of_cog in ctx.bot.cogs:
+            # Reload cog if it exists.
+            cog = re.search(regex, str(ctx.bot.cogs[name_of_cog]))
+            try:
+                self.bot.reload_extension(cog.group())
+                
+            except commands.ExtensionError as e:
+                await ctx.message.add_reaction("❌")
+                await ctx.send(f'{e.__class__.__name__}: {e}')
+            
+            else:
+                await ctx.message.add_reaction("✔")
+                await ctx.send("Reloaded all modules!")
+        
+        elif name_of_cog is None:
+            # Reload all the cogs in the folder named cogs.
+            # Skips over any cogs that start with '__' or do not end with .py.
+            cogs = []
+            try:
+                for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
+                    if "\\" in cog:  # Pathing on Windows.
+                        self.bot.reload_extension(cog.replace("\\", ".")[:-3])
+                    else:  # Pathing on Linux.
+                        self.bot.reload_extension(cog.replace("/", ".")[:-3])
+            except commands.ExtensionError as e:
+                await ctx.message.add_reaction("❌")
+                await ctx.send(f'{e.__class__.__name__}: {e}')
+
+            else:
+                await ctx.message.add_reaction("✔")
+                await ctx.send("Reloaded all modules!")
 
         else:
-            await ctx.message.add_reaction("✔")
-            await ctx.send(f"Reloaded the {module} module.")
+            await ctx.message.add_reaction("❌")
+            await ctx.send("Module not found, check spelling, it's case sensitive")
 
 
 def setup(bot) -> None:
