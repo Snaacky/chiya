@@ -5,10 +5,10 @@ import discord
 from discord.ext import commands
 
 import __init__
-import config
+import constants
 
 bot = commands.Bot(
-    command_prefix=config.PREFIX,
+    command_prefix=constants.Bot.prefix,
     intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
     case_insensitive=True)
 log = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.PREFIX}help"
+            name=f"{constants.Bot.prefix}help"
         )
     )
 
@@ -44,10 +44,10 @@ if __name__ == '__main__':
     # Recursively loads in all the cogs in the folder named cogs.
     # Skips over any cogs that start with '__' or do not end with .py.
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        if "\\" in cog:  # Fix pathing on Windows
+        if "\\" in cog:  # Fix pathing on Windows.
             bot.load_extension(cog.replace("\\", ".")[:-3])
-        else:  # Fix pathing on Linux:
+        else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
 
     # Finally, run the bot.
-    bot.run(config.BOT_TOKEN)
+    bot.run(constants.Bot.token)

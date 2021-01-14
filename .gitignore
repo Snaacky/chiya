@@ -141,3 +141,5 @@ cython_debug/
 config.py
 .idea/
 .vscode/
+*config.yml
+*config.ymal
