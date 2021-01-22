@@ -3,6 +3,8 @@ import logging
 import io
 import textwrap
 from contextlib import redirect_stdout
+import glob
+import re
 
 import discord
 from discord.ext import commands
@@ -139,7 +141,7 @@ class UtilitiesCog(commands.Cog):
             
             else:
                 await ctx.message.add_reaction("✔")
-                await ctx.send("Reloaded all modules!")
+                await ctx.send(f"Reloaded `{cog.group()}` module!")
         
         elif name_of_cog is None:
             # Reload all the cogs in the folder named cogs.
