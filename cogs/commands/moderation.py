@@ -24,7 +24,7 @@ class ModerationCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="ban")
     async def ban_member(self, ctx, user, *reason: str, delete_message_days: int = 0):
@@ -69,7 +69,7 @@ class ModerationCog(commands.Cog):
         await ctx.reply(f"Banned {member} for {reason}")
         # TODO: Return successfully banned user embed.
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="unban")
     async def unban_member(self, ctx, user, *reason: str):
@@ -105,7 +105,7 @@ class ModerationCog(commands.Cog):
 
         await ctx.reply(f"Unbanned {member} for {reason}")
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="kick")
     async def kick_member(self, ctx, user, *reason: str):
@@ -146,19 +146,19 @@ class ModerationCog(commands.Cog):
         # TODO: Add DM letting the user know they were banned and the reason.
         return NotImplementedError
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="mute")
     async def mute(self, ctx):
         return NotImplementedError
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="unmute")
     async def unmute(self, ctx):
         return NotImplementedError
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="warn")
     async def warn(self, ctx, user, *reason: str):
@@ -167,8 +167,7 @@ class ModerationCog(commands.Cog):
         if member is None:
             raise commands.UserNotFound(user)
         
-        # TODO: Uncomment this, temporarily disabled for testing!
-        # if ctx.author.id == member.id:
+        #if ctx.author.id == member.id:
         #    await ctx.reply("You cannot warn yourself!")
         #    return  # TODO: Implement error embed here
 
@@ -178,16 +177,18 @@ class ModerationCog(commands.Cog):
 
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
+
+        if len(reason) == 0:
+            await ctx.reply("You did not specify a reason.")
+            return
         
         # Attempts to creates the DM channel in case the bot hasn't interacted with the user before.
         channel = await member.create_dm()
-        await channel.send(f"""
-        You received a warning in {ctx.guild.name}!
-        
-Reason: {reason}
-
-You do not have to respond to this warning. Contentious bad behavior will result in more severe punishment.
-""")  # TODO: Replace with an embed!
+        embed = embeds.make_embed(context=ctx, description="")
+        embed.title = f"You have been warned in {ctx.guild.name}!"
+        embed.description += f"Reason: {reason} You do not have to respond to this warning."
+        embed.description += "Contentious bad behavior will result in more severe punishment."
+        await channel.send(embed=embed)  # TODO: Replace with an embed!
 
         # Add the warning to the mod_log database.
         with dataset.connect(utils.database.get_db()) as tx:
@@ -199,12 +200,13 @@ You do not have to respond to this warning. Contentious bad behavior will result
         await ctx.reply(f"Warned {member} for {reason}")
         # TODO: Return successfully kicked user embed.
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="notes")
     async def notes(self, ctx, user):
         member = await commands.converter.UserConverter().convert(ctx, user)
 
+        # Unable to find the user in question.
         if member is None:
             raise commands.UserNotFound(user)
         
@@ -214,31 +216,53 @@ You do not have to respond to this warning. Contentious bad behavior will result
 
         with dataset.connect(utils.database.get_db()) as tx:
             notes = tx["mod_notes"].find(user_id=member.id, order_by="timestamp")
+            actions = tx["mod_actions"].find(user_id=member.id, order_by="timestamp")
 
-        if notes is None:
-            await ctx.reply("That user does not have any notes.")
-            return
-
+        # Initial embed setup.
         embed = discord.Embed()
         description = ""
+
+        # TODO: Just Hastebin the logs if longer than 2048 (Discord's maximum length for MessageEmbed descriptions)
+        # Add any mod notes that exist in the database to the embed, ordered by time.
+        description += "**__Mod Notes__**\n"
+        if hasattr(notes, "next"):
+            for index, entry, in enumerate(notes):
+                user = await commands.converter.UserConverter().convert(ctx, str(entry["user_id"]))
+                embed.set_author(name=f"Mod notes for {user} ({user.id})", icon_url=user.avatar_url)
+
+                # Adds header for mod note to embed, variables used to avoid going over 120 characters.
+                mod_user = await commands.converter.UserConverter().convert(ctx, str(entry["mod_id"]))
+                timestamp = datetime.datetime.fromtimestamp(entry["timestamp"])
+                description += f"{index + 1}. {mod_user} ({mod_user.id}) ・ {timestamp:%B %d, %Y %I:%M %p}"
+
+                # Adds mod note to embed.
+                note = entry["note"]
+                description += f"```{note}```\n"
+        else:
+            description += "No actions stored.\n"
+
+        # Add any mod actions that exist in the database to the embed, ordered by time.
         description += "**__Mod Actions__**\n"
-        for index, entry, in enumerate(notes):
-            user = await commands.converter.UserConverter().convert(ctx, str(entry["user_id"]))
-            mod_user = await commands.converter.UserConverter().convert(ctx, str(entry["mod_id"]))
-            timestamp = datetime.datetime.fromtimestamp(entry["timestamp"])
-            note = entry["note"]
-            embed.set_author(name=f"Mod notes for {user} ({user.id})", icon_url=user.avatar_url)
-            description += f"{index + 1}. {mod_user} ({mod_user.id}) ・ {timestamp:%B %d, %Y %I:%M %p}"
-            description += f"```{note}```\n"
+        if hasattr(actions, "next"):
+            print(actions.next())
+            for index, entry, in enumerate(actions):
+                user = await commands.converter.UserConverter().convert(ctx, str(entry["user_id"]))
+                mod_user = await commands.converter.UserConverter().convert(ctx, str(entry["mod_id"]))
+                timestamp = datetime.datetime.fromtimestamp(entry["timestamp"])
+                action_type = entry["type"]
+                reason = entry["reason"]
+                embed.set_author(name=f"Mod actions for {user} ({user.id})", icon_url=user.avatar_url)
+                description += f"{index + 1}. {mod_user} ({mod_user.id}) ・ {timestamp:%B %d, %Y %I:%M %p}"
+                description += f"```[{action_type}] {reason}```\n"
+        else:
+            description += "No actions stored.\n"
+
+        # Finally, set the embed that we built above and send it.
         embed.description = description
         await ctx.reply(embed=embed)
-
-        # TODO: Build proper embed
-        #    embed.add_field(name=result["timestamp"], value=f"```{result['note']}```", inline=False)
-        #await ctx.reply(embed=embed)
         
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="addnote")
     async def add_note(self, ctx, user, *note):
@@ -310,6 +334,8 @@ You do not have to respond to this warning. Contentious bad behavior will result
         await ctx.send(embed=embed)
 
         await ctx.send("https://discord.gg/piracy")
+        await ctx.send("https://piracy.moe")
+        await ctx.message.delete()
 
 
 # The setup function below is necessary. Remember we give bot.add_cog() the name of the class in this case SimpleCog.

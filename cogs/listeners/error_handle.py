@@ -195,7 +195,7 @@ class error_handle(Cog):
         else:
             await self.handle_unexpected_error(ctx, error)
         # Display correct syntax of command.
-        await ctx.send_help(ctx.command)
+        # await ctx.send_help(ctx.command)
 
     # Handle errors with deal with user or bot permissions.
     async def handle_check_failure(self, ctx: Context, error: errors.CheckFailure) -> None:

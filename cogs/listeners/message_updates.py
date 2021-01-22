@@ -133,6 +133,7 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
+
         # Remove messages that don't contain links or files from our submissions only channels.
         if message.channel.id in config.SUBMISSION_CHANNEL_IDs and not (contains_link(message) or has_attachment(message)):
             # Deletes message and sends a self-destructing warning embed.

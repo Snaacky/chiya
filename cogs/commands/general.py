@@ -31,6 +31,16 @@ class GeneralCommandsCog(commands.Cog):
         else:
             embed.set_image(url=ctx.message.author.avatar_url)
         await ctx.send(embed=embed)
+    
+
+    @commands.before_invoke(record_usage)
+    @commands.command(name="boosttest")
+    async def boosttest(self, ctx):
+        embed = embeds.make_embed(context=ctx, author=False)
+        embed.title = "THANK YOU FOR THE BOOST!"
+        embed.description = "In ornare est augue, at malesuada quam gravida id. Sed hendrerit ipsum congue, tristique nibh non, faucibus lorem. Fusce maximus risus nec rhoncus posuere. Vestibulum sapien erat, vehicula eget lorem ac, semper egestas mi. Maecenas sit amet cursus quam. Morbi non tincidunt ex. Curabitur vel pellentesque metus, vitae semper odio. Aliquam nec lectus convallis, placerat sapien ut, aliquet neque. Mauris feugiat ac arcu vel sollicitudin. Nam aliquet a sapien in auctor. Vestibulum consectetur molestie finibus."
+        embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
+        await ctx.send(embed=embed)
 
 
 def setup(bot) -> None:

@@ -42,13 +42,13 @@ class UtilitiesCog(commands.Cog):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @utilities.command(name="count")
     async def count(self, ctx):
         """Returns the current guild member count."""
         await ctx.send(ctx.guild.member_count)
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role("Staff")
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
         """Echos the input argument."""
