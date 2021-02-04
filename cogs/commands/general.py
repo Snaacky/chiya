@@ -14,7 +14,7 @@ class GeneralCommandsCog(commands.Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.command(name="pfp", aliases=["avi", "pp", "avatar", "profilepic"])
+    @commands.command(name="pfp", aliases=["avi", "pp", "avatar", "profilepic", "av"])
     async def pfp(self, ctx, user=None):
         """ Returns the profile picture of the invoker or the mentioned user. """
 
@@ -24,6 +24,7 @@ class GeneralCommandsCog(commands.Cog):
         if user is not None:
             member = await commands.MemberConverter().convert(ctx, user)
             if member:
+                embed.set_author(icon_url=member.avatar_url, name=str(member))
                 embed.set_image(url=member.avatar_url)
             else:
                 raise commands.UserNotFound(user)
@@ -31,8 +32,8 @@ class GeneralCommandsCog(commands.Cog):
         else:
             embed.set_image(url=ctx.message.author.avatar_url)
         await ctx.send(embed=embed)
-    
 
+    @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="boosttest")
     async def boosttest(self, ctx):

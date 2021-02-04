@@ -1,7 +1,5 @@
 import datetime
-import itertools
 import logging
-import os
 import time
 
 
@@ -56,6 +54,11 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
+        # Prevent the user from using the command without providing a reason.
+        if len(reason) == 0:
+            await ctx.reply("You must enter a reason.")
+            return
+
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=member, reason=reason, delete_message_days=delete_message_days)
 
@@ -93,9 +96,13 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
+        # Prevent the user from using the command without providing a reason.
+        if len(reason) == 0:
+            await ctx.reply("You must enter a reason.")
+            return
+
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
         await ctx.guild.unban(user=member, reason=reason)
-        
 
         # Add the unban to the mod_log database.
         with dataset.connect(utils.database.get_db()) as tx:
@@ -113,7 +120,7 @@ class ModerationCog(commands.Cog):
         member = await commands.converter.UserConverter().convert(ctx, user)
         if member is None:
             raise commands.UserNotFound(user)
-        
+
         # Stops the user from kicking themselves.
         if ctx.author.id == member.id:
             await ctx.reply("You cannot unban yourself!")
@@ -128,35 +135,120 @@ class ModerationCog(commands.Cog):
         if await ctx.guild.fetch_member(member.id) is None:
             raise commands.UserNotFound(user)
 
-        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
-        await ctx.guild.kick(user=member, reason=reason)
-
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
+
+        # Prevent the user from using the command without providing a reason.
+        if len(reason) == 0:
+            await ctx.reply("You must enter a reason.")
+            return
+
+        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
+        await ctx.guild.kick(user=member, reason=reason)
 
         # Add the kick to the mod_log database.
         with dataset.connect(utils.database.get_db()) as tx:
             tx["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
             ))
-        
+
         # Respond to the context that the user was kicked.
         await ctx.reply(f"Kicked {member} for {reason}")
         # TODO: Return successfully kicked user embed.
-        # TODO: Add DM letting the user know they were banned and the reason.
-        return NotImplementedError
+        # TODO: Add DM letting the user know they were kicked and the reason.
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="mute")
-    async def mute(self, ctx):
-        return NotImplementedError
+    async def mute(self, ctx, user, *reason: str):
+        # TODO: Implement temp mute functionality
+        member = await commands.converter.UserConverter().convert(ctx, user)
+        if member is None:
+            raise commands.UserNotFound(user)
+
+        # Stops the user from muting themselves.
+        if ctx.author.id == member.id:
+            await ctx.reply("You cannot mute yourself!")
+            return  # TODO: Implement error embed here
+
+        # Stop user from trying to mute Chiya (not that it's possible).
+        if self.bot.user.id == member.id:
+            await ctx.reply("... Excuse me?")
+            return  # TODO: Implement error embed here.
+
+        # User is not currently in the guild.
+        if await ctx.guild.fetch_member(member.id) is None:
+            raise commands.UserNotFound(user)
+
+        # Converts reason from a list of strings into a full sentence string.
+        reason = " ".join(reason)
+
+        # Prevent the user from using the command without providing a reason.
+        if len(reason) == 0:
+            await ctx.reply("You must enter a reason.")
+            return
+
+        # Adds "Muted" role to user.
+        # TODO: Add role name to configuration, maybe by ID?
+        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        user = await ctx.guild.fetch_member(member.id)
+        await user.add_roles(role)
+
+        # Add the mute to the mod_log database.
+        with dataset.connect(utils.database.get_db()) as tx:
+            tx["mod_logs"].insert(dict(
+                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
+            ))
+
+        # Respond to the context that the user was muted.
+        await ctx.reply(f"Muted {member} for {reason}")
+        # TODO: Return successfully muted user embed.
+        # TODO: Add DM letting the user know they were muted and the reason.
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="unmute")
-    async def unmute(self, ctx):
-        return NotImplementedError
+    async def unmute(self, ctx, user, *reason: str):
+        member = await commands.converter.UserConverter().convert(ctx, user)
+        if member is None:
+            raise commands.UserNotFound(user)
+
+        # Stops the user from unmuting themselves.
+        if ctx.author.id == member.id:
+            await ctx.reply("You cannot unmute yourself!")
+            return  # TODO: Implement error embed here
+
+        # Stop user from trying to unmute Chiya (not that it's possible).
+        if self.bot.user.id == member.id:
+            await ctx.reply("... Excuse me?")
+            return  # TODO: Implement error embed here.
+
+        # User is not currently in the guild.
+        if await ctx.guild.fetch_member(member.id) is None:
+            raise commands.UserNotFound(user)
+
+        # Converts reason from a list of strings into a full sentence string.
+        reason = " ".join(reason)
+
+        # Prevent the user from using the command without providing a reason.
+        if len(reason) == 0:
+            await ctx.reply("You must enter a reason.")
+            return
+
+        # Removes "Muted" role from user.
+        # TODO: Add role name to configuration, maybe by ID?
+        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        user = await ctx.guild.fetch_member(member.id)
+        await user.remove_roles(role)
+
+        # Add the mute to the mod_log database.
+        with dataset.connect(utils.database.get_db()) as tx:
+            tx["mod_logs"].insert(dict(
+                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unmute"
+            ))
+
+        # Respond to the context that the user was muted.
+        await ctx.reply(f"Unmuted {member} for {reason}")
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
@@ -166,8 +258,9 @@ class ModerationCog(commands.Cog):
         member = await commands.converter.UserConverter().convert(ctx, user)
         if member is None:
             raise commands.UserNotFound(user)
-        
-        #if ctx.author.id == member.id:
+
+        # TODO: Remove this comment after finished developing
+        # if ctx.author.id == member.id:
         #    await ctx.reply("You cannot warn yourself!")
         #    return  # TODO: Implement error embed here
 
@@ -181,21 +274,21 @@ class ModerationCog(commands.Cog):
         if len(reason) == 0:
             await ctx.reply("You did not specify a reason.")
             return
-        
+
         # Attempts to creates the DM channel in case the bot hasn't interacted with the user before.
-        channel = await member.create_dm()
-        embed = embeds.make_embed(context=ctx, description="")
-        embed.title = f"You have been warned in {ctx.guild.name}!"
-        embed.description += f"Reason: {reason} You do not have to respond to this warning."
-        embed.description += "Contentious bad behavior will result in more severe punishment."
-        await channel.send(embed=embed)  # TODO: Replace with an embed!
+        # channel = await member.create_dm()
+        # embed = embeds.make_embed(context=ctx, description="")
+        # embed.title = f"You have been warned in {ctx.guild.name}!"
+        # embed.description += f"Reason: {reason} You do not have to respond to this warning."
+        # embed.description += "Contentious bad behavior will result in more severe punishment."
+        # await channel.send(embed=embed)  # TODO: Replace with an embed!
 
         # Add the warning to the mod_log database.
         with dataset.connect(utils.database.get_db()) as tx:
             tx["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="warn"
             ))
-        
+
         # Respond to the context that the user was kicked.
         await ctx.reply(f"Warned {member} for {reason}")
         # TODO: Return successfully kicked user embed.
@@ -209,7 +302,7 @@ class ModerationCog(commands.Cog):
         # Unable to find the user in question.
         if member is None:
             raise commands.UserNotFound(user)
-        
+
         # User is not currently in the guild.
         if await ctx.guild.fetch_member(member.id) is None:
             raise commands.UserNotFound(user)
@@ -260,7 +353,6 @@ class ModerationCog(commands.Cog):
         # Finally, set the embed that we built above and send it.
         embed.description = description
         await ctx.reply(embed=embed)
-        
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
@@ -278,16 +370,20 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         note = " ".join(note)
 
+        # Prevent the user from using the command without providing a reason.
+        if len(note) == 0:
+            await ctx.reply("You must enter a reason.")
+            return
+
         # Add the note to the mod_notes database.
         with dataset.connect(utils.database.get_db()) as tx:
             tx["mod_notes"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
             ))
-        
+
         # Respond to the context that the user was kicked.
         await ctx.reply(f"Added note to {member}.")
         # TODO: Return successfully kicked user embed.
-
 
     @commands.is_owner()
     @commands.before_invoke(record_usage)

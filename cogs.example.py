@@ -19,16 +19,13 @@ class SimpleCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
     @commands.before_invoke(record_usage)
-
     @commands.command(name='repeat', aliases=['copy', 'mimic'])
     async def do_repeat(self, ctx, *, our_input: str):
         """A simple command which repeats our input.
         In rewrite Context is automatically passed to our commands as the first argument after self."""
 
         await ctx.send(our_input)
-
 
     # This is an example of a guild only command
     @commands.before_invoke(record_usage)
@@ -40,7 +37,6 @@ class SimpleCog(commands.Cog):
         total = first + second
         await ctx.send(f'The sum of **{first}** and **{second}**  is  **{total}**')
 
-
     # This is an example of a Owner only command
     @commands.before_invoke(record_usage)
     @commands.command(name='me')
@@ -49,7 +45,6 @@ class SimpleCog(commands.Cog):
         """A simple command which only responds to the owner of the bot."""
 
         await ctx.send(f'Hello {ctx.author.mention}. This command can only be used by you!!')
-
 
     # This is an example of a embed command
     @commands.before_invoke(record_usage)
@@ -70,7 +65,6 @@ class SimpleCog(commands.Cog):
         embed.set_footer(text='Made in Python with discord.py@rewrite', icon_url='http://i.imgur.com/5BFecvA.png')
 
         await ctx.send(content='**A simple Embed for discord.py@rewrite in cogs.**', embed=embed)
-
 
     # Here is an example of a listener
     @commands.Cog.listener()
@@ -101,7 +95,6 @@ class SimpleCog(commands.Cog):
     @what.command(name="where")
     async def where(self, ctx):  # Output: <Nothing>
         await ctx.send('on Discord')
-
 
 
 # The setup function below is necessary. Remember we give bot.add_cog() the name of the class in this case SimpleCog.
