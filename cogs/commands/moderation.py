@@ -123,7 +123,7 @@ class ModerationCog(commands.Cog):
 
         # Stops the user from kicking themselves.
         if ctx.author.id == member.id:
-            await ctx.reply("You cannot unban yourself!")
+            await ctx.reply("You cannot kick yourself!")
             return  # TODO: Implement error embed here
 
         # Stop user from trying to kick Chiya (not that it's possible).

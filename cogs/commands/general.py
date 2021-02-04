@@ -17,21 +17,22 @@ class GeneralCommandsCog(commands.Cog):
     @commands.command(name="pfp", aliases=["avi", "pp", "avatar", "profilepic", "av"])
     async def pfp(self, ctx, user=None):
         """ Returns the profile picture of the invoker or the mentioned user. """
-
         embed = embeds.make_embed(context=ctx)
 
-        # Attempt to return the avatar of a mentioned user if the parameter was not none.
-        if user is not None:
-            member = await commands.MemberConverter().convert(ctx, user)
-            if member:
-                embed.set_author(icon_url=member.avatar_url, name=str(member))
-                embed.set_image(url=member.avatar_url)
-            else:
-                raise commands.UserNotFound(user)
-        # Otherwise, assume the invoker just wanted their only avatar and return that.
-        else:
+        # Return the profile picture of the command issuer.
+        if user is None:
             embed.set_image(url=ctx.message.author.avatar_url)
-        await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
+            return
+
+        # Return the profile picture of the mentioned user.
+        member = await commands.MemberConverter().convert(ctx, user)
+        if member:
+            embed.set_author(icon_url=member.avatar_url, name=str(member))
+            embed.set_image(url=member.avatar_url)
+        else:
+            raise commands.UserNotFound(user)
+
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
