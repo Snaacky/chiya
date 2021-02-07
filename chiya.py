@@ -6,6 +6,7 @@ from discord.ext import commands
 
 import __init__
 import config
+import utils.database
 
 bot = commands.Bot(
     command_prefix=config.PREFIX,
@@ -21,7 +22,7 @@ async def on_ready():
     https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
     """
     print(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
-    print(f"discord.py version: {discord.__version__}\n")
+    print(f"discord.py version: {discord.__version__}")
 
     # Adding in a activity message when the bot begins.
     await bot.change_presence(
@@ -30,6 +31,9 @@ async def on_ready():
             name=f"{config.PREFIX}help"
         )
     )
+
+    # Attempt to create the db, tables, and columns for Chiya.
+    utils.database.setup_db()
 
 @bot.event
 async def on_message(message: discord.Message):

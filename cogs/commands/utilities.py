@@ -1,21 +1,20 @@
-import traceback
-import logging
 import io
+import logging
 import textwrap
+import traceback
 from contextlib import redirect_stdout
 
 import discord
 from discord.ext import commands
 from discord.ext.commands.core import is_owner
-
 from utils.record import record_usage  # pylint: disable=import-error
-
 
 log = logging.getLogger(__name__)
 
 
 class UtilitiesCog(commands.Cog):
     """UtilitiesCog"""
+
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
@@ -30,29 +29,32 @@ class UtilitiesCog(commands.Cog):
         return content.strip('` \n')
 
     @commands.before_invoke(record_usage)
-    @commands.is_owner()
     @commands.group(aliases=["u", "ul"])
     async def utilities(self, ctx):
         if ctx.invoked_subcommand is None:
             # Send the help command for this group
             await ctx.send_help(ctx.command)
 
+    @commands.is_owner()
     @utilities.command(name="ping")
     async def ping(self, ctx):
         """Returns the Discord WebSocket latency."""
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
+    @commands.has_role("Staff")
     @utilities.command(name="count")
     async def count(self, ctx):
         """Returns the current guild member count."""
         await ctx.send(ctx.guild.member_count)
 
+    @commands.has_role("Staff")
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
         """Echos the input argument."""
         await ctx.send(args)
 
+    @commands.is_owner()
     @utilities.command(name="eval")
     async def eval(self, ctx, *, body: str):
         """Evaluates input as Python code."""
@@ -122,6 +124,7 @@ class UtilitiesCog(commands.Cog):
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.send(embed=embed)
 
+    @commands.is_owner()
     @utilities.command(name="reload")
     async def reload_cog(self, ctx, *, module):
         """Reloads specified cog/module. Remember the directory structures."""

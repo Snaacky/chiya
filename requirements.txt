@@ -12,5 +12,5 @@ coloredlogs                         # https://coloredlogs.readthedocs.io/en/late
 
 ###### Requirements with Version Specifiers ######`
 discord==1.0.1
-discord.py==1.5.1                   # https://discordpy.readthedocs.io/
+discord.py==1.6.0                   # https://discordpy.readthedocs.io/
 praw==7.1.0                         # https://praw.readthedocs.io/
