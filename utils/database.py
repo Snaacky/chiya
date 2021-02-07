@@ -17,8 +17,7 @@ def setup_db():
     db = dataset.connect(get_db())
     # TODO: Add check to see if tables exists before creating.
     # Create mod_logs table and columns to store moderator actions.
-    db.create_table("mod_logs")
-    mod_logs = db.get_table("mod_logs")
+    mod_logs = db.create_table("mod_logs")
     mod_logs.create_column("user_id", db.types.bigint)
     mod_logs.create_column("mod_id", db.types.bigint)
     mod_logs.create_column("timestamp", db.types.bigint)
@@ -26,8 +25,7 @@ def setup_db():
     mod_logs.create_column("type", db.types.text)
     
     # Create mod_logs table and columns to store moderator actions.
-    db.create_table("mod_notes")
-    mod_notes = db.get_table("mod_notes")
+    mod_notes = db.create_table("mod_notes")
     mod_notes.create_column("user_id", db.types.bigint)
     mod_notes.create_column("mod_id", db.types.bigint)
     mod_notes.create_column("timestamp", db.types.bigint)
