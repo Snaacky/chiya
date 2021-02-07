@@ -14,3 +14,4 @@ coloredlogs                         # https://coloredlogs.readthedocs.io/en/late
 discord==1.0.1
 discord.py==1.6.0                   # https://discordpy.readthedocs.io/
 praw==7.1.0                         # https://praw.readthedocs.io/
+pyyaml==5.3.1                       # https://pypi.org/project/PyYAML/

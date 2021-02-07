@@ -1,9 +1,4 @@
 import re
-import config
-
-
-def is_owner(ctx):
-    return ctx.message.author.id == config.OWNER_ID
 
 
 def contains_link(ctx):
