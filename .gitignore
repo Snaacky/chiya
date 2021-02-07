@@ -143,3 +143,5 @@ config.py
 .vscode/
 *config.yml
 *config.ymal
+chiya.db
+notes.txt

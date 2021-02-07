@@ -13,6 +13,7 @@ bot:
     prefix:     !ENV    "BOT_PREFIX"
     token:      !ENV    "BOT_TOKEN"
     log_level:  !ENV    "LOG_LEVEL" # NOTSET | TRACE | DEBUG | INFO | WARN | ERROR | CRITICAL
+    database:           "DATABASE.db"
 
 style:
     colours:
@@ -160,11 +161,12 @@ guild:
         - *REDDIT_MOD_ROLE
 
 reddit:
-    subreddit:              "animepiracy"
+    subreddit:              "REDDIT_SUBREDDIT"
     client_id:      !ENV    "REDDIT_CLIENT_ID"
-    secret:         !ENV    "REDDIT_SECRET"
+    client_secret:  !ENV    "REDDIT_SECRET"
     reddit_posts:           *REDDIT_CHANNEL
     poll_rate:              3 # In seconds.
+    user_agent:             "REDDIT_USER_AGENT"
 
 config:
     required_keys: ['bot.token']

@@ -7,7 +7,7 @@ import dataset
 import discord
 from discord.ext import commands
 
-import config
+import constants
 import utils.database
 from utils import embeds
 from utils.record import record_usage

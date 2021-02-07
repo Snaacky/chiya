@@ -1,13 +1,15 @@
+import logging
 import os
 
 import dataset
 
-import config
+import constants
 
+log = logging.getLogger(__name__)
 
 def get_db():
     """ Returns the OS friendly path to the SQLite database. """
-    return "".join(["sqlite:///", os.path.join(os.getcwd(), config.DB_FILE)])
+    return "".join(["sqlite:///", os.path.join(os.getcwd(), constants.Bot.database)])
 
 
 def setup_db():
@@ -32,4 +34,4 @@ def setup_db():
     mod_notes.create_column("note", db.types.text)
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
-    print("Created tables and columns.")
+    log.info("Created any missing tables and columns.")

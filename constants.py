@@ -194,6 +194,7 @@ class Bot(metaclass=YAMLGetter):
     prefix: str
     token: str
     log_level: Union[str, int]
+    database: str
 
 
 class Reddit(metaclass=YAMLGetter):
@@ -201,9 +202,10 @@ class Reddit(metaclass=YAMLGetter):
 
     subreddit: Optional[str]
     client_id: Optional[str]
-    secret: Optional[str]
+    client_secret: Optional[str]
     reddit_posts: Optional[int]
     poll_rate: Optional[int]
+    user_agent: Optional[str]
 
 
 class Colours(metaclass=YAMLGetter):

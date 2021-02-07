@@ -9,7 +9,7 @@ from utils.record import record_usage  # pylint: disable=import-error
 log = logging.getLogger(__name__)
 
 
-class Vote(commands.Cog):
+class VoteCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -41,5 +41,5 @@ class Vote(commands.Cog):
 
 def setup(bot) -> None:
     """Load the Vote cog."""
-    bot.add_cog(Vote(bot))
-    log.info("Cog loaded: Vote")
+    bot.add_cog(VoteCog(bot))
+    log.info("Cog loaded: VoteCog")

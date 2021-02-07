@@ -11,11 +11,10 @@ import constants
 log = logging.getLogger(__name__)
 
 reddit = asyncpraw.Reddit(
-    client_id=config.REDDIT_API_CLIENT_ID,
-    client_secret=config.REDDIT_API_CLIENT_SECRET,
-    user_agent=f"Chiya (for /r/{config.SUBREDDIT_NAME})"
+    client_id=constants.Reddit.client_id,
+    client_secret=constants.Reddit.client_secret,
+    user_agent=constants.Reddit.user_agent
 )
-
 
 class RedditTask(commands.Cog):
     """Reddit Background Task"""
@@ -41,7 +40,7 @@ class RedditTask(commands.Cog):
         await self.bot.wait_until_ready()
 
         try:
-            subreddit = await reddit.subreddit(config.SUBREDDIT_NAME)
+            subreddit = await reddit.subreddit(constants.Reddit.subreddit)
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
             async for submission in subreddit.new(limit=10):
                 # Skips over any posts already stored in cache.
