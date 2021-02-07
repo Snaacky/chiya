@@ -1,23 +1,20 @@
-import asyncio
 import time
 import traceback
 import logging
 
+import asyncpraw
 import discord
 from discord.ext import tasks, commands
-import praw
 
 import config
 
 log = logging.getLogger(__name__)
 
-reddit = praw.Reddit(
+reddit = asyncpraw.Reddit(
     client_id=config.REDDIT_API_CLIENT_ID,
     client_secret=config.REDDIT_API_CLIENT_SECRET,
     user_agent=f"Chiya (for /r/{config.SUBREDDIT_NAME})"
 )
-
-subreddit = config.SUBREDDIT_NAME
 
 
 class RedditTask(commands.Cog):
@@ -39,8 +36,9 @@ class RedditTask(commands.Cog):
         await self.bot.wait_until_ready()
 
         try:
+            subreddit = await reddit.subreddit(config.SUBREDDIT_NAME)
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
-            for submission in reddit.subreddit(subreddit).new(limit=10):
+            async for submission in subreddit.new(limit=10):
                 # Skips over any posts already stored in cache.
                 if submission.id in self.cache:
                     continue
@@ -49,32 +47,40 @@ class RedditTask(commands.Cog):
                 if submission.created_utc <= self.bot_started_at:
                     continue
 
+                # Loads the subreddit and author so we can access extra data.
+                await submission.author.load()
+                await submission.subreddit.load()
+
                 log.info(f"{submission.title} was posted by /u/{submission.author.name}")
 
-                # Builds and stylizes the embed.
+                # Builds and populates the embed.
                 embed = discord.Embed(
-                    title="r/" + subreddit + " - " + submission.title[0:253],
+                    title=submission.title[0:252],
                     url=f"https://reddit.com{submission.permalink}",
                     description=submission.selftext[0:350],  # Cuts off the description.
                 )
+
                 embed.set_author(
-                    name=f"/u/{submission.author.name}",
-                    url=f"https://reddit.com/u/{submission.author.name}"
+                    name=submission.author.name,
+                    url=f"https://reddit.com/u/{submission.author.name}",
+                    icon_url=submission.author.icon_img
                 )
-                embed.set_thumbnail(url=submission.author.icon_img)
+
+                embed.set_footer(
+                    text=f"{submission.link_flair_text} posted on /r/{submission.subreddit}",
+                    icon_url=submission.subreddit.community_icon)
 
                 # Adds ellipsis if the data is too long to signify cutoff.
-                if len(submission.selftext) > 350:
+                if len(submission.selftext) >= 350:
                     embed.description = embed.description + "..."
 
-                if len(submission.title) > 253:
+                if len(submission.title) >= 252:
                     embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate.
                 channel = self.bot.get_channel(config.REDDIT_POSTS_CHANNEL_ID)
                 if not channel:
-                    # TODO: Port print() to logging system.
-                    print(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
+                    logging.error(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue
 
                 # Sends embed into the Discord channel and adds to cache to avoid dupes in the future.
