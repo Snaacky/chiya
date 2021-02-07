@@ -23,17 +23,17 @@ class GeneralCommandsCog(commands.Cog):
         if user is None:
             embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
             embed.set_image(url=ctx.message.author.avatar_url)
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
             return
 
         # Return the profile picture of the mentioned user.
         member = await commands.MemberConverter().convert(ctx, user)
-        if member:
-            embed.set_author(icon_url=member.avatar_url, name=str(member))
-            embed.set_image(url=member.avatar_url)
-        else:
+        if not member:
             raise commands.UserNotFound(user)
-
+        embed.set_author(icon_url=member.avatar_url, name=str(member))
+        embed.set_image(url=member.avatar_url)
+        await ctx.reply(embed=embed)
+            
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
