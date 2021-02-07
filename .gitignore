@@ -143,5 +143,5 @@ config.py
 .vscode/
 *config.yml
 *config.ymal
-chiya.db
+*.db*
 notes.txt

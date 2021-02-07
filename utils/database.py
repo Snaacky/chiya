@@ -30,6 +30,15 @@ def setup_db():
     mod_notes.create_column("mod_id", db.types.bigint)
     mod_notes.create_column("timestamp", db.types.bigint)
     mod_notes.create_column("note", db.types.text)
+
+    # Create remind_me table and columns to store remind_me messages.
+    remind_me = db.create_table("remind_me")
+    remind_me.create_column("reminder_location", db.types.integer)
+    remind_me.create_column("author_id", db.types.integer)
+    remind_me.create_column("date_to_remind", db.types.integer)
+    remind_me.create_column("message", db.types.text)
+    remind_me.create_column("sent", db.types.boolean, default=False)
+
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
     log.info("Created any missing tables and columns.")

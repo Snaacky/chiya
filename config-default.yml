@@ -161,12 +161,12 @@ guild:
         - *REDDIT_MOD_ROLE
 
 reddit:
-    subreddit:              "REDDIT_SUBREDDIT"
+    subreddit:      !ENV    "REDDIT_SUBREDDIT"
     client_id:      !ENV    "REDDIT_CLIENT_ID"
     client_secret:  !ENV    "REDDIT_SECRET"
     reddit_posts:           *REDDIT_CHANNEL
     poll_rate:              3 # In seconds.
-    user_agent:             "REDDIT_USER_AGENT"
+    user_agent:     !ENV    "REDDIT_USER_AGENT"
 
 config:
     required_keys: ['bot.token']
