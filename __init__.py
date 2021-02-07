@@ -70,6 +70,6 @@ if root_log.level != 0:
         logging.getLogger("discord").setLevel(logging.WARNING)
     logging.getLogger("websockets").setLevel(logging.WARNING)
     logging.getLogger("chardet").setLevel(logging.WARNING)
-    logging.getLogger("prawcore").setLevel(logging.WARNING)
+    logging.getLogger("asyncprawcore").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger(__name__)
