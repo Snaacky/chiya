@@ -27,6 +27,8 @@ class RedditTask(commands.Cog):
         self.cache = []
         self.bot_started_at = time.time()
         self.check_for_posts.start()
+        self.cache = []
+        self.bot_started_at = time.time()
 
     def cog_unload(self):
         self.check_for_posts.cancel()
