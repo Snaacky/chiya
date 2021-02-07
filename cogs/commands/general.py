@@ -21,6 +21,7 @@ class GeneralCommandsCog(commands.Cog):
 
         # Return the profile picture of the command issuer.
         if user is None:
+            embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
             embed.set_image(url=ctx.message.author.avatar_url)
             await ctx.send(embed=embed)
             return

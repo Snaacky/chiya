@@ -54,11 +54,6 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
-        # Prevent the user from using the command without providing a reason.
-        if len(reason) == 0:
-            await ctx.reply("You must enter a reason.")
-            return
-
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=member, reason=reason, delete_message_days=delete_message_days)
 
@@ -68,8 +63,13 @@ class ModerationCog(commands.Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
             ))
 
+        # Respond to the context that the user was banned.
+        if reason:
+            await ctx.reply(f"Banned {member} for {reason}")
+        else:
+            await ctx.reply(f"Banned {member}")
+
         # TODO: Add DM letting the user know they were banned and the reason.
-        await ctx.reply(f"Banned {member} for {reason}")
         # TODO: Return successfully banned user embed.
 
     @commands.has_role("Staff")
@@ -90,16 +90,11 @@ class ModerationCog(commands.Cog):
         try:
             await ctx.guild.fetch_ban(member)
         except discord.errors.NotFound:
-            await ctx.reply("Unable to find ban for that user!")
+            await ctx.reply("Unable to find a ban for that user!")
             return  # TODO: Implement error embed here.
 
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
-
-        # Prevent the user from using the command without providing a reason.
-        if len(reason) == 0:
-            await ctx.reply("You must enter a reason.")
-            return
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
         await ctx.guild.unban(user=member, reason=reason)
@@ -110,7 +105,12 @@ class ModerationCog(commands.Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unban"
             ))
 
-        await ctx.reply(f"Unbanned {member} for {reason}")
+        # Respond to the context that the user was unbanned.
+        if reason:
+            await ctx.reply(f"Unbanned {member} for {reason}")
+        else:
+            await ctx.reply(f"Unbanned {member} for {reason}")
+        
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
@@ -138,11 +138,6 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
-        # Prevent the user from using the command without providing a reason.
-        if len(reason) == 0:
-            await ctx.reply("You must enter a reason.")
-            return
-
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
         await ctx.guild.kick(user=member, reason=reason)
 
@@ -153,7 +148,11 @@ class ModerationCog(commands.Cog):
             ))
 
         # Respond to the context that the user was kicked.
-        await ctx.reply(f"Kicked {member} for {reason}")
+        if reason:
+            await ctx.reply(f"Kicked {member} for {reason}")
+        else:
+            await ctx.reply(f"Kicked {member}")
+        
         # TODO: Return successfully kicked user embed.
         # TODO: Add DM letting the user know they were kicked and the reason.
 
@@ -183,11 +182,6 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
-        # Prevent the user from using the command without providing a reason.
-        if len(reason) == 0:
-            await ctx.reply("You must enter a reason.")
-            return
-
         # Adds "Muted" role to user.
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
@@ -201,7 +195,11 @@ class ModerationCog(commands.Cog):
             ))
 
         # Respond to the context that the user was muted.
-        await ctx.reply(f"Muted {member} for {reason}")
+        if reason:
+            await ctx.reply(f"Muted {member} for {reason}")
+        else:
+            await ctx.reply(f"Muted {member}")
+
         # TODO: Return successfully muted user embed.
         # TODO: Add DM letting the user know they were muted and the reason.
 
@@ -230,11 +228,6 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
-        # Prevent the user from using the command without providing a reason.
-        if len(reason) == 0:
-            await ctx.reply("You must enter a reason.")
-            return
-
         # Removes "Muted" role from user.
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
@@ -247,8 +240,12 @@ class ModerationCog(commands.Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
 
-        # Respond to the context that the user was muted.
-        await ctx.reply(f"Unmuted {member} for {reason}")
+        # Respond to the context that the user was unmuted.
+        if reason:
+            await ctx.reply(f"Unmuted {member} for {reason}")
+        else:
+            await ctx.reply(f"Unmuted {member}")
+        
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
@@ -271,7 +268,7 @@ class ModerationCog(commands.Cog):
         # Converts reason from a list of strings into a full sentence string.
         reason = " ".join(reason)
 
-        if len(reason) == 0:
+        if not reason:
             await ctx.reply("You did not specify a reason.")
             return
 
