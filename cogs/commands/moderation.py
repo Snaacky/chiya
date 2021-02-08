@@ -249,7 +249,7 @@ class ModerationCog(Cog):
     @commands.has_role("Staff")
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="addnote")
+    @commands.command(name="addnote", aliases=['add_note', 'note'])
     async def add_note(self, ctx: Context, member: discord.Member, *, note: str):
         """ Adds a moderator note to a member. """
 
