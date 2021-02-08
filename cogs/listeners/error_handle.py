@@ -1,10 +1,11 @@
 import logging
+from typing import Optional
 
+import aiohttp
 import discord
 from discord.ext.commands import Cog, Context, errors
 
 from utils import embeds
-
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -371,6 +372,24 @@ class error_handle(Cog):
         #TODO: Make channel to report these errors.
 
         log.error(f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}", exc_info=error)
+
+class ResponseCodeError(ValueError):
+    """Raised when a non-OK HTTP response is received."""
+
+    def __init__(
+        self,
+        response: aiohttp.ClientResponse,
+        response_json: Optional[dict] = None,
+        response_text: str = ""
+    ):
+        self.status = response.status
+        self.response_json = response_json or {}
+        self.response_text = response_text
+        self.response = response
+
+    def __str__(self):
+        response = self.response_json if self.response_json else self.response_text
+        return f"Status: {self.status} Response: {response}"
 
 def setup(bot) -> None:
     """Load the error_handle cog."""
