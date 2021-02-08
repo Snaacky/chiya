@@ -29,7 +29,7 @@ def make_embed(title: str = None, description: str = None, context: Context = No
                   downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699)
 
     # If the color given was a valid name, use the corresponding hex value, else assume the value is already in hex form.
-    if color.lower() in colors:
+    if isinstance(color, str) and color.lower() in colors:
         embed = discord.Embed(color=colors[color.lower()],
                         title=title, description=description)
     else:
