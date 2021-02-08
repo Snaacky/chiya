@@ -1,44 +1,37 @@
 import logging
 
+import discord
 from discord.ext import commands
+from discord.ext.commands import Bot, Cog, Context
+
 from utils import embeds
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
 
-class GeneralCommandsCog(commands.Cog):
-    """GeneralCommandsCog"""
+class General(Cog):
+    """ General Commands Cog """
 
-    def __init__(self, bot):
+    def __init__(self, bot: Bot):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.command(name="pfp", aliases=["avi", "pp", "avatar", "profilepic", "av"])
-    async def pfp(self, ctx, user=None):
+    @commands.bot_has_permissions(embed_links=True)
+    @commands.command(name='profile_picture', aliases=['pfp'])
+    async def pfp(self, ctx: Context, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
+
+        user = user or ctx.author
         embed = embeds.make_embed(context=ctx)
-
-        # Return the profile picture of the command issuer.
-        if user is None:
-            embed.set_author(icon_url=ctx.author.avatar_url, name=ctx.author)
-            embed.set_image(url=ctx.message.author.avatar_url)
-            await ctx.reply(embed=embed)
-            return
-
-        # Return the profile picture of the mentioned user.
-        member = await commands.MemberConverter().convert(ctx, user)
-        if not member:
-            raise commands.UserNotFound(user)
-        embed.set_author(icon_url=member.avatar_url, name=str(member))
-        embed.set_image(url=member.avatar_url)
-        await ctx.reply(embed=embed)
+        embed.set_image(url=user.avatar_url)
+        await ctx.send(embed=embed)
             
 
     @commands.has_role("Staff")
     @commands.before_invoke(record_usage)
     @commands.command(name="boosttest")
-    async def boosttest(self, ctx):
+    async def boosttest(self, ctx: Context):
         embed = embeds.make_embed(context=ctx, author=False)
         embed.title = "THANK YOU FOR THE BOOST!"
         embed.description = "In ornare est augue, at malesuada quam gravida id. Sed hendrerit ipsum congue, tristique nibh non, faucibus lorem. Fusce maximus risus nec rhoncus posuere. Vestibulum sapien erat, vehicula eget lorem ac, semper egestas mi. Maecenas sit amet cursus quam. Morbi non tincidunt ex. Curabitur vel pellentesque metus, vitae semper odio. Aliquam nec lectus convallis, placerat sapien ut, aliquet neque. Mauris feugiat ac arcu vel sollicitudin. Nam aliquet a sapien in auctor. Vestibulum consectetur molestie finibus."
@@ -46,7 +39,7 @@ class GeneralCommandsCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot) -> None:
-    """ Load the GeneralCog cog. """
-    bot.add_cog(GeneralCommandsCog(bot))
-    log.info("Cog loaded: GeneralCommandsCog")
+def setup(bot: Bot) -> None:
+    """ Load the General cog. """
+    bot.add_cog(General(bot))
+    log.info("Cog loaded: General")
