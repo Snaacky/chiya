@@ -170,4 +170,4 @@ reddit:
     user_agent:     !ENV    "REDDIT_USER_AGENT"
 
 config:
-    required_keys: ['Nzk3ODYwNDYzNDMzNDgyMjcx.X_sndg.41OknOhgpu-QoQs6pxE4TyTPfok']
+    required_keys: ['bot.token']
