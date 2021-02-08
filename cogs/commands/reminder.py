@@ -8,6 +8,7 @@ import parsedatetime.parsedatetime as pdt
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 
+import constants
 from utils import database, embeds
 from utils.pagination import LinePaginator
 from utils.record import record_usage
@@ -70,7 +71,8 @@ class Reminder(Cog):
             description="I will be messaging you here on "
         f"[**{date_to_remind} UTC**](http://www.wolframalpha.com/input/?i="
         f"{date_to_remind.replace(' ', '+')}+UTC+To+Local+Time)\n\n"
-        f"{message}")
+        f"{message}",
+        image_url=constants.Icons.remind_green, color=constants.Colours.soft_green)
         await ctx.reply(embed=embed)
 
     @remind_group.command(name='edit', enabled=False)
@@ -93,7 +95,8 @@ class Reminder(Cog):
                 f"{message['date_to_remind'].replace(' ', '+')}+UTC+To+Local+Time):")
             messages.append(f"**ID: {message['id']}** | Alert on {alert_time}\n{message['message']}")
 
-        embed = embeds.make_embed(context=ctx, title="Reminders")
+        embed = embeds.make_embed(context=ctx, title="Reminders",
+            image_url=constants.Icons.remind_blurple, color=constants.Colours.soft_blue)
 
         # Paginate results
         await LinePaginator.paginate(messages, ctx=ctx, embed=embed, max_lines=5,
@@ -120,7 +123,8 @@ class Reminder(Cog):
             data = dict(id=reminder_id, sent=True)
             table.update(data, ['id'])
         embed = embeds.make_embed(context=ctx, title="Reminder deleted", 
-            description=f"Reminder ID: {reminder_id} has been deleted.")
+            description=f"Reminder ID: {reminder_id} has been deleted.",
+            image_url=constants.Icons.remind_red, color=constants.Colours.soft_red)
         await ctx.send(embed=embed)
 
 def setup(bot: Bot) -> None:
