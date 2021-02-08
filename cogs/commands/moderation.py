@@ -254,7 +254,7 @@ class ModerationCog(Cog):
         """ Adds a moderator note to a member. """
 
         embed = embeds.make_embed(context=ctx, title=f"Noting member: {member.name}", 
-            image_url=constants.Icons.pencil, color=constants.Colours.soft_red)
+            image_url=constants.Icons.pencil, color=constants.Colours.soft_blue)
         embed.description=f"{member.mention} was noted by {ctx.author.mention}:\n{note}"
 
         # Add the note to the mod_notes database.

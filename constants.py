@@ -221,6 +221,7 @@ class Colours(metaclass=YAMLGetter):
     soft_red: int
     soft_green: int
     soft_orange: int
+    soft_blue: int
     bright_green: int
 
 

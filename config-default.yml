@@ -20,6 +20,7 @@ style:
         soft_red:     0xcd6d6d
         soft_green:   0x68c290
         soft_orange:  0xf9cb54
+        soft_blue:    0x7289da
         bright_green: 0x01d277
 
     emojis:
