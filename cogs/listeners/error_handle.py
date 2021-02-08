@@ -132,9 +132,9 @@ class error_handle(Cog):
 
         elif isinstance(error, errors.CommandInvokeError):
             # Raised when the command being invoked raised an custom exception.
-            '''if isinstance(error.original, ResponseCodeError):
+            if isinstance(error.original, ResponseCodeError):
                 await self.handle_api_error(ctx, error.original)
-            else:'''
+
             await self.handle_unexpected_error(ctx, error)
         else:
             await self.handle_unexpected_error(ctx, error)
@@ -243,7 +243,7 @@ class error_handle(Cog):
         if isinstance(error, bot_missing_errors):
             embed = self._get_error_embed(
                 title="Bot is missing required permissions or roles",
-                body=f"Missing: `{error.param.name}`",
+                body=f"Missing: `{error.args[0]}`",
                 ctx=ctx
             )
             try:
@@ -251,28 +251,28 @@ class error_handle(Cog):
             except: # this will likely fail if the error to begin with is not able to post embeds
                 await ctx.send(
                     "Sorry, it looks like I don't have the permissions or roles I need to do that.\n" +
-                        f"Missing: `{error.param.name}`",
+                        f"Missing: `{error.args[0]}`",
                     delete_after=AUTO_DELETE_TIME
                 )
-            log.info(f"Bot missing permissions {error.param.name=} in {ctx.guild.name=}")
+            log.info(f"Bot missing permissions {error.args[0]=} in {ctx.guild.name=}")
 
         elif isinstance(error, user_missing_errors):
             embed = self._get_error_embed(
                 title="You are missing required permissions or roles",
-                body=f"Missing: `{error.param.name}`",
+                body=f"Missing: `{error.args[0]}`",
                 ctx=ctx
             )
             await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
-            log.debug(f"{ctx.author} missing permissions {error.param.name=} in {ctx.guild.name=}")
+            log.debug(f"{ctx.author} missing permissions {error.args[0]=} in {ctx.guild.name=}")
 
         elif isinstance(error, user_missing_errors):
             embed = self._get_error_embed(
                 title="Check Failed",
-                body=f"Checks: `{error.param.name}`",
+                body=f"Checks: `{error.args[0]}`",
                 ctx=ctx
             )
             await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
-            log.debug(f"{ctx.author} missing permissions {error.param.name=} in {ctx.guild.name=}")
+            log.debug(f"{ctx.author} missing permissions {error.args[0]=} in {ctx.guild.name=}")
 
         elif isinstance(error, (errors.NotOwner)):
             embed = self._get_error_embed(
