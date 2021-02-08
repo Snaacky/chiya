@@ -92,7 +92,7 @@ def _recursive_update(original, new):
 
 if Path("config.yml").exists():
     # Overwriting default config with new config.
-    log.info("Found `config.yml` file, loading constants from it.")
+    print("INFO: Found `config.yml` file, loading constants from it.")
     with open("config.yml", encoding="UTF-8") as file:
         user_config = yaml.safe_load(file)
     _recursive_update(_CONFIG_YAML, user_config)
@@ -115,6 +115,9 @@ def check_required_keys(keys):
                 f"A configuration for `{key_path}` is required, but was not found. "
                 "Please set it in `config.yml` or setup an environment variable and try again."
                 )
+            # constants.py is loaded before logs, therefore, loggin in this file may not work properly.
+            print(f"CRITICAL: A configuration for `{key_path}` is required, but was not found. "
+                "Please set it in `config.yml` or setup an environment variable and try again.")
             raise
 
 
@@ -175,6 +178,9 @@ class YAMLGetter(type):
             )
             log.critical(
                 f"Tried accessing configuration variable at `{dotted_path}`, but it could not be found.")
+            # constants.py is loaded before logs, therefore, loggin in this file may not work properly.
+            print(
+                f"CRITICAL: Tried accessing configuration variable at `{dotted_path}`, but it could not be found.")
             raise
 
     def __getitem__(cls, name):
