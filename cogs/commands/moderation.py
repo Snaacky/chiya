@@ -24,12 +24,12 @@ class ModerationCog(Cog):
 
     async def can_action_user(self, ctx: Context, member: discord.Member) -> bool:
         """ Stop mods from doing stupid things. """
-        # Stop mods from actioning themselves or the bot.
-        if member.id == ctx.author.id or member.id == self.bot.user.id:
+        # Stop mods from actioning on the bot.
+        if member.id == self.bot.user.id:
             await ctx.reply("You cannot action that user.")
             return False
 
-        # Stop mods from actioning one another or people higher ranked than them.
+        # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
             await ctx.reply("You cannot action that user.")
             return False
