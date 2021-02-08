@@ -20,14 +20,14 @@ class RedditTask(commands.Cog):
     """Reddit Background Task"""
     def __init__(self, bot):
         self.bot = bot
-        if constants.Reddit.subreddit:
-            # Only start if there is a place to post
+        if constants.Reddit.subreddit and constants.Reddit.reddit_posts:
+            # Only start if there is a place to post and a subreddit to monitor.
             log.info("Starting loop for polling reddit")
             self.check_for_posts.start()
             self.cache = []
             self.bot_started_at = time.time()
         else:
-            log.warning("Channel to post reddit posts not found.")
+            log.warning("Subreddit or discord channel to post is missing from config.")
 
     def cog_unload(self):
         self.check_for_posts.cancel()
@@ -36,7 +36,7 @@ class RedditTask(commands.Cog):
     @tasks.loop(seconds=constants.Reddit.poll_rate)
     async def check_for_posts(self):
         """Checking for new reddit posts"""
-        # Wait before starting because if Reddit is down when the bot starts, the bot will never get to on_ready().
+        # Wait before starting or else new posts may not post to discord.
         await self.bot.wait_until_ready()
 
         try:
