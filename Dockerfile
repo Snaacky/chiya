@@ -1,5 +1,5 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM FROM python:3.8-slim-buster
+FROM python:3.8-slim-buster
 
 ENV BOT_PREFIX=""
 ENV BOT_TOKEN=""
