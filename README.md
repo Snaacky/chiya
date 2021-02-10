@@ -1,3 +1,4 @@
+![Docker](https://github.com/ranimepiracy/Chiya/workflows/Docker/badge.svg?branch=master)
 # Chiya
 Our private bot for the /r/animepiracy [Discord server](https://discord.gg/piracy).
 
