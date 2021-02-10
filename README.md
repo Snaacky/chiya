@@ -15,5 +15,5 @@ docker build . -t chiya-bot
 ```
 Afterwards you will just need to run
 ```
-docker run -d index-web
+docker run -d chiya-bot
 ```
