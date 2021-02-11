@@ -1,9 +1,9 @@
 import re
-import datetime
+from datetime import datetime
 
 def time_now() ->str:
     """ Returns current time in human-readable format. """
-    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    now = datetime.utcnow
     time = now.strftime('%m/%d/%Y, %I:%M:%S %p')
     return (time)
 
