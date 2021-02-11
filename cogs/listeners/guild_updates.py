@@ -1,18 +1,26 @@
 import logging
 import datetime
+from os import name
 
 import discord
+from discord.enums import AuditLogAction, AuditLogActionCategory
 from discord.ext import commands
+
+
+import constants
+from utils import embeds
+from utils import utils
 
 
 log = logging.getLogger(__name__)
 
-
 class GuildUpdates(commands.Cog):
     """Guild event handler cog."""
-
+    
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        guild = self.bot.get_guild(constants.Guild.id)
+    
 
     @commands.Cog.listener()
     async def on_guild_available(self, guild: discord.Guild) -> None:
@@ -54,6 +62,16 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_create
         """
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        guild = await self.bot.fetch_guild(constants.Guild.id)
+        audit_log_entry = None
+        async for x in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_create):
+            audit_log_entry = x
+            break
+        
+        await log_channel.send(f"`CREATED:` Channel `#{channel.name}`({channel.id}) was created at `{utils.time_now()}` by `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id}).")
+        
         log.info(f'{channel.name} has has been created in {channel.guild}.')
 
     @commands.Cog.listener()
@@ -69,6 +87,17 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_delete
         """
+        
+        # TODO Make log_channel, guild global variables to reduce redundancy
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        audit_log_entry = None
+        guild = await self.bot.fetch_guild(constants.Guild.id)
+        async for x in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete):
+            audit_log_entry = x
+            break
+        
+        await log_channel.send(f"`DELETED:` Channel `#{channel.name}`({channel.id}) was deleted at `{utils.time_now()}` by `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id}).")
+        
         log.info(f'{channel.name} has has been deleted in {channel.guild}.')
 
     @commands.Cog.listener()
@@ -85,7 +114,14 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_pins_update
         """
-        log.info(f'{channel.name} updated its pin: {last_pin}.')
+        
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        await log_channel.send(f"A message was pinned/unpinned in `#{channel.name}`({channel.mention}) at `{utils.time_now()}`.")
+
+        log.info(f'Message pinned in `{channel.name}` at `{last_pin}`.')
+
+
 
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel) -> None:
@@ -101,6 +137,30 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_update
         """
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        
+        audit_log_entry = None
+        guild = await self.bot.fetch_guild(constants.Guild.id)
+        
+        async for x in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_update):
+            audit_log_entry = x
+            break
+
+        changes = audit_log_entry.changes
+        
+        message = "`UPDATED:`\n"
+        
+        for key, value in iter(changes.before):
+            message += f"`BEFORE:` {key} : {value}\n"
+            for key, value in iter(changes.after):
+                message += f"`AFTER:` {key} : {value}\n"
+            break
+
+        message += f"`TIME:` `{utils.time_now()}`\n"
+        message += f"`USER:` `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id})"
+        await log_channel.send(message)
+        
 
     @commands.Cog.listener()
     async def on_guild_emojis_update(self, guild: discord.Guild, before: discord.Emoji, after: discord.Emoji) -> None:
@@ -117,6 +177,30 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_emojis_update
         """
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        
+        audit_log_entry = None
+        guild = await self.bot.fetch_guild(constants.Guild.id)
+        
+        async for x in guild.audit_logs(limit=1):
+            audit_log_entry = x
+            break
+
+        changes = audit_log_entry.changes
+        
+        message = "`UPDATED:`\n"
+        
+        for key, value in iter(changes.before):
+            message += f"`BEFORE:` {key} : {value}\n"
+            for key, value in iter(changes.after):
+                message += f"`AFTER:` {key} : {value}\n"
+            break
+
+        message += f"`TIME:` `{utils.time_now()}`\n"
+        message += f"`USER:` `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id})"
+        
+        await log_channel.send(message)
 
     @commands.Cog.listener()
     async def on_guild_integrations_update(self, guild: discord.Guild) -> None:
@@ -174,6 +258,9 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_role_create
         """
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        await log_channel.send(f"`CREATED:` Role `@{role.name}`({role.mention}) was created at `{utils.time_now()}`.")
 
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role) -> None:
@@ -188,6 +275,9 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_role_delete
         """
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        await log_channel.send(f"`DELETED:` Role `@{role.name}` was deleted at `{utils.time_now()}`.")
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before: discord.Role, after: discord.Role) -> None:
@@ -203,6 +293,30 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_role_update
         """
+        
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        
+        audit_log_entry = None
+        guild = await self.bot.fetch_guild(constants.Guild.id)
+        
+        async for x in guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_update):
+            audit_log_entry = x
+            break
+
+        changes = audit_log_entry.changes
+        
+        message = "`UPDATED:`\n"
+        
+        for key, value in iter(changes.before):
+            message += f"`BEFORE:` {key} : {value}\n"
+            for key, value in iter(changes.after):
+                message += f"`AFTER:` {key} : {value}\n"
+            break
+
+        message += f"`TIME:` `{utils.time_now()}`\n"
+        message += f"`USER:` `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id})"
+        await log_channel.send(message)
 
     @commands.Cog.listener()
     async def on_guild_update(self, before: discord.Guild, after: discord.Guild) -> None:
@@ -218,7 +332,10 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_update
         """
-
+        
+        
+        log_channel = await self.bot.fetch_channel(constants.Guild.channels['chiya_logs'])
+        await log_channel.send(f"`UPDATED:` Guild was updated at `{utils.time_now}`.")
 
 def setup(bot: commands.Bot) -> None:
     """Load the guild_updates cog."""

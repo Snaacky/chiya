@@ -1,5 +1,11 @@
 import re
+import datetime
 
+def time_now() ->str:
+    """ Returns current time in human-readable format. """
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    time = now.strftime('%m/%d/%Y, %I:%M:%S %p')
+    return (time)
 
 def contains_link(ctx):
     regex = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)"
