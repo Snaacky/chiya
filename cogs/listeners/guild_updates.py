@@ -70,7 +70,13 @@ class GuildUpdates(commands.Cog):
             audit_log_entry = x
             break
         
-        await log_channel.send(f"`CREATED:` Channel `#{channel.name}`({channel.id}) was created at `{utils.time_now()}` by `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id}).")
+        message = f"""
+            `CREATED:` Channel `#{channel.name}`({channel.id}) was created at 
+            `{utils.time_now()}` by `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`
+            ({audit_log_entry.user.id}).")
+            """
+        
+        await log_channel.send(message)
         
         log.info(f'{channel.name} has has been created in {channel.guild}.')
 
@@ -96,7 +102,11 @@ class GuildUpdates(commands.Cog):
             audit_log_entry = x
             break
         
-        await log_channel.send(f"`DELETED:` Channel `#{channel.name}`({channel.id}) was deleted at `{utils.time_now()}` by `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`({audit_log_entry.user.id}).")
+        message = f"""
+            `DELETED:` Channel `#{channel.name}`({channel.id}) was deleted at 
+            `{utils.time_now()}` by `{audit_log_entry.user.name}#{audit_log_entry.user.discriminator}`
+            ({audit_log_entry.user.id}).")
+            """
         
         log.info(f'{channel.name} has has been deleted in {channel.guild}.')
 
