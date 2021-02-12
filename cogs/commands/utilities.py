@@ -9,7 +9,8 @@ import re
 import discord
 from discord.ext import commands
 from discord.ext.commands.core import is_owner
-from utils.record import record_usage  # pylint: disable=import-error
+from utils import embeds
+from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class UtilitiesCog(commands.Cog):
             'author': ctx.author,
             'guild': ctx.guild,
             'message': ctx.message,
+            'embeds': embeds,
             '_': self._last_result
         }
         # Creating embed.
