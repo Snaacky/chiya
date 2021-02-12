@@ -5,7 +5,7 @@ import time
 import dataset
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context
+from discord.ext.commands import Cog, Bot, Context, Greedy
 
 import constants
 import utils.database
@@ -316,6 +316,32 @@ class ModerationCog(Cog):
         await ctx.send("https://piracy.moe")
         await ctx.message.delete()
 
+    @commands.has_role("Staff")
+    @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="remove", aliases=['rm'])
+    async def remove_messages(self, ctx: Context, number_of_messages: Greedy[int] = 10, members: Greedy[discord.Member] = None, *, reason: str):
+        """ Remove numbers of messages from most recent or from specific members """
+
+        # Checking if the given message falls under the selected members, but if no members given, then remove them all.
+        def should_remove(message: discord.Message):
+            if members is None: 
+                return True
+            elif message.author in members:
+                return True
+            return False
+
+        embed = embeds.make_embed(context=ctx, title=f"Removing messages", 
+            image_url=constants.Icons.message_delete, color=constants.Colours.soft_red)
+
+        deleted = await ctx.channel.purge(limit=number_of_messages, check=should_remove)
+
+        if members == None:
+            embed.description=f"{ctx.author.mention} removed the previous {len(deleted)} messages for:\n{reason}"
+        else:
+            embed.description=f"""{ctx.author.mention} removed {len(deleted)} message(s) from:\n 
+                {', '.join([member.mention for member in members])}\n for:\n{reason}"""
+        await ctx.send(embed=embed)
 
 # The setup function below is necessary. Remember we give bot.add_cog() the name of the class in this case SimpleCog.
 # When we load the cog, we use the name of the file.
