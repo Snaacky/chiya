@@ -3,8 +3,7 @@
 Our private bot for the /r/animepiracy [Discord server](https://discord.gg/piracy).
 
 # Getting started
-The easiest way is to use docker via:
-
+The easiest way is to use [docker](https://docs.docker.com/engine/reference/run/) via:
 ```
 docker run -d docker.pkg.github.com/ranimepiracy/chiya/chiya-bot
 ```
