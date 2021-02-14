@@ -9,10 +9,8 @@ ENV BOT_PREFIX="" \
   REDDIT_CLIENT_ID="" \
   REDDIT_SECRET="" \
   REDDIT_USER_AGENT="" \
-
   # Keeps Python from generating .pyc files in the container
   PYTHONDONTWRITEBYTECODE=1 \
-
   # Turns off buffering for easier container logging
   PYTHONUNBUFFERED=1
 
