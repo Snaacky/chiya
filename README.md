@@ -12,7 +12,7 @@ As the container images are currently hosted on privat github, you will need to 
 ```
 docker login https://docker.pkg.github.com -u USERNAME -p TOKEN
 ```
-ideally you pass the token as pipe instead of saving your token in your bash-history resulting in potential security riscs with
+ideally you pass the token as pipe instead of saving your token in your bash-history, resulting in potential security risks with
 ```
 cat ~/TOKEN.txt | docker login https://docker.pkg.github.com -u USERNAME --password-stdin
 ```
