@@ -18,7 +18,7 @@ As the docker image is currently hosted on a private Github repo, you will need 
 docker login https://docker.pkg.github.com -u USERNAME -p TOKEN
 ```
 
-* For security purposes, pass the token as pipe instead of saving your token in your bash-history.
+* If security is a concern, pass the token as pipe instead of saving your token in your bash-history.
 
 ```Shell
 cat ~/TOKEN.txt | docker login https://docker.pkg.github.com -u USERNAME --password-stdin
