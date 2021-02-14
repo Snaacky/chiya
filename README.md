@@ -25,7 +25,7 @@ cat ~/TOKEN.txt | docker login https://docker.pkg.github.com -u USERNAME --passw
 ```
 
 **Step 2:**
-Run this script to auto download and run the container.
+Run this script to auto-download and run the container.
 
 ```Shell
 docker run -d \
@@ -43,7 +43,7 @@ docker run -d \
     docker.pkg.github.com/ranimepiracy/chiya/chiya-bot:latest
 ```
 
-* Please replacce all user variables in the above command defined by <> with the correct values.
+* Please replace all user variables in the above command defined by <> with the correct values.
 
 ### Example
 
@@ -70,7 +70,7 @@ Bot should now be running.
 ## Building from source code
 
 **Step 1:**
-Download source files to your computer and open up a command line interface at that location.
+Download source files to your computer and open up a command-line-interface at that location.
 
 **Step 2:**
 Build the [Docker image](https://docs.docker.com/engine/reference/commandline/build/) with the following command:
@@ -80,7 +80,7 @@ docker build . -t chiya-bot
 ```
 
 **Step 3:**
-Afterwards you will just need to run
+Run the container with this command.
 
 ```Shell
 docker run -d \
@@ -106,7 +106,7 @@ docker run -d \
 
 ## Why is the docker command so long?
 
-* The enviromental variables do not have to be in the command but it is simple for them to be located there. If you do not wish for them to be located there because of security or other reasons, you can use the `config.yml` file for that useage instead. You simply follow the syntax of the [`config-default.yml`](https://github.com/ranimepiracy/Chiya/blob/master/config-default.yml) and **ONLY** type what you want to change or else you may break future changes.
+* The environmental variables do not have to be in the command but it is simple for them to be located there. If you do not wish for them to be located there because of security or other reasons, you can use the `config.yml` file for that usage instead. You simply follow the syntax of the [`config-default.yml`](https://github.com/ranimepiracy/Chiya/blob/master/config-default.yml) and **ONLY** type what you want to change or else you may break future changes.
 * Here is an example of what the two files look like compared to each other. Be sure you remove the `!ENV` Infix.
 ![IMAGE](https://i.imgur.com/bJsGCyY.png)
 
@@ -117,4 +117,4 @@ docker run -d \
 
 ## Where do I get a Reddit Client ID and Secret?
 
-* You need to make register your bot appliation on reddit, you can do that [HERE](https://www.reddit.com/prefs/apps/)
+* You need to make register your bot application on Reddit, you can do that [HERE](https://www.reddit.com/prefs/apps/)
