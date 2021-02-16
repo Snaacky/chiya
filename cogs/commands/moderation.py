@@ -320,8 +320,8 @@ class ModerationCog(Cog):
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="remove", aliases=['rm'])
-    async def remove_messages(self, ctx: Context, number_of_messages: Greedy[int] = 10, members: Greedy[discord.Member] = None, *, reason: str):
-        """ Remove numbers of messages from most recent or from specific members """
+    async def remove_messages(self, ctx: Context, number_of_messages: int, members: Greedy[discord.Member] = None, *, reason: str):
+        """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
 
         # Checking if the given message falls under the selected members, but if no members given, then remove them all.
         def should_remove(message: discord.Message):
