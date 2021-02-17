@@ -46,19 +46,19 @@ class ModerationCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="ban")
-    async def ban_member(self, ctx: Context, member: discord.Member, *, reason: str):
-        """ Bans member from guild. """
+    async def ban_member(self, ctx: Context, user: discord.User, *, reason: str):
+        """ Bans user from guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        if not await self.can_action_user(ctx, user):
             return
 
-        embed = embeds.make_embed(context=ctx, title=f"Banning member: {member.name}", 
+        embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
             image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
-        embed.description=f"{member.mention} was banned by {ctx.author.mention} for:\n{reason}"
+        embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
-        await ctx.guild.ban(user=member, reason=reason, delete_message_days=0)
+        await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
 
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -66,12 +66,12 @@ class ModerationCog(Cog):
             message = f"You were banned from {ctx.guild} for: {reason}"
             await channel.send(message)
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="NOTICE", value="Unable to message user about this action.")
 
         # Add the ban to the mod_log database.
         with dataset.connect(utils.database.get_db()) as db:
             db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
+                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
             ))
 
         await ctx.reply(embed=embed)
