@@ -331,6 +331,9 @@ class ModerationCog(Cog):
                 return True
             return False
 
+        if number_of_messages > 200:
+            number_of_messages = 200
+
         embed = embeds.make_embed(context=ctx, title=f"Removing messages", 
             image_url=constants.Icons.message_delete, color=constants.Colours.soft_red)
 
