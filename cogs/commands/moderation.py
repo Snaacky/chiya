@@ -319,7 +319,7 @@ class ModerationCog(Cog):
     @commands.has_role("Staff")
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="remove", aliases=['rm'])
+    @commands.command(name="remove", aliases=['rm', 'purge'])
     async def remove_messages(self, ctx: Context, number_of_messages: int, members: Greedy[discord.Member] = None, *, reason: str):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
 
