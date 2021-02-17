@@ -83,16 +83,16 @@ class ModerationCog(Cog):
     async def unban_member(self, ctx: Context, user: discord.User, *, reason: str):
         """ Unbans user from guild. """
 
-        embed = embeds.make_embed(context=ctx, title=f"Unbanning member: {member.name}", 
+        embed = embeds.make_embed(context=ctx, title=f"Unbanning user: {user.name}", 
             image_url=constants.Icons.user_unban, color=constants.Colours.soft_green)
-        embed.description=f"{member.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
+        embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
         await ctx.guild.unban(user=user, reason=reason)
 
         # Send user message telling them that they were unbanned and why.
         try: # Incase user has DM's Blocked.
-            channel = await member.create_dm()
+            channel = await user.create_dm()
             message = f"You were unbanned from {ctx.guild} for: {reason}"
             await channel.send(message)
         except:
