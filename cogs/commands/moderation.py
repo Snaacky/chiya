@@ -83,10 +83,6 @@ class ModerationCog(Cog):
     async def unban_member(self, ctx: Context, user: discord.User, *, reason: str):
         """ Unbans user from guild. """
 
-        # Checks if invoker can action that user (self, bot, etc.)
-        if not await self.can_action_user(ctx, user):
-            return
-
         embed = embeds.make_embed(context=ctx, title=f"Unbanning member: {member.name}", 
             image_url=constants.Icons.user_unban, color=constants.Colours.soft_green)
         embed.description=f"{member.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
