@@ -71,27 +71,12 @@ class error_handle(Cog):
 
         # Checking if error hasn't already been handled locally
         if hasattr(error, "handled"):
-            log.trace(
-                f"Command {command} had its error already handled locally; ignoring."
-            )
+            log.trace(f"Command {command} had its error already handled locally; ignoring.")
             return
 
         # Going through diffrent types of errors to handle them differently.
-        if isinstance(error, errors.CommandNotFound) and not hasattr(
-            ctx, "invoked_from_error_handler"
-        ):
-            await ctx.send(
-                embed=self._get_error_embed(
-                    title="Error",
-                    body=f"Sorry, **`{ctx.invoked_with}`** cannot be located, be sure you typed it correctly.\n\n  ```{error}```",
-                    ctx=ctx
-                ),
-                delete_after=AUTO_DELETE_TIME
-            )
-            log.debug(
-                f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}",
-                exc_info=error,
-            )
+        if isinstance(error, errors.CommandNotFound) and not hasattr(ctx, "invoked_from_error_handler"):
+            return
 
         elif isinstance(error, errors.UserInputError):
             await self.handle_user_input_error(ctx, error)
