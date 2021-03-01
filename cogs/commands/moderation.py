@@ -49,9 +49,11 @@ class ModerationCog(Cog):
     async def ban_member(self, ctx: Context, user: discord.User, *, reason: str):
         """ Bans user from guild. """
 
-        # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_user(ctx, user):
-            return
+        # Checking if user is in guild.
+        if ctx.guild.get_member(user.id) is not None: 
+            # Checks if invoker can action that member (self, bot, etc.)
+            if not await self.can_action_user(ctx, user):
+                return
 
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
             image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
@@ -148,6 +150,8 @@ class ModerationCog(Cog):
         """ Mutes member in guild. """
 
         # TODO: Implement temp/timed mute functionality
+
+        # WARNING: this is worthless if the member leaves and then rejoins. (resets roles)
 
         # Checks if invoker can action that user (self, bot, etc.)
         if not await self.can_action_user(ctx, member):
