@@ -22,16 +22,16 @@ class ModerationCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_action_user(self, ctx: Context, member: discord.Member) -> bool:
+    async def can_action_member(self, ctx: Context, member: discord.Member) -> bool:
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            await ctx.reply("You cannot action that user.")
+            await ctx.reply("You cannot action that member.")
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            await ctx.reply("You cannot action that user.")
+            await ctx.reply("You cannot action that member.")
             return False
 
         # Checking if Bot is able to even perform the action
@@ -50,9 +50,11 @@ class ModerationCog(Cog):
         """ Bans user from guild. """
 
         # Checking if user is in guild.
-        if ctx.guild.get_member(user.id) is not None: 
+        if ctx.guild.get_member(user.id) is not None:
+            # Convert to member object
+            member = await commands.MemberConverter().convert(ctx, user.mention)
             # Checks if invoker can action that member (self, bot, etc.)
-            if not await self.can_action_user(ctx, user):
+            if not await self.can_action_member(ctx, member):
                 return
 
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
@@ -64,7 +66,7 @@ class ModerationCog(Cog):
 
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
-            channel = await member.create_dm()
+            channel = await user.create_dm()
             message = f"You were banned from {ctx.guild} for: {reason}"
             await channel.send(message)
         except:
@@ -115,8 +117,8 @@ class ModerationCog(Cog):
     async def kick_member(self, ctx: Context, member: discord.Member, *, reason: str):
         """ Kicks member from guild. """
 
-        # Checks if invoker can action that user (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        # Checks if invoker can action that member (self, bot, etc.)
+        if not await self.can_action_member(ctx, member):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Kicking member: {member.name}", 
@@ -153,8 +155,8 @@ class ModerationCog(Cog):
 
         # WARNING: this is worthless if the member leaves and then rejoins. (resets roles)
 
-        # Checks if invoker can action that user (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        # Checks if invoker can action that member (self, bot, etc.)
+        if not await self.can_action_member(ctx, member):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
@@ -190,7 +192,7 @@ class ModerationCog(Cog):
         """ Unmutes member in guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        if not await self.can_action_member(ctx, member):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
