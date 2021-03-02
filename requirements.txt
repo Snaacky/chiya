@@ -6,11 +6,12 @@
 # pip3 install -r requirements.txt
 
 
-###### Requirements without Version Specifiers ######`
+###### Requirements without Version Specifiers ######
 coloredlogs                         # https://coloredlogs.readthedocs.io/en/latest/
+parsedatetime                       # https://pypi.org/project/parsedatetime/
 
-
-###### Requirements with Version Specifiers ######`
-discord==1.0.1
-discord.py==1.5.1                   # https://discordpy.readthedocs.io/
-praw==7.1.0                         # https://praw.readthedocs.io/
+###### Requirements with Version Specifiers ######
+dataset==1.4.4                      # https://dataset.readthedocs.io/
+discord.py==1.6.0                   # https://discordpy.readthedocs.io/
+pyyaml==5.4.1                       # https://pyyaml.org/wiki/PyYAMLDocumentation/
+asyncpraw==7.1.0                    # https://asyncpraw.readthedocs.io/

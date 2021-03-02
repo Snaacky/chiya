@@ -1,19 +1,23 @@
-import traceback
-import logging
 import io
+import logging
 import textwrap
+import traceback
 from contextlib import redirect_stdout
+import glob
+import re
+
 import discord
 from discord.ext import commands
 from discord.ext.commands.core import is_owner
-
-import utils  # pylint: disable=import-error
-from utils.record import record_usage  # pylint: disable=import-error
+from utils import embeds
+from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
 
 class UtilitiesCog(commands.Cog):
+    """UtilitiesCog"""
+
     def __init__(self, bot):
         self.bot = bot
         self._last_result = None
@@ -28,28 +32,32 @@ class UtilitiesCog(commands.Cog):
         return content.strip('` \n')
 
     @commands.before_invoke(record_usage)
-    @commands.is_owner()
     @commands.group(aliases=["u", "ul"])
     async def utilities(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send('No utilities subcommand specified.')
+            # Send the help command for this group
+            await ctx.send_help(ctx.command)
 
+    @commands.is_owner()
     @utilities.command(name="ping")
     async def ping(self, ctx):
-        """ Returns the Discord WebSocket latency. """
+        """Returns the Discord WebSocket latency."""
         print("Ping subcommand invoked.")
-        await ctx.send(f"Client Latency is:{round(self.bot.latency * 1000)}ms.")
+        await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
+    @commands.has_role("Staff")
     @utilities.command(name="count")
     async def count(self, ctx):
-        """ Returns the current guild member count. """
+        """Returns the current guild member count."""
         await ctx.send(ctx.guild.member_count)
 
+    @commands.has_role("Staff")
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
-        """ Echos the input argument. """
+        """Echos the input argument."""
         await ctx.send(args)
 
+    @commands.is_owner()
     @utilities.command(name="eval")
     async def eval(self, ctx, *, body: str):
         """Evaluates input as Python code."""
@@ -61,6 +69,7 @@ class UtilitiesCog(commands.Cog):
             'author': ctx.author,
             'guild': ctx.guild,
             'message': ctx.message,
+            'embeds': embeds,
             '_': self._last_result
         }
         # Creating embed.
@@ -119,18 +128,48 @@ class UtilitiesCog(commands.Cog):
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.send(embed=embed)
 
+    @commands.is_owner()
     @utilities.command(name="reload")
-    async def reload_cog(self, ctx, *, module):
-        """ Reloads specified cog/module. Remember the directory structures. """
-        try:
-            self.bot.reload_extension(module)
-        except commands.ExtensionError as e:
-            await ctx.send(f'{e.__class__.__name__}: {e}')
+    async def reload_cog(self, ctx: commands.Context, name_of_cog: str = None):
+        """ Reloads specified cog or all cogs. """
 
+        regex = r"(?<=<).*(?=\..* object at 0x.*>)"
+        if name_of_cog is not None and name_of_cog in ctx.bot.cogs:
+            # Reload cog if it exists.
+            cog = re.search(regex, str(ctx.bot.cogs[name_of_cog]))
+            try:
+                self.bot.reload_extension(cog.group())
+                
+            except commands.ExtensionError as e:
+                await ctx.message.add_reaction("❌")
+                await ctx.send(f'{e.__class__.__name__}: {e}')
+            
+            else:
+                await ctx.message.add_reaction("✔")
+                await ctx.send(f"Reloaded `{cog.group()}` module!")
+        
+        elif name_of_cog is None:
+            # Reload all the cogs in the folder named cogs.
+            # Skips over any cogs that start with '__' or do not end with .py.
+            cogs = []
+            try:
+                for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
+                    if "\\" in cog:  # Pathing on Windows.
+                        self.bot.reload_extension(cog.replace("\\", ".")[:-3])
+                    else:  # Pathing on Linux.
+                        self.bot.reload_extension(cog.replace("/", ".")[:-3])
+            except commands.ExtensionError as e:
+                await ctx.message.add_reaction("❌")
+                await ctx.send(f'{e.__class__.__name__}: {e}')
+
+            else:
+                await ctx.message.add_reaction("✔")
+                await ctx.send("Reloaded all modules!")
         else:
-            await ctx.message.add_reaction("✔")
-            await ctx.send(f"Reloaded the {module} module.")
-    
+            await ctx.message.add_reaction("❌")
+            await ctx.send("Module not found, check spelling, it's case sensitive")
+
+
     @commands.command(name='addemoji', aliases=['ae', 'adde'    ])
     async def addemoji(self, ctx, *emojis):
         """ Add the given emojis as a reaction to the specified message, or the previous message. """
@@ -140,11 +179,11 @@ class UtilitiesCog(commands.Cog):
             if emoji.isnumeric():
                 msg = await ctx.fetch_message(int(emoji))
                 continue
-            
             await msg.add_reaction(emoji)
+            
 
 
 def setup(bot) -> None:
-    """ Load the UtilitiesCog cog. """
+    """Load the UtilitiesCog cog."""
     bot.add_cog(UtilitiesCog(bot))
     log.info("Cog loaded: UtilitiesCog")

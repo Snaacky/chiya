@@ -5,14 +5,16 @@ from typing import List, Union
 from discord import Embed
 from discord.ext.commands import Bot, Cog, Command, Group, HelpCommand, CommandError
 from utils import embeds
-import config
+from utils.pagination import LinePaginator
+import constants
 
 
 # Enabling logs.
 log = logging.getLogger(__name__)
 
-COMMANDS_PER_PAGE = 14 # TODO: set this to a more reasonable ammount when pagination is setup
-PREFIX = config.PREFIX
+COMMANDS_PER_PAGE = 7
+PREFIX = constants.Bot.prefix
+TIME_TO_LIVE = 120 # In seconds, how long an embed should remain until self-destruct.
 
 
 class CustomHelpCommand(HelpCommand):
@@ -63,9 +65,13 @@ class CustomHelpCommand(HelpCommand):
 
         for command in commands:
             signature = f" {command.signature}" if command.signature else ""
-            details.append(
-                f"\n**`{PREFIX}{command.qualified_name}{signature}`**\n*"
-                f"{command.short_doc or 'No details provided'}*")
+            details.append(f"\n**`{PREFIX}{command.qualified_name}{signature}`**\n*")
+
+            if command.help is None:
+                details.append("No details provided*")
+            else:
+                details.append(f"{command.short_doc.strip()}*")
+
         if return_as_list:
             return details
         return "".join(details)
@@ -108,7 +114,12 @@ class CustomHelpCommand(HelpCommand):
         except CommandError:
             command_details += "***You cannot run this command.***\n\n"
 
-        command_details += f"*{command.help or 'No details provided.'}*\n"
+
+        if command.help is None:
+            command_details += "*No details provided.*\n"
+        else:
+            command_details += f"*{command.help.strip()}*\n"
+
         embed.description = command_details
 
         return embed
@@ -148,8 +159,8 @@ class CustomHelpCommand(HelpCommand):
 
             # Split cogs or categories which have too many commands to fit in one page.
             # The length of commands is included for later use when aggregating into pages for the paginator.
-            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE):
-                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE]
+            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE*2):
+                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE*2]
                 joined_lines = "".join(truncated_lines)
                 cog_or_category_pages.append((f"**{cog_or_category}**{joined_lines}", len(truncated_lines)))
 
@@ -158,7 +169,7 @@ class CustomHelpCommand(HelpCommand):
         page = ""
         for page_details, length in cog_or_category_pages:
             counter += length
-            if counter > COMMANDS_PER_PAGE:
+            if counter > COMMANDS_PER_PAGE*2:
                 # force a new page on paginator even if it falls short of the max pages
                 # since we still want to group categories/cogs.
                 counter = length
@@ -171,16 +182,16 @@ class CustomHelpCommand(HelpCommand):
             # add any remaining command help that didn't get added in the last iteration above.
             pages.append(page)
 
-        # TODO: put this into a pageinator, for now, display only first page
         embed = embeds.make_embed(
             title="Command: Help",
-            description=pages[0],
             image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             context=self.context
             )
+        await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
+            max_size=2000, restrict_to_user=self.context.author, time_to_delete=TIME_TO_LIVE)
 
-        await self.context.send(embed=embed)
-        log.info(pages)
+
+        log.trace(pages)
 
     async def send_cog_help (self, cog: Cog) -> None:
         """Handles the implementation of the cog page in the help command.
@@ -197,17 +208,21 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command Help",
-            description=f"**{cog.qualified_name}**\n*{cog.description}*",
             image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             context=self.context
             )
 
-        # Overwrite description if there is more info.
+        if cog.description is None:
+            embed.description = f"**{cog.qualified_name}**\n*No details provided.*"
+        else:
+            embed.description = f"**{cog.qualified_name}**\n*{cog.description.strip()}*"
+
+        # Append description if there is more info.
         command_details = self.get_commands_brief_details(commands_)
         if command_details:
             embed.description += f"\n\n**Commands:**\n{command_details}"
 
-        await self.context.send(embed=embed)
+        await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
 
     async def send_group_help (self, group: Group) -> None:
         """Handles the implementation of the group page in the help command.
@@ -228,16 +243,48 @@ class CustomHelpCommand(HelpCommand):
 
         # Remove subcommands that the user can't run or are hidden, and sort by name.
         # Note: Only checks the subcommands themselves for checks, not the root command.
-        commands_ = await self.filter_commands(subcommands, sort=True)
+        filtered_commands = await self.filter_commands(subcommands, sort=True)
 
         embed = await self.command_formatting(group)
 
-        # Add subcommands, if any, to the end of the embed.
-        command_details = self.get_commands_brief_details(commands_)
-        if command_details:
-            embed.description += f"\n**Subcommands:**\n{command_details}"
+        group_pages = []
 
-        await self.context.send(embed=embed)
+        for cog_name, _commands in itertools.groupby(filtered_commands, key=self._category_key):
+            sorted_commands = sorted(_commands, key=lambda c: c.name)
+
+            if len(sorted_commands) == 0:
+                continue
+
+            # Get each command's info in the group.
+            command_detail_lines = self.get_commands_brief_details(sorted_commands, return_as_list=True)
+
+            # Split cogs or categories which have too many commands to fit in one page.
+            # The length of commands is included for later use when aggregating into pages for the paginator.
+            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE*2):
+                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE*2]
+                joined_lines = "".join(truncated_lines)
+                group_pages.append((f"{joined_lines}", len(truncated_lines)))
+
+        pages = []
+        counter = 0
+        page = ""
+        for page_details, length in group_pages:
+            counter += length
+            if counter > COMMANDS_PER_PAGE*2:
+                # force a new page on paginator even if it falls short of the max pages
+                counter = length
+                pages.append(embed.description + page)
+                page = f"{page_details}\n\n"
+            else:
+                page += f"{page_details}\n\n"
+
+        if page:
+            # add any remaining command help that didn't get added in the last iteration above.
+            pages.append(embed.description + page)
+
+        log.debug("Sending group help to paginator")
+        await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
+        max_size=2000, restrict_to_user=self.context.author, time_to_delete=TIME_TO_LIVE)
 
     async def send_command_help (self, command: Command) -> None:
         """Handles the implementation of the single command page in the help command.
@@ -250,7 +297,7 @@ class CustomHelpCommand(HelpCommand):
             command (Command): The command that was requested for help.
         """
         embed = await self.command_formatting(command)
-        await self.context.send(embed=embed)
+        await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
 
 class Help(Cog):
     """Custom Embed Pagination Help feature."""
