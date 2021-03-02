@@ -19,7 +19,7 @@ class General(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(name='profile_picture', aliases=['pfp'])
+    @commands.command(name='profile_picture', aliases=["pfp", "avi", "pp", "avatar", "profilepic", "av"])
     async def pfp(self, ctx: Context, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
 
