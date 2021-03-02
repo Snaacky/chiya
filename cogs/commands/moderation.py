@@ -22,16 +22,16 @@ class ModerationCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_action_user(self, ctx: Context, member: discord.Member) -> bool:
+    async def can_action_member(self, ctx: Context, member: discord.Member) -> bool:
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            await ctx.reply("You cannot action that user.")
+            await ctx.reply("You cannot action that member.")
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            await ctx.reply("You cannot action that user.")
+            await ctx.reply("You cannot action that member.")
             return False
 
         # Checking if Bot is able to even perform the action
@@ -49,9 +49,13 @@ class ModerationCog(Cog):
     async def ban_member(self, ctx: Context, user: discord.User, *, reason: str):
         """ Bans user from guild. """
 
-        # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_user(ctx, user):
-            return
+        # Checking if user is in guild.
+        if ctx.guild.get_member(user.id) is not None:
+            # Convert to member object
+            member = await commands.MemberConverter().convert(ctx, user.mention)
+            # Checks if invoker can action that member (self, bot, etc.)
+            if not await self.can_action_member(ctx, member):
+                return
 
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
             image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
@@ -62,7 +66,7 @@ class ModerationCog(Cog):
 
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
-            channel = await member.create_dm()
+            channel = await user.create_dm()
             message = f"You were banned from {ctx.guild} for: {reason}"
             await channel.send(message)
         except:
@@ -113,8 +117,8 @@ class ModerationCog(Cog):
     async def kick_member(self, ctx: Context, member: discord.Member, *, reason: str):
         """ Kicks member from guild. """
 
-        # Checks if invoker can action that user (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        # Checks if invoker can action that member (self, bot, etc.)
+        if not await self.can_action_member(ctx, member):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Kicking member: {member.name}", 
@@ -149,8 +153,10 @@ class ModerationCog(Cog):
 
         # TODO: Implement temp/timed mute functionality
 
-        # Checks if invoker can action that user (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        # WARNING: this is worthless if the member leaves and then rejoins. (resets roles)
+
+        # Checks if invoker can action that member (self, bot, etc.)
+        if not await self.can_action_member(ctx, member):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
@@ -160,7 +166,9 @@ class ModerationCog(Cog):
         # Adds "Muted" role to member.
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
-        await member.add_roles(role)
+        if role is None:
+            role = await ctx.guild.create_role(name="Muted")
+        await member.add_roles(role, reason=reason)
 
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
@@ -186,7 +194,7 @@ class ModerationCog(Cog):
         """ Unmutes member in guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_user(ctx, member):
+        if not await self.can_action_member(ctx, member):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
@@ -196,7 +204,7 @@ class ModerationCog(Cog):
         # Removes "Muted" role from member.
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
-        await member.remove_roles(role)
+        await member.remove_roles(role, reason=reason)
 
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -246,17 +254,17 @@ class ModerationCog(Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="addnote", aliases=['add_note', 'note'])
-    async def add_note(self, ctx: Context, member: discord.Member, *, note: str):
-        """ Adds a moderator note to a member. """
+    async def add_note(self, ctx: Context, user: discord.User, *, note: str):
+        """ Adds a moderator note to a user. """
 
-        embed = embeds.make_embed(context=ctx, title=f"Noting member: {member.name}", 
+        embed = embeds.make_embed(context=ctx, title=f"Noting user: {user.name}", 
             image_url=constants.Icons.pencil, color=constants.Colours.soft_blue)
-        embed.description=f"{member.mention} was noted by {ctx.author.mention}:\n{note}"
+        embed.description=f"{user.mention} was noted by {ctx.author.mention}:\n{note}"
 
         # Add the note to the mod_notes database.
         with dataset.connect(utils.database.get_db()) as db:
             db["mod_notes"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
+                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
             ))
 
         # Respond to the context that the message was noted.
