@@ -61,9 +61,6 @@ class ModerationCog(Cog):
             image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
         embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
 
-        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
-        await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
-
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
             channel = await user.create_dm()
@@ -71,6 +68,9 @@ class ModerationCog(Cog):
             await channel.send(message)
         except:
             embed.add_field(name="NOTICE", value="Unable to message user about this action.")
+
+        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
+        await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
 
         # Add the ban to the mod_log database.
         with dataset.connect(utils.database.get_db()) as db:
@@ -91,9 +91,6 @@ class ModerationCog(Cog):
             image_url=constants.Icons.user_unban, color=constants.Colours.soft_green)
         embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
 
-        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
-        await ctx.guild.unban(user=user, reason=reason)
-
         # Send user message telling them that they were unbanned and why.
         try: # Incase user has DM's Blocked.
             channel = await user.create_dm()
@@ -101,6 +98,9 @@ class ModerationCog(Cog):
             await channel.send(message)
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+
+        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
+        await ctx.guild.unban(user=user, reason=reason)
 
         # Add the unban to the mod_log database.
         with dataset.connect(utils.database.get_db()) as db:
@@ -125,9 +125,6 @@ class ModerationCog(Cog):
             image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
         embed.description=f"{member.mention} was kicked by {ctx.author.mention} for:\n{reason}"
 
-        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
-        await ctx.guild.kick(user=member, reason=reason)
-
         # Send user message telling them that they were kicked and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
@@ -135,6 +132,9 @@ class ModerationCog(Cog):
             await channel.send(message)
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+
+        # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
+        await ctx.guild.kick(user=member, reason=reason)
 
         # Add the kick to the mod_log database.
         with dataset.connect(utils.database.get_db()) as db:
@@ -163,13 +163,6 @@ class ModerationCog(Cog):
             image_url=constants.Icons.user_mute, color=constants.Colours.soft_red)
         embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
 
-        # Adds "Muted" role to member.
-        # TODO: Add role name to configuration, maybe by ID?
-        role = discord.utils.get(ctx.guild.roles, name="Muted")
-        if role is None:
-            role = await ctx.guild.create_role(name="Muted")
-        await member.add_roles(role, reason=reason)
-
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
@@ -177,6 +170,13 @@ class ModerationCog(Cog):
             await channel.send(message)
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+
+        # Adds "Muted" role to member.
+        # TODO: Add role name to configuration, maybe by ID?
+        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        if role is None:
+            role = await ctx.guild.create_role(name="Muted")
+        await member.add_roles(role, reason=reason)
 
         # Add the mute to the mod_log database.
         with dataset.connect(utils.database.get_db()) as db:
@@ -201,11 +201,6 @@ class ModerationCog(Cog):
             image_url=constants.Icons.user_unmute, color=constants.Colours.soft_green)
         embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for:\n{reason}"
 
-        # Removes "Muted" role from member.
-        # TODO: Add role name to configuration, maybe by ID?
-        role = discord.utils.get(ctx.guild.roles, name="Muted")
-        await member.remove_roles(role, reason=reason)
-
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
@@ -213,6 +208,11 @@ class ModerationCog(Cog):
             await channel.send(message)
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+
+        # Removes "Muted" role from member.
+        # TODO: Add role name to configuration, maybe by ID?
+        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        await member.remove_roles(role, reason=reason)
 
         # Add the mute to the mod_log database.
         with dataset.connect(utils.database.get_db()) as db:
@@ -335,8 +335,8 @@ class ModerationCog(Cog):
                 return True
             return False
 
-        if number_of_messages > 200:
-            number_of_messages = 200
+        if number_of_messages > 100:
+            number_of_messages = 100
 
         embed = embeds.make_embed(context=ctx, title=f"Removing messages", 
             image_url=constants.Icons.message_delete, color=constants.Colours.soft_red)
