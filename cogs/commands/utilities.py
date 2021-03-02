@@ -165,7 +165,6 @@ class UtilitiesCog(commands.Cog):
             else:
                 await ctx.message.add_reaction("✔")
                 await ctx.send("Reloaded all modules!")
-
         else:
             await ctx.message.add_reaction("❌")
             await ctx.send("Module not found, check spelling, it's case sensitive")
