@@ -166,7 +166,9 @@ class ModerationCog(Cog):
         # Adds "Muted" role to member.
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
-        await member.add_roles(role)
+        if role is None:
+            role = await ctx.guild.create_role(name="Muted")
+        await member.add_roles(role, reason=reason)
 
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
@@ -202,7 +204,7 @@ class ModerationCog(Cog):
         # Removes "Muted" role from member.
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
-        await member.remove_roles(role)
+        await member.remove_roles(role, reason=reason)
 
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -252,17 +254,17 @@ class ModerationCog(Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="addnote", aliases=['add_note', 'note'])
-    async def add_note(self, ctx: Context, member: discord.Member, *, note: str):
-        """ Adds a moderator note to a member. """
+    async def add_note(self, ctx: Context, user: discord.User, *, note: str):
+        """ Adds a moderator note to a user. """
 
-        embed = embeds.make_embed(context=ctx, title=f"Noting member: {member.name}", 
+        embed = embeds.make_embed(context=ctx, title=f"Noting user: {user.name}", 
             image_url=constants.Icons.pencil, color=constants.Colours.soft_blue)
-        embed.description=f"{member.mention} was noted by {ctx.author.mention}:\n{note}"
+        embed.description=f"{user.mention} was noted by {ctx.author.mention}:\n{note}"
 
         # Add the note to the mod_notes database.
         with dataset.connect(utils.database.get_db()) as db:
             db["mod_notes"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
+                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
             ))
 
         # Respond to the context that the message was noted.
