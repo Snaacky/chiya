@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 import discord
 from discord.ext import commands
@@ -38,21 +39,17 @@ class General(Cog):
         embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
         await ctx.send(embed=embed)
 
+    @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name='addemoji', aliases=['ae', 'adde'    ])
-    async def addemoji(self, ctx, *emojis):
-        """ Add the given emojis as a reaction to the specified message, or the previous message. """
+    @commands.command(name='addemoji', aliases=['ae', 'adde'])
+    async def addemoji(self, ctx, message: discord.Message, *emojis: Union[discord.Emoji, discord.PartialEmoji, discord.Reaction, str]):
+        """ Add the given emojis as a reaction to the specified message. """
         
-        msg = (await ctx.channel.history(limit=3).flatten())[2]
         for emoji in emojis:
-            if emoji.isnumeric():
-                msg = await ctx.fetch_message(int(emoji))
-                continue
-            
-            await msg.add_reaction(emoji)
-            
-
-        
+            try:
+                await message.add_reaction(emoji)
+            except discord.errors.HTTPException:
+                pass
 
 
 

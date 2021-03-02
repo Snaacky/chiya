@@ -170,19 +170,6 @@ class UtilitiesCog(commands.Cog):
             await ctx.send("Module not found, check spelling, it's case sensitive")
 
 
-    @commands.command(name='addemoji', aliases=['ae', 'adde'    ])
-    async def addemoji(self, ctx, *emojis):
-        """ Add the given emojis as a reaction to the specified message, or the previous message. """
-        
-        msg = (await ctx.channel.history(limit=3).flatten())[2]
-        for emoji in emojis:
-            if emoji.isnumeric():
-                msg = await ctx.fetch_message(int(emoji))
-                continue
-            await msg.add_reaction(emoji)
-            
-
-
 def setup(bot) -> None:
     """Load the UtilitiesCog cog."""
     bot.add_cog(UtilitiesCog(bot))
