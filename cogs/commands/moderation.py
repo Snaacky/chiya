@@ -350,6 +350,27 @@ class ModerationCog(Cog):
                 {', '.join([member.mention for member in members])}\n for:\n{reason}"""
         await ctx.send(embed=embed)
 
+    @commands.has_role("Staff")
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="topic")
+    async def topic(self, ctx: Context, *, new_topic: str = None):
+        """ Fetches the current channel topic, updates it if parameter provided. """
+        # Return the current channel topic if a new topic was not provided.
+        if new_topic == None:
+            await ctx.reply(f"```{ctx.channel.topic}```")
+            return
+
+        # Check to make sure it's actually a new topic because Discord is harsh on channel edit rate limits.
+        if new_topic == ctx.channel.topic:
+            await ctx.reply("The topic you provided matches the current channel topic!")
+            return
+
+        # Otherwise, assume a new channel topic was provided and update the channel accordingly.
+        await ctx.channel.edit(topic=new_topic)
+        await ctx.reply("Updated channel topic.")
+
+
 # The setup function below is necessary. Remember we give bot.add_cog() the name of the class in this case SimpleCog.
 # When we load the cog, we use the name of the file.
 def setup(bot: Bot) -> None:
