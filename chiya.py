@@ -6,10 +6,10 @@ from discord.ext import commands
 
 import __init__
 import utils.database
-import constants
+import config
 
 bot = commands.Bot(
-    command_prefix=constants.Bot.prefix,
+    command_prefix=config.prefix,
     intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
     case_insensitive=True)
 log = logging.getLogger(__name__)
@@ -22,13 +22,12 @@ async def on_ready():
     https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
     """
     log.info(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
-    log.info(f"discord.py version: {discord.__version__}")
 
     # Adding in a activity message when the bot begins.
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{constants.Bot.prefix}help"
+            name=f"{config.prefix}help"
         )
     )
 
@@ -54,4 +53,4 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("/", ".")[:-3])
 
     # Finally, run the bot.
-    bot.run(constants.Bot.token)
+    bot.run(config.token)

@@ -6,10 +6,10 @@ from pathlib import Path
 
 import coloredlogs
 
-import constants
+import config
 
 
-log_level = constants.Bot.log_level
+log_level = config.log_level
 
 if log_level is None:
     log_level = "NOTSET"

@@ -6,14 +6,14 @@ from discord import Embed
 from discord.ext.commands import Bot, Cog, Command, Group, HelpCommand, CommandError
 from utils import embeds
 from utils.pagination import LinePaginator
-import constants
+import config
 
 
 # Enabling logs.
 log = logging.getLogger(__name__)
 
 COMMANDS_PER_PAGE = 7
-PREFIX = constants.Bot.prefix
+PREFIX = config.prefix
 TIME_TO_LIVE = 120 # In seconds, how long an embed should remain until self-destruct.
 
 

@@ -7,7 +7,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
 
-import constants
+import config
 import utils.database
 from utils import embeds
 from utils.record import record_usage
@@ -58,7 +58,7 @@ class ModerationCog(Cog):
                 return
 
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
-            image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
+            image_url=config.user_ban, color=config.soft_red)
         embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
 
         # Send user message telling them that they were banned and why.
@@ -88,7 +88,7 @@ class ModerationCog(Cog):
         """ Unbans user from guild. """
 
         embed = embeds.make_embed(context=ctx, title=f"Unbanning user: {user.name}", 
-            image_url=constants.Icons.user_unban, color=constants.Colours.soft_green)
+            image_url=config.user_unban, color=config.soft_green)
         embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
 
         # Send user message telling them that they were unbanned and why.
@@ -122,7 +122,7 @@ class ModerationCog(Cog):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Kicking member: {member.name}", 
-            image_url=constants.Icons.user_ban, color=constants.Colours.soft_red)
+            image_url=config.user_ban, color=config.soft_red)
         embed.description=f"{member.mention} was kicked by {ctx.author.mention} for:\n{reason}"
 
         # Send user message telling them that they were kicked and why.
@@ -160,7 +160,7 @@ class ModerationCog(Cog):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
-            image_url=constants.Icons.user_mute, color=constants.Colours.soft_red)
+            image_url=config.user_mute, color=config.soft_red)
         embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
 
         # Send member message telling them that they were muted and why.
@@ -198,7 +198,7 @@ class ModerationCog(Cog):
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
-            image_url=constants.Icons.user_unmute, color=constants.Colours.soft_green)
+            image_url=config.user_unmute, color=config.soft_green)
         embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for:\n{reason}"
 
         # Send member message telling them that they were banned and why.
@@ -230,7 +230,7 @@ class ModerationCog(Cog):
         """ Sends member a warning DM and logs to database. """
 
         embed = embeds.make_embed(context=ctx, title=f"Warning member: {member.name}", 
-            image_url=constants.Icons.user_warn, color=constants.Colours.soft_orange)
+            image_url=config.user_warn, color=config.soft_orange)
         embed.description=f"{member.mention} was warned by {ctx.author.mention} for:\n{reason}"
 
         # Send member message telling them that they were warned and why.
@@ -258,7 +258,7 @@ class ModerationCog(Cog):
         """ Adds a moderator note to a user. """
 
         embed = embeds.make_embed(context=ctx, title=f"Noting user: {user.name}", 
-            image_url=constants.Icons.pencil, color=constants.Colours.soft_blue)
+            image_url=config.pencil, color=config.soft_blue)
         embed.description=f"{user.mention} was noted by {ctx.author.mention}:\n{note}"
 
         # Add the note to the mod_notes database.
@@ -339,7 +339,7 @@ class ModerationCog(Cog):
             number_of_messages = 100
 
         embed = embeds.make_embed(context=ctx, title=f"Removing messages", 
-            image_url=constants.Icons.message_delete, color=constants.Colours.soft_red)
+            image_url=config.message_delete, color=config.soft_red)
 
         deleted = await ctx.channel.purge(limit=number_of_messages, check=should_remove)
 

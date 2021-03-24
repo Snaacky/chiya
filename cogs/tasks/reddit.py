@@ -6,21 +6,21 @@ import asyncpraw
 import discord
 from discord.ext import tasks, commands
 
-import constants
+import config
 
 log = logging.getLogger(__name__)
 
 reddit = asyncpraw.Reddit(
-    client_id=constants.Reddit.client_id,
-    client_secret=constants.Reddit.client_secret,
-    user_agent=constants.Reddit.user_agent
+    client_id=config.client_id,
+    client_secret=config.client_secret,
+    user_agent=config.user_agent
 )
 
 class RedditTask(commands.Cog):
     """Reddit Background Task"""
     def __init__(self, bot):
         self.bot = bot
-        if constants.Reddit.subreddit and constants.Reddit.reddit_posts:
+        if config.subreddit and config.reddit_posts:
             # Only start if there is a place to post and a subreddit to monitor.
             log.info("Starting loop for polling reddit")
             self.check_for_posts.start()
@@ -33,14 +33,14 @@ class RedditTask(commands.Cog):
         self.check_for_posts.cancel()
 
     # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
-    @tasks.loop(seconds=constants.Reddit.poll_rate)
+    @tasks.loop(seconds=config.poll_rate)
     async def check_for_posts(self):
         """Checking for new reddit posts"""
         # Wait before starting or else new posts may not post to discord.
         await self.bot.wait_until_ready()
 
         try:
-            subreddit = await reddit.subreddit(constants.Reddit.subreddit)
+            subreddit = await reddit.subreddit(config.subreddit)
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
             async for submission in subreddit.new(limit=10):
                 # Skips over any posts already stored in cache.
@@ -82,7 +82,7 @@ class RedditTask(commands.Cog):
                     embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate.
-                channel = self.bot.get_channel(constants.Reddit.reddit_posts)
+                channel = self.bot.get_channel(config.reddit_posts)
                 if not channel:
                     log.warning(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue

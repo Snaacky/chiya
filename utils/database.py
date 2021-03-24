@@ -3,13 +3,13 @@ import os
 
 import dataset
 
-import constants
+import config
 
 log = logging.getLogger(__name__)
 
 def get_db():
     """ Returns the OS friendly path to the SQLite database. """
-    return "".join(["sqlite:///", os.path.join(os.getcwd(), constants.Bot.database)])
+    return "".join(["sqlite:///", os.path.join(os.getcwd(), config.database)])
 
 
 def setup_db():
