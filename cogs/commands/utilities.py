@@ -48,12 +48,6 @@ class UtilitiesCog(commands.Cog):
         await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
     @commands.has_role(config.role_mod)
-    @utilities.command(aliases=["population", "pop"])
-    async def count(self, ctx):
-        """Returns the current guild member count."""
-        await ctx.send(ctx.guild.member_count)
-
-    @commands.has_role(config.role_mod)
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
         """Echos the input argument."""
