@@ -4,6 +4,7 @@ import datetime
 import discord
 from discord.ext import commands
 
+from utils import embeds
 
 log = logging.getLogger(__name__)
 
@@ -218,6 +219,14 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_update
         """
+        if after.premium_subscription_count > before.premium_subscription_count:
+            embed = embeds.make_embed(author=False, color=0xff73fa)
+            embed.title = f"A new booster appeared!"
+            embed.description = f"""Thank you so much for the server boost! We are now at {before.premium_subscription_count} boosts!
+
+            You can contact any <@&763031634379276308> member with a [hex color](https://www.google.com/search?q=hex+color) and your desired role name for a custom booster role."""
+            embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
+            await before.guild.system_channel.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
