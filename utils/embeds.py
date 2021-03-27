@@ -23,7 +23,7 @@ def make_embed(title: str = None, description: str = None, context: Context = No
                   dark_blue=0x206694, purple=0x9b59b6, dark_purple=0x71368a, magenta=0xe91e63, dark_magenta=0xad1457,
                   gold=0xf1c40f, dark_gold=0xc27c0e, orange=0xe67e22, dark_orange=0xa84300, red=0xe74c3c,
                   dark_red=0x992d22, lighter_grey=0x95a5a6, dark_grey=0x607d8b, light_grey=0x979c9f,
-                  darker_grey=0x546e7a, blurple=0x7289da, greyple=0x99aab5, dark_theme=0x36393F,
+                  darker_grey=0x546e7a, blurple=0x7289da, greyple=0x99aab5, dark_theme=0x36393F, nitro_pink=0xff73fa,
                   # Reddit colors:
                   reddit=0xff5700, orange_red=0xFF450, upvote=0xFF8b60, neutral=0xC6C6C6, 
                   downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699)

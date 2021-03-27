@@ -220,7 +220,7 @@ class GuildUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_update
         """
         if after.premium_subscription_count > before.premium_subscription_count:
-            embed = embeds.make_embed(author=False, color=0xff73fa)
+            embed = embeds.make_embed(author=False, color="nitro_pink")
             embed.title = f"A new booster appeared!"
             embed.description = f"""Thank you so much for the server boost! We are now at {after.premium_subscription_count} boosts!
 

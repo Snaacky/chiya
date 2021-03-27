@@ -35,10 +35,11 @@ class General(Cog):
     @commands.command(name='addemoji', aliases=['ae', 'adde'])
     async def addemoji(self, ctx, message: discord.Message, *emojis: Union[discord.Emoji, discord.PartialEmoji, discord.Reaction, str]):
         """ Add the given emojis as a reaction to the specified message. """
-        
+
         for emoji in emojis:
             try:
                 await message.add_reaction(emoji)
+                await ctx.message.delete()
             except discord.errors.HTTPException:
                 pass
 

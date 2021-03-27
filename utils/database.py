@@ -38,12 +38,7 @@ def setup_db():
     remind_me.create_column("date_to_remind", db.types.integer)
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
-
-    # Create booster table and columns to store boosters.
-    remind_me = db.create_table("boosters")
-    remind_me.create_column("booster_id", db.types.integer)
-    mod_notes.create_column("timestamp", db.types.bigint)
-
+    
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
     log.info("Created any missing tables and columns.")
