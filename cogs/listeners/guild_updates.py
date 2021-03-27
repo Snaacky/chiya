@@ -222,7 +222,7 @@ class GuildUpdates(commands.Cog):
         if after.premium_subscription_count > before.premium_subscription_count:
             embed = embeds.make_embed(author=False, color=0xff73fa)
             embed.title = f"A new booster appeared!"
-            embed.description = f"""Thank you so much for the server boost! We are now at {before.premium_subscription_count} boosts!
+            embed.description = f"""Thank you so much for the server boost! We are now at {after.premium_subscription_count} boosts!
 
             You can contact any <@&763031634379276308> member with a [hex color](https://www.google.com/search?q=hex+color) and your desired role name for a custom booster role."""
             embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
