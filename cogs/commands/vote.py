@@ -4,6 +4,8 @@ import sys
 import discord
 import utils  # pylint: disable=import-error
 from discord.ext import commands
+
+import config
 from utils.record import record_usage  # pylint: disable=import-error
 
 log = logging.getLogger(__name__)
@@ -13,7 +15,7 @@ class VoteCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_role("Discord Mod")
+    @commands.has_role(config.role_mod)
     @commands.before_invoke(record_usage)
     @commands.group()
     async def vote(self, ctx, msgId: int):

@@ -42,7 +42,7 @@ class ModerationCog(Cog):
         # Otherwise, the action is probably valid, return true.
         return True
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="ban")
@@ -80,7 +80,7 @@ class ModerationCog(Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unban")
@@ -110,7 +110,7 @@ class ModerationCog(Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(kick_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="kick")
@@ -144,7 +144,7 @@ class ModerationCog(Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="mute")
@@ -186,7 +186,7 @@ class ModerationCog(Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unmute")
@@ -222,7 +222,7 @@ class ModerationCog(Cog):
 
         await ctx.reply(embed=embed)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="warn")
@@ -250,7 +250,7 @@ class ModerationCog(Cog):
         # Respond to the context that the member was warned.
         await ctx.reply(embed=embed)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="addnote", aliases=['add_note', 'note'])
@@ -270,57 +270,7 @@ class ModerationCog(Cog):
         # Respond to the context that the message was noted.
         await ctx.reply(embed=embed)
 
-    @commands.is_owner()
-    @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True)
-    @commands.before_invoke(record_usage)
-    @commands.command(name="rules")
-    async def rules(self, ctx: Context):
-        """ Generates the #rules channel embeds. """
-
-        embed = discord.Embed(colour=discord.Colour(0x2f3136))
-        embed.set_image(url="https://i.imgur.com/Yk4kwZy.gif")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #1: Do not send copyright infringing content.",
-            description="Posting copyright infringing material including streams, torrents, downloads, or Discord file uploads are forbidden by Discord's terms of service and will be removed.")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #2: Do not harass other users.",
-            description="Please be courteous and respectful to your fellow server members. We will not tolerate harassment or personal attacks in our community.")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #3: Do not spam.",
-            description="Spamming is strictly forbidden. This includes but is not limited to: large walls of text, copypasta, and/or repetitive message spam.")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #4: Do not send NSFW content outside of NSFW channels.",
-            description="NSFW content is only allowed in channels marked as NSFW. You can opt-in to our NSFW channel through the #gate. NSFL content is not allowed.")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #5: Do not post unmarked spoilers.",
-            description="All spoilers or potential spoilers must be marked as a spoiler. Instructions on how to use Discord spoilers can be found [here](https://support.discord.com/hc/en-us/articles/360022320632-Spoiler-Tags-).")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #6: Do not advertise without permission.",
-            description="All promotional content must be approved beforehand by the mod team. This includes websites, apps, social media, etc. We do not allow advertising through DMs under any circumstances.")
-        await ctx.send(embed=embed)
-
-        embed = discord.Embed(
-            title="Rule #7: Do not request or B/S/T invites.",
-            description="Do not request, buy, sell, trade, or publicly give away invites for private communities through our server. Any of the above actions is a bannable offense in most private communities.")
-        await ctx.send(embed=embed)
-
-        await ctx.send("https://discord.gg/piracy")
-        await ctx.send("https://piracy.moe")
-        await ctx.message.delete()
-
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="remove", aliases=['rm', 'purge'])
@@ -350,29 +300,7 @@ class ModerationCog(Cog):
                 {', '.join([member.mention for member in members])}\n for:\n{reason}"""
         await ctx.send(embed=embed)
 
-    @commands.has_role("Staff")
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.before_invoke(record_usage)
-    @commands.command(name="topic")
-    async def topic(self, ctx: Context, *, new_topic: str = None):
-        """ Fetches the current channel topic, updates it if parameter provided. """
-        # Return the current channel topic if a new topic was not provided.
-        if new_topic == None:
-            await ctx.reply(f"```{ctx.channel.topic}```")
-            return
 
-        # Check to make sure it's actually a new topic because Discord is harsh on channel edit rate limits.
-        if new_topic == ctx.channel.topic:
-            await ctx.reply("The topic you provided matches the current channel topic!")
-            return
-
-        # Otherwise, assume a new channel topic was provided and update the channel accordingly.
-        await ctx.channel.edit(topic=new_topic)
-        await ctx.reply("Updated channel topic.")
-
-
-# The setup function below is necessary. Remember we give bot.add_cog() the name of the class in this case SimpleCog.
-# When we load the cog, we use the name of the file.
 def setup(bot: Bot) -> None:
     """ Load the ModerationCog cog. """
     bot.add_cog(ModerationCog(bot))

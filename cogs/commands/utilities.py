@@ -9,8 +9,10 @@ import re
 import discord
 from discord.ext import commands
 from discord.ext.commands.core import is_owner
+
 from utils import embeds
 from utils.record import record_usage
+import config
 
 log = logging.getLogger(__name__)
 
@@ -45,13 +47,13 @@ class UtilitiesCog(commands.Cog):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
-    @commands.has_role("Staff")
-    @utilities.command(name="count")
+    @commands.has_role(config.role_mod)
+    @utilities.command(aliases=["population", "pop"])
     async def count(self, ctx):
         """Returns the current guild member count."""
         await ctx.send(ctx.guild.member_count)
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
         """Echos the input argument."""

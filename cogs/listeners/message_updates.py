@@ -134,14 +134,8 @@ class MessageUpdates(commands.Cog):
         if message.author.bot:
             return
 
-        # Remove messages that don't contain links or files from our submissions only channels.
-        if message.channel.id in config.submission_channels and not (contains_link(message) or has_attachment(message)):
-            # Deletes message and sends a self-destructing warning embed.
-            await message.delete()
-            await message.channel.send(embed=embeds.files_and_links_only(message), delete_after=10)
-        else:
-            # If message does not follow with the above code, treat it as a potential command.
-            await self.bot.process_commands(message)
+        # If message does not follow with the above code, treat it as a potential command.
+        await self.bot.process_commands(message)
 
 
 def setup(bot: commands.Bot) -> None:

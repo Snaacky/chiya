@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 
+import config
 from utils import embeds
 from utils.record import record_usage
 
@@ -29,7 +30,7 @@ class General(Cog):
         await ctx.send(embed=embed)
             
 
-    @commands.has_role("Staff")
+    @commands.has_role(config.role_mod)
     @commands.before_invoke(record_usage)
     @commands.command(name="boosttest")
     async def boosttest(self, ctx: Context):
@@ -38,6 +39,7 @@ class General(Cog):
         embed.description = "In ornare est augue, at malesuada quam gravida id. Sed hendrerit ipsum congue, tristique nibh non, faucibus lorem. Fusce maximus risus nec rhoncus posuere. Vestibulum sapien erat, vehicula eget lorem ac, semper egestas mi. Maecenas sit amet cursus quam. Morbi non tincidunt ex. Curabitur vel pellentesque metus, vitae semper odio. Aliquam nec lectus convallis, placerat sapien ut, aliquet neque. Mauris feugiat ac arcu vel sollicitudin. Nam aliquet a sapien in auctor. Vestibulum consectetur molestie finibus."
         embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
         await ctx.send(embed=embed)
+
 
     @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
     @commands.before_invoke(record_usage)
