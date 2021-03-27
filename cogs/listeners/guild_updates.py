@@ -226,7 +226,7 @@ class GuildUpdates(commands.Cog):
 
             You can contact any <@&763031634379276308> member with a [hex color](https://www.google.com/search?q=hex+color) and your desired role name for a custom booster role."""
             embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
-            await before.guild.system_channel.send(embed=embed)
+            await before.system_channel.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
