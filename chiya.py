@@ -5,8 +5,8 @@ import discord
 from discord.ext import commands
 
 import __init__
-import utils.database
 import config
+import utils.database
 
 bot = commands.Bot(
     command_prefix=config.prefix,
