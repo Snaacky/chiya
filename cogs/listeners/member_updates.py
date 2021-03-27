@@ -1,8 +1,11 @@
 import logging
 from typing import Union
 
+import discord
 from discord import User, Member, Guild
 from discord.ext import commands
+
+from utils import embeds
 
 log = logging.getLogger(__name__)
 
@@ -90,9 +93,16 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_update
         """
-        # Below is a psuedo on_nitro_boost event.
+        # Psuedo on_nitro_boost event
         if before.premium_since is None and after.premium_since is not None:
-            return
+            guild = before.guild
+            embed = embeds.make_embed(author=False, color=0xff73fa)
+            embed.title = f"{before.name} boosted the server"
+            embed.description = f"""Thank you so much for the server boost! We are now at {guild.premium_subscription_count} boosts!
+
+            You can contact any <@&763031634379276308> member with a [hex color](https://www.google.com/search?q=hex+color) and your desired role name for a custom booster role."""
+            embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
+            await guild.system_channel.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
