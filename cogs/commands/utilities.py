@@ -47,7 +47,7 @@ class UtilitiesCog(commands.Cog):
         print("Ping subcommand invoked.")
         await ctx.send(f"Client Latency is: {round(self.bot.latency * 1000)}ms.")
 
-    @commands.has_role(config.role_mod)
+    @commands.has_role(config.role_staff)
     @utilities.command(name="say")
     async def say(self, ctx, *, args):
         """Echos the input argument."""

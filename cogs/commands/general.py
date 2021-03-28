@@ -29,7 +29,7 @@ class General(Cog):
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_mod)
+    @commands.has_role(config.role_staff)
     @commands.command(aliases=["population", "pop"])
     async def count(self, ctx):
         """Returns the current guild member count."""
