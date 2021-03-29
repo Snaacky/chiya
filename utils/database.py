@@ -38,6 +38,11 @@ def setup_db():
     remind_me.create_column("date_to_remind", db.types.integer)
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
+
+    # Create censor table and columns to store censored words and types
+    censor = db.create_table("censor")
+    censor.create_column("censor_term", db.types.text)
+    censor.create_column("censor_type", db.types.text)
     
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
