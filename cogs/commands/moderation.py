@@ -306,7 +306,7 @@ class ModerationCog(Cog):
                 {', '.join([member.mention for member in members])}\n for:\n{reason}"""
         await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_staff)
+    @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.group(name="censor", aliases=['automod', 'am'])
@@ -321,13 +321,12 @@ class ModerationCog(Cog):
         with dataset.connect(utils.database.get_db()) as db:
             query = "SELECT * FROM censor"
             result = db.query(query)
-            
+
             embed = embeds.make_embed(
                 "Censored terms list", "List of censored terms", ctx)
             censored_terms_list = ""
             for x in result:
                 censored_terms_list += f"{x['censor_term']}\t:\t{x['censor_type']}\n"
-            
 
             if len(censored_terms_list) > 0:
                 embed.description = "**Censor Term**\t:\t**Type**\n" + censored_terms_list
@@ -343,31 +342,34 @@ class ModerationCog(Cog):
         censor_types = [
             {
                 "name": "substring",
-                "aliases": ['substr', 'sub']
+                "aliases": ['substr', 'sub', 's']
             },
             {
                 "name": "regex",
-                "aliases": ['regex']
+                "aliases": ['r']
             },
             {
                 "name": "exact",
-                "aliases": ['exact']
+                "aliases": ['e']
             },
             {
                 "name": "links",
-                "aliases": ['link']
+                "aliases": ['link', 'l']
             },
+            {
+                "name": "fuzzy",
+                "aliases": ['fuz', 'f']
+            }
         ]
 
-        # sanitizing input since we're doing exact matches
+        # sanitizing input
         censor_type = censor_type.lower()
         censor_type = censor_type.strip()
-        censor_term = censor_term.lower()
         censor_term = censor_term.strip()
         for x in censor_types:
-            # matching up the
             if (censor_type == x['name'] or censor_type in x['aliases']):
                 # adding to the DB and messaging user that action was successful
+
                 with dataset.connect(utils.database.get_db()) as db:
                     db['censor'].insert(dict(
                         censor_term=censor_term,
@@ -377,7 +379,7 @@ class ModerationCog(Cog):
                     return
 
         # User did not specify censor type properly, so throw an error.
-        await embeds.error_message("Valid censor types are: `substring`, `regex`, `exact` and `links`.", ctx)
+        await embeds.error_message("Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx)
 
     @censor.command(name="remove", aliases=['delete', 'rm'])
     async def censor_remove(self, ctx: Context, *, term: str):
@@ -389,8 +391,9 @@ class ModerationCog(Cog):
                 await embeds.error_message("No such term in censor list!", ctx)
                 return
 
-            db['censor'].delete(censor_term = term.lower().strip())
+            db['censor'].delete(censor_term=term.lower().strip())
             await ctx.reply(f"Term \"{term.lower().strip()}\" was removed.")
+
 
 def setup(bot: Bot) -> None:
     """ Load the ModerationCog cog. """
