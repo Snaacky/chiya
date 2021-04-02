@@ -6,6 +6,7 @@ from discord.ext import commands
 import config
 from utils import embeds
 from utils.utils import contains_link, has_attachment
+from utils import automod
 
 log = logging.getLogger(__name__)
 
@@ -133,9 +134,12 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
-
+        
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
+
+        if (automod.check_message(message)):
+            await message.add_reaction('❌')
 
 
 def setup(bot: commands.Bot) -> None:
