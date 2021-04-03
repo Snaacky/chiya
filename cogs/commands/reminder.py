@@ -23,7 +23,7 @@ class Reminder(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.group(name='remind', aliases=['reminder'])
+    @commands.group(name="remind", aliases=["reminder", "remindme"])
     async def remind_group(self, ctx: Context):
         """ Make a message to remind you in the future. """
         if ctx.invoked_subcommand is None:

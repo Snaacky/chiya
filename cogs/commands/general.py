@@ -49,7 +49,6 @@ class General(Cog):
                 pass
 
 
-
 def setup(bot: Bot) -> None:
     """ Load the General cog. """
     bot.add_cog(General(bot))
