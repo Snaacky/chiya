@@ -23,10 +23,12 @@ class AdministrationCog(Cog):
     async def rules(self, ctx: Context):
         """ Generates the #rules channel embeds. """
 
+        # Captain Karen header image embed
         embed = embeds.make_embed(color="quotes_grey")
         embed.set_image(url="https://i.imgur.com/Yk4kwZy.gif")
         await ctx.send(embed=embed)
 
+        # The actual rules embed
         embed = embeds.make_embed(title="📃  Discord Server Rules", color="quotes_grey", description="This list is not all-encompassing and you may be actioned for a reason outside of these rules. Use common sense when interacting in our community.")
         embed.add_field(name="Rule 1: Do not send copyright-infringing material.", inline=False, value="> Linking to copyright-infringing content via torrents, pirated stream links, direct download links, or uploading copyright-infringing material over Discord puts our community at risk of being shut down. We are a discussion community, not a file-sharing hub. ")
         embed.add_field(name="Rule 2: Be courteous and mindful of others.", inline=False, value="> Do not engage in toxic behavior such as spamming, baiting, derailing conversations, attacking or mocking other users, doxxing, or attempting to instigate drama. Bigotry and hate speech will not be tolerated. Do not use offensive or problematic profile pictures, usernames, nicknames.")
@@ -37,7 +39,7 @@ class AdministrationCog(Cog):
         embed.add_field(name="Rule 7: Do not beg, buy, sell, or trade.", inline=False, value="> This includes, but is not limited to, server ranks, roles, permissions, giveaways, private community invites, or any digital or physical goods.")
         await ctx.send(embed=embed)
 
-        # Inlines are 3 columns, this hack breaks our 3 columns down into 2 because the third doesn't render.
+        # /r/animepiracy links embed
         embed = embeds.make_embed(title="🔗  Our Links", color="quotes_grey")
         embed.add_field(name="Reddit:", inline=True, value="> [/r/animepiracy](https://reddit.com/r/animepiracy)")
         embed.add_field(name="Discord:", inline=True, value="> [discord.gg/piracy](https://discord.gg/piracy)")
@@ -49,10 +51,8 @@ class AdministrationCog(Cog):
         embed.add_field(name="Uptime Status:", inline=True, value="> [status.piracy.moe](https://status.piracy.moe/)")
         await ctx.send(embed=embed)
 
-        
-
-        #await ctx.send("https://discord.gg/piracy")
-        # await ctx.send("https://piracy.moe")
+        # Clean up the command invoker
+        await ctx.message.delete()
 
 
 def setup(bot: Bot) -> None:
