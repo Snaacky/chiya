@@ -36,7 +36,7 @@ class ModerationCog(Cog):
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            await ctx.reply("Bot is inferior or equal to that member, thus does not have permission to take action.")
+            await ctx.reply("I cannot action that member because I have an equal or lower role than them.")
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -53,14 +53,15 @@ class ModerationCog(Cog):
         if ctx.guild.get_member(user.id) is not None:
             # Convert to member object
             member = await commands.MemberConverter().convert(ctx, user.mention)
+
             # Checks if invoker can action that member (self, bot, etc.)
             if not await self.can_action_member(ctx, member):
                 return
 
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
             image_url=config.user_ban, color=config.soft_red)
-        
         embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
+        await ctx.reply(embed=embed)
 
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -86,8 +87,6 @@ class ModerationCog(Cog):
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
             ))
 
-        await ctx.reply(embed=embed)
-
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
@@ -98,6 +97,7 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Unbanning user: {user.name}", 
             image_url=config.user_unban, color=config.soft_green)
         embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
+        await ctx.reply(embed=embed)
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
         await ctx.guild.unban(user=user, reason=reason)
@@ -107,8 +107,6 @@ class ModerationCog(Cog):
             db["mod_logs"].insert(dict(
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unban"
             ))
-
-        await ctx.reply(embed=embed)
 
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(kick_members=True, send_messages=True, embed_links=True)
@@ -124,6 +122,7 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Kicking member: {member.name}", 
             image_url=config.user_ban, color=config.soft_red)
         embed.description=f"{member.mention} was kicked by {ctx.author.mention} for:\n{reason}"
+        await ctx.reply(embed=embed)
 
         # Send user message telling them that they were kicked and why.
         try: # Incase user has DM's Blocked.
@@ -148,8 +147,6 @@ class ModerationCog(Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
             ))
 
-        await ctx.reply(embed=embed)
-
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
@@ -166,6 +163,7 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
             image_url=config.user_mute, color=config.soft_red)
         embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
+        await ctx.reply(embed=embed)
 
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
@@ -195,8 +193,6 @@ class ModerationCog(Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
             ))
 
-        await ctx.reply(embed=embed)
-
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
@@ -211,7 +207,8 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
             image_url=config.user_unmute, color=config.soft_green)
         embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for:\n{reason}"
-
+        await ctx.reply(embed=embed)
+        
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
@@ -237,8 +234,6 @@ class ModerationCog(Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
 
-        await ctx.reply(embed=embed)
-
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
@@ -249,6 +244,7 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Warning member: {member.name}", 
             image_url=config.user_warn, color=config.soft_orange)
         embed.description=f"{member.mention} was warned by {ctx.author.mention} for:\n{reason}"
+        await ctx.reply(embed=embed)
 
         # Send member message telling them that they were warned and why.
         try: # Incase user has DM's Blocked.
@@ -270,9 +266,6 @@ class ModerationCog(Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="warn"
             ))
 
-        # Respond to the context that the member was warned.
-        await ctx.reply(embed=embed)
-
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
@@ -283,6 +276,7 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Noting user: {user.name}", 
             image_url=config.pencil, color=config.soft_blue)
         embed.description=f"{user.mention} was noted by {ctx.author.mention}:\n{note}"
+        await ctx.reply(embed=embed)
 
         # Add the note to the mod_notes database.
         with dataset.connect(utils.database.get_db()) as db:
@@ -290,8 +284,6 @@ class ModerationCog(Cog):
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
             ))
 
-        # Respond to the context that the message was noted.
-        await ctx.reply(embed=embed)
 
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
