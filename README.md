@@ -1,6 +1,7 @@
 # Chiya - A discord Bot
 
-[![Discord Server](https://img.shields.io/discord/622243127435984927?label=Discord&logo=discord)](https://discord.gg/piracy) ![Docker](https://github.com/ranimepiracy/Chiya/workflows/Docker/badge.svg?branch=master)
+[![Discord Server](https://img.shields.io/discord/622243127435984927?label=Discord&logo=discord)](https://discord.gg/piracy) 
+[![Docker](https://github.com/ranimepiracy/Chiya/workflows/Docker/badge.svg?branch=master)](https://github.com/ranimepiracy/Chiya/actions)
 
 Our private bot for the /r/animepiracy.
 
