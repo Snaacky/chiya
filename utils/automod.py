@@ -40,7 +40,7 @@ def check_message(message: discord.Message) -> bool:
         result = db.query(statement)
         for x in result:
             # exact word matching
-            if(check_fuzzy(message.content, x['censor_term'])):
+            if(check_fuzzy(message.content, x['censor_term'], x['censor_threshold'])):
                 return True
 
     # nothing matched :(
@@ -72,9 +72,13 @@ def check_substring(message: str, term: str) -> bool:
     return False
 
 
-def check_fuzzy(message: str, term: str) -> bool:
+def check_fuzzy(message: str, term: str, threshold: int) -> bool:
     """ Fuzzy checking """
+    if(fuzz.partial_ratio(message, term) >= threshold):
+        return True
+
     return False
+
 
 def check_url(message: str, term: str) -> bool:
     """ URL checking """

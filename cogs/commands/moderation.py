@@ -306,7 +306,7 @@ class ModerationCog(Cog):
                 {', '.join([member.mention for member in members])}\n for:\n{reason}"""
         await ctx.send(embed=embed)
 
-    @commands.is_owner()
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(embed_links=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.group(name="censor", aliases=['automod', 'am'])
@@ -326,6 +326,11 @@ class ModerationCog(Cog):
                 "Censored terms list", "List of censored terms", ctx)
             censored_terms_list = ""
             for x in result:
+                if x['censor_type'] == 'fuzzy':
+                    # taking a slight detour if the type is fuzzy, to add the fuzziness value
+                    censored_terms_list += f"{x['censor_term']} ({x['censor_threshold']})\t:\t{x['censor_type']}\n"
+                    continue
+
                 censored_terms_list += f"{x['censor_term']}\t:\t{x['censor_type']}\n"
 
             if len(censored_terms_list) > 0:
@@ -338,7 +343,7 @@ class ModerationCog(Cog):
 
     @censor.command(name="add")
     async def censor_add(self, ctx: Context, censor_type: str, *, censor_term: str):
-        """ Command to add censors to the list. """
+        """ Command to add censors to the list.  """
         censor_types = [
             {
                 "name": "substring",
@@ -366,14 +371,31 @@ class ModerationCog(Cog):
         censor_type = censor_type.lower()
         censor_type = censor_type.strip()
         censor_term = censor_term.strip()
+        censor_threshold = 65 # default set, since this seems to work fine
         for x in censor_types:
             if (censor_type == x['name'] or censor_type in x['aliases']):
                 # adding to the DB and messaging user that action was successful
 
+                if (x['name'] == 'fuzzy'):
+                    # some additional stuff needs to be done for fuzzy check
+                    if censor_term.split(' ')[-1].isnumeric():
+                         
+                        # setting a custom threshold value
+                        censor_threshold = int(censor_term.split(' ')[-1])
+                        # in case user enters a threshold value > 100.
+                        if (censor_threshold>100):
+                            await embeds.error_message("Fuzziness threshold must be less than 100!")
+                            return
+
+                        # correcting the censor term, since the last word is a number 
+                        # and we don't want that
+                        censor_term = censor_term.rsplit(' ', 1)[0]
+
                 with dataset.connect(utils.database.get_db()) as db:
                     db['censor'].insert(dict(
                         censor_term=censor_term,
-                        censor_type=x['name']
+                        censor_type=x['name'],
+                        censor_threshold=censor_threshold
                     ))
                     await ctx.reply(f"Censor term \"{censor_term}\" of type `{x['name']}` was added.")
                     return

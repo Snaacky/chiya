@@ -43,6 +43,7 @@ def setup_db():
     censor = db.create_table("censor")
     censor.create_column("censor_term", db.types.text)
     censor.create_column("censor_type", db.types.text)
+    censor.create_column("censor_threshold", db.types.integer)
     
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
