@@ -170,7 +170,7 @@ class ModerationCog(Cog):
             channel = await member.create_dm()
             embed = embeds.make_embed(author=False, color=0x8083b0)
             embed.title = f"Uh-oh, you've been muted!"
-            embed.description = "Review our server rules to avoid being actioned again in the future. If you believe this was a mistake, contact staff."
+            embed.description = "If you believe this was a mistake, contact staff."
             embed.add_field(name="Server:", value=ctx.guild, inline=True)
             embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
             embed.add_field(name="Length:", value="Indefinite", inline=True) # TODO: Implement timed mutes.
