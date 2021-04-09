@@ -1,5 +1,6 @@
 import logging
 
+import discord
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
 
@@ -136,6 +137,86 @@ class MessageUpdates(commands.Cog):
 
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
+        
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        """Event Listener which is called when a reaction is added.
+
+        Args:
+            reaction (Reaction) – The current state of the reaction.
+            user (Union[Member, User]) – The user who added the reaction.
+
+        Note:
+            This requires Intents.reactions to be enabled.
+
+        For more information:
+            https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_reaction_add
+        """
+
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        """Event Listener which is called when a reaction is added.
+
+        Args:
+            payload (RawReactionActionEvent) – The raw event payload data.
+
+        Note:
+            This requires Intents.reactions to be enabled.
+
+        For more information:
+            https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_raw_reaction_add
+        """
+        # Ignore all reactions that are not for the ticket system.
+        if payload.message_id != config.ticket_embed_id:
+            return
+        
+        # Get the member object for the user who added the reaction.
+        member = payload.member.guild.get_member(payload.member.id)
+
+        # Remove the users reaction to the creation embed.
+        channel = discord.utils.get(payload.member.guild.channels, id=config.ticket_channel)
+        embed = await channel.fetch_message(config.ticket_embed_id)
+        logging.info(f"{embed} | {type(embed)}")
+        await embed.remove_reaction("🎫", member)
+
+        # Check if the user already has a ticket open.
+        results = discord.utils.get(payload.member.guild.text_channels, name=f"ticket-{payload.user_id}")
+        if results:
+            # The user already had a ticket open so send them a DM warning with a link to the existing ticket.
+            logging.info(f"{member} tried to create a new ticket but already had one open: {results}")
+            try: # Try/catch is required because some users don't accept DMs from mutual server members.
+                dm = await member.create_dm()
+                embed = embeds.make_embed(author=False, color=0xf999de)
+                embed.title = f"Uh-oh, an error occurred!"
+                embed.description = f"You attempted to create a new ticket but you already have one open. Please refer to {results.mention} for assistance."
+                embed.set_image(url="https://i.imgur.com/VTqz1oS.gif")
+                await dm.send(embed=embed)
+            except discord.errors.Forbidden:
+                # Could not DM the user because they don't accept DMs from mutual server members.
+                logging.info(f"{member} tried to create a new ticket but already had one open: {results} and is not accepting DMs.")
+                pass
+            return
+
+        # Create a channel in the desired tickets category according to the config.
+        category = discord.utils.get(payload.member.guild.categories, id=config.ticket_category_id)        
+        ticket = await payload.member.guild.create_text_channel(f"ticket-{payload.member.id}", category=category)
+
+        # Give both the staff and the user perms to access the channel. 
+        await ticket.set_permissions(discord.utils.get(payload.member.guild.roles, id=config.role_trial_mod), read_messages=True)
+        await ticket.set_permissions(discord.utils.get(payload.member.guild.roles, id=config.role_staff), read_messages=True)
+        await ticket.set_permissions(member, read_messages=True)
+
+        embed = embeds.make_embed(title="🎫  Ticket created", 
+                                  description="Please remain patient for a staff member to assist you.", 
+                                  color="default")
+        await ticket.send(embed=embed)
+
+        logging.info(f"{member} created a new modmail ticket: {ticket.id}")
+
+        # Alert staff and the user to the new modmail ticket channel created.
+        await ticket.send("@here")
+        
 
 
 def setup(bot: commands.Bot) -> None:

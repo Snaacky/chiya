@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
 
+import config
 from utils import embeds
 from utils.record import record_usage
 
@@ -16,7 +17,7 @@ class AdministrationCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.is_owner()
+    @commands.has_role(config.role_admin)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="rules")
@@ -53,6 +54,20 @@ class AdministrationCog(Cog):
         await ctx.send(embed=embed)
 
         # Clean up the command invoker
+        await ctx.message.delete()
+
+
+    @commands.has_role(config.role_admin)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="createticketembed")
+    async def create_ticket_embed(self, ctx: Context):
+        embed = embeds.make_embed(title="🎫 Create a new modmail ticket", 
+                                  description="Click the react below to create a new modmail ticket.", 
+                                  color="default")
+        embed.add_field(name="Warning:", value="Serious inquiries only. Abuse may result in warning or ban.")
+        spawned = await ctx.send(embed=embed)
+        await spawned.add_reaction("🎫")
         await ctx.message.delete()
 
 

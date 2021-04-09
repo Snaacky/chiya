@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import logging
 import time
@@ -314,6 +315,42 @@ class ModerationCog(Cog):
             embed.description=f"""{ctx.author.mention} removed {len(deleted)} message(s) from:\n 
                 {', '.join([member.mention for member in members])}\n for:\n{reason}"""
         await ctx.send(embed=embed)
+
+
+    @commands.has_role(config.role_staff)
+    @commands.before_invoke(record_usage)
+    @commands.group()
+    async def ticket(self, ctx):
+        if ctx.invoked_subcommand is None:
+            # Send the help command for this group
+            await ctx.send_help(ctx.command)
+
+
+    @commands.has_role(config.role_staff)
+    @commands.before_invoke(record_usage)
+    @ticket.command(name="close")
+    async def close(self, ctx):
+        """ Closes the modmail ticket."""
+        if ctx.message.channel.category_id == config.ticket_category_id:
+            # Send notice that the channel has been marked read only and will be archived.
+            embed = embeds.make_embed(author=False, color=0xffffc3)
+            embed.title = f"🔒 Your ticket has been closed."
+            embed.description = f"The channel has been marked read-only and will be archived in one minute. If you have additional comments or concerns, feel free to open another ticket."
+            embed.set_image(url="https://i.imgur.com/TodlFQq.gif")
+            await ctx.send(embed=embed)
+
+            # Mark the channel as read only by removing the user and staff's send permissions.
+            # TODO: This could easily just be a for-loop for every permission role besides @everyone?
+            await ctx.message.channel.set_permissions(ctx.guild.get_member(int(ctx.channel.name.replace("ticket-", ""))), read_messages=True, send_messages=False)
+            await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_trial_mod), read_messages=True, send_messages=False)
+            await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_staff), read_messages=True, send_messages=False)
+
+            # Sleep for 60 seconds before archiving the channel.
+            await asyncio.sleep(60)
+
+            # Move the channel to the archive.
+            archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
+            await ctx.channel.edit(category=archive, sync_permissions=True)
 
 
 def setup(bot: Bot) -> None:
