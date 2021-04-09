@@ -180,12 +180,16 @@ class MessageUpdates(commands.Cog):
         logging.info(f"{embed} | {type(embed)}")
         await embed.remove_reaction("🎫", member)
 
-        # Check if the user already has a ticket open.
-        results = discord.utils.get(payload.member.guild.text_channels, name=f"ticket-{payload.user_id}")
+        # Check if the user already has a ticket open.  
+        results = discord.utils.get(discord.utils.get(payload.member.guild.categories, 
+                                    id=config.ticket_category_id).text_channels, 
+                                    name=f"ticket-{payload.user_id}")
+
+        # The user already had a ticket open so send them a DM warning with a link to the existing ticket.
         if results:
-            # The user already had a ticket open so send them a DM warning with a link to the existing ticket.
             logging.info(f"{member} tried to create a new ticket but already had one open: {results}")
-            try: # Try/catch is required because some users don't accept DMs from mutual server members.
+            try:
+                # Try/catch is required because some users don't accept DMs from mutual server members.
                 dm = await member.create_dm()
                 embed = embeds.make_embed(author=False, color=0xf999de)
                 embed.title = f"Uh-oh, an error occurred!"
@@ -210,6 +214,7 @@ class MessageUpdates(commands.Cog):
         embed = embeds.make_embed(title="🎫  Ticket created", 
                                   description="Please remain patient for a staff member to assist you.", 
                                   color="default")
+        embed.add_field(name="Ticket Creator:", value=member.mention)
         await ticket.send(embed=embed)
 
         logging.info(f"{member} created a new modmail ticket: {ticket.id}")

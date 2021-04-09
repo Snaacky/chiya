@@ -331,26 +331,38 @@ class ModerationCog(Cog):
     @ticket.command(name="close")
     async def close(self, ctx):
         """ Closes the modmail ticket."""
-        if ctx.message.channel.category_id == config.ticket_category_id:
-            # Send notice that the channel has been marked read only and will be archived.
-            embed = embeds.make_embed(author=False, color=0xffffc3)
-            embed.title = f"🔒 Your ticket has been closed."
-            embed.description = f"The channel has been marked read-only and will be archived in one minute. If you have additional comments or concerns, feel free to open another ticket."
-            embed.set_image(url="https://i.imgur.com/TodlFQq.gif")
-            await ctx.send(embed=embed)
+        if not ctx.message.channel.category_id == config.ticket_category_id:
+            embed = embeds.make_embed(color=config.soft_red)
+            embed.description=f"You can only run this command in active ticket channels."
+            await ctx.reply(embed=embed)
+            return
 
-            # Mark the channel as read only by removing the user and staff's send permissions.
-            # TODO: This could easily just be a for-loop for every permission role besides @everyone?
-            await ctx.message.channel.set_permissions(ctx.guild.get_member(int(ctx.channel.name.replace("ticket-", ""))), read_messages=True, send_messages=False)
-            await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_trial_mod), read_messages=True, send_messages=False)
-            await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_staff), read_messages=True, send_messages=False)
+        # Send notice that the channel has been marked read only and will be archived.
+        embed = embeds.make_embed(author=False, color=0xffffc3)
+        embed.title = f"🔒 Your ticket has been closed."
+        embed.description = f"The channel has been marked read-only and will be archived in one minute. If you have additional comments or concerns, feel free to open another ticket."
+        embed.set_image(url="https://i.imgur.com/TodlFQq.gif")
+        await ctx.send(embed=embed)
 
-            # Sleep for 60 seconds before archiving the channel.
-            await asyncio.sleep(60)
+        # Mark the channel as read only by removing the user and staff's send permissions.
+        # TODO: This could easily just be a for-loop for every permission role besides @everyone?
+        await ctx.message.channel.set_permissions(ctx.guild.get_member(int(ctx.channel.name.replace("ticket-", ""))), read_messages=True, send_messages=False, add_reactions=False)
+        await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_trial_mod), 
+                                                                                     read_messages=True, 
+                                                                                     send_messages=False, 
+                                                                                     add_reactions=False, 
+                                                                                     manage_messages=False)
+        await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_staff), 
+                                                                                     read_messages=True, 
+                                                                                     send_messages=False, 
+                                                                                     add_reactions=False, 
+                                                                                     manage_messages=False)
+        # Sleep for 60 seconds before archiving the channel.
+        await asyncio.sleep(60)
 
-            # Move the channel to the archive.
-            archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
-            await ctx.channel.edit(category=archive, sync_permissions=True)
+        # Move the channel to the archive.
+        archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
+        await ctx.channel.edit(category=archive, sync_permissions=True)
 
 
 def setup(bot: Bot) -> None:
