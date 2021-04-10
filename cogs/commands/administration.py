@@ -71,6 +71,24 @@ class AdministrationCog(Cog):
         await ctx.message.delete()
 
 
+    # Below works as an eval command but not working as it's own command.
+    """@commands.has_role(config.role_admin)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="createcolorrolesembed")
+    async def create_color_roles_embed(self, ctx: Context):
+        embed = discord.Embed(description="You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&660678752245645317> to receive a custom colored role.")
+        msg = await ctx.send(embed=embed)
+        await msg.add_reaction(":redsquare:805032092907601952")
+        await msg.add_reaction(":orangesquare:805032107952308235")
+        await msg.add_reaction(":yellowsquare:805032120971165709")
+        await msg.add_reaction(":greensquare:805032132325801994")
+        await msg.add_reaction(":bluesquare:805032145030348840")
+        await msg.add_reaction(":pinksquare:805032162197635114")
+        await msg.add_reaction(":purplesquare:805032172074696744")
+        await ctx.message.delete()"""
+
+
 def setup(bot: Bot) -> None:
     """ Load the AdministrationCog cog. """
     bot.add_cog(AdministrationCog(bot))

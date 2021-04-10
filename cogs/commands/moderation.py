@@ -37,7 +37,7 @@ class ModerationCog(Cog):
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            await ctx.reply("I cannot action that member because I have an equal or lower role than them.")
+            await ctx.reply("I cannot action that member because their role is higher than mine.")
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -58,7 +58,15 @@ class ModerationCog(Cog):
             # Checks if invoker can action that member (self, bot, etc.)
             if not await self.can_action_member(ctx, member):
                 return
-
+        
+        # Checks to see if the user is already banned.
+        try:
+            await ctx.guild.fetch_ban(user)
+            await ctx.reply("That user is already banned.")
+            return
+        except discord.NotFound:
+            pass
+    
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
             image_url=config.user_ban, color=config.soft_red)
         embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
@@ -94,6 +102,13 @@ class ModerationCog(Cog):
     @commands.command(name="unban")
     async def unban_member(self, ctx: Context, user: discord.User, *, reason: str):
         """ Unbans user from guild. """
+        
+        # Checks to see if the user is actually banned.
+        try:
+            await ctx.guild.fetch_ban(user)
+        except discord.NotFound:
+            await ctx.reply("That user is not banned.")
+            return
 
         embed = embeds.make_embed(context=ctx, title=f"Unbanning user: {user.name}", 
             image_url=config.user_unban, color=config.soft_green)
@@ -154,11 +169,17 @@ class ModerationCog(Cog):
     @commands.command(name="mute")
     async def mute(self, ctx: Context, member: discord.Member, *, reason: str):
         """ Mutes member in guild. """
+
         # TODO: Implement temp/timed mute functionality
         # NOTE: this is worthless if the member leaves and then rejoins. (resets roles)
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await self.can_action_member(ctx, member):
+            return
+
+        # Check if the user is muted already.
+        if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
+            await ctx.reply("That user is already muted.")
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
@@ -183,9 +204,7 @@ class ModerationCog(Cog):
 
         # Adds "Muted" role to member.
         # TODO: Add role name to configuration, maybe by ID?
-        role = discord.utils.get(ctx.guild.roles, name="Muted")
-        if role is None:
-            role = await ctx.guild.create_role(name="Muted")
+        role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
         # Add the mute to the mod_log database.
@@ -203,6 +222,11 @@ class ModerationCog(Cog):
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await self.can_action_member(ctx, member):
+            return
+
+        # Check if the user is actually muted.
+        if discord.utils.get(ctx.guild.roles, id=config.role_muted) not in member.roles:
+            await ctx.reply("That user is not muted.")
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
@@ -331,7 +355,9 @@ class ModerationCog(Cog):
     @ticket.command(name="close")
     async def close(self, ctx):
         """ Closes the modmail ticket."""
-        if not ctx.message.channel.category_id == config.ticket_category_id:
+        channel = ctx.message.channel
+
+        if not channel.category_id == config.ticket_category_id:
             embed = embeds.make_embed(color=config.soft_red)
             embed.description=f"You can only run this command in active ticket channels."
             await ctx.reply(embed=embed)
@@ -344,26 +370,18 @@ class ModerationCog(Cog):
         embed.set_image(url="https://i.imgur.com/TodlFQq.gif")
         await ctx.send(embed=embed)
 
-        # Mark the channel as read only by removing the user and staff's send permissions.
-        # TODO: This could easily just be a for-loop for every permission role besides @everyone?
-        await ctx.message.channel.set_permissions(ctx.guild.get_member(int(ctx.channel.name.replace("ticket-", ""))), read_messages=True, send_messages=False, add_reactions=False)
-        await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_trial_mod), 
-                                                                                     read_messages=True, 
-                                                                                     send_messages=False, 
-                                                                                     add_reactions=False, 
-                                                                                     manage_messages=False)
-        await ctx.message.channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_staff), 
-                                                                                     read_messages=True, 
-                                                                                     send_messages=False, 
-                                                                                     add_reactions=False, 
-                                                                                     manage_messages=False)
+        # Set the channel into a read only state.
+        for role in channel.overwrites:
+            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False, 
+                                                manage_messages=False)                
+
         # Sleep for 60 seconds before archiving the channel.
         await asyncio.sleep(60)
 
         # Move the channel to the archive.
         archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
         await ctx.channel.edit(category=archive, sync_permissions=True)
-
+        
 
 def setup(bot: Bot) -> None:
     """ Load the ModerationCog cog. """
