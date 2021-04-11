@@ -5,6 +5,7 @@ import traceback
 from contextlib import redirect_stdout
 import glob
 import re
+import subprocess
 
 import discord
 from discord.ext import commands
@@ -164,6 +165,15 @@ class UtilitiesCog(commands.Cog):
         else:
             await ctx.message.add_reaction("❌")
             await ctx.send("Module not found, check spelling, it's case sensitive")
+
+    @commands.is_owner()
+    @utilities.command(name="update", aliases=['sync'])
+    async def update(self, ctx):
+        """ Updates the bot by forcing a pull from the Github Repository. """
+        # running git pull in the main directory.
+        subprocess.run("git pull -f", shell=True)
+        # rebooting bot
+        subprocess.run("pm2 restart Chiya", shell=True)
 
 
 def setup(bot) -> None:
