@@ -69,3 +69,6 @@ client_secret =     ""
 reddit_posts =      623809718011297792
 poll_rate =         3 # In seconds.
 user_agent =        "Chiya (for /r/animepiracy)"
+
+guild_id = 622243127435984927
+emoji_guild_id = 785112674332835870
