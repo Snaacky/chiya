@@ -38,7 +38,8 @@ class AdministrationCog(Cog):
         embed.add_field(name="Rule 5: Do not backseat moderate.", inline=False, value="> If you see someone breaking the rules or have something to report, please contact staff. Do not take matters into your own hands and respect the decisions of staff.")
         embed.add_field(name="Rule 6: Do not abuse pings.", inline=False, value="> Do not ping staff outside of conversation unless necessary. Do not ping VIP users for questions or help with their service. Do not spam or ghost ping other users.")
         embed.add_field(name="Rule 7: Do not beg, buy, sell, or trade.", inline=False, value="> This includes, but is not limited to, server ranks, roles, permissions, giveaways, private community invites, or any digital or physical goods.")
-        embed.add_field(name="Rule 8: Follow the Discord Community Guidelines and Terms of Service.", inline=False, value="> The Discord Community Guidelines and Terms of Service govern all servers on the platform. Please familarize yourself with them and the restrictions that come with them. \n> \n> https://discord.com/guidelines \n> https://discord.com/terms")
+        embed.add_field(name="Rule 8: Do not cringepost.", inline=False, value="> If you get pressed on this rule, you seriously fucked up and need to reevaluate your entire life's choices. This is probably the most grievous offense possible.")
+        embed.add_field(name="Rule 9: Follow the Discord Community Guidelines and Terms of Service.", inline=False, value="> The Discord Community Guidelines and Terms of Service govern all servers on the platform. Please familarize yourself with them and the restrictions that come with them. \n> \n> https://discord.com/guidelines \n> https://discord.com/terms")
         await ctx.send(embed=embed)
 
         # /r/animepiracy links embed
@@ -76,11 +77,11 @@ class AdministrationCog(Cog):
     @commands.before_invoke(record_usage)
     @commands.command(name="createcolorrolesembed", aliases=['ccre'])
     async def create_color_roles_embed(self, ctx: Context):
-        embed = discord.Embed(description="You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&660678752245645317> to receive a custom colored role.")
+        embed = discord.Embed(description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{config.role_server_booster}> to receive a custom colored role.")
         msg = await ctx.send(embed=embed)
 
-        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
         # API call to fetch all the emojis to cache, so that they work in future calls
+        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
         emojis = await emotes_guild.fetch_emojis()
         
         await msg.add_reaction(":redsquare:805032092907601952")

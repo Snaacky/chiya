@@ -372,9 +372,8 @@ class ModerationCog(Cog):
 
         # Set the channel into a read only state.
         for role in channel.overwrites:
-            
+            # default_role is @everyone role, so skip that.
             if role == ctx.guild.default_role:
-                # default_role is @everyone role, so skip that.
                 continue
 
             await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False, 
