@@ -173,7 +173,7 @@ class UtilitiesCog(commands.Cog):
         # running git pull in the main directory.
         subprocess.run("git pull -f", shell=True)
         # rebooting bot
-        subprocess.run("pm2 restart Chiya", shell=True)
+        subprocess.run("pm2 restart chiya", shell=True)
 
 
 def setup(bot) -> None:
