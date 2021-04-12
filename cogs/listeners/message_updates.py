@@ -115,6 +115,21 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_raw_message_edit
         """
+        
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        """Event Listener which is called when a reaction is added.
+
+        Args:
+            reaction (Reaction) – The current state of the reaction.
+            user (Union[Member, User]) – The user who added the reaction.
+
+        Note:
+            This requires Intents.reactions to be enabled.
+
+        For more information:
+            https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_reaction_add
+        """
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -136,24 +151,12 @@ class MessageUpdates(commands.Cog):
         if message.author.bot:
             return
 
+        # Process any potential pending tickets
+        if isinstance(message.channel, discord.DMChannel):
+            await tickets.process_pending_ticket(self.bot, message)
+
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
-        
-    @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
-        """Event Listener which is called when a reaction is added.
-
-        Args:
-            reaction (Reaction) – The current state of the reaction.
-            user (Union[Member, User]) – The user who added the reaction.
-
-        Note:
-            This requires Intents.reactions to be enabled.
-
-        For more information:
-            https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_reaction_add
-        """
-
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -168,9 +171,15 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_raw_reaction_add
         """
+
         # Process any new tickets that may come up.
         if payload.message_id == config.ticket_embed_id:
-            await tickets.process_new_tickets(payload)
+            await tickets.process_embed_reaction(payload)
+
+        channel = await self.bot.fetch_channel(payload.channel_id)
+        if isinstance(channel, discord.DMChannel):
+            await tickets.process_dm_reaction(self.bot, payload)
+
 
         
 

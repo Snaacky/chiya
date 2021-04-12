@@ -9,7 +9,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
 
 import config
-import utils.database
+from utils import database
 from utils import embeds
 from utils.record import record_usage
 
@@ -91,7 +91,7 @@ class ModerationCog(Cog):
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
 
         # Add the ban to the mod_log database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
             ))
@@ -119,7 +119,7 @@ class ModerationCog(Cog):
         await ctx.guild.unban(user=user, reason=reason)
 
         # Add the unban to the mod_log database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unban"
             ))
@@ -158,7 +158,7 @@ class ModerationCog(Cog):
         await ctx.guild.kick(user=member, reason=reason)
 
         # Add the kick to the mod_log database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
             ))
@@ -208,7 +208,7 @@ class ModerationCog(Cog):
         await member.add_roles(role, reason=reason)
 
         # Add the mute to the mod_log database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
             ))
@@ -254,7 +254,7 @@ class ModerationCog(Cog):
         await member.remove_roles(role, reason=reason)
 
         # Add the mute to the mod_log database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
@@ -286,7 +286,7 @@ class ModerationCog(Cog):
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
 
         # Add the warning to the mod_log database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="warn"
             ))
@@ -304,7 +304,7 @@ class ModerationCog(Cog):
         await ctx.reply(embed=embed)
 
         # Add the note to the mod_notes database.
-        with dataset.connect(utils.database.get_db()) as db:
+        with dataset.connect(database.get_db()) as db:
             db["mod_notes"].insert(dict(
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
             ))
@@ -377,7 +377,13 @@ class ModerationCog(Cog):
                 continue
 
             await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False, 
-                                                manage_messages=False)                
+                                                manage_messages=False)     
+
+        with dataset.connect(database.get_db()) as db:
+            table = db["tickets"]
+            ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status=1)
+            ticket["status"] = 2
+            table.update(ticket, ["id"])           
 
         # Sleep for 60 seconds before archiving the channel.
         await asyncio.sleep(60)
