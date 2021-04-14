@@ -171,11 +171,15 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_raw_reaction_add
         """
+        # Ignore reactions added by the bot.
+        if payload.user_id == self.bot.user.id:
+            return
 
         # Process any new tickets that may come up.
         if payload.message_id == config.ticket_embed_id:
             await tickets.process_embed_reaction(payload)
 
+        # Look for modmail embed reactions and process them.
         channel = await self.bot.fetch_channel(payload.channel_id)
         if isinstance(channel, discord.DMChannel):
             await tickets.process_dm_reaction(self.bot, payload)

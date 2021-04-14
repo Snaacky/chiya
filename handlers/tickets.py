@@ -70,14 +70,8 @@ async def process_pending_ticket(bot, message):
 
 
 async def process_dm_reaction(bot, payload):
-    logging.info(bot)
-    logging.info(payload)
     # Get the member object for the user who added the reaction.
     user = await bot.fetch_user(payload.user_id)
-
-    # checking if the reaction is from the bot itself
-    if (user == bot.user):
-        return
 
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
