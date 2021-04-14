@@ -82,14 +82,19 @@ async def process_dm_reaction(bot, payload):
     if not ticket:
         return
 
+    # If we found a ticket, assume the user is canceling their ticket.
     # Update the status of the ticket in the database.
     ticket["status"] = 3
     table.update(ticket, ["id"])
     logging.info(f"{user} canceled their pending ticket")
     
-    # just doing things a bit more explicitly
-    dm = await user.create_dm()
-    await dm.send("canceled")
+    # Send the user an embed that their ticket was canceled.
+    embed = embeds.make_embed(author=False, color=0xf4cdc5)
+    embed.title = f"Ticket canceled"
+    embed.description = "Aw... feel free to create a new ticket if you need anything..."
+    embed.set_image(url="https://i.imgur.com/T9ikYl6.gif")
+    await user.send(embed=embed)
+
 
     # TODO: Send canceled ticket embed
 
