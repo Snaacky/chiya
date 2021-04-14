@@ -12,7 +12,7 @@ from utils import embeds
 
 async def process_embed_reaction(payload):
     # Get the member object for the user who added the reaction.
-    member = payload.member.guild.get_member(payload.member.id)
+    member = await payload.member.guild.fetch_member(payload.member.id)
 
     # Remove the users reaction to the creation embed.
     channel = discord.utils.get(member.guild.channels, id=config.ticket_channel)
@@ -73,7 +73,11 @@ async def process_dm_reaction(bot, payload):
     logging.info(bot)
     logging.info(payload)
     # Get the member object for the user who added the reaction.
-    user = bot.fetch_user(payload.user_id)
+    user = await bot.fetch_user(payload.user_id)
+
+    # checking if the reaction is from the bot itself
+    if (user == bot.user):
+        return
 
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
@@ -89,7 +93,9 @@ async def process_dm_reaction(bot, payload):
     table.update(ticket, ["id"])
     logging.info(f"{user} canceled their pending ticket")
     
-    await user.send("canceled")
+    # just doing things a bit more explicitly
+    dm = await user.create_dm()
+    await dm.send("canceled")
 
     # TODO: Send canceled ticket embed
 
