@@ -21,6 +21,7 @@ async def process_embed_reaction(payload):
 
     # Check if a duplicate ticket already exists for the member.
     ticket = await check_for_duplicate_tickets(member)
+
     if ticket:
         # Attempt to send the user a DM telling them that they already have a ticket open.
         results = await send_duplicate_ticket_dm(member, ticket)
@@ -36,8 +37,9 @@ async def process_embed_reaction(payload):
 
     # Check if a pending ticket already exists for the member.
     ticket = await check_for_pending_tickets(member)
+
+    # If one exists, log but do nothing because the latest embed is still awaiting their response.
     if ticket:
-        # If one exists, log but do nothing because the latest embed is still awaiting their response.
         logging.info(f"{member} tried to create a new ticket but already had one pending")
         return
 
@@ -53,16 +55,20 @@ async def process_embed_reaction(payload):
 
 
 async def process_pending_ticket(bot, message):
+    # Open a connection to the database.
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
 
+    # Check if the user has any currently pending tickets.
     ticket = table.find_one(user_id=message.author.id, status=0)
     if not ticket:
         return
 
+    # If the user does not have any pending tickets, create a new ticket channel.
     channel = await create_ticket_channel(bot, ticket, message)
     logging.info(f"{message.author} created a new modmail ticket: {channel.id}")
     
+    # Send the user a DM with a link to their ticket so they know it was successfully created.
     embed = embeds.make_embed(author=False, color=0xd56385)
     embed.title = f"Ticket created"
     embed.add_field(name="Topic:", value=message.content, inline=False)
@@ -70,6 +76,7 @@ async def process_pending_ticket(bot, message):
     embed.set_image(url="https://i.imgur.com/YiIfTLc.gif")
     await message.author.send(embed=embed)
 
+    # Update the state of the ticket in the database from pending to in-progress and store the channel ID.
     ticket["status"] = 1
     ticket["ticket_channel"] = channel.id
     table.update(ticket, ["id"])
@@ -82,7 +89,7 @@ async def process_dm_reaction(bot, payload):
     # Search the database for an open pending ticket.
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
-    
+
     ticket = table.find_one(dm_embed_id=payload.message_id, status=0)
 
     # If we did not find a ticket, ignore the reaction.
@@ -103,7 +110,7 @@ async def process_dm_reaction(bot, payload):
 
 
 async def check_for_duplicate_tickets(member):
-    # Search for a pending ticket by iterating the tickets category for a match.
+    # Search for a pending ticket by iterating the tickets category for a channel name match.
     ticket = discord.utils.get(discord.utils.get(member.guild.categories, 
                                 id=config.ticket_category_id).text_channels, 
                                 name=f"🎫｜ticket-{member.id}")
@@ -117,7 +124,7 @@ async def check_for_duplicate_tickets(member):
 
 
 async def check_for_pending_tickets(member):
-    # Open a connection the database.
+    # Open a connection to the database.
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
 
@@ -133,6 +140,7 @@ async def check_for_pending_tickets(member):
 
 
 async def send_pending_ticket_dm(member):
+    # Attempt to open a new DM with user so we can get the ticket topic.
     try:
         dm = await member.create_dm()
         embed = embeds.make_embed(author=False, color=0xd0c68d)
@@ -142,11 +150,13 @@ async def send_pending_ticket_dm(member):
         msg = await dm.send(embed=embed)
         await msg.add_reaction(":no:778724416230129705")
         return msg
+    # If the user is not accepting DMs, we'll hit a forbidden exception.
     except discord.errors.Forbidden:
         logging.info(f"{member} tried to create a new pending ticket but is not accepting DMs.")
 
 
 async def send_duplicate_ticket_dm(member, ticket):
+    # Attempts to create a new DM with the user for the topic. 
     try:
         dm = await member.create_dm()
         embed = embeds.make_embed(author=False, color=0xf999de)
@@ -155,8 +165,8 @@ async def send_duplicate_ticket_dm(member, ticket):
         embed.set_image(url="https://i.imgur.com/VTqz1oS.gif")
         await dm.send(embed=embed)
         return True
+    # If the user has DMs disabled, we'll receive a forbidden exception.
     except discord.errors.Forbidden:
-        # Could not DM the user because they don't accept DMs.
         logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and is not accepting DMs.")
     return False
 
