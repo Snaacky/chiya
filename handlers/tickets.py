@@ -50,7 +50,6 @@ async def process_embed_reaction(payload):
             user_id=member.id, status=0, guild=payload.guild_id, ticket_channel=None, 
             dm_embed_id=dm.id, timestamp=int(time.time())
         ))
-    
 
 
 async def process_pending_ticket(bot, message):
@@ -64,6 +63,13 @@ async def process_pending_ticket(bot, message):
     channel = await create_ticket_channel(bot, ticket, message)
     logging.info(f"{message.author} created a new modmail ticket: {channel.id}")
     
+    embed = embeds.make_embed(author=False, color=0xd56385)
+    embed.title = f"Ticket created"
+    embed.add_field(name="Topic:", value=message.content, inline=False)
+    embed.add_field(name="Ticket:", value=channel.mention, inline=False)
+    embed.set_image(url="https://i.imgur.com/YiIfTLc.gif")
+    await message.author.send(embed=embed)
+
     ticket["status"] = 1
     ticket["ticket_channel"] = channel.id
     table.update(ticket, ["id"])
@@ -73,22 +79,22 @@ async def process_dm_reaction(bot, payload):
     # Get the member object for the user who added the reaction.
     user = await bot.fetch_user(payload.user_id)
 
+    # Search the database for an open pending ticket.
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
     
-    ticket = table.find_one(dm_embed_id=payload.message_id)
+    ticket = table.find_one(dm_embed_id=payload.message_id, status=0)
 
-    # If we did not find a ticket, we don't care what the user reacted to in DMs.
+    # If we did not find a ticket, ignore the reaction.
     if not ticket:
         return
 
-    # If we found a ticket, assume the user is canceling their ticket.
-    # Update the status of the ticket in the database.
+    # Update the status of the ticket in the database to canceled.
     ticket["status"] = 3
     table.update(ticket, ["id"])
     logging.info(f"{user} canceled their pending ticket")
     
-    # Send the user an embed that their ticket was canceled.
+    # DM the user an embed stating that their ticket was successfully canceled.
     embed = embeds.make_embed(author=False, color=0xf4cdc5)
     embed.title = f"Ticket canceled"
     embed.description = "Aw... feel free to create a new ticket if you need anything..."
@@ -96,14 +102,11 @@ async def process_dm_reaction(bot, payload):
     await user.send(embed=embed)
 
 
-    # TODO: Send canceled ticket embed
-
-
 async def check_for_duplicate_tickets(member):
     # Search for a pending ticket by iterating the tickets category for a match.
     ticket = discord.utils.get(discord.utils.get(member.guild.categories, 
                                 id=config.ticket_category_id).text_channels, 
-                                name=f"ticket-{member.id}")
+                                name=f"🎫｜ticket-{member.id}")
     
     # If ticket returned no results, no duplicate tickets were found.
     if not ticket:
@@ -164,7 +167,7 @@ async def create_ticket_channel(bot, ticket, message):
     category = discord.utils.get(guild.categories, id=config.ticket_category_id) 
 
     # Create a channel in the tickets category specified in the config.     
-    ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
+    ticket = await member.guild.create_text_channel(f"🎫｜ticket-{member.id}", category=category)
 
     # Give both the staff and the user perms to access the channel. 
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)

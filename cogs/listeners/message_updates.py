@@ -185,8 +185,6 @@ class MessageUpdates(commands.Cog):
             await tickets.process_dm_reaction(self.bot, payload)
 
 
-        
-
 def setup(bot: commands.Bot) -> None:
     """Load the message_updates cog."""
     bot.add_cog(MessageUpdates(bot))
