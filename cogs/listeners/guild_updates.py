@@ -221,6 +221,7 @@ class GuildUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_update
         """
         await boosts.on_new_boost(before, after)
+        await boosts.on_removed_boost(before, after)
 
 
 def setup(bot: commands.Bot) -> None:

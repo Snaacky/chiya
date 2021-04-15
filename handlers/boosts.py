@@ -30,6 +30,20 @@ async def on_new_boost(before, after):
         log.info(f"A new boost was added to {after.guild.name}.")
 
 
+# Process whenver a new boost is removed, regardless of previous boost status.
+async def on_removed_boost(before, after):
+    if after.premium_subscription_count < before.premium_subscription_count:
+        # Sent a log in #nitro-logs letting the staff know someone removed a boost.
+        nitro_logs = discord.utils.get(after.guild.channels, id=config.nitro_logs)
+        embed = embeds.make_embed(author=False, color="nitro_pink")
+        last_message = await after.guild.system_channel.fetch_message(after.guild.system_channel.last_message_id)
+        embed.description(f"A boost was removed from the server.")
+        await nitro_logs.send(embed=embed)
+
+        # Log the boost to the console.
+        log.info(f"A boost was removed from {after.guild.name}.")
+
+
 # Proces when a user who previously hasn't boosted the server boosts.
 async def process_new_booster(before, after):
     if before.premium_since is None and after.premium_since is not None:
