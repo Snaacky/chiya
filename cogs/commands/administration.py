@@ -101,7 +101,7 @@ class AdministrationCog(Cog):
         role_assignment_text = """
         You can react to one of the emotes below to assign yourself an event role\n
         
-        🎁 `Giveaways` - Receives giveaway pings.\n
+        🎁 `Giveaway Events` - Receives giveaway pings.\n
         📢 `Server Announcements` - Receives server announcement pings.\n
         📽 `Watch Party` - Receives group watch event pings.\n
         <:kakeraW:830594599001129000> `Mudae Player` - Receives Mudae event pings.\n
