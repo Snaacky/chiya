@@ -172,6 +172,8 @@ class UtilitiesCog(commands.Cog):
         """ Updates the bot by forcing a pull from the Github Repository. """
         # running git pull in the main directory.
         subprocess.run("git pull -f", shell=True)
+        await ctx.send("⚠ `Pulled updates from Repository. Bot is going down for restart now.`")
+        await ctx.message.add_reaction("🤞")
         # rebooting bot
         subprocess.run("pm2 restart chiya", shell=True)
 
