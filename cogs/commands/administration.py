@@ -11,12 +11,17 @@ from utils.record import record_usage
 # Enabling logs
 log = logging.getLogger(__name__)
 
+# ideally, this line would be in config, but seems like someone never got around to updating that.
+emoji_guild_id = 785112674332835870
+
 
 class AdministrationCog(Cog):
     """ Administration Cog Cog """
 
     def __init__(self, bot):
         self.bot = bot
+
+   
 
     @commands.has_role(config.role_admin)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
@@ -81,7 +86,7 @@ class AdministrationCog(Cog):
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
+        emotes_guild = await ctx.bot.fetch_guild(emoji_guild_id)
         emojis = await emotes_guild.fetch_emojis()
         
         await msg.add_reaction(":redsquare:805032092907601952")
@@ -101,19 +106,19 @@ class AdministrationCog(Cog):
         role_assignment_text = """
         You can react to one of the emotes below to assign yourself an event role\n
         
-        🎁 `Giveaway Events` - Receives giveaway pings.\n
-        📢 `Server Announcements` - Receives server announcement pings.\n
-        📽 `Watch Party` - Receives group watch event pings.\n
-        <:kakeraW:830594599001129000> `Mudae Player` - Receives Mudae event pings.\n
-        🎲 `Rin Player` - Receives Rin event pings.\n
-        <:pickaxe:831765423455993888> `Minecraft` - Receives Minecraft event pings.\n
+        🎁 `Giveaway Events` - Receive giveaway pings.\n
+        📢 `Server Announcements` - Receive server announcement pings.\n
+        📽 `Watch Party` - Receive group watch event pings.\n
+        <:kakeraW:830594599001129000> `Mudae Player` - Receive Mudae event pings.\n
+        🎲 `Rin Player` - Receive Rin event pings.\n
+        <:pickaxe:831765423455993888> `Minecraft` - Receive Minecraft event pings.\n
         🕹 `Community Events` - Receive other community event pings (such as gaming).\n
         """
         embed = discord.Embed(description=role_assignment_text)
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
+        emotes_guild = await ctx.bot.fetch_guild(emoji_guild_id)
         emojis = await emotes_guild.fetch_emojis()
         
         await msg.add_reaction("🎁")
