@@ -41,7 +41,7 @@ class UtilitiesCog(commands.Cog):
             # Send the help command for this group
             await ctx.send_help(ctx.command)
 
-    @commands.is_owner()
+    @commands.has_role(config.role_staff)
     @utilities.command(name="ping")
     async def ping(self, ctx):
         """Returns the Discord WebSocket latency."""
