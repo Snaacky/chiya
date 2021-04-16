@@ -111,7 +111,7 @@ class AdministrationCog(Cog):
         📽 `Watch Party` - Receive group watch event pings.\n
         <:kakeraW:830594599001129000> `Mudae Player` - Receive Mudae event pings.\n
         🧩 `Rin Player` - Receive Rin event pings.\n
-        <:pickaxe:831765423455993888> `Minecraft` - Receive Minecraft event pings.\n
+        <:pickaxe:831765423455993888> `Minecraft Player` - Receive Minecraft event pings.\n
         🕹 `Community Events` - Receive other community event pings (such as gaming).\n
         """
         embed = discord.Embed(description=role_assignment_text)
