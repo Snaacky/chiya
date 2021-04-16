@@ -102,7 +102,7 @@ class AdministrationCog(Cog):
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="createassignablerolesembed", aliases=['care'])
-    async def create_color_roles_embed(self, ctx: Context):
+    async def create_assignable_roles_embed(self, ctx: Context):
         role_assignment_text = """
         You can react to one of the emotes below to assign yourself an event role\n
         
