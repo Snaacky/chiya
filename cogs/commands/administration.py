@@ -2,6 +2,7 @@ import logging
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands.converter import RoleConverter
 
 import config
 from utils import embeds
@@ -90,6 +91,38 @@ class AdministrationCog(Cog):
         await msg.add_reaction(":bluesquare:805032145030348840")
         await msg.add_reaction(":pinksquare:805032162197635114")
         await msg.add_reaction(":purplesquare:805032172074696744")
+        await ctx.message.delete()
+    
+    @commands.has_role(config.role_admin)
+    @commands.bot_has_permissions(embed_links=True, send_messages=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="createassignablerolesembed", aliases=['care'])
+    async def create_color_roles_embed(self, ctx: Context):
+        role_assignment_text = """
+        You can react to one of the emotes below to assign yourself an event role\n
+        
+        🎁 `Giveaways` - Receives giveaway pings.\n
+        📢 `Server Announcements` - Receives server announcement pings.\n
+        📽 `Watch Party` - Receives group watch event pings.\n
+        <:kakeraW:830594599001129000> `Mudae Player` - Receives Mudae event pings.\n
+        🎲 `Rin Player` - Receives Rin event pings.\n
+        <:pickaxe:831765423455993888> `Minecraft` - Receives Minecraft event pings.\n
+        🕹 `Community Events` - Receive other community event pings (such as gaming).\n
+        """
+        embed = discord.Embed(description=role_assignment_text)
+        msg = await ctx.send(embed=embed)
+
+        # API call to fetch all the emojis to cache, so that they work in future calls
+        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
+        emojis = await emotes_guild.fetch_emojis()
+        
+        await msg.add_reaction("🎁")
+        await msg.add_reaction("📢")
+        await msg.add_reaction("📽")
+        await msg.add_reaction(":kakeraW:830594599001129000")
+        await msg.add_reaction("🎲")
+        await msg.add_reaction(":pickaxe:831765423455993888")
+        await msg.add_reaction("🕹")
         await ctx.message.delete()
 
 
