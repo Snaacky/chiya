@@ -54,7 +54,7 @@ class UtilitiesCog(commands.Cog):
         """Echos the input argument."""
         await ctx.send(args)
 
-    @commands.is_owner()
+    @commands.has_role(config.role_admin)
     @utilities.command(name="eval")
     async def eval(self, ctx, *, body: str):
         """Evaluates input as Python code."""
@@ -125,7 +125,7 @@ class UtilitiesCog(commands.Cog):
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.send(embed=embed)
 
-    @commands.is_owner()
+    @commands.has_role(config.role_admin)
     @utilities.command(name="reload")
     async def reload_cog(self, ctx: commands.Context, name_of_cog: str = None):
         """ Reloads specified cog or all cogs. """
@@ -166,7 +166,7 @@ class UtilitiesCog(commands.Cog):
             await ctx.message.add_reaction("❌")
             await ctx.send("Module not found, check spelling, it's case sensitive")
 
-    @commands.is_owner()
+    @commands.has_role(config.role_admin)
     @utilities.command(name="update", aliases=['sync'])
     async def update(self, ctx):
         """ Updates the bot by forcing a pull from the Github Repository. """
