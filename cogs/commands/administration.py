@@ -110,7 +110,7 @@ class AdministrationCog(Cog):
         📢 `Server Announcements` - Receive server announcement pings.\n
         📽 `Watch Party` - Receive group watch event pings.\n
         <:kakeraW:830594599001129000> `Mudae Player` - Receive Mudae event pings.\n
-        🎲 `Rin Player` - Receive Rin event pings.\n
+        🧩 `Rin Player` - Receive Rin event pings.\n
         <:pickaxe:831765423455993888> `Minecraft` - Receive Minecraft event pings.\n
         🕹 `Community Events` - Receive other community event pings (such as gaming).\n
         """
@@ -125,7 +125,7 @@ class AdministrationCog(Cog):
         await msg.add_reaction("📢")
         await msg.add_reaction("📽")
         await msg.add_reaction(":kakeraW:830594599001129000")
-        await msg.add_reaction("🎲")
+        await msg.add_reaction("🧩")
         await msg.add_reaction(":pickaxe:831765423455993888")
         await msg.add_reaction("🕹")
         await ctx.message.delete()
