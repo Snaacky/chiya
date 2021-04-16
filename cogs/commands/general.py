@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Union
 
@@ -47,6 +48,36 @@ class General(Cog):
                 await ctx.message.delete()
             except discord.errors.HTTPException:
                 pass
+        
+    @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name='testing')
+    async def testing(self, ctx, id):
+        ticket = discord.utils.get(discord.utils.get(ctx.guild.categories, 
+                                id=config.ticket_category_id).text_channels, 
+                                name=f"ticket-123949837791002625")
+        messages = await ticket.history().flatten()
+
+        for message in messages[::-1]:
+            await ctx.reply(message)
+            await asyncio.sleep(2)
+
+    @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name='testing2')
+    async def testing2(self, ctx):
+        general = discord.utils.get(ctx.guild.channels, id=631919775613845504)
+        boost_id = 831964491662622730
+        test = await general.fetch_message(boost_id)
+        
+        if test.type.value == 8:
+            await ctx.reply(test.author.mention)
+
+
+
+
+
+
 
 
 def setup(bot: Bot) -> None:

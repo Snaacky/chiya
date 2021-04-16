@@ -19,7 +19,7 @@ async def on_new_boost(before, after):
         embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
         await before.system_channel.send(embed=embed)
 
-        # Sent a log in #nitro-logs letting the staff know someone boosted with a link to a message near the boost.
+        # Send a log in #nitro-logs letting the staff know someone boosted with a link to a message near their boost.
         nitro_logs = discord.utils.get(after.guild.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")
         last_message = await after.guild.system_channel.fetch_message(after.guild.system_channel.last_message_id)
@@ -47,11 +47,12 @@ async def on_removed_boost(before, after):
 # Proces when a user who previously hasn't boosted the server boosts.
 async def process_new_booster(before, after):
     if before.premium_since is None and after.premium_since is not None:
-        channel = discord.utils.get(after.guild.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")
-        embed.title = "New booster"
-        embed.description = f"""{after.mention} boosted the server. We're now at {after.guild.premium_subscription_count} boosts."""
-        await channel.send(embed=embed)
+        embed.title = f"{after} boosted the server!"
+        embed.description = f"""{after.mention}, thank you so much for the server boost! We are now at {after.premium_subscription_count} boosts!
+        You can contact any <@&763031634379276308> member with a [hex color](https://www.google.com/search?q=hex+color) and your desired role name for a custom booster role."""
+        embed.set_image(url="https://i.imgur.com/O8R98p9.gif")
+        await before.system_channel.send(embed=embed)
 
         log.info(f'{after.mention} boosted {after.guild.name}.')
 
