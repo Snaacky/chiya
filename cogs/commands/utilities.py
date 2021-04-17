@@ -164,18 +164,7 @@ class UtilitiesCog(commands.Cog):
                 await ctx.send("Reloaded all modules!")
         else:
             await ctx.message.add_reaction("❌")
-            await ctx.send("Module not found, check spelling, it's case sensitive")
-
-    @commands.has_role(config.role_admin)
-    @utilities.command(name="update", aliases=['sync'])
-    async def update(self, ctx):
-        """ Updates the bot by forcing a pull from the Github Repository. """
-        # running git pull in the main directory.
-        subprocess.run("git pull -f", shell=True)
-        await ctx.send("⚠ `Pulled updates from Repository. Bot is going down for restart now.`")
-        await ctx.message.add_reaction("🤞")
-        # rebooting bot
-        subprocess.run("pm2 restart chiya", shell=True)
+            await ctx.send("Module not found, check spelling, it's case sensitive.")
 
 
 def setup(bot) -> None:
