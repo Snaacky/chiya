@@ -117,7 +117,7 @@ async def check_for_duplicate_tickets(member):
     # Search for a pending ticket by iterating the tickets category for a channel name match.
     ticket = discord.utils.get(discord.utils.get(member.guild.categories, 
                                 id=config.ticket_category_id).text_channels, 
-                                name=f"🎫｜ticket-{member.id}")
+                                name=f"ticket-{member.id}")
     
     # If ticket returned no results, no duplicate tickets were found.
     if not ticket:
@@ -181,7 +181,7 @@ async def create_ticket_channel(bot, ticket, message):
     category = discord.utils.get(guild.categories, id=config.ticket_category_id) 
 
     # Create a channel in the tickets category specified in the config.     
-    ticket = await member.guild.create_text_channel(f"🎫｜ticket-{member.id}", category=category)
+    ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
 
     # Give both the staff and the user perms to access the channel. 
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)
