@@ -58,6 +58,7 @@ voice_state_red =       "https://cdn.discordapp.com/emojis/656899769905709076.pn
 role_admin =            758145222017286205
 role_staff =            763031634379276308
 role_senior_mod =       801239164552740894
+role_trial_mod =        828078814239260682
 role_dev =              778474062619082753
 role_wiki_editor =      805863609867436092
 role_index_editor =     762589784405180426
