@@ -38,7 +38,17 @@ def setup_db():
     remind_me.create_column("date_to_remind", db.types.integer)
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
-    
+
+    # create timed_mod_actions table and columns to store timed moderator actions.
+    timed_mod_actions = db.create_table("timed_mod_actions")
+    timed_mod_actions.create_column("user_id", db.types.integer)
+    timed_mod_actions.create_column("mod_id", db.types.integer)
+    timed_mod_actions.create_column("channel_id", db.types.integer)
+    timed_mod_actions.create_column("action_type", db.types.text)
+    timed_mod_actions.create_column("start_time", db.types.integer)
+    timed_mod_actions.create_column("end_time", db.types.integer)
+    timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
+   
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
     log.info("Created any missing tables and columns.")
