@@ -7,6 +7,7 @@ import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
+import parsedatetime as pdt
 
 import config
 from utils import database
@@ -199,11 +200,11 @@ class ModerationCog(Cog):
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
             await channel.send(embed=embed)
+        
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
 
         # Adds "Muted" role to member.
-        # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
