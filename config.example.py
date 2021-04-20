@@ -71,9 +71,10 @@ reddit_posts =      623809718011297792
 poll_rate =         3 # In seconds.
 user_agent =        "Chiya (for /r/animepiracy)"
 
-guild_id = 622243127435984927
-emoji_guild_id = 785112674332835870
+guild_id =              622243127435984927
+emoji_guild_id =        785112674332835870
 
-ticket_channel = 829861810999132160
-ticket_embed_id = 829885444094427206
-ticket_category_id = 828043148781027328
+ticket_channel =        829861810999132160
+ticket_embed_id =       829885444094427206
+ticket_category_id =    828043148781027328
+archive_category =      708521071493644339
