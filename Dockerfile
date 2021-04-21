@@ -2,11 +2,8 @@
 FROM python:3.8-slim-buster
 LABEL maintainer="https://github.com/ranimepiracy/Chiya"
 
-ENV BOT_PREFIX="" \
-  BOT_TOKEN="" \
-  LOG_LEVEL="INFO" \
-  # Keeps Python from generating .pyc files in the container
-  PYTHONDONTWRITEBYTECODE=1 \
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1 \
   # Turns off buffering for easier container logging
   PYTHONUNBUFFERED=1 \
   # Force UTF8 encoding for funky characters
