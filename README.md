@@ -10,7 +10,7 @@ Our private bot for the /r/animepiracy.
 ## Getting started
 
 * Scroll to the FAQ portion of this document if you have questions.
-The easiest way is to use [docker](https://docs.docker.com/engine/reference/run/):
+The easiest way is to use [Docker](https://docs.docker.com/engine/reference/run/):
 
 **Step 1:**
 As the docker image is currently hosted on a private Github repo, you will need to login into the Github container registry first.
