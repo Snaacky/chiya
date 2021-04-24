@@ -100,4 +100,4 @@ class RedditTask(commands.Cog):
 def setup(bot) -> None:
     """ Load the GeneralCog cog. """
     bot.add_cog(RedditTask(bot))
-    log.info("Cog loaded: RedditTask")
+    log.info("Task loaded: reddit")

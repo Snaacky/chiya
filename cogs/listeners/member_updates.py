@@ -101,4 +101,4 @@ class MemberUpdates(commands.Cog):
 def setup(bot: commands.Bot) -> None:
     """Load the member_updates cog."""
     bot.add_cog(MemberUpdates(bot))
-    log.info("Cog loaded: member_updates")
+    log.info("Listener loaded: member_updates")

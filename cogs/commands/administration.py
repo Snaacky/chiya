@@ -134,4 +134,4 @@ class AdministrationCog(Cog):
 def setup(bot: Bot) -> None:
     """ Load the AdministrationCog cog. """
     bot.add_cog(AdministrationCog(bot))
-    log.info("Cog loaded: AdministrationCog")
+    log.info("Commands loaded: administration")

@@ -130,4 +130,4 @@ class Reminder(Cog):
 def setup(bot: Bot) -> None:
     """ Load the Reminder cog. """
     bot.add_cog(Reminder(bot))
-    log.info("Cog loaded: reminder")
+    log.info("Commands loaded: reminder")

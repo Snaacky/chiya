@@ -52,4 +52,4 @@ class General(Cog):
 def setup(bot: Bot) -> None:
     """ Load the General cog. """
     bot.add_cog(General(bot))
-    log.info("Cog loaded: General")
+    log.info("Commands loaded: general")

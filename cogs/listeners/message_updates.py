@@ -188,4 +188,4 @@ class MessageUpdates(commands.Cog):
 def setup(bot: commands.Bot) -> None:
     """Load the message_updates cog."""
     bot.add_cog(MessageUpdates(bot))
-    log.info("Cog loaded: message_updates")
+    log.info("Listener loaded: message_updates")

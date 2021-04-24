@@ -227,4 +227,4 @@ class GuildUpdates(commands.Cog):
 def setup(bot: commands.Bot) -> None:
     """Load the guild_updates cog."""
     bot.add_cog(GuildUpdates(bot))
-    log.info("Cog loaded: guild_updates")
+    log.info("Listener loaded: guild_updates")

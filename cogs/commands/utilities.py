@@ -170,4 +170,4 @@ class UtilitiesCog(commands.Cog):
 def setup(bot) -> None:
     """Load the UtilitiesCog cog."""
     bot.add_cog(UtilitiesCog(bot))
-    log.info("Cog loaded: UtilitiesCog")
+    log.info("Commands loaded: utilities")

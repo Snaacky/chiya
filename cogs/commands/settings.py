@@ -22,4 +22,4 @@ class SettingsCog(commands.Cog):
 def setup(bot) -> None:
     """Load the SettingsCog cog."""
     bot.add_cog(SettingsCog(bot))
-    log.info("Cog loaded: SettingsCog")
+    log.info("Commands loaded: settings")

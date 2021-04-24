@@ -396,4 +396,4 @@ class ModerationCog(Cog):
 def setup(bot: Bot) -> None:
     """ Load the ModerationCog cog. """
     bot.add_cog(ModerationCog(bot))
-    log.info("Cog loaded: ModerationCog")
+    log.info("Commands loaded: moderation")

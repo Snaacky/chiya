@@ -44,4 +44,4 @@ class VoteCog(commands.Cog):
 def setup(bot) -> None:
     """Load the Vote cog."""
     bot.add_cog(VoteCog(bot))
-    log.info("Cog loaded: VoteCog")
+    log.info("Commands loaded: vote")

@@ -379,4 +379,4 @@ class ResponseCodeError(ValueError):
 def setup(bot) -> None:
     """Load the error_handle cog."""
     bot.add_cog(error_handle(bot))
-    log.info("Cog loaded: error_handle")
+    log.info("Listener loaded: error_handle")

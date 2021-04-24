@@ -318,4 +318,4 @@ class Help(Cog):
 def setup(bot: Bot) -> None:
     """Load the Help cog."""
     bot.add_cog(Help(bot))
-    log.info("Cog loaded: Help")
+    log.info("Commands loaded: help")
