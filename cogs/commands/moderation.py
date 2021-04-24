@@ -190,6 +190,23 @@ class ModerationCog(Cog):
             image_url=config.user_mute, color=config.soft_red)
         embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
 
+        # Creates a channel for users to appeal/discuss their mute
+        guild = ctx.message.guild
+        category = discord.utils.get(guild.categories, id=config.ticket_category_id)
+
+        # Create a channel in the tickets category specified in the config.     
+        mute_channel = await guild.create_text_channel(f"mute-{member.id}", category=category)
+
+        # Give both the staff and the user perms to access the channel. 
+        await mute_channel.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)
+        await mute_channel.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), read_messages=True)
+        await mute_channel.set_permissions(member, read_messages=True)
+
+        mute_channel_embed = embeds.make_embed(title="🤐 You were muted", description="Please wait for a staff member to assist you.")
+        mute_channel_embed.add_field(name="Reason:", value=reason, inline=False)
+
+        await mute_channel.send(embed=mute_channel_embed)
+
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
@@ -199,6 +216,7 @@ class ModerationCog(Cog):
             mute_embed.add_field(name="Server:", value=ctx.guild, inline=True)
             mute_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
             mute_embed.add_field(name="Length:", value="Indefinite", inline=True) # TODO: Implement timed mutes.
+            mute_embed.add_field(name="Mute Channel:", value=mute_channel.mention, inline=True)
             mute_embed.add_field(name="Reason:", value=reason, inline=False)
             mute_embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
             await channel.send(embed=mute_embed)
@@ -209,7 +227,6 @@ class ModerationCog(Cog):
         await ctx.reply(embed=embed)
 
         # Adds "Muted" role to member.
-        # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
@@ -260,6 +277,13 @@ class ModerationCog(Cog):
         # TODO: Add role name to configuration, maybe by ID?
         role = discord.utils.get(ctx.guild.roles, name="Muted")
         await member.remove_roles(role, reason=reason)
+
+        # archives mute channel
+        mute_category = discord.utils.get(ctx.guild.categories, id=config.ticket_category_id)
+        channel = discord.utils.get(mute_category.channels, name=f"mute-{member.id}")
+        
+        archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
+        await channel.edit(category=archive, sync_permissions=True)
 
         # Add the mute to the mod_log database.
         with dataset.connect(database.get_db()) as db:
