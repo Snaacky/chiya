@@ -19,14 +19,14 @@ class TimedModActionsTask(Cog):
     """ Timed Mod Actions Background  """
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.check_mod_actions.start()
+        self.check_for_pending_mod_actions.start()
 
     def cog_unload(self):
-        self.check_mod_actions.cancel()
+        self.check_for_pending_mod_actions.cancel()
 
     
     @tasks.loop(seconds=3.0)
-    async def check_mod_actions(self) -> None:
+    async def check_for_pending_mod_actions(self) -> None:
         """ Checks for mod actions periodically, and reverses them accordingly if the time lapsed. """
         db = dataset.connect(database.get_db())
         timed_actions = db["timed_mod_actions"]
@@ -39,10 +39,7 @@ class TimedModActionsTask(Cog):
         """ Unbans member and logs the action. """
 
 
-
-
-
 def setup(bot: Bot) -> None:
-    """ Load the ReminderTask cog. """
-    bot.add_cog(ReminderTask(bot))
-    log.info("Cog loaded: reminder_task")
+    """ Load the TimedModActionsTask cog. """
+    bot.add_cog(TimedModActionsTask(bot))
+    log.info("Cog loaded: timed_mod_actions_task")

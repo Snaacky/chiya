@@ -178,6 +178,8 @@ class ModerationCog(Cog):
         if not await self.can_action_member(ctx, member):
             return
 
+        duration = reason.split(' ')[len(reason.split(' '))-1]
+
         # Check if the user is muted already.
         if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
             await ctx.reply("That user is already muted.")
@@ -185,7 +187,7 @@ class ModerationCog(Cog):
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
             image_url=config.user_mute, color=config.soft_red)
-        embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
+        embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}\n{duration}"
         await ctx.reply(embed=embed)
 
         # Send member message telling them that they were muted and why.
@@ -196,8 +198,7 @@ class ModerationCog(Cog):
             embed.description = "If you believe this was a mistake, contact staff."
             embed.add_field(name="Server:", value=ctx.guild, inline=True)
             embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Length:", value="Indefinite", inline=True) # TODO: Implement timed mutes.
-            embed.add_field(name="Reason:", value=reason, inline=False)
+            # TODO: Re-add reason and duration when checking if invoked mute was timed.
             embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
             await channel.send(embed=embed)
         
@@ -392,7 +393,6 @@ class ModerationCog(Cog):
         # Move the channel to the archive.
         archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
         await ctx.channel.edit(category=archive, sync_permissions=True)
-        
 
 def setup(bot: Bot) -> None:
     """ Load the ModerationCog cog. """
