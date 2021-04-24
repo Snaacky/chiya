@@ -56,7 +56,7 @@ class ReminderTask(Cog):
                     dm = await user.create_dm()
                     await dm.send(embed=embed)
                     table.update(dict(id=reminder['id'], sent=True), ['id'])
-                    log.info(f"Sent {user}'s {reminder['id']=} via DMs because I coouldn't access channel {channel} ({reminder['reminder_location']})")
+                    log.info(f"Sent {user}'s {reminder['id']=} via DMs because I couldn't access channel {channel} ({reminder['reminder_location']})")
                 except:
                     log.warn(f"Unable to post {user}'s reminder {reminder['id']=} and the user has DMs blocked")
 

@@ -70,22 +70,24 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
             image_url=config.user_ban, color=config.soft_red)
         embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
-        await ctx.reply(embed=embed)
 
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
             channel = await user.create_dm()
-            embed = embeds.make_embed(author=False, color=0xc2bac0)
-            embed.title = f"Uh-oh, you've been banned!"
-            embed.description = "You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy)."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Length:", value="Indefinite", inline=True)
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
-            await channel.send(embed=embed)
+            ban_embed = embeds.make_embed(author=False, color=0xc2bac0)
+            ban_embed.title = f"Uh-oh, you've been banned!"
+            ban_embed.description = "You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy)."
+            ban_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            ban_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            ban_embed.add_field(name="Length:", value="Indefinite", inline=True)
+            ban_embed.add_field(name="Reason:", value=reason, inline=False)
+            ban_embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
+            await channel.send(embed=ban_embed)
         except:
-            embed.add_field(name="NOTICE", value="Unable to message user about this action.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+
+        # Send the ban DM to the user.
+        await ctx.reply(embed=embed)
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
@@ -138,21 +140,23 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Kicking member: {member.name}", 
             image_url=config.user_ban, color=config.soft_red)
         embed.description=f"{member.mention} was kicked by {ctx.author.mention} for:\n{reason}"
-        await ctx.reply(embed=embed)
 
         # Send user message telling them that they were kicked and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0xe49bb3)
-            embed.title = f"Uh-oh, you've been kicked!"
-            embed.description = "I-I guess you can join back if you want? B-baka. https://discord.gg/piracy"
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/UkrBRur.gif")
-            await channel.send(embed=embed)
+            kick_embed = embeds.make_embed(author=False, color=0xe49bb3)
+            kick_embed.title = f"Uh-oh, you've been kicked!"
+            kick_embed.description = "I-I guess you can join back if you want? B-baka. https://discord.gg/piracy"
+            kick_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            kick_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            kick_embed.add_field(name="Reason:", value=reason, inline=False)
+            kick_embed.set_image(url="https://i.imgur.com/UkrBRur.gif")
+            await channel.send(embed=kick_embed)
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+
+        # Send the kick DM to the user.
+        await ctx.reply(embed=embed)
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
         await ctx.guild.kick(user=member, reason=reason)
@@ -185,22 +189,24 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
             image_url=config.user_mute, color=config.soft_red)
         embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
-        await ctx.reply(embed=embed)
 
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0x8083b0)
-            embed.title = f"Uh-oh, you've been muted!"
-            embed.description = "If you believe this was a mistake, contact staff."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Length:", value="Indefinite", inline=True) # TODO: Implement timed mutes.
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
-            await channel.send(embed=embed)
+            mute_embed = embeds.make_embed(author=False, color=0x8083b0)
+            mute_embed.title = f"Uh-oh, you've been muted!"
+            mute_embed.description = "If you believe this was a mistake, contact staff."
+            mute_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            mute_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            mute_embed.add_field(name="Length:", value="Indefinite", inline=True) # TODO: Implement timed mutes.
+            mute_embed.add_field(name="Reason:", value=reason, inline=False)
+            mute_embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
+            await channel.send(embed=mute_embed)
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+
+        # Send the mute embed DM to the user.
+        await ctx.reply(embed=embed)
 
         # Adds "Muted" role to member.
         # TODO: Add role name to configuration, maybe by ID?
@@ -232,21 +238,23 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
             image_url=config.user_unmute, color=config.soft_green)
         embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for:\n{reason}"
-        await ctx.reply(embed=embed)
         
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0x8a3ac5)
-            embed.title = f"Yay, you've been unmuted!"
-            embed.description = "Review our server rules to avoid being actioned again in the future."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
-            await channel.send(embed=embed)
+            unmute_embed = embeds.make_embed(author=False, color=0x8a3ac5)
+            unmute_embed.title = f"Yay, you've been unmuted!"
+            unmute_embed.description = "Review our server rules to avoid being actioned again in the future."
+            unmute_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            unmute_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            unmute_embed.add_field(name="Reason:", value=reason, inline=False)
+            unmute_embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
+            await channel.send(embed=unmute_embed)
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+
+        # Send the unmute embed DM to the user.
+        await ctx.reply(embed=embed)
 
         # Removes "Muted" role from member.
         # TODO: Add role name to configuration, maybe by ID?
@@ -269,21 +277,23 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Warning member: {member.name}", 
             image_url=config.user_warn, color=config.soft_orange)
         embed.description=f"{member.mention} was warned by {ctx.author.mention} for:\n{reason}"
-        await ctx.reply(embed=embed)
-
+        
         # Send member message telling them that they were warned and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0xf7dcad)
-            embed.title = f"Uh-oh, you've received a warning!"
-            embed.description = "If you believe this was a mistake, contact staff."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
-            await channel.send(embed=embed)
+            warn_embed = embeds.make_embed(author=False, color=0xf7dcad)
+            warn_embed.title = f"Uh-oh, you've received a warning!"
+            warn_embed.description = "If you believe this was a mistake, contact staff."
+            warn_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            warn_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            warn_embed.add_field(name="Reason:", value=reason, inline=False)
+            warn_embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
+            await channel.send(embed=warn_embed)
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+
+        # Send the warning embed DM to the user.
+        await ctx.reply(embed=embed)
 
         # Add the warning to the mod_log database.
         with dataset.connect(database.get_db()) as db:
