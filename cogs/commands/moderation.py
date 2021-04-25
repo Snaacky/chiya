@@ -428,6 +428,127 @@ class ModerationCog(Cog):
         # Move the channel to the archive.
         archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
         await ctx.channel.edit(category=archive, sync_permissions=True)
+
+    @commands.has_role(config.role_staff)
+    @commands.command(name="search")
+    async def search_mod_actions(self, ctx, member: discord.Member, action_type: str = None):
+        """ Searches for mod actions on a user """
+        result = None
+        with dataset.connect(database.get_db()) as db:
+            mod_logs = db["mod_logs"]
+            if action_type is not None:
+                result = mod_logs.find(user_id=member.id, type=action_type.lower())
+            else:
+                result = mod_logs.find(user_id=member.id)
+
+        actions = []
+        for x in result:
+            actions.append(dict(
+                user_id=x['user_id'],
+                mod_id=x['mod_id'],
+                reason=x['reason'],
+                type=x['type'],
+                timestamp = x['timestamp']
+            ))
+        if len(actions) == 0:
+            await embeds.error_message("No mod actions found for that user!", ctx)
+            return
+
+        actions.reverse()
+        page_no = 0
+
+        def get_page(action_list, page_no: int, ctx: Context) -> Embed:
+            colors = {
+                "ban"    : 0xc2bac0,
+                "unban"  : config.soft_green,
+                "kick"   : config.soft_red,
+                "mute"   : 0x8083b0,
+                "unmute" : 0x8a3ac5,
+                "warn"   : 0xf7dcad
+            }
+            data = action_list[page_no]
+            
+            embed = embeds.make_embed(title=data['type'][0].upper()+data['type'][1:], 
+                description=f"Page {page_no+1} of {len(action_list)}", 
+                    context=ctx, color=colors[data['type']])
+            
+            embed.add_field(name="Moderator:", value=f"<@!{data['mod_id']}>", inline=True)
+            embed.add_field(name="Reason:", value=data['reason'], inline=False)
+            embed.timestamp = datetime.datetime.fromtimestamp(data['timestamp'])
+            return embed
+        
+        msg = await ctx.send(embed=get_page(actions, page_no, ctx))
+
+        FIRST_EMOJI = "\u23EE"   # [:track_previous:]
+        LEFT_EMOJI = "\u2B05"    # [:arrow_left:]
+        RIGHT_EMOJI = "\u27A1"   # [:arrow_right:]
+        LAST_EMOJI = "\u23ED"    # [:track_next:]
+        DELETE_EMOJI = "⛔"  # [:trashcan:]
+        SAVE_EMOJI = "💾"  # [:floppy_disk:]
+
+        bot = ctx.bot
+        timeout = 30
+
+        PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI,
+                            LAST_EMOJI, DELETE_EMOJI, SAVE_EMOJI)
+
+        
+        for x in PAGINATION_EMOJI:
+            await msg.add_reaction(x)
+
+        def check(reaction: discord.Reaction, user: discord.Member) -> bool:
+            if reaction.emoji in PAGINATION_EMOJI and user == ctx.author:
+                return True
+
+            return False
+
+        while True:
+            try:
+                reaction, user = await bot.wait_for("reaction_add", timeout=timeout, check=check)
+
+            except asyncio.TimeoutError:
+                await msg.delete()
+                break
+
+            if str(reaction.emoji) == DELETE_EMOJI:
+                await msg.delete()
+                break
+
+            if str(reaction.emoji) == SAVE_EMOJI:
+                await msg.clear_reactions()
+                break
+
+            if reaction.emoji == FIRST_EMOJI:
+                await msg.remove_reaction(reaction.emoji, user)
+                page_no = 0
+
+            if reaction.emoji == LAST_EMOJI:
+                await msg.remove_reaction(reaction.emoji, user)
+                page_no = len(actions) - 1
+
+            if reaction.emoji == LEFT_EMOJI:
+                await msg.remove_reaction(reaction.emoji, user)
+
+                if page_no <= 0:
+                    page_no = len(actions) - 1
+
+                else:
+                    page_no -= 1
+
+            if reaction.emoji == RIGHT_EMOJI:
+                await msg.remove_reaction(reaction.emoji, user)
+
+                if page_no >= len(actions) - 1:
+                    page_no = 0
+
+                else:
+                    page_no += 1
+
+            embed = get_page(actions, page_no, ctx)
+
+            if embed is not None:
+                await msg.edit(embed=embed)
+
         
 
 def setup(bot: Bot) -> None:
