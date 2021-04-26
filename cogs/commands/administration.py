@@ -104,15 +104,14 @@ class AdministrationCog(Cog):
     @commands.command(name="createassignablerolesembed", aliases=['care'])
     async def create_assignable_roles_embed(self, ctx: Context):
         role_assignment_text = """
-        You can react to one of the emotes below to assign yourself an event role\n
+        You can react to one of the emotes below to assign yourself an event role.
         
-        🎁 `Giveaway Events` - Receive giveaway pings.\n
-        📢 `Server Announcements` - Receive server announcement pings.\n
-        📽 `Watch Party` - Receive group watch event pings.\n
-        <:kakeraW:830594599001129000> `Mudae Player` - Receive Mudae event pings.\n
-        🧩 `Rin Player` - Receive Rin event pings.\n
-        <:pickaxe:831765423455993888> `Minecraft Player` - Receive Minecraft event pings.\n
-        🕹 `Community Events` - Receive other community event pings (such as gaming).\n
+        🎁  <@&832528733763928094> - Receive giveaway pings.
+        📢  <@&827611682917711952> - Receive server announcement pings.
+        📽  <@&831999443220955136> - Receive group watch event pings.
+        <:kakeraW:830594599001129000>  <@&832512304334766110> - Receive Mudae event and season pings.
+        🧩  <@&832512320306675722> - Receive Rin event pings.
+        <:pickaxe:831765423455993888>  <@&832512327731118102> - Receive Minecraft server related pings.
         """
         embed = discord.Embed(description=role_assignment_text)
         msg = await ctx.send(embed=embed)
