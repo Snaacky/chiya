@@ -3,12 +3,10 @@ import time
 
 import dataset
 import discord
-from discord.ext import commands
 
 import config
 from utils import database
 from utils import embeds
-
 
 async def process_embed_reaction(payload):
     # Get the member object for the user who added the reaction.
@@ -53,7 +51,6 @@ async def process_embed_reaction(payload):
             dm_embed_id=dm.id, timestamp=int(time.time())
         ))
 
-
 async def process_pending_ticket(bot, message):
     # Open a connection to the database.
     with dataset.connect(database.get_db()) as db:
@@ -80,7 +77,6 @@ async def process_pending_ticket(bot, message):
     ticket["status"] = 1
     ticket["ticket_channel"] = channel.id
     table.update(ticket, ["id"])
-
 
 async def process_dm_reaction(bot, payload):
     # Get the member object for the user who added the reaction.
@@ -112,7 +108,6 @@ async def process_dm_reaction(bot, payload):
     embed.set_image(url="https://i.imgur.com/T9ikYl6.gif")
     await user.send(embed=embed)
 
-
 async def check_for_duplicate_tickets(member):
     # Search for a pending ticket by iterating the tickets category for a channel name match.
     ticket = discord.utils.get(discord.utils.get(member.guild.categories, 
@@ -125,7 +120,6 @@ async def check_for_duplicate_tickets(member):
 
     # If we hit this point, a duplicate ticket was found.
     return ticket
-
 
 async def check_for_pending_tickets(member):
     # Open a connection to the database.
@@ -142,7 +136,6 @@ async def check_for_pending_tickets(member):
     # If we hit this point, a pending ticket was found.
     return ticket
 
-
 async def send_pending_ticket_dm(member):
     # Attempt to open a new DM with user so we can get the ticket topic.
     try:
@@ -158,7 +151,6 @@ async def send_pending_ticket_dm(member):
     except discord.errors.Forbidden:
         logging.info(f"{member} tried to create a new pending ticket but is not accepting DMs.")
 
-
 async def send_duplicate_ticket_dm(member, ticket):
     # Attempts to create a new DM with the user for the topic. 
     try:
@@ -173,7 +165,6 @@ async def send_duplicate_ticket_dm(member, ticket):
     except discord.errors.Forbidden:
         logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and is not accepting DMs.")
     return False
-
 
 async def create_ticket_channel(bot, ticket, message):
     guild = bot.get_guild(ticket["guild"])

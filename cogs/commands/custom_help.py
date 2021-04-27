@@ -8,14 +8,12 @@ from utils import embeds
 from utils.pagination import LinePaginator
 import config
 
-
 # Enabling logs.
 log = logging.getLogger(__name__)
 
 COMMANDS_PER_PAGE = 7
 PREFIX = config.prefix
 TIME_TO_LIVE = 120 # In seconds, how long an embed should remain until self-destruct.
-
 
 class CustomHelpCommand(HelpCommand):
     """CustomHelpCommand"""
@@ -313,7 +311,6 @@ class Help(Cog):
     def cog_unload(self) -> None:
         """Reset the help command when the cog is unloaded."""
         self.bot.help_command = self.old_help_command
-
 
 def setup(bot: Bot) -> None:
     """Load the Help cog."""

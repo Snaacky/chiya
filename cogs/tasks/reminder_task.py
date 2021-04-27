@@ -1,17 +1,13 @@
-import asyncio
 import logging
-import traceback
 from datetime import datetime
 
 import dataset
-import discord
-from discord.ext import commands, tasks
+from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
 from utils import database, embeds
 
 log = logging.getLogger(__name__)
-
 
 class ReminderTask(Cog):
     """ Reminder Background Task """
@@ -62,7 +58,6 @@ class ReminderTask(Cog):
 
             # If all else fails, unable to send the reminder, mark it as failed (None)
             table.update(dict(id=reminder['id'], sent=None), ['id'])
-
 
 def setup(bot: Bot) -> None:
     """ Load the ReminderTask cog. """

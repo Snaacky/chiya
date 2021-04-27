@@ -1,5 +1,4 @@
 import time
-import traceback
 import logging
 
 import asyncpraw
@@ -94,7 +93,6 @@ class RedditTask(commands.Cog):
         # Catch all exceptions to avoid crashing and log the error.
         except Exception as e:
             log.error(e)
-
 
 def setup(bot) -> None:
     """ Load the GeneralCog cog. """

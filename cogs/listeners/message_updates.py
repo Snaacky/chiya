@@ -7,7 +7,6 @@ from discord.ext import commands
 import config
 from handlers import tickets
 from utils import embeds
-from utils.utils import contains_link, has_attachment
 
 log = logging.getLogger(__name__)
 
@@ -183,7 +182,6 @@ class MessageUpdates(commands.Cog):
         channel = await self.bot.fetch_channel(payload.channel_id)
         if isinstance(channel, discord.DMChannel):
             await tickets.process_dm_reaction(self.bot, payload)
-
 
 def setup(bot: commands.Bot) -> None:
     """Load the message_updates cog."""

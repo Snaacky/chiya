@@ -15,9 +15,8 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
-
 class Reminder(Cog):
-    """ Handels reminder commands """
+    """ Handles reminder commands """
 
     def __init__(self, bot: Bot):
         self.bot = bot

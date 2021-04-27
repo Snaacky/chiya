@@ -1,7 +1,6 @@
 import discord
 from discord.ext.commands import Context
 
-
 def make_embed(title: str = None, description: str = None, context: Context = None, color ="default",
           image_url: str = None, author=True) -> discord.Embed:
     """General embed template
@@ -56,7 +55,6 @@ def make_embed(title: str = None, description: str = None, context: Context = No
 
     return embed
 
-
 async def error_message(description: str, ctx: Context, author:bool=True):
     """Send basic error message
 
@@ -84,7 +82,6 @@ def error_embed(title: str, description: str, ctx: Context, author:bool=True) ->
     """
     return make_embed(title=f'Error: {title}', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author)
 
-
 async def warning_message(ctx: Context, description: str, author:bool=True):
     """ Send a basic warning message
     
@@ -97,7 +94,6 @@ async def warning_message(ctx: Context, description: str, author:bool=True):
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
     await ctx.send(embed=make_embed(title='WARNING', description=f'📢 **{description}**', context = ctx, color="dark_gold", author=author), delete_after=30)
-
 
 def files_and_links_only(ctx: Context) -> discord.Embed:
     """Standard messsage for when files or links are only used in the channel

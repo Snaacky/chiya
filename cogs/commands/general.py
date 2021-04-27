@@ -11,7 +11,6 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
-
 class General(Cog):
     """ General Commands Cog """
 
@@ -47,7 +46,6 @@ class General(Cog):
                 await ctx.message.delete()
             except discord.errors.HTTPException:
                 pass
-
 
 def setup(bot: Bot) -> None:
     """ Load the General cog. """
