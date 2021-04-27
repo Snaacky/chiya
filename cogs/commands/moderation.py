@@ -60,7 +60,9 @@ class ModerationCog(Cog):
         # Checks to see if the user is already banned.
         try:
             await ctx.guild.fetch_ban(user)
-            await ctx.reply("That user is already banned.")
+            embed = embeds.make_embed(color=config.soft_red)
+            embed.description=f"That user is already banned."
+            await ctx.reply(embed=embed)
             return
         except discord.NotFound:
             pass
@@ -392,7 +394,7 @@ class ModerationCog(Cog):
         """ Closes the modmail ticket."""
         channel = ctx.message.channel
 
-        if not channel.category_id == config.ticket_category_id:
+        if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
             embed = embeds.make_embed(color=config.soft_red)
             embed.description=f"You can only run this command in active ticket channels."
             await ctx.reply(embed=embed)
