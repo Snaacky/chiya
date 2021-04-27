@@ -51,10 +51,8 @@ class ModerationCog(Cog):
         """ Bans user from guild. """
 
         # Checking if user is in guild.
-        if ctx.guild.get_member(user.id) is not None:
-            # Convert to member object
-            member = await commands.MemberConverter().convert(ctx, user.mention)
-
+        member = ctx.guild.get_member(user.id)
+        if member:
             # Checks if invoker can action that member (self, bot, etc.)
             if not await self.can_action_member(ctx, member):
                 return
@@ -84,7 +82,7 @@ class ModerationCog(Cog):
             ban_embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
             await channel.send(embed=ban_embed)
         except:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+            embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Send the ban DM to the user.
         await ctx.reply(embed=embed)
