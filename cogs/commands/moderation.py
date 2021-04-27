@@ -27,17 +27,23 @@ class ModerationCog(Cog):
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            await ctx.reply("You cannot action that member.")
+            embed = embeds.make_embed(color=config.soft_red)
+            embed.description=f"You cannot action that member."
+            await ctx.reply(embed=embed)
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            await ctx.reply("You cannot action that member.")
+            embed = embeds.make_embed(color=config.soft_red)
+            embed.description=f"You cannot action that member."
+            await ctx.reply(embed=embed)
             return False
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            await ctx.reply("I cannot action that member because their role is higher than mine.")
+            embed = embeds.make_embed(color=config.soft_red)
+            embed.description=f"I cannot action that member."
+            await ctx.reply(embed=embed)
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -412,9 +418,7 @@ class ModerationCog(Cog):
             # default_role is @everyone role, so skip that.
             if role == ctx.guild.default_role:
                 continue
-
-            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False, 
-                                                manage_messages=False)     
+            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False, manage_messages=False)     
 
         with dataset.connect(database.get_db()) as db:
             table = db["tickets"]
