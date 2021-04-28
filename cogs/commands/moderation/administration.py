@@ -266,7 +266,6 @@ class AdministrationCog(Cog):
         await msg.add_reaction(":kakeraW:830594599001129000")
         await msg.add_reaction("🧩")
         await msg.add_reaction(":pickaxe:831765423455993888")
-        await msg.add_reaction("🕹")
         await ctx.message.delete()
 
 
