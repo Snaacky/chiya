@@ -29,8 +29,12 @@ class WarnsCog(Cog):
 
         embed = embeds.make_embed(context=ctx, title=f"Warning member: {member.name}", 
             image_url=config.user_warn, color=config.soft_orange)
-        embed.description=f"{member.mention} was warned by {ctx.author.mention} for:\n{reason}"
-        
+        embed.description=f"{member.mention} was warned by {ctx.author.mention} for: {reason}"
+
+        if len(reason) > 512:
+            await embeds.error_message(description="Reason must be less than 512 characters.")
+            return
+
         # Send member message telling them that they were warned and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
@@ -43,7 +47,7 @@ class WarnsCog(Cog):
             warn_embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
             await channel.send(embed=warn_embed)
         except:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Send the warning embed DM to the user.
         await ctx.reply(embed=embed)

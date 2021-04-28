@@ -24,23 +24,17 @@ class MuteCog(Cog):
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You cannot action that member due to hierarchy.")
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You cannot action that member due to hierarchy.")
             return False
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"I cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="I cannot action that member.")
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -50,7 +44,7 @@ class MuteCog(Cog):
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="mute")
-    async def mute(self, ctx: Context, member: discord.Member, *, reason: str):
+    async def mute(self, ctx: Context, member: discord.Member, *, reason: str = None):
         """ Mutes member in guild. """
 
         # TODO: Implement temp/timed mute functionality
@@ -62,12 +56,20 @@ class MuteCog(Cog):
 
         # Check if the user is muted already.
         if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
-            await ctx.reply("That user is already muted.")
+            await embeds.error_message(description=f"{member.mention} is already muted.")
+            return
+
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+            
+        if len(reason) > 512:
+            await embeds.error_message(description="Reason must be less than 512 characters.")
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
-            image_url=config.user_mute, color=config.soft_red)
-        embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
+            image_url=config.user_mute, color="soft_red")
+        embed.description=f"{member.mention} was muted by {ctx.author.mention} for: {reason}"
 
         # Creates a channel for users to appeal/discuss their mute
         guild = ctx.message.guild
@@ -102,7 +104,7 @@ class MuteCog(Cog):
             mute_embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
             await channel.send(embed=mute_embed)
         except:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Send the mute embed DM to the user.
         await ctx.reply(embed=embed)
@@ -121,7 +123,7 @@ class MuteCog(Cog):
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unmute")
-    async def unmute(self, ctx: Context, member: discord.Member, *, reason: str):
+    async def unmute(self, ctx: Context, member: discord.Member, *, reason: str = None):
         """ Unmutes member in guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
@@ -133,9 +135,17 @@ class MuteCog(Cog):
             await ctx.reply("That user is not muted.")
             return
 
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+            
+        if len(reason) > 512:
+            await embeds.error_message(description="Reason must be less than 512 characters.")
+            return
+
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
             image_url=config.user_unmute, color=config.soft_green)
-        embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for:\n{reason}"
+        embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
         
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -155,14 +165,12 @@ class MuteCog(Cog):
         await ctx.reply(embed=embed)
 
         # Removes "Muted" role from member.
-        # TODO: Add role name to configuration, maybe by ID?
-        role = discord.utils.get(ctx.guild.roles, name="Muted")
+        role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.remove_roles(role, reason=reason)
 
         # archives mute channel
         mute_category = discord.utils.get(ctx.guild.categories, id=config.ticket_category_id)
         channel = discord.utils.get(mute_category.channels, name=f"mute-{member.id}")
-        
         archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
         await channel.edit(category=archive, sync_permissions=True)
 

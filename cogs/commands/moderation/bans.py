@@ -24,23 +24,17 @@ class BanCog(Cog):
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You cannot action that member due to hierarchy.")
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You cannot action that member due to hierarchy.")
             return False
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"I cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="I cannot action that member.")
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -50,7 +44,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="ban")
-    async def ban_member(self, ctx: Context, user: discord.User, *, reason: str):
+    async def ban_member(self, ctx: Context, user: discord.User, *, reason: str = None):
         """ Bans user from guild. """
 
         # Checking if user is in guild.
@@ -63,16 +57,22 @@ class BanCog(Cog):
         # Checks to see if the user is already banned.
         try:
             await ctx.guild.fetch_ban(user)
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"That user is already banned."
-            await ctx.reply(embed=embed)
+            embed = await embeds.error_message(description=f"{user.mention} is already banned.")
             return
         except discord.NotFound:
             pass
+
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+            
+        if len(reason) > 512:
+            await embeds.error_message(description="Reason must be less than 512 characters.")
+            return
     
         embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
-            image_url=config.user_ban, color=config.soft_red)
-        embed.description=f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}"
+            image_url=config.user_ban, color="soft_red")
+        embed.description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
 
         # Send user message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -105,19 +105,27 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unban")
-    async def unban_member(self, ctx: Context, user: discord.User, *, reason: str):
+    async def unban_member(self, ctx: Context, user: discord.User, *, reason: str = None):
         """ Unbans user from guild. """
         
         # Checks to see if the user is actually banned.
         try:
             await ctx.guild.fetch_ban(user)
         except discord.NotFound:
-            await ctx.reply("That user is not banned.")
+            await embeds.error_message(description=f"{user.mention} is not banned.")
+            return
+
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+            
+        if len(reason) > 512:
+            await embeds.error_message(description=f"Reason must be less than 512 characters.")
             return
 
         embed = embeds.make_embed(context=ctx, title=f"Unbanning user: {user.name}", 
             image_url=config.user_unban, color=config.soft_green)
-        embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for:\n{reason}"
+        embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
         await ctx.reply(embed=embed)
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban

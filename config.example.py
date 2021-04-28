@@ -3,12 +3,6 @@ token =           ""
 log_level =       "INFO" # NOTSET | TRACE | DEBUG | INFO | WARN | ERROR | CRITICAL
 database =        "chiya.db"
 
-soft_red =        0xcd6d6d
-soft_green =      0x68c290
-soft_orange =     0xf9cb54
-soft_blue =       0x7289da
-bright_green =    0x01d277
-
 status_online =            "<:status_online:470326272351010816>"
 status_idle =              "<:status_idle:470326266625785866>"
 status_dnd =               "<:status_dnd:470326272082313216>"

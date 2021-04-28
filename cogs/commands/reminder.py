@@ -123,7 +123,7 @@ class Reminder(Cog):
             table.update(data, ['id'])
         embed = embeds.make_embed(context=ctx, title="Reminder deleted", 
             description=f"Reminder ID: {reminder_id} has been deleted.",
-            image_url=config.remind_red, color=config.soft_red)
+            image_url=config.remind_red, color="soft_red")
         await ctx.send(embed=embed)
 
 def setup(bot: Bot) -> None:

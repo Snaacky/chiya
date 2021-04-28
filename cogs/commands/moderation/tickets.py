@@ -36,9 +36,7 @@ class TicketCog(Cog):
         channel = ctx.message.channel
 
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You can only run this command in active ticket channels."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You can only run this command in active ticket channels.")
             return
 
         # Send notice that the channel has been marked read only and will be archived.

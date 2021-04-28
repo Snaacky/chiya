@@ -24,23 +24,17 @@ class KickCog(Cog):
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You cannot action that member due to hierarchy.")
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"You cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="You cannot action that member due to hierarchy.")
             return False
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            embed = embeds.make_embed(color=config.soft_red)
-            embed.description=f"I cannot action that member."
-            await ctx.reply(embed=embed)
+            await embeds.error_message(description="I cannot action that member.")
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -50,16 +44,24 @@ class KickCog(Cog):
     @commands.bot_has_permissions(kick_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="kick")
-    async def kick_member(self, ctx: Context, member: discord.Member, *, reason: str):
+    async def kick_member(self, ctx: Context, member: discord.Member, *, reason: str = None):
         """ Kicks member from guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await self.can_action_member(ctx, member):
             return
+        
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+            
+        if len(reason) > 512:
+            await embeds.error_message(description="Reason must be less than 512 characters.")
+            return
 
         embed = embeds.make_embed(context=ctx, title=f"Kicking member: {member.name}", 
-            image_url=config.user_ban, color=config.soft_red)
-        embed.description=f"{member.mention} was kicked by {ctx.author.mention} for:\n{reason}"
+            image_url=config.user_ban, color="soft_red")
+        embed.description=f"{member.mention} was kicked by {ctx.author.mention} for: {reason}"
 
         # Send user message telling them that they were kicked and why.
         try: # Incase user has DM's Blocked.
@@ -73,7 +75,7 @@ class KickCog(Cog):
             kick_embed.set_image(url="https://i.imgur.com/UkrBRur.gif")
             await channel.send(embed=kick_embed)
         except:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. User either has DMs disabled or the bot blocked.")
+            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Send the kick DM to the user.
         await ctx.reply(embed=embed)

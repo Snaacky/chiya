@@ -21,7 +21,7 @@ class PurgeCog(Cog):
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="remove", aliases=['rm', 'purge'])
-    async def remove_messages(self, ctx: Context, members: Greedy[discord.Member] = None, number_of_messages: int = 10, *, reason: str):
+    async def remove_messages(self, ctx: Context, members: Greedy[discord.Member] = None, number_of_messages: int = 10, *, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
 
         # Checking if the given message falls under the selected members, but if no members given, then remove them all.
@@ -32,19 +32,28 @@ class PurgeCog(Cog):
                 return True
             return False
 
+        # Add + 1 to compensate for the invoking command message.
         if number_of_messages > 100:
-            number_of_messages = 100
+            number_of_messages = 100 + 1
 
-        embed = embeds.make_embed(context=ctx, title=f"Removing messages", 
-            image_url=config.message_delete, color=config.soft_red)
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+
+        if len(reason) > 512:
+            await embeds.error_message(description="Reason must be less than 512 characters.")
+            return
+
+        embed = embeds.make_embed(context=ctx, title=f"Removed messages", 
+            image_url=config.message_delete, color="soft_red")
 
         deleted = await ctx.channel.purge(limit=number_of_messages, check=should_remove)
 
         if members == None:
-            embed.description=f"{ctx.author.mention} removed the previous {len(deleted)} messages for:\n{reason}"
+            embed.description=f"{ctx.author.mention} removed the previous {len(deleted)} messages."
+            embed.add_field(name="Reason:", value=reason, inline=False)
         else:
-            embed.description=f"""{ctx.author.mention} removed {len(deleted)} message(s) from:\n 
-                {', '.join([member.mention for member in members])}\n for:\n{reason}"""
+            embed.description=f"""{ctx.author.mention} removed {len(deleted)} message(s) from: {', '.join([member.mention for member in members])} for: {reason}"""
         await ctx.send(embed=embed)
 
 def setup(bot: Bot) -> None:

@@ -29,7 +29,7 @@ class NotesCog(Cog):
 
         embed = embeds.make_embed(context=ctx, title=f"Noting user: {user.name}", 
             image_url=config.pencil, color=config.soft_blue)
-        embed.description=f"{user.mention} was noted by {ctx.author.mention}:\n{note}"
+        embed.description=f"{user.mention} was noted by {ctx.author.mention}: {note}"
         await ctx.reply(embed=embed)
 
         # Add the note to the mod_notes database.

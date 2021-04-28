@@ -1,8 +1,7 @@
 import discord
 from discord.ext.commands import Context
 
-def make_embed(title: str = None, description: str = None, context: Context = None, color ="default",
-          image_url: str = None, author=True) -> discord.Embed:
+def make_embed(title: str = None, description: str = None, context: Context = None, color = "default", image_url: str = None, author=True) -> discord.Embed:
     """General embed template
 
     Args:
@@ -23,23 +22,21 @@ def make_embed(title: str = None, description: str = None, context: Context = No
                   gold=0xf1c40f, dark_gold=0xc27c0e, orange=0xe67e22, dark_orange=0xa84300, red=0xe74c3c,
                   dark_red=0x992d22, lighter_grey=0x95a5a6, dark_grey=0x607d8b, light_grey=0x979c9f,
                   darker_grey=0x546e7a, blurple=0x7289da, greyple=0x99aab5, dark_theme=0x36393F, nitro_pink=0xff73fa, 
-                  blank=0x2f3136, quotes_grey=0x4f545c,
+                  blank=0x2f3136, quotes_grey=0x4f545c, soft_red=0xcd6d6d, soft_green=0x68c290, soft_orange=0xf9cb54, 
+                  soft_blue=0x7289da, bright_green=0x01d277,
                   # Reddit colors:
                   reddit=0xff5700, orange_red=0xFF450, upvote=0xFF8b60, neutral=0xC6C6C6, 
                   downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699)
 
     # If the color given was a valid name, use the corresponding hex value, else assume the value is already in hex form.
     if isinstance(color, str) and color.lower() in colors:
-        embed = discord.Embed(color=colors[color.lower()],
-                        title=title, description=description)
+        embed = discord.Embed(color=colors[color.lower()], title=title, description=description)
     else:
-        embed = discord.Embed(color=color,
-                        title=title, description=description)
+        embed = discord.Embed(color=color, title=title, description=description)
 
     # Setting the author field and setting their profile pic as the image.
     if author and context is not None:
-        embed.set_author(icon_url=context.author.avatar_url,
-                    name=str(context.author))
+        embed.set_author(icon_url=context.author.avatar_url, name=str(context.author))
 
     # Setting the embed side image if a url was given.
     if image_url:
@@ -55,7 +52,7 @@ def make_embed(title: str = None, description: str = None, context: Context = No
 
     return embed
 
-async def error_message(description: str, ctx: Context, author:bool=True):
+async def error_message(description: str, ctx: Context = None, author: bool = True):
     """Send basic error message
 
     Note:
@@ -66,9 +63,11 @@ async def error_message(description: str, ctx: Context, author:bool=True):
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    await ctx.send(embed=make_embed(title="Error", description=f'📢 **{description}**', context=ctx, color='dark_red', author=author), delete_after=30)
+    embed = make_embed(color="soft_red", author=False)
+    embed.add_field(name="Error:", value=description, inline=False)
+    await ctx.send(embed=embed, delete_after=30)
 
-def error_embed(title: str, description: str, ctx: Context, author:bool=True) -> discord.Embed:
+def error_embed(title: str, description: str, ctx: Context, author: bool = True) -> discord.Embed:
     """ Make a basic error message embed
 
     Args:
@@ -80,9 +79,9 @@ def error_embed(title: str, description: str, ctx: Context, author:bool=True) ->
     Returns:
         discord.Embed: discord embed object.
     """
-    return make_embed(title=f'Error: {title}', description=f'📢 **{description}**', context=ctx, color='dark_red', author=author)
+    return make_embed(title=f"Error: {title}", description=f"{description}", context=ctx, color="soft_red", author=author)
 
-async def warning_message(ctx: Context, description: str, author:bool=True):
+async def warning_message(ctx: Context, description: str, author:bool = True):
     """ Send a basic warning message
     
     Note:
@@ -93,18 +92,4 @@ async def warning_message(ctx: Context, description: str, author:bool=True):
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    await ctx.send(embed=make_embed(title='WARNING', description=f'📢 **{description}**', context = ctx, color="dark_gold", author=author), delete_after=30)
-
-def files_and_links_only(ctx: Context) -> discord.Embed:
-    """Standard messsage for when files or links are only used in the channel
-
-    Args:
-        ctx (Context): Discord context object, needed for author and timestamps.
-
-    Returns:
-        discord.Embed: discord embed object.
-    """
-
-    embed = make_embed(description="This channel is for submissions only! All messages that do not contain an image or a link are automatically removed.", context=ctx, color="reddit")
-    embed.set_footer(text="This message will self-destruct in 10 seconds.")
-    return embed
+    await ctx.send(embed=make_embed(title="Warning", description=f"{description}", context = ctx, color="dark_gold", author=author), delete_after=30)
