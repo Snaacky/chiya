@@ -32,9 +32,12 @@ class PurgeCog(Cog):
                 return True
             return False
 
-        # Add + 1 to compensate for the invoking command message.
+        # Limit the command at 100 messages maximum to avoid abuse.
         if number_of_messages > 100:
-            number_of_messages = 100 + 1
+            number_of_messages = 100
+
+        # Add + 1 to compensate for the invoking command message.
+        number_of_messages += 1
 
         # Handle cases where the reason is not provided.
         if not reason:
