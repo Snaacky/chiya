@@ -88,7 +88,7 @@ class CustomHelpCommand(HelpCommand):
         embed = embeds.make_embed(
             title="Command Help",
             image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
-            context=self.context
+            ctx=self.context
             )
 
         # Retrieves the fully qualified parent command name.
@@ -183,7 +183,7 @@ class CustomHelpCommand(HelpCommand):
         embed = embeds.make_embed(
             title="Command: Help",
             image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
-            context=self.context
+            ctx=self.context
             )
         await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
             max_size=2000, restrict_to_user=self.context.author, time_to_delete=TIME_TO_LIVE)
@@ -207,7 +207,7 @@ class CustomHelpCommand(HelpCommand):
         embed = embeds.make_embed(
             title="Command Help",
             image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
-            context=self.context
+            ctx=self.context
             )
 
         if cog.description is None:

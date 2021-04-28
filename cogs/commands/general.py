@@ -24,7 +24,7 @@ class General(Cog):
         """ Returns the profile picture of the invoker or the mentioned user. """
 
         user = user or ctx.author
-        embed = embeds.make_embed(context=ctx)
+        embed = embeds.make_embed(ctx=ctx)
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 

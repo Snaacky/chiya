@@ -44,10 +44,10 @@ class PurgeCog(Cog):
             reason = "No reason provided."
 
         if len(reason) > 512:
-            await embeds.error_message(description="Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
-        embed = embeds.make_embed(context=ctx, title=f"Removed messages", 
+        embed = embeds.make_embed(ctx=ctx, title=f"Removed messages", 
             image_url=config.message_delete, color="soft_red")
 
         deleted = await ctx.channel.purge(limit=number_of_messages, check=should_remove)

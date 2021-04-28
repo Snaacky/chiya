@@ -24,17 +24,17 @@ class BanCog(Cog):
         """ Stop mods from doing stupid things. """
         # Stop mods from actioning on the bot.
         if member.id == self.bot.user.id:
-            await embeds.error_message(description="You cannot action that member due to hierarchy.")
+            await embeds.error_message(ctx=ctx, description="You cannot action that member due to hierarchy.")
             return False
 
         # Stop mods from actioning one another, people higher ranked than them or themselves.
         if member.top_role >= ctx.author.top_role:
-            await embeds.error_message(description="You cannot action that member due to hierarchy.")
+            await embeds.error_message(ctx=ctx, description="You cannot action that member due to hierarchy.")
             return False
 
         # Checking if Bot is able to even perform the action
         if member.top_role >= member.guild.me.top_role:
-            await embeds.error_message(description="I cannot action that member.")
+            await embeds.error_message(ctx=ctx, description="I cannot action that member.")
             return False
 
         # Otherwise, the action is probably valid, return true.
@@ -51,13 +51,13 @@ class BanCog(Cog):
         member = ctx.guild.get_member(user.id)
         if member:
             # Checks if invoker can action that member (self, bot, etc.)
-            if not await self.can_action_member(ctx, member):
+            if not await self.can_action_member(ctx=ctx, member=member):
                 return
         
         # Checks to see if the user is already banned.
         try:
             await ctx.guild.fetch_ban(user)
-            embed = await embeds.error_message(description=f"{user.mention} is already banned.")
+            embed = await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
             return
         except discord.NotFound:
             pass
@@ -67,10 +67,10 @@ class BanCog(Cog):
             reason = "No reason provided."
             
         if len(reason) > 512:
-            await embeds.error_message(description="Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
     
-        embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
+        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user.name}", 
             image_url=config.user_ban, color="soft_red")
         embed.description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
 
@@ -112,7 +112,7 @@ class BanCog(Cog):
         try:
             await ctx.guild.fetch_ban(user)
         except discord.NotFound:
-            await embeds.error_message(description=f"{user.mention} is not banned.")
+            await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
             return
 
         # Handle cases where the reason is not provided.
@@ -120,10 +120,10 @@ class BanCog(Cog):
             reason = "No reason provided."
             
         if len(reason) > 512:
-            await embeds.error_message(description=f"Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
             return
 
-        embed = embeds.make_embed(context=ctx, title=f"Unbanning user: {user.name}", 
+        embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", 
             image_url=config.user_unban, color=config.soft_green)
         embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
         await ctx.reply(embed=embed)

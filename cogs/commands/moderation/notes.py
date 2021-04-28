@@ -27,7 +27,7 @@ class NotesCog(Cog):
     async def add_note(self, ctx: Context, user: discord.User, *, note: str):
         """ Adds a moderator note to a user. """
 
-        embed = embeds.make_embed(context=ctx, title=f"Noting user: {user.name}", 
+        embed = embeds.make_embed(ctx=ctx, title=f"Noting user: {user.name}", 
             image_url=config.pencil, color=config.soft_blue)
         embed.description=f"{user.mention} was noted by {ctx.author.mention}: {note}"
         await ctx.reply(embed=embed)
