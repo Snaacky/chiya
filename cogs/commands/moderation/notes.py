@@ -50,6 +50,9 @@ class NotesCog(Cog):
         with dataset.connect(database.get_db()) as db:
             mod_logs = db["mod_logs"]
             if action_type is not None:
+                # Remove plurality from action_type to try and autocorrect for the user. 
+                if action_type[-1] == "s":
+                    action_type = action_type[:-1]
                 result = mod_logs.find(user_id=member.id, type=action_type.lower())
             else:
                 result = mod_logs.find(user_id=member.id)
@@ -71,27 +74,27 @@ class NotesCog(Cog):
                 timestamp = x['timestamp']
             ).copy())
             
-            if (page_no+1)%per_page == 0 and page_no!=0:
+            if (page_no + 1) % per_page == 0 and page_no != 0:
                 # appending the current page to the main actions list and resetting the page
                 actions.append(page.copy())
                 page = []
             
             # incrementing the counter variable
-            page_no+=1
+            page_no += 1
         
-        if not (page_no+1)%per_page == 0:
+        if not (page_no + 1) % per_page == 0:
             # for the situations when some pages were left behind
             actions.append(page.copy())
         
         if len(actions[0]) == 0:
             # nothing was found, so returning an appropriate error.
-            await embeds.error_message("No mod actions found for that user!", ctx)
+            await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
             return
 
         page_no = 0
 
         def get_page(action_list, page_no: int, ctx: Context) -> Embed:
-            embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}", context=ctx)
+            embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}", ctx=ctx)
             action_emoji = dict(
                 mute = "🤐",
                 unmute = "🗣",
@@ -101,10 +104,9 @@ class NotesCog(Cog):
                 unban = "⚒"
             )
             for action in action_list[page_no]:
-                
                 action_type = action['type']
                 # capitalising the first letter of the action type
-                action_type = action_type[0].upper()+action_type[1:]
+                action_type = action_type[0].upper() + action_type[1:]
                 # Adding fluff emoji to action_type
                 action_type = f"{action_emoji[action['type']]} {action_type}"
                 # Appending the other data about the action
@@ -140,13 +142,11 @@ class NotesCog(Cog):
         def check(reaction: discord.Reaction, user: discord.Member) -> bool:
             if reaction.emoji in PAGINATION_EMOJI and user == ctx.author:
                 return True
-
             return False
 
         while True:
             try:
                 reaction, user = await bot.wait_for("reaction_add", timeout=timeout, check=check)
-
             except asyncio.TimeoutError:
                 await msg.delete()
                 break
@@ -172,7 +172,6 @@ class NotesCog(Cog):
 
                 if page_no <= 0:
                     page_no = len(actions) - 1
-
                 else:
                     page_no -= 1
 
@@ -181,7 +180,6 @@ class NotesCog(Cog):
 
                 if page_no >= len(actions) - 1:
                     page_no = 0
-
                 else:
                     page_no += 1
 
