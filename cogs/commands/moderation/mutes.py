@@ -51,7 +51,7 @@ class MuteCog(Cog):
         # NOTE: this is worthless if the member leaves and then rejoins. (resets roles)
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_member(ctx=ctx, member):
+        if not await self.can_action_member(ctx=ctx, member=member):
             return
 
         # Check if the user is muted already.

@@ -180,6 +180,9 @@ async def create_ticket_channel(bot, ticket, message):
     await ticket.set_permissions(member, read_messages=True)
 
     # Create an embed at the top of the new ticket so the mod knows who opened it.
+    for x in member.roles:
+        if x.id == config.role_vip:
+            await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
     embed = embeds.make_embed(title="🎫  Ticket created", 
                                 description="Please remain patient for a staff member to assist you.", 
                                 color="default")
