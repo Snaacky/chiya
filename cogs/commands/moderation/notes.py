@@ -64,6 +64,7 @@ class NotesCog(Cog):
         per_page = 4    
         # creating a temporary list to store the per_page number of actions
         page = []
+        
         for x in result:
             # appending dict of action to the particular page
             page.append(dict(
@@ -86,7 +87,7 @@ class NotesCog(Cog):
             # for the situations when some pages were left behind
             actions.append(page.copy())
         
-        if len(actions[0]) == 0:
+        if not actions:
             # nothing was found, so returning an appropriate error.
             await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
             return
