@@ -5,6 +5,7 @@ import time
 
 import dataset
 import discord
+from discord.embeds import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
 
@@ -434,6 +435,7 @@ class ModerationCog(Cog):
     async def search_mod_actions(self, ctx, member: discord.Member, action_type: str = None):
         """ Searches for mod actions on a user """
         result = None
+        # querying DB for the list of actions matching the filter criteria (if mentioned)
         with dataset.connect(database.get_db()) as db:
             mod_logs = db["mod_logs"]
             if action_type is not None:
@@ -441,42 +443,60 @@ class ModerationCog(Cog):
             else:
                 result = mod_logs.find(user_id=member.id)
 
+        # creating a list to store actions for the paginator
         actions = []
+        i = 0
+        # number of results per page
+        per_page = 4    
+        # creating a temporary list to store the per_page number of actions
+        page = []
         for x in result:
-            actions.append(dict(
+            # appending dict of action to the particular page
+            page.append(dict(
                 user_id=x['user_id'],
                 mod_id=x['mod_id'],
                 reason=x['reason'],
                 type=x['type'],
                 timestamp = x['timestamp']
-            ))
+            ).copy())
+            
+            if (i+1)%per_page == 0 and i!=0:
+                # appending the current page to the main actions list and resetting the page
+                actions.append(page.copy())
+                page = []
+            
+            # incrementing the counter variable
+            i+=1
+        
+        if not (i+1)%per_page == 0:
+            # for the situations when some pages were left behind
+            actions.append(page.copy())
+        
         if len(actions) == 0:
+            # nothing was found, so returning an appropriate error.
             await embeds.error_message("No mod actions found for that user!", ctx)
             return
 
-        actions.reverse()
         page_no = 0
 
         def get_page(action_list, page_no: int, ctx: Context) -> Embed:
-            colors = {
-                "ban"    : 0xc2bac0,
-                "unban"  : config.soft_green,
-                "kick"   : config.soft_red,
-                "mute"   : 0x8083b0,
-                "unmute" : 0x8a3ac5,
-                "warn"   : 0xf7dcad
-            }
-            data = action_list[page_no]
+            embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}", context=ctx)
+            for x in action_list[page_no]:
+                action_type = x['type']
+                # capitalising the first letter of the action type
+                action_type = action_type[0].upper()+action_type[1:]
+                # Appending the other data about the action
+                value = f"""
+                **Timestamp:** {str(datetime.datetime.fromtimestamp(x['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+                **Moderator:** <@!{x['mod_id']}>
+                **Reason:** {x['reason']}
+                """
+                embed.add_field(name=action_type, value=value, inline=False)
+                
             
-            embed = embeds.make_embed(title=data['type'][0].upper()+data['type'][1:], 
-                description=f"Page {page_no+1} of {len(action_list)}", 
-                    context=ctx, color=colors[data['type']])
-            
-            embed.add_field(name="Moderator:", value=f"<@!{data['mod_id']}>", inline=True)
-            embed.add_field(name="Reason:", value=data['reason'], inline=False)
-            embed.timestamp = datetime.datetime.fromtimestamp(data['timestamp'])
             return embed
         
+        # sending the first page. We'll edit this during pagination.
         msg = await ctx.send(embed=get_page(actions, page_no, ctx))
 
         FIRST_EMOJI = "\u23EE"   # [:track_previous:]
