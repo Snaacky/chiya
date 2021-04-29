@@ -445,7 +445,7 @@ class ModerationCog(Cog):
 
         # creating a list to store actions for the paginator
         actions = []
-        i = 0
+        page_no = 0
         # number of results per page
         per_page = 4    
         # creating a temporary list to store the per_page number of actions
@@ -460,19 +460,19 @@ class ModerationCog(Cog):
                 timestamp = x['timestamp']
             ).copy())
             
-            if (i+1)%per_page == 0 and i!=0:
+            if (page_no+1)%per_page == 0 and page_no!=0:
                 # appending the current page to the main actions list and resetting the page
                 actions.append(page.copy())
                 page = []
             
             # incrementing the counter variable
-            i+=1
+            page_no+=1
         
-        if not (i+1)%per_page == 0:
+        if not (page_no+1)%per_page == 0:
             # for the situations when some pages were left behind
             actions.append(page.copy())
         
-        if len(actions) == 0:
+        if len(actions[0]) == 0:
             # nothing was found, so returning an appropriate error.
             await embeds.error_message("No mod actions found for that user!", ctx)
             return
@@ -481,19 +481,29 @@ class ModerationCog(Cog):
 
         def get_page(action_list, page_no: int, ctx: Context) -> Embed:
             embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}", context=ctx)
-            for x in action_list[page_no]:
-                action_type = x['type']
+            action_emoji = dict(
+                mute = "🤐",
+                unmute = "🗣",
+                warn = "⚠",
+                kick = "👢",
+                ban = "🔨",
+                unban = "⚒"
+            )
+            for action in action_list[page_no]:
+                
+                action_type = action['type']
                 # capitalising the first letter of the action type
                 action_type = action_type[0].upper()+action_type[1:]
+                # Adding fluff emoji to action_type
+                action_type = f"{action_emoji[action['type']]} {action_type}"
                 # Appending the other data about the action
                 value = f"""
-                **Timestamp:** {str(datetime.datetime.fromtimestamp(x['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
-                **Moderator:** <@!{x['mod_id']}>
-                **Reason:** {x['reason']}
+                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+                **Moderator:** <@!{action['mod_id']}>
+                **Reason:** {action['reason']}
                 """
                 embed.add_field(name=action_type, value=value, inline=False)
                 
-            
             return embed
         
         # sending the first page. We'll edit this during pagination.
