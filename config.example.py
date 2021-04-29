@@ -57,6 +57,7 @@ role_dev =              778474062619082753
 role_wiki_editor =      805863609867436092
 role_index_editor =     762589784405180426
 role_server_booster =   660678752245645317
+role_vip =              635172068706615304
 
 subreddit =         "animepiracy"
 client_id =         ""
