@@ -43,7 +43,7 @@ class NotesCog(Cog):
     
     @commands.has_role(config.role_staff)
     @commands.command(name="search")
-    async def search_mod_actions(self, ctx, member: discord.Member, action_type: str = None):
+    async def search_mod_actions(self, ctx, user: discord.User, action_type: str = None):
         """ Searches for mod actions on a user """
         result = None
         # querying DB for the list of actions matching the filter criteria (if mentioned)
@@ -53,9 +53,9 @@ class NotesCog(Cog):
                 # Remove plurality from action_type to try and autocorrect for the user. 
                 if action_type[-1] == "s":
                     action_type = action_type[:-1]
-                result = mod_logs.find(user_id=member.id, type=action_type.lower())
+                result = mod_logs.find(user_id=user.id, type=action_type.lower())
             else:
-                result = mod_logs.find(user_id=member.id)
+                result = mod_logs.find(user_id=user.id)
 
         # creating a list to store actions for the paginator
         actions = []
@@ -93,8 +93,9 @@ class NotesCog(Cog):
 
         page_no = 0
 
-        def get_page(action_list, page_no: int, ctx: Context) -> Embed:
-            embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}", ctx=ctx)
+        def get_page(action_list, user, page_no: int, ctx: Context) -> Embed:
+            embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}")
+            embed.set_author(name=user, icon_url=user.avatar_url)
             action_emoji = dict(
                 mute = "🤐",
                 unmute = "🗣",
@@ -120,7 +121,7 @@ class NotesCog(Cog):
             return embed
         
         # sending the first page. We'll edit this during pagination.
-        msg = await ctx.send(embed=get_page(actions, page_no, ctx))
+        msg = await ctx.send(embed=get_page(action_list=actions, user=user, page_no=page_no, ctx=ctx))
 
         FIRST_EMOJI = "\u23EE"   # [:track_previous:]
         LEFT_EMOJI = "\u2B05"    # [:arrow_left:]
@@ -139,7 +140,7 @@ class NotesCog(Cog):
         for x in PAGINATION_EMOJI:
             await msg.add_reaction(x)
 
-        def check(reaction: discord.Reaction, user: discord.Member) -> bool:
+        def check(reaction: discord.Reaction, user: discord.User) -> bool:
             if reaction.emoji in PAGINATION_EMOJI and user == ctx.author:
                 return True
             return False
@@ -183,7 +184,7 @@ class NotesCog(Cog):
                 else:
                     page_no += 1
 
-            embed = get_page(actions, page_no, ctx)
+            embed = get_page(action_list=actions, user=user, page_no=page_no, ctx=ctx)
 
             if embed is not None:
                 await msg.edit(embed=embed)
