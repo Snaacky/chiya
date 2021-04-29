@@ -11,7 +11,6 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
-
 class General(Cog):
     """ General Commands Cog """
 
@@ -25,7 +24,7 @@ class General(Cog):
         """ Returns the profile picture of the invoker or the mentioned user. """
 
         user = user or ctx.author
-        embed = embeds.make_embed(context=ctx)
+        embed = embeds.make_embed(ctx=ctx)
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
@@ -47,7 +46,6 @@ class General(Cog):
                 await ctx.message.delete()
             except discord.errors.HTTPException:
                 pass
-
 
 def setup(bot: Bot) -> None:
     """ Load the General cog. """

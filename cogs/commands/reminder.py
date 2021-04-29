@@ -15,9 +15,8 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
-
 class Reminder(Cog):
-    """ Handels reminder commands """
+    """ Handles reminder commands """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -67,7 +66,7 @@ class Reminder(Cog):
                 message=message,
                 sent=False
             ))
-        embed = embeds.make_embed(context=ctx, title="Reminder Set",
+        embed = embeds.make_embed(ctx=ctx, title="Reminder Set",
             description="I will be messaging you here on "
         f"[**{date_to_remind} UTC**](http://www.wolframalpha.com/input/?i="
         f"{date_to_remind.replace(' ', '+')}+UTC+To+Local+Time)\n\n"
@@ -95,7 +94,7 @@ class Reminder(Cog):
                 f"{message['date_to_remind'].replace(' ', '+')}+UTC+To+Local+Time):")
             messages.append(f"**ID: {message['id']}** | Alert on {alert_time}\n{message['message']}")
 
-        embed = embeds.make_embed(context=ctx, title="Reminders",
+        embed = embeds.make_embed(ctx=ctx, title="Reminders",
             image_url=config.remind_blurple, color=config.soft_blue)
 
         # Paginate results
@@ -122,9 +121,9 @@ class Reminder(Cog):
             # All the checks should be done.
             data = dict(id=reminder_id, sent=True)
             table.update(data, ['id'])
-        embed = embeds.make_embed(context=ctx, title="Reminder deleted", 
+        embed = embeds.make_embed(ctx=ctx, title="Reminder deleted", 
             description=f"Reminder ID: {reminder_id} has been deleted.",
-            image_url=config.remind_red, color=config.soft_red)
+            image_url=config.remind_red, color="soft_red")
         await ctx.send(embed=embed)
 
 def setup(bot: Bot) -> None:

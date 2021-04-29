@@ -339,7 +339,6 @@ class error_handle(Cog):
                 f"Unexpected API response for command {ctx.command}: {error.status}"
             )
 
-
     # Ceatch all for unknown errors
     @staticmethod
     async def handle_unexpected_error(ctx: Context, error: errors.CommandError) -> None:

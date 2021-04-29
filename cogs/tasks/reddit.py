@@ -1,5 +1,4 @@
 import time
-import traceback
 import logging
 
 import asyncpraw
@@ -91,11 +90,9 @@ class RedditTask(commands.Cog):
                 await channel.send(embed=embed)
                 self.cache.append(submission.id)
 
-        # Catch all exceptions to avoid crashing and print the traceback for future debugging.
+        # Catch all exceptions to avoid crashing and log the error.
         except Exception as e:
-            print(e)
-            traceback.print_exc()
-
+            log.error(e)
 
 def setup(bot) -> None:
     """ Load the GeneralCog cog. """
