@@ -31,7 +31,7 @@ class NotesCog(Cog):
         """ Adds a moderator note to a user. """
 
         embed = embeds.make_embed(ctx=ctx, title=f"Noting user: {user.name}", 
-            image_url=config.pencil, color=config.soft_blue)
+            image_url=config.pencil, color="soft_blue")
         embed.description=f"{user.mention} was noted by {ctx.author.mention}: {note}"
         await ctx.reply(embed=embed)
 

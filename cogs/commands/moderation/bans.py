@@ -124,7 +124,7 @@ class BanCog(Cog):
             return
 
         embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", 
-            image_url=config.user_unban, color=config.soft_green)
+            image_url=config.user_unban, color="soft_green")
         embed.description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
         await ctx.reply(embed=embed)
 

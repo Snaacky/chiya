@@ -28,7 +28,7 @@ class WarnsCog(Cog):
         """ Sends member a warning DM and logs to database. """
 
         embed = embeds.make_embed(ctx=ctx, title=f"Warning member: {member.name}", 
-            image_url=config.user_warn, color=config.soft_orange)
+            image_url=config.user_warn, color="soft_orange")
         embed.description=f"{member.mention} was warned by {ctx.author.mention} for: {reason}"
 
         if len(reason) > 512:

@@ -144,7 +144,7 @@ class MuteCog(Cog):
             return
 
         embed = embeds.make_embed(ctx=ctx, title=f"Unmuting member: {member.name}",
-            image_url=config.user_unmute, color=config.soft_green)
+            image_url=config.user_unmute, color="soft_green")
         embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
         
         # Send member message telling them that they were banned and why.

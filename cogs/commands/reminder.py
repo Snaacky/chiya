@@ -71,7 +71,7 @@ class Reminder(Cog):
         f"[**{date_to_remind} UTC**](http://www.wolframalpha.com/input/?i="
         f"{date_to_remind.replace(' ', '+')}+UTC+To+Local+Time)\n\n"
         f"{message}",
-        image_url=config.remind_green, color=config.soft_green)
+        image_url=config.remind_green, color="soft_green")
         await ctx.reply(embed=embed)
 
     @remind_group.command(name='edit', enabled=False)
@@ -95,7 +95,7 @@ class Reminder(Cog):
             messages.append(f"**ID: {message['id']}** | Alert on {alert_time}\n{message['message']}")
 
         embed = embeds.make_embed(ctx=ctx, title="Reminders",
-            image_url=config.remind_blurple, color=config.soft_blue)
+            image_url=config.remind_blurple, color="soft_blue")
 
         # Paginate results
         await LinePaginator.paginate(messages, ctx=ctx, embed=embed, max_lines=5,
