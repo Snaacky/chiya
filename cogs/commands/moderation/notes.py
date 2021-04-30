@@ -83,7 +83,7 @@ class NotesCog(Cog):
             # incrementing the counter variable
             page_no += 1
         
-        if not (page_no + 1) % per_page == 0:
+        if not (page_no + 1) % per_page == 0 and len(page) != 0:
             # for the situations when some pages were left behind
             actions.append(page.copy())
         
