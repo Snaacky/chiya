@@ -1,3 +1,4 @@
+# Discord bot variables
 prefix =          "."
 token =           ""
 log_level =       "INFO" # NOTSET | TRACE | DEBUG | INFO | WARN | ERROR | CRITICAL
@@ -11,12 +12,14 @@ incident_actioned =        "<:incident_actioned:719645530128646266>"
 incident_unactioned =      "<:incident_unactioned:719645583245180960>"
 incident_investigating =   "<:incident_investigating:719645658671480924>"
 
+# Embed unicode variables
 bullet =       "\u2022"
 pencil =       "\u270F"
 new =          "\U0001F195"
 cross_mark =   "\u274C"
 check_mark =   "\u2705"
 
+# Embed icon variables
 crown_blurple =         "https://cdn.discordapp.com/emojis/469964153289965568.png"
 crown_green =           "https://cdn.discordapp.com/emojis/469964154719961088.png"
 crown_red =             "https://cdn.discordapp.com/emojis/469964154879344640.png"
@@ -49,16 +52,20 @@ voice_state_blue =      "https://cdn.discordapp.com/emojis/656899769662439456.pn
 voice_state_green =     "https://cdn.discordapp.com/emojis/656899770094452754.png"
 voice_state_red =       "https://cdn.discordapp.com/emojis/656899769905709076.png"
 
+# Role variables
 role_admin =            758145222017286205
 role_staff =            763031634379276308
 role_senior_mod =       801239164552740894
-role_trial_mod =        828078814239260682
 role_dev =              778474062619082753
 role_wiki_editor =      805863609867436092
 role_index_editor =     762589784405180426
+role_trial_mod =        828078814239260682
 role_server_booster =   660678752245645317
-role_vip =              635172068706615304
+role_muted =            728677807856680971
+role_giveaways =        827611596486082581
+role_watch2gether =     827611682917711952
 
+# Reddit bot variables
 subreddit =         "animepiracy"
 client_id =         ""
 client_secret =     ""
@@ -66,10 +73,17 @@ reddit_posts =      623809718011297792
 poll_rate =         3 # In seconds.
 user_agent =        "Chiya (for /r/animepiracy)"
 
-guild_id =              622243127435984927
-emoji_guild_id =        785112674332835870
+# Modmail ticket system variables
+ticket_channel =     787280381111173120
+ticket_embed_id =    831988910564573244
+ticket_category_id = 787280267349983282
+archive_category =   708521071493644339
 
-ticket_channel =        829861810999132160
-ticket_embed_id =       829885444094427206
-ticket_category_id =    828043148781027328
-archive_category =      708521071493644339
+# Miscellaneous IDs
+nitro_logs =     825336428719898635
+emoji_guild_id = 785112674332835870
+
+emote_yes = ":yes:778724405333196851"
+emote_no =  ":no:778724416230129705"
+
+saucenao_api_key = ""
