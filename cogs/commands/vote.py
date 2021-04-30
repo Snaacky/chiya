@@ -14,20 +14,21 @@ class VoteCog(commands.Cog):
     @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
     @commands.group()
-    async def vote(self, ctx, msg_id: int):
+    async def vote(self, ctx, msg_id: int = None):
         """ Add vote reactions to a message. """
-
+        await ctx.message.delete()
+        
         # add to previous message
         if not msg_id:
-            last_message_ID = self.bot.cached_messages[len(self.bot.cached_messages)-1]
-            await last_message_ID.add_reaction(":yes:778724405333196851")
-            await last_message_ID.add_reaction(":no:778724416230129705")
+            last_msg = self.bot.cached_messages[-2]
+            await last_msg.add_reaction(config.emote_yes)
+            await last_msg.add_reaction(config.emote_no)
             return
         
         # add the check and cross to the previous message.
         msg = await ctx.fetch_message(msg_id)
-        await msg.add_reaction(":yes:778724405333196851")
-        await msg.add_reaction(":no:778724416230129705")
+        await msg.add_reaction(config.emote_yes)
+        await msg.add_reaction(config.emote_no)
         return
 
     @commands.before_invoke(record_usage)
