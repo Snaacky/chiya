@@ -48,6 +48,7 @@ questionmark =          "https://cdn.discordapp.com/emojis/512367613339369475.pn
 voice_state_blue =      "https://cdn.discordapp.com/emojis/656899769662439456.png"
 voice_state_green =     "https://cdn.discordapp.com/emojis/656899770094452754.png"
 voice_state_red =       "https://cdn.discordapp.com/emojis/656899769905709076.png"
+nitro =                 "https://cdn.discordapp.com/emojis/837681031578124338.png"
 
 role_admin =            758145222017286205
 role_staff =            763031634379276308
