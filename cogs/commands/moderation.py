@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import logging
 import time
+import re
 
 import dataset
 import discord
@@ -170,15 +171,19 @@ class ModerationCog(Cog):
     @commands.command(name="mute")
     async def mute(self, ctx: Context, member: discord.Member, *, reason: str):
         """ Mutes member in guild. """
+        
+        # regex stolen from setsudo
+        regex = r"(?:mute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
-        # TODO: Implement temp/timed mute functionality
+        if not re.search(regex, ctx.message.content):
+            await embeds.error_message(f"Syntax: `{config.prefix}mute <duration> <reason>`", ctx)
+            return
+
         # NOTE: this is worthless if the member leaves and then rejoins. (resets roles)
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await self.can_action_member(ctx, member):
             return
-
-        duration = reason.split(' ')[len(reason.split(' '))-1]
 
         # Check if the user is muted already.
         if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
@@ -187,20 +192,51 @@ class ModerationCog(Cog):
 
         embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
             image_url=config.user_mute, color=config.soft_red)
-        embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}\n{duration}"
-        await ctx.reply(embed=embed)
+        
+        # getting the matches from the regex
+        match_list = re.findall(regex, ctx.message.content)[0]
+
+        reason = match_list[5]
+        
+        duration = dict(
+            days = match_list[1],
+            hours = match_list[2],
+            minutes = match_list[3],
+            seconds = match_list[4]
+        )
+        
+        # string that'll store the duration to be displayed later.
+        duration_string = ''
+        
+        for key in duration:
+            if (len(duration[key]) > 0):
+                duration_string += f"{duration[key]} {key} "
+                # updating the values for ease of conversion to timedelta object later.
+                duration[key] = float(duration[key])
+            else:
+                # value defaults to 0 in case nothing was mentioned
+                duration[key] = 0
+
+        mute_start_time = datetime.datetime.now(tz=datetime.timezone.utc)
+        mute_end_time = mute_start_time + datetime.timedelta(
+            days = duration['days'],
+            hours = duration['hours'],
+            minutes = duration['minutes'],
+            seconds = duration['seconds']
+        ) 
 
         # Send member message telling them that they were muted and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0x8083b0)
-            embed.title = f"Uh-oh, you've been muted!"
-            embed.description = "If you believe this was a mistake, contact staff."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            # TODO: Re-add reason and duration when checking if invoked mute was timed.
-            embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
-            await channel.send(embed=embed)
+            mute_embed = embeds.make_embed(author=False, color=0x8083b0)
+            mute_embed.title = f"Uh-oh, you've been muted!"
+            mute_embed.description = "If you believe this was a mistake, contact staff."
+            mute_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            mute_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            mute_embed.add_field(name="Duration:", value=duration_string, inline=True)
+            mute_embed.add_field(name="Reason:", value=reason, inline=False)
+            mute_embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
+            await channel.send(embed=mute_embed)
         
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
@@ -209,11 +245,23 @@ class ModerationCog(Cog):
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
-        # Add the mute to the mod_log database.
+        # Add the mute to the database(s)
         with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
+                user_id=member.id, mod_id=ctx.author.id, timestamp=mute_start_time.timestamp, reason=reason, type="mute"
             ))
+            db["timed_mod_actions"].insert(dict(
+                user_id = member.id,
+                mod_id = ctx.author.id,
+                channel_id = ctx.message.channel.id,
+                action_type = 'mute',
+                start_time = mute_start_time,
+                end_time = mute_end_time,
+                is_done = False
+            ))
+        
+        embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}\n **Duration:** {duration_string}"
+        await ctx.reply(embed=embed)
 
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
