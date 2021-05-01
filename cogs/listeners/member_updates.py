@@ -1,11 +1,14 @@
 import logging
 from typing import Union
+import dataset
 
 from discord import User, Member, Guild
+import discord
 from discord.ext import commands
 
 import config
 from handlers import boosts
+from utils import database
 
 log = logging.getLogger(__name__)
 
@@ -63,6 +66,16 @@ class MemberUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_join
         """
         log.info(f'{member} has joined {member.guild.name}.')
+        with dataset.connect(database.get_db()) as db:
+            result = db['timed_mod_actions'].find_one(user_id=member.id, is_done=False, action_type='mute')
+            guild = member.guild
+            if result is not None:
+                # Adds "Muted" role to member.
+                role = discord.utils.get(guild.roles, id=config.role_muted)
+                await member.add_roles(role, reason="Re-muted evading member who was previously muted.")
+                log.info(f"{member} was re-muted after evading a timed mute.")
+                
+        
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
