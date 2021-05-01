@@ -73,9 +73,9 @@ class MemberUpdates(commands.Cog):
                 # Adds "Muted" role to member.
                 role = discord.utils.get(guild.roles, id=config.role_muted)
                 await member.add_roles(role, reason="Re-muted evading member who was previously muted.")
-                log.info(f"{member} was re-muted after evading a timed mute.")
-                
-        
+                channel = guild.get_channel(result['channel_id'])
+                if channel:
+                    await channel.send(f"{member.mention} was re-muted after evading a timed mute.")       
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
