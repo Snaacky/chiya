@@ -171,7 +171,7 @@ class ModerationCog(Cog):
     @commands.command(name="mute")
     async def mute(self, ctx: Context, member: discord.Member, *, reason: str):
         """ Mutes member in guild. """
-        
+
         # regex stolen from setsudo
         regex = r"(?:mute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
@@ -248,15 +248,16 @@ class ModerationCog(Cog):
         # Add the mute to the database(s)
         with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=mute_start_time.timestamp, reason=reason, type="mute"
+                user_id=member.id, mod_id=ctx.author.id, timestamp=time.mktime(mute_start_time.timetuple()), reason=reason, type="mute"
             ))
             db["timed_mod_actions"].insert(dict(
                 user_id = member.id,
                 mod_id = ctx.author.id,
                 channel_id = ctx.message.channel.id,
                 action_type = 'mute',
-                start_time = mute_start_time,
-                end_time = mute_end_time,
+                reason = reason,
+                start_time = time.mktime(mute_start_time.timetuple()),
+                end_time = time.mktime(mute_end_time.timetuple()),
                 is_done = False
             ))
         
@@ -282,19 +283,19 @@ class ModerationCog(Cog):
         embed = embeds.make_embed(context=ctx, title=f"Unmuting member: {member.name}",
             image_url=config.user_unmute, color=config.soft_green)
         embed.description=f"{member.mention} was unmuted by {ctx.author.mention} for:\n{reason}"
-        await ctx.reply(embed=embed)
+        
         
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0x8a3ac5)
-            embed.title = f"Yay, you've been unmuted!"
-            embed.description = "Review our server rules to avoid being actioned again in the future."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
-            await channel.send(embed=embed)
+            unmute_embed = embeds.make_embed(author=False, color=0x8a3ac5)
+            unmute_embed.title = f"Yay, you've been unmuted!"
+            unmute_embed.description = "Review our server rules to avoid being actioned again in the future."
+            unmute_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            unmute_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            unmute_embed.add_field(name="Reason:", value=reason, inline=False)
+            unmute_embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
+            await channel.send(embed=unmute_embed)
         except:
             embed.add_field(name="NOTICE", value="Unable to message member about this action.")
 
@@ -308,6 +309,14 @@ class ModerationCog(Cog):
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
+        
+        # Checking for ongoing timed mutes and ending those
+        with dataset.connect(database.get_db()) as db:
+            result = db['timed_mod_actions'].find_one(user_id=member.id, is_done=False, action_type='mute')
+            db['timed_mod_actions'].update(dict(id=result['id'], is_done=True), ['id'])
+        
+        await ctx.reply(embed=embed)
+        
 
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
