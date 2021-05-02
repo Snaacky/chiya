@@ -182,7 +182,7 @@ class ModerationCog(Cog):
         regex = r"(?:mute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         if not re.search(regex, ctx.message.content):
-            await embeds.error_message(f"Syntax: `{config.prefix}mute <duration> <reason>`", ctx)
+            await embeds.error_message(f"Syntax: `{config.prefix}mute <userid/mention> <duration> <reason>`", ctx)
             return
 
         # NOTE: this is worthless if the member leaves and then rejoins. (resets roles)
@@ -468,7 +468,7 @@ class ModerationCog(Cog):
         regex = r"(?:tempban)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         if not re.search(regex, ctx.message.content):
-            await embeds.error_message(f"Syntax: `{config.prefix}tempban <duration> <reason>`", ctx)
+            await embeds.error_message(f"Syntax: `{config.prefix}tempban <userid/mention> <duration> <reason>`", ctx)
             return
 
         # Checking if user is in guild.
