@@ -57,8 +57,19 @@ class TimedModActionsTask(Cog):
             if channel is not None:
                 await channel.send(embed=embed)
         
-        async def unban(user: discord.User):
+        async def unban(user: discord.User, channel: discord.TextChannel):
             """ Unbans member and logs the action. """
+            guild = self.bot.get_guild(config.guild_id)
+            
+            embed = embeds.make_embed(context=None, title=f"Unbanning user: {user.name}", 
+            image_url=config.user_unban, color=config.soft_green)
+            embed.description=f"{user.mention} was unbanned as their ban time lapsed."
+
+            await guild.unban(user=user, reason="Ban time lapsed.")
+            
+            await channel.send(embed=embed)
+
+            
 
         result = None
         time_now = datetime.now(tz=timezone.utc)
@@ -74,7 +85,13 @@ class TimedModActionsTask(Cog):
 
         for action in result:
             channel = guild.get_channel(action['channel_id'])
-            member = await guild.fetch_member(action['user_id'])
+            member = await self.bot.fetch_user(action['user_id'])
+            
+            try:
+                member = await guild.fetch_member(member.id)
+            except:
+                pass
+
             if action['action_type'] == 'mute':
                 await unmute(member, channel)
                 with dataset.connect(database.get_db()) as db:
@@ -85,10 +102,23 @@ class TimedModActionsTask(Cog):
                         reason="Timed mute lapsed.", 
                         type="unmute"
                         ))
+
                     db['timed_mod_actions'].update(dict(id=action['id'], is_done=True), ['id'])    
             
             if action['action_type'] == 'ban':
                 """ WIP """
+                await unban(member, channel)
+                with dataset.connect(database.get_db()) as db:
+                    db['mod_logs'].insert(dict(
+                        user_id=member.id, 
+                        mod_id=action['mod_id'], 
+                        timestamp=time.mktime(time_now.timetuple()), 
+                        reason="Timed ban lapsed.", 
+                        type="unban"
+                        ))
+
+                    db['timed_mod_actions'].update(dict(id=action['id'], is_done=True), ['id'])
+
     
         
 
