@@ -79,7 +79,7 @@ class TimedModActionsTask(Cog):
             result = db["timed_mod_actions"].find(
                 is_done = False,
                 end_time = {
-                    'lt': time.mktime(time_now.timetuple())
+                    'lt': time_now.timestamp()
                 }
             )
 
@@ -98,7 +98,7 @@ class TimedModActionsTask(Cog):
                     db['mod_logs'].insert(dict(
                         user_id=member.id, 
                         mod_id=action['mod_id'], 
-                        timestamp=time.mktime(time_now.timetuple()), 
+                        timestamp=time_now.timestamp(), 
                         reason="Timed mute lapsed.", 
                         type="unmute"
                         ))
@@ -112,7 +112,7 @@ class TimedModActionsTask(Cog):
                     db['mod_logs'].insert(dict(
                         user_id=member.id, 
                         mod_id=action['mod_id'], 
-                        timestamp=time.mktime(time_now.timetuple()), 
+                        timestamp=time_now.timestamp(), 
                         reason="Timed ban lapsed.", 
                         type="unban"
                         ))

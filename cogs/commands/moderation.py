@@ -254,7 +254,7 @@ class ModerationCog(Cog):
         # Add the mute to the database(s)
         with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=time.mktime(mute_start_time.timetuple()), reason=reason, type="mute"
+                user_id=member.id, mod_id=ctx.author.id, timestamp=mute_start_time.timestamp(), reason=reason, type="mute"
             ))
             db["timed_mod_actions"].insert(dict(
                 user_id = member.id,
@@ -262,8 +262,8 @@ class ModerationCog(Cog):
                 channel_id = ctx.message.channel.id,
                 action_type = 'mute',
                 reason = reason,
-                start_time = time.mktime(mute_start_time.timetuple()),
-                end_time = time.mktime(mute_end_time.timetuple()),
+                start_time = mute_start_time.timestamp(),
+                end_time = mute_end_time.timestamp(),
                 is_done = False
             ))
         
@@ -545,7 +545,7 @@ class ModerationCog(Cog):
         # Add the mute to the database(s)
         with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
-                user_id=user.id, mod_id=ctx.author.id, timestamp=time.mktime(ban_start_time.timetuple()), reason=reason, type="ban"
+                user_id=user.id, mod_id=ctx.author.id, timestamp=ban_start_time.timestamp(), reason=reason, type="ban"
             ))
             db["timed_mod_actions"].insert(dict(
                 user_id = user.id,
@@ -553,8 +553,8 @@ class ModerationCog(Cog):
                 channel_id = ctx.message.channel.id,
                 action_type = 'ban',
                 reason = reason,
-                start_time = time.mktime(ban_start_time.timetuple()),
-                end_time = time.mktime(ban_end_time.timetuple()),
+                start_time = ban_start_time.timestamp(),
+                end_time = ban_end_time.timestamp(),
                 is_done = False
             ))
         
