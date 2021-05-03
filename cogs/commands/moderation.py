@@ -178,8 +178,57 @@ class ModerationCog(Cog):
     async def mute(self, ctx: Context, member: discord.Member, *, reason: str):
         """ Mutes member in guild. """
 
+        # Checks if invoker can action that member (self, bot, etc.)
+        if not await self.can_action_member(ctx, member):
+            return
+
+        # Check if the user is muted already.
+        if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
+            await ctx.reply("That user is already muted.")
+            return
+
+        embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
+            image_url=config.user_mute, color=config.soft_red)
+        embed.description=f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}"
+        
+
+        # Send member message telling them that they were muted and why.
+        try: # Incase user has DM's Blocked.
+            channel = await member.create_dm()
+            mute_embed = embeds.make_embed(author=False, color=0x8083b0)
+            mute_embed.title = f"Uh-oh, you've been muted!"
+            mute_embed.description = "If you believe this was a mistake, contact staff."
+            mute_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            mute_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            mute_embed.add_field(name="Duration:", value="Indefinite.", inline=True)
+            mute_embed.add_field(name="Reason:", value=reason, inline=False)
+            mute_embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
+            await channel.send(embed=mute_embed)
+        
+        except:
+            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+
+        # Adds "Muted" role to member.
+        role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
+        await member.add_roles(role, reason=reason)
+
+        # Add the mute to the mod_log database.
+        with dataset.connect(database.get_db()) as db:
+            db["mod_logs"].insert(dict(
+                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
+            ))
+        
+        await ctx.reply(embed=embed)
+
+    @commands.has_role(config.role_staff)
+    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="tempmute")
+    async def temp_mute(self, ctx: Context, member: discord.Member, *, reason: str):
+        """ Temporarily Mutes member in guild. """
+
         # regex stolen from setsudo
-        regex = r"(?:mute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+        regex = r"(?:tempmute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         if not re.search(regex, ctx.message.content):
             await embeds.error_message(f"Syntax: `{config.prefix}mute <userid/mention> <duration> <reason>`", ctx)
@@ -319,7 +368,8 @@ class ModerationCog(Cog):
         # Checking for ongoing timed mutes and ending those
         with dataset.connect(database.get_db()) as db:
             result = db['timed_mod_actions'].find_one(user_id=member.id, is_done=False, action_type='mute')
-            db['timed_mod_actions'].update(dict(id=result['id'], is_done=True), ['id'])
+            if result:
+                db['timed_mod_actions'].update(dict(id=result['id'], is_done=True), ['id'])
         
         await ctx.reply(embed=embed)
         
