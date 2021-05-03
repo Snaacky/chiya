@@ -6,7 +6,7 @@ import time
 import dataset
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot, Context
 
 import config
 from utils import database
@@ -193,7 +193,7 @@ class MuteCog(Cog):
         regex = r"(?:tempmute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         if not re.search(regex, ctx.message.content):
-            await embeds.error_message(f"Syntax: `{config.prefix}mute <userid/mention> <duration> <reason>`", ctx)
+            await embeds.error_message(ctx=ctx, description=f"Syntax: `{config.prefix}mute <userid/mention> <duration> <reason>`")
             return
 
         # NOTE: this is worthless if the member leaves and then rejoins. (resets roles)
@@ -207,8 +207,8 @@ class MuteCog(Cog):
             await ctx.reply("That user is already muted.")
             return
 
-        embed = embeds.make_embed(context=ctx, title=f"Muting member: {member.name}",
-            image_url=config.user_mute, color=config.soft_red)
+        embed = embeds.make_embed(ctx=ctx, title=f"Muting member: {member}",
+            image_url=config.user_mute, color="soft_red")
         
         # getting the matches from the regex
         match_list = re.findall(regex, ctx.message.content)[0]
@@ -256,7 +256,7 @@ class MuteCog(Cog):
             await channel.send(embed=mute_embed)
         
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="Notice:", value="Unable to message member about this action.")
 
         # Adds "Muted" role to member.
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)

@@ -35,8 +35,8 @@ class TimedModActionsTask(Cog):
         async def unmute(member: discord.Member, channel: discord.TextChannel):
             """ Unmutes member and logs the action. """
             guild = self.bot.get_guild(config.guild_id)
-            embed = embeds.make_embed(title=f"Unmuting member: {member.name}",
-                image_url=config.user_unmute, color=config.soft_green, context=None)
+            embed = embeds.make_embed(title=f"Unmuting member: {member}",
+                image_url=config.user_unmute, color="soft_green")
             embed.description=f"{member.mention} was unmuted as their mute time lapsed."
 
             try: # Incase user has DM's Blocked.
@@ -49,37 +49,34 @@ class TimedModActionsTask(Cog):
                 mute_embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
                 await dm_channel.send(embed=mute_embed)
             except:
-                embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+                embed.add_field(name="Notice:", value="Unable to message member about this action.")
             
             role = discord.utils.get(guild.roles, name="Muted")
             await member.remove_roles(role, reason="Timed mute lapsed.")
 
-            if channel is not None:
+            if channel:
                 await channel.send(embed=embed)
         
         async def unban(user: discord.User, channel: discord.TextChannel):
             """ Unbans member and logs the action. """
             guild = self.bot.get_guild(config.guild_id)
             
-            embed = embeds.make_embed(context=None, title=f"Unbanning user: {user.name}", 
-            image_url=config.user_unban, color=config.soft_green)
+            embed = embeds.make_embed(ctx=None, title=f"Unbanning user: {user}", 
+            image_url=config.user_unban, color="soft_green")
             embed.description=f"{user.mention} was unbanned as their ban time lapsed."
 
             await guild.unban(user=user, reason="Ban time lapsed.")
             
             await channel.send(embed=embed)
 
-            
-
         result = None
-        time_now = datetime.now(tz=timezone.utc)
         guild = self.bot.get_guild(config.guild_id)
 
         with dataset.connect(database.get_db()) as db:
             result = db["timed_mod_actions"].find(
                 is_done = False,
                 end_time = {
-                    'lt': time_now.timestamp()
+                    'lt': datetime.now(tz=timezone.utc).timestamp()
                 }
             )
 
@@ -118,11 +115,6 @@ class TimedModActionsTask(Cog):
                         ))
 
                     db['timed_mod_actions'].update(dict(id=action['id'], is_done=True), ['id'])
-
-    
-        
-
-    
 
 def setup(bot: Bot) -> None:
     """ Load the TimedModActionsTask cog. """

@@ -6,7 +6,7 @@ import time
 import dataset
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot, Context
 
 import config
 from utils import database
@@ -59,7 +59,7 @@ class BanCog(Cog):
         # Checks to see if the user is already banned.
         try:
             await ctx.guild.fetch_ban(user)
-            embed = await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
+            await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
             return
         except discord.NotFound:
             pass
@@ -150,7 +150,7 @@ class BanCog(Cog):
         regex = r"(?:tempban)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         if not re.search(regex, ctx.message.content):
-            await embeds.error_message(f"Syntax: `{config.prefix}tempban <userid/mention> <duration> <reason>`", ctx)
+            await embeds.error_message(ctx, description=f"Syntax: `{config.prefix}tempban <userid/mention> <duration> <reason>`")
             return
 
         # Checking if user is in guild.
@@ -165,13 +165,13 @@ class BanCog(Cog):
         # Checks to see if the user is already banned.
         try:
             await ctx.guild.fetch_ban(user)
-            await ctx.reply("That user is already banned.")
+            await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
             return
         except discord.NotFound:
             pass
 
-        embed = embeds.make_embed(context=ctx, title=f"Banning user: {user.name}", 
-            image_url=config.user_ban, color=config.soft_red)
+        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user}", 
+            image_url=config.user_ban, color="soft_red")
         
         # getting the matches from the regex
         match_list = re.findall(regex, ctx.message.content)[0]
@@ -217,9 +217,8 @@ class BanCog(Cog):
             ban_embed.add_field(name="Reason:", value=reason, inline=False)
             ban_embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
             await channel.send(embed=ban_embed)
-        
         except:
-            embed.add_field(name="NOTICE", value="Unable to message member about this action.")
+            embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)

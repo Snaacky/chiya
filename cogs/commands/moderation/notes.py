@@ -7,7 +7,7 @@ import dataset
 import discord
 from discord.embeds import Embed
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot, Context
 
 import config
 from utils import database
