@@ -12,7 +12,6 @@ from utils import database
 
 log = logging.getLogger(__name__)
 
-
 class MemberUpdates(commands.Cog):
     """Member event handler cog."""
 
@@ -110,8 +109,7 @@ class MemberUpdates(commands.Cog):
         await boosts.process_new_booster(before, after)
         await boosts.process_lost_booster(before, after)
 
-
 def setup(bot: commands.Bot) -> None:
     """Load the member_updates cog."""
     bot.add_cog(MemberUpdates(bot))
-    log.info("Cog loaded: member_updates")
+    log.info("Listener loaded: member_updates")

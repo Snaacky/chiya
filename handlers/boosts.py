@@ -7,10 +7,9 @@ from utils import embeds
 
 log = logging.getLogger(__name__)
 
-
-# Process whenver a new boost is received, regardless of previous boost status.
 async def on_new_boost(before, after):
     if after.premium_subscription_count > before.premium_subscription_count:
+        """ Process whenver a new boost is received, regardless of previous boost status. """
         # Send an embed in the system channel thanking the user for boosting.
         embed = embeds.make_embed(author=False, color="nitro_pink")
         embed.title = f"A new booster appeared!"
@@ -29,9 +28,8 @@ async def on_new_boost(before, after):
         # Log the boost to the console.
         log.info(f"A new boost was added to {after.guild.name}.")
 
-
-# Process whenver a new boost is removed, regardless of previous boost status.
 async def on_removed_boost(before, after):
+    """ Process whenver a new boost is removed, regardless of previous boost status. """
     if after.premium_subscription_count < before.premium_subscription_count:
         # Sent a log in #nitro-logs letting the staff know someone removed a boost.
         nitro_logs = discord.utils.get(after.guild.channels, id=config.nitro_logs)
@@ -43,9 +41,8 @@ async def on_removed_boost(before, after):
         # Log the boost to the console.
         log.info(f"A boost was removed from {after.guild.name}.")
 
-
-# Proces when a user who previously hasn't boosted the server boosts.
 async def process_new_booster(before, after):
+    """ Proces when a user who previously hasn't boosted the server boosts. """
     if before.premium_since is None and after.premium_since is not None:
         channel = discord.utils.get(after.guild.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")
@@ -55,9 +52,8 @@ async def process_new_booster(before, after):
 
         log.info(f'{after.mention} boosted {after.guild.name}.')
 
-
-# Process when a user who previously boosted the server removes all of their boosts from the server.
 async def process_lost_booster(before, after):
+    """ Process when a user who previously boosted the server removes all of their boosts from the server. """
     if before.premium_since is not None and after.premium_since is None:
         channel = discord.utils.get(after.guild.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")

@@ -9,7 +9,6 @@ from utils import embeds
 
 log = logging.getLogger(__name__)
 
-
 class GuildUpdates(commands.Cog):
     """Guild event handler cog."""
 
@@ -223,8 +222,7 @@ class GuildUpdates(commands.Cog):
         await boosts.on_new_boost(before, after)
         await boosts.on_removed_boost(before, after)
 
-
 def setup(bot: commands.Bot) -> None:
     """Load the guild_updates cog."""
     bot.add_cog(GuildUpdates(bot))
-    log.info("Cog loaded: guild_updates")
+    log.info("Listener loaded: guild_updates")

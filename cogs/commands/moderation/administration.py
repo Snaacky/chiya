@@ -1,8 +1,14 @@
+import io
 import logging
+import textwrap
+import traceback
+from contextlib import redirect_stdout
+import glob
+import re
+
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
-from discord.ext.commands.converter import RoleConverter
+from discord.ext.commands import Cog, Bot, Context
 
 import config
 from utils import embeds
@@ -11,17 +17,153 @@ from utils.record import record_usage
 # Enabling logs
 log = logging.getLogger(__name__)
 
-# ideally, this line would be in config, but seems like someone never got around to updating that.
-emoji_guild_id = 785112674332835870
-
-
 class AdministrationCog(Cog):
     """ Administration Cog Cog """
 
     def __init__(self, bot):
         self.bot = bot
+        self._last_result = None
 
-   
+    def _cleanup_code(self, content):
+        """Automatically removes code blocks from the code."""
+        # remove ```py\n```
+        if content.startswith('```') and content.endswith('```'):
+            return '\n'.join(content.split('\n')[1:-1])
+
+        # remove `foo`
+        return content.strip('` \n')
+
+    @commands.before_invoke(record_usage)
+    @commands.group(aliases=["u", "ul"])
+    async def utilities(self, ctx):
+        if ctx.invoked_subcommand is None:
+            # Send the help command for this group
+            await ctx.send_help(ctx.command)
+
+    @commands.is_owner()
+    @utilities.command(name="ping")
+    async def ping(self, ctx):
+        """Returns the Discord WebSocket latency."""
+        print("Ping subcommand invoked.")
+        await ctx.send(f"{round(self.bot.latency * 1000)}ms.")
+
+    @commands.is_owner()
+    @utilities.command(name="say")
+    async def say(self, ctx, *, args):
+        """Echos the input argument."""
+        await ctx.send(args)
+    
+    @commands.is_owner()
+    @utilities.command(name="eval")
+    async def eval(self, ctx, *, body: str):
+        """Evaluates input as Python code."""
+        # Required environment variables.
+        env = {
+            'bot': self.bot,
+            'ctx': ctx,
+            'channel': ctx.channel,
+            'author': ctx.author,
+            'guild': ctx.guild,
+            'message': ctx.message,
+            'embeds': embeds,
+            '_': self._last_result
+        }
+        # Creating embed.
+        embed = discord.Embed(title="Evaluating.", color=0xb134eb)
+        env.update(globals())
+
+        # Calling cleanup command to remove the markdown traces.
+        body = self._cleanup_code(body)
+        embed.add_field(
+            name="Input:", value=f"```py\n{body}\n```", inline=False)
+        # Output stream.
+        stdout = io.StringIO()
+
+        # Exact code to be compiled.
+        to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
+
+        try:
+            # Attempting execution
+            exec(to_compile, env)
+        except Exception as e:
+            # In case there's an error, add it to the embed, send and stop.
+            errors = f'```py\n{e.__class__.__name__}: {e}\n```'
+            embed.add_field(name="Errors:", value=errors, inline=False)
+            await ctx.send(embed=embed)
+            return errors
+
+        func = env['func']
+        try:
+            with redirect_stdout(stdout):
+                ret = await func()
+        except Exception:
+            # In case there's an error, add it to the embed, send and stop.
+            value = stdout.getvalue()
+            errors = f'```py\n{value}{traceback.format_exc()}\n```'
+            embed.add_field(name="Errors:", value=errors, inline=False)
+            await ctx.send(embed=embed)
+
+        else:
+            value = stdout.getvalue()
+            try:
+                await ctx.message.add_reaction('\u2705')
+            except:
+                pass
+
+            if ret is None:
+                if value:
+                    # Output.
+                    output = f'```py\n{value}\n```'
+                    embed.add_field(
+                        name="Output:", value=output, inline=False)
+                    await ctx.send(embed=embed)
+            else:
+                # Maybe the case where there's no output?
+                self._last_result = ret
+                output = f'```py\n{value}{ret}\n```'
+                embed.add_field(name="Output:", value=output, inline=False)
+                await ctx.send(embed=embed)
+
+    @commands.is_owner()
+    @utilities.command(name="reload")
+    async def reload_cog(self, ctx: commands.Context, name_of_cog: str = None):
+        """ Reloads specified cog or all cogs. """
+
+        regex = r"(?<=<).*(?=\..* object at 0x.*>)"
+        if name_of_cog is not None and name_of_cog in ctx.bot.cogs:
+            # Reload cog if it exists.
+            cog = re.search(regex, str(ctx.bot.cogs[name_of_cog]))
+            try:
+                self.bot.reload_extension(cog.group())
+                
+            except commands.ExtensionError as e:
+                await ctx.message.add_reaction("❌")
+                await ctx.send(f'{e.__class__.__name__}: {e}')
+            
+            else:
+                await ctx.message.add_reaction("✔")
+                await ctx.send(f"Reloaded `{cog.group()}` module!")
+        
+        elif name_of_cog is None:
+            # Reload all the cogs in the folder named cogs.
+            # Skips over any cogs that start with '__' or do not end with .py.
+            cogs = []
+            try:
+                for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
+                    if "\\" in cog:  # Pathing on Windows.
+                        self.bot.reload_extension(cog.replace("\\", ".")[:-3])
+                    else:  # Pathing on Linux.
+                        self.bot.reload_extension(cog.replace("/", ".")[:-3])
+            except commands.ExtensionError as e:
+                await ctx.message.add_reaction("❌")
+                await ctx.send(f'{e.__class__.__name__}: {e}')
+
+            else:
+                await ctx.message.add_reaction("✔")
+                await ctx.send("Reloaded all modules!")
+        else:
+            await ctx.message.add_reaction("❌")
+            await ctx.send("Module not found, check spelling, it's case sensitive.")
 
     @commands.has_role(config.role_admin)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
@@ -62,7 +204,6 @@ class AdministrationCog(Cog):
         # Clean up the command invoker
         await ctx.message.delete()
 
-
     @commands.has_role(config.role_admin)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
@@ -76,7 +217,6 @@ class AdministrationCog(Cog):
         await spawned.add_reaction("🎫")
         await ctx.message.delete()
 
-
     @commands.has_role(config.role_admin)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
@@ -86,7 +226,7 @@ class AdministrationCog(Cog):
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(emoji_guild_id)
+        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
         emojis = await emotes_guild.fetch_emojis()
         
         await msg.add_reaction(":redsquare:805032092907601952")
@@ -97,29 +237,28 @@ class AdministrationCog(Cog):
         await msg.add_reaction(":pinksquare:805032162197635114")
         await msg.add_reaction(":purplesquare:805032172074696744")
         await ctx.message.delete()
-    
+
     @commands.has_role(config.role_admin)
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="createassignablerolesembed", aliases=['care'])
     async def create_assignable_roles_embed(self, ctx: Context):
         role_assignment_text = """
-        You can react to one of the emotes below to assign yourself an event role\n
+        You can react to one of the emotes below to assign yourself an event role.
         
-        🎁 `Giveaway Events` - Receive giveaway pings.\n
-        📢 `Server Announcements` - Receive server announcement pings.\n
-        📽 `Watch Party` - Receive group watch event pings.\n
-        <:kakeraW:830594599001129000> `Mudae Player` - Receive Mudae event pings.\n
-        🧩 `Rin Player` - Receive Rin event pings.\n
-        <:pickaxe:831765423455993888> `Minecraft Player` - Receive Minecraft event pings.\n
-        🕹 `Community Events` - Receive other community event pings (such as gaming).\n
+        🎁  <@&832528733763928094> - Receive giveaway pings.
+        📢  <@&827611682917711952> - Receive server announcement pings.
+        📽  <@&831999443220955136> - Receive group watch event pings.
+        <:kakeraW:830594599001129000>  <@&832512304334766110> - Receive Mudae event and season pings.
+        🧩  <@&832512320306675722> - Receive Rin event pings.
+        <:pickaxe:831765423455993888>  <@&832512327731118102> - Receive Minecraft server related pings.
         """
         embed = discord.Embed(description=role_assignment_text)
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(emoji_guild_id)
-        emojis = await emotes_guild.fetch_emojis()
+        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
+        await emotes_guild.fetch_emojis()
         
         await msg.add_reaction("🎁")
         await msg.add_reaction("📢")
@@ -127,11 +266,10 @@ class AdministrationCog(Cog):
         await msg.add_reaction(":kakeraW:830594599001129000")
         await msg.add_reaction("🧩")
         await msg.add_reaction(":pickaxe:831765423455993888")
-        await msg.add_reaction("🕹")
         await ctx.message.delete()
 
 
 def setup(bot: Bot) -> None:
     """ Load the AdministrationCog cog. """
     bot.add_cog(AdministrationCog(bot))
-    log.info("Cog loaded: AdministrationCog")
+    log.info("Commands loaded: administration")
