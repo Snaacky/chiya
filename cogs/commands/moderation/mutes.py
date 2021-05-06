@@ -86,6 +86,7 @@ class MuteCog(Cog):
         mute_channel_embed = embeds.make_embed(title="🤐 You were muted", description="If you have any questions or concerns about your mute, you may voice them here.")
         mute_channel_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
         mute_channel_embed.add_field(name="Length:", value="Indefinite.", inline=True) # TODO: Implement timed mutes
+        mute_channel_embed.add_field(name="Member:", value=member.mention, inline=True)
         mute_channel_embed.add_field(name="Reason:", value=reason, inline=False)
         
         await mute_channel.send(embed=mute_channel_embed)
