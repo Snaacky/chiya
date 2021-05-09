@@ -17,12 +17,25 @@ class PurgeCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def can_purge_messages(self, ctx: Context):
+        # Prevent mods from removing message in moderation categories
+        if ctx.channel.category_id in [config.moderation_category, config.development_category, config.logs_category, config.tickets_category]:
+            await embeds.error_message(ctx=ctx, description="You cannot use that command in that category.")
+            return False
+
+        # Otherwise, the purge is fine to execute
+        return True
+        
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="remove", aliases=['rm', 'purge'])
     async def remove_messages(self, ctx: Context, members: Greedy[discord.Member] = None, number_of_messages: int = 10, *, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
+        
+        # Check to see if the bot is allowed to purge
+        if not await self.can_purge_messages(ctx):
+            return
 
         # Checking if the given message falls under the selected members, but if no members given, then remove them all.
         def should_remove(message: discord.Message):
