@@ -22,13 +22,6 @@ def setup_db():
     mod_logs.create_column("timestamp", db.types.bigint)
     mod_logs.create_column("reason", db.types.text)
     mod_logs.create_column("type", db.types.text)
-    
-    # Create mod_logs table and columns to store moderator actions.
-    mod_notes = db.create_table("mod_notes")
-    mod_notes.create_column("user_id", db.types.bigint)
-    mod_notes.create_column("mod_id", db.types.bigint)
-    mod_notes.create_column("timestamp", db.types.bigint)
-    mod_notes.create_column("note", db.types.text)
 
     # Create remind_me table and columns to store remind_me messages.
     remind_me = db.create_table("remind_me")
