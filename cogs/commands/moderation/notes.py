@@ -26,7 +26,7 @@ class NotesCog(Cog):
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="addnote", aliases=['add_note', 'note'])
+    @commands.command(name="addnote", aliases=["add_note", "note"])
     async def add_note(self, ctx: Context, user: discord.User, *, note: str):
         """ Adds a moderator note to a user. """
 
@@ -35,10 +35,10 @@ class NotesCog(Cog):
         embed.description=f"{user.mention} was noted by {ctx.author.mention}: {note}"
         await ctx.reply(embed=embed)
 
-        # Add the note to the mod_notes database.
+        # Add the note to the mod_logs database.
         with dataset.connect(database.get_db()) as db:
-            db["mod_notes"].insert(dict(
-                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), note=note
+            db["mod_logs"].insert(dict(
+                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
             ))
     
     @commands.has_role(config.role_staff)
@@ -68,6 +68,7 @@ class NotesCog(Cog):
         for x in result:
             # appending dict of action to the particular page
             page.append(dict(
+                id=x['id'],
                 user_id=x['user_id'],
                 mod_id=x['mod_id'],
                 reason=x['reason'],
@@ -103,10 +104,11 @@ class NotesCog(Cog):
                 warn = "⚠",
                 kick = "👢",
                 ban = "🔨",
-                unban = "⚒"
+                unban = "⚒",
+                note = "🗒️"
             )
             for action in action_list[page_no]:
-                action_type = action['type']
+                action_type = action["type"]
                 # capitalising the first letter of the action type
                 action_type = action_type[0].upper() + action_type[1:]
                 # Adding fluff emoji to action_type
@@ -117,7 +119,7 @@ class NotesCog(Cog):
                 **Moderator:** <@!{action['mod_id']}>
                 **Reason:** {action['reason']}
                 """
-                embed.add_field(name=action_type, value=value, inline=False)
+                embed.add_field(name=f"{action_type} | ID: {action['id']}", value=value, inline=False)
                 
             return embed
         
@@ -189,6 +191,30 @@ class NotesCog(Cog):
 
             if embed is not None:
                 await msg.edit(embed=embed)
+
+    @commands.has_role(config.role_staff)
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="editlog", aliases=["el", "elog"])
+    async def edit_log(self, ctx: Context, id: int, *, reason: str):
+        with dataset.connect(database.get_db()) as db:
+            table = db["mod_logs"]
+
+        mod_log = table.find_one(id=id)
+        if not mod_log:
+            await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
+            return
+
+        user = await self.bot.fetch_user(mod_log["user_id"])
+        embed = embeds.make_embed(ctx=ctx, title=f"Edited log: {user.name}", 
+            image_url=config.pencil, color="soft_green")
+        embed.description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}"
+        embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
+        embed.add_field(name="After:", value=reason, inline=False)
+        await ctx.reply(embed=embed)
+
+        mod_log["reason"] = reason
+        table.update(mod_log, ["id"])
 
 def setup(bot: Bot) -> None:
     """ Load the Notes cog. """
