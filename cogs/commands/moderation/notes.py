@@ -195,7 +195,7 @@ class NotesCog(Cog):
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="editlog", aliases=["el", "elog"])
+    @commands.command(name="edit", aliases=["editnote", "editlog"])
     async def edit_log(self, ctx: Context, id: int, *, reason: str):
         with dataset.connect(database.get_db()) as db:
             table = db["mod_logs"]
