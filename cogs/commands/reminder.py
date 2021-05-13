@@ -1,7 +1,8 @@
 import logging
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from typing import Match
 
 import dataset
 import parsedatetime.parsedatetime as pdt
@@ -22,16 +23,59 @@ class Reminder(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.group(name="remind", aliases=["reminder", "remindme"])
+    @commands.group(name="remind", aliases=["reminder", "remindme", "remind make", "remindmake"])
     async def remind_group(self, ctx: Context):
         """ Make a message to remind you in the future. """
-        if ctx.invoked_subcommand is None:
-            # Send the help command for this group
-            await ctx.send_help(ctx.command)
+        # regex derived from setsudo mute regex
+        regex = r"(?:remind(?:me|make|er|\s+make|\s+me)?)+(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
+        match_list = re.findall(regex, ctx.message.content)[0]
+
+        message = match_list[4]
+
+        duration = dict(
+            days = match_list[0],
+            hours = match_list[1],
+            minutes = match_list[2],
+            seconds = match_list[3]
+        )
+
+        duration_string = ""
+
+        time_duration = None
+        
+        for key in duration:
+            if len(duration[key]) > 0:
+                duration_string += f"{duration[key]} {key} "
+                duration[key] = float(duration[key])
+            else: 
+                duration[key] = 0
+        
+        duration = timedelta(
+                days=duration['days'], 
+                hours=duration['hours'],
+                minutes=duration['minutes'],
+                seconds=duration['seconds']
+        )
+        end_time = datetime.now(tz=timezone.utc)+duration
+        
+        message = f"[This Message]({ctx.message.jump_url}) at {datetime.now(tz=timezone.utc)} with the message:\n{message}."
+        with dataset.connect(database.get_db()) as tx:
+            tx["remind_me"].insert(dict(
+                reminder_location=ctx.channel.id,
+                author_id=ctx.author.id,
+                date_to_remind=end_time.timestamp(),
+                message=message,
+                sent=False
+            ))
+        embed = embeds.make_embed(ctx=ctx, title="Reminder Set")
+        embed.description = message+f"\nI'll remind you about this in {duration_string.strip()}."
+        await ctx.reply(embed=embed)
+
+    """
     @remind_group.command(name='make', aliases=["me"])
     async def make(self, ctx: Context, *, time_with_message_in_quotes: str):
-        """ !Remind Me TIME_HERE "MESSAGE" (with quotes) """
+        # !Remind Me TIME_HERE "MESSAGE" (with quotes) 
 
         # Spliting date and message
         message_split = time_with_message_in_quotes.split('"', 1)
@@ -73,7 +117,8 @@ class Reminder(Cog):
         f"{message}",
         image_url=config.remind_green, color="soft_green")
         await ctx.reply(embed=embed)
-
+    """
+    
     @remind_group.command(name='edit', enabled=False)
     async def edit(self, ctx: Context):
         """ Edit a reminder message. """
