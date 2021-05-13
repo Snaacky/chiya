@@ -59,7 +59,10 @@ class Reminder(Cog):
         )
         end_time = datetime.now(tz=timezone.utc)+duration
         
-        message = f"[This Message]({ctx.message.jump_url}) at {datetime.now(tz=timezone.utc)} with the message:\n{message}."
+        time_now = str(datetime.now(tz=timezone.utc))
+        time_now = time_now[:time_now.index('.')]
+        
+        message = f"[This Message]({ctx.message.jump_url}) at {time_now} with the message:\n{message}"
         with dataset.connect(database.get_db()) as tx:
             tx["remind_me"].insert(dict(
                 reminder_location=ctx.channel.id,
