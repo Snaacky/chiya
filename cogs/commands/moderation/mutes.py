@@ -224,7 +224,7 @@ class MuteCog(Cog):
         duration_string = ''
         
         for time_unit in duration:
-            if (len(duration[time_unit]) > 0):
+            if len(duration[time_unit]):
                 duration_string += f"{duration[time_unit]} {time_unit} "
                 # updating the values for ease of conversion to timedelta object later.
                 duration[time_unit] = float(duration[time_unit])
