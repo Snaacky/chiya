@@ -81,15 +81,19 @@ class TimedModActionsTask(Cog):
 
         for action in result:
             channel = guild.get_channel(action['channel_id'])
-            member = await self.bot.fetch_user(action['user_id'])
             
-            try:
-                member = await guild.fetch_member(member.id)
-            except:
-                pass
 
             if action['action_type'] == 'mute':
-                await unmute(member, channel)
+                # unmuting requires Member
+                member = None
+                try:
+                    member = await guild.fetch_member(member.id)
+                except:
+                    pass
+
+                if member:
+                    await unmute(member, channel)
+                    ``
                 with dataset.connect(database.get_db()) as db:
                     db['mod_logs'].insert(dict(
                         user_id=member.id, 
@@ -102,7 +106,8 @@ class TimedModActionsTask(Cog):
                     db['timed_mod_actions'].update(dict(id=action['id'], is_done=True), ['id'])    
             
             if action['action_type'] == 'ban':
-                """ WIP """
+                member = await self.bot.fetch_user(action['user_id'])
+                
                 await unban(member, channel)
                 with dataset.connect(database.get_db()) as db:
                     db['mod_logs'].insert(dict(
