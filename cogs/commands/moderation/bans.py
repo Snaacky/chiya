@@ -188,14 +188,14 @@ class BanCog(Cog):
         # string that'll store the duration to be displayed later.
         duration_string = ''
         
-        for key in duration:
-            if (len(duration[key]) > 0):
-                duration_string += f"{duration[key]} {key} "
+        for time_unit in duration:
+            if len(duration[time_unit]):
+                duration_string += f"{duration[time_unit]} {time_unit} "
                 # updating the values for ease of conversion to timedelta object later.
-                duration[key] = float(duration[key])
+                duration[time_unit] = float(duration[time_unit])
             else:
                 # value defaults to 0 in case nothing was mentioned
-                duration[key] = 0
+                duration[time_unit] = 0
 
         ban_start_time = datetime.datetime.now(tz=datetime.timezone.utc)
         ban_end_time = ban_start_time + datetime.timedelta(
