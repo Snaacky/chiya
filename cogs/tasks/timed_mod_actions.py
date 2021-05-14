@@ -1,13 +1,10 @@
-import asyncio
+
 import logging
-import time
-import traceback
 from datetime import datetime, timezone
 
 import dataset
 import discord
-from discord.channel import TextChannel
-from discord.ext import commands, tasks
+from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
 from utils import database, embeds
