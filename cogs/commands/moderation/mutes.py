@@ -190,11 +190,7 @@ class MuteCog(Cog):
         """ Temporarily Mutes member in guild. """
 
         # regex stolen from setsudo
-        regex = r"(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
-
-        if not re.search(regex, reason_and_duration):
-            await embeds.error_message(ctx=ctx, description=f"Syntax: `{config.prefix}mute <userid/mention> <duration> <reason>`")
-            return
+        regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await self.can_action_member(ctx, member):
@@ -209,7 +205,11 @@ class MuteCog(Cog):
             image_url=config.user_mute, color="soft_red")
         
         # getting the matches from the regex
-        match_list = re.findall(regex, reason_and_duration)[0]
+        try:
+            match_list = re.findall(regex, reason_and_duration)[0]
+        except:
+            await embeds.error_message(ctx, "Syntax: `tempmute <x>d<y>h<z>m<a>s <reason>`")
+            return
 
         reason = match_list[5]
         

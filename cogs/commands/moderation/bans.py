@@ -147,11 +147,7 @@ class BanCog(Cog):
         """ Temporarily bans member from guild. """
 
         # regex stolen from setsudo
-        regex = r"(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
-
-        if not re.search(regex, ctx.message.content):
-            await embeds.error_message(ctx, description=f"Syntax: `{config.prefix}tempban <userid/mention> <duration> <reason>`")
-            return
+        regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         # Checking if user is in guild.
         if ctx.guild.get_member(user.id):
@@ -174,7 +170,11 @@ class BanCog(Cog):
             image_url=config.user_ban, color="soft_red")
         
         # getting the matches from the regex
-        match_list = re.findall(regex, reason_and_duration)[0]
+        try:
+            match_list = re.findall(regex, reason_and_duration)[0]
+        except:
+            await embeds.error_message(ctx, "Syntax: `tempban <x>d<y>h<z>m<a>s <reason>`")
+            return
 
         reason = match_list[5]
         
