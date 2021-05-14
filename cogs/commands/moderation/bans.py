@@ -143,18 +143,18 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="tempban")
-    async def temp_ban(self, ctx: Context, user: discord.User, *, reason: str):
+    async def temp_ban(self, ctx: Context, user: discord.User, *, reason_and_duration: str):
         """ Temporarily bans member from guild. """
 
         # regex stolen from setsudo
-        regex = r"(?:tempban)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+        regex = r"(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         if not re.search(regex, ctx.message.content):
             await embeds.error_message(ctx, description=f"Syntax: `{config.prefix}tempban <userid/mention> <duration> <reason>`")
             return
 
         # Checking if user is in guild.
-        if ctx.guild.get_member(user.id) is not None:
+        if ctx.guild.get_member(user.id):
             # Convert to member object
             member = await commands.MemberConverter().convert(ctx, user.mention)
 
@@ -174,7 +174,7 @@ class BanCog(Cog):
             image_url=config.user_ban, color="soft_red")
         
         # getting the matches from the regex
-        match_list = re.findall(regex, ctx.message.content)[0]
+        match_list = re.findall(regex, reason_and_duration)[0]
 
         reason = match_list[5]
         
