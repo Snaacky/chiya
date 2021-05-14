@@ -18,7 +18,6 @@ class ReminderTask(Cog):
     def cog_unload(self):
         self.check_for_reminder.cancel()
 
-    # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
     @tasks.loop(seconds=3.0)
     async def check_for_reminder(self) -> None:
         """ Checking for reminders to send """
