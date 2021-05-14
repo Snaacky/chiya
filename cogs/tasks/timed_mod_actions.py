@@ -93,7 +93,7 @@ class TimedModActionsTask(Cog):
 
                 if member:
                     await unmute(member, channel)
-                    ``
+                    
                 with dataset.connect(database.get_db()) as db:
                     db['mod_logs'].insert(dict(
                         user_id=member.id, 
@@ -107,7 +107,7 @@ class TimedModActionsTask(Cog):
             
             if action['action_type'] == 'ban':
                 member = await self.bot.fetch_user(action['user_id'])
-                
+
                 await unban(member, channel)
                 with dataset.connect(database.get_db()) as db:
                     db['mod_logs'].insert(dict(
