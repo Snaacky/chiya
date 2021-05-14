@@ -13,6 +13,7 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
+
 class Reminder(Cog):
     """ Handles reminder commands """
 
@@ -20,14 +21,14 @@ class Reminder(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.group(name="remind", aliases=["reminder", "remindme", "remind make", "remindmake"])
-    async def remind_group(self, ctx: Context):
+    @commands.group(name="remind", aliases=["reminder", "remindme"])
+    async def reminder(self, ctx: Context):
         """ Syntax: `!remindme <duration> <message>` """
         # regex derived from setsudo mute regex
         regex = r"(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         try:
-            match_list = re.findall(regex, ctx.message.content)[0]
+            match_list = re.findall(regex, ctx.message.content)[0]        
         except:
             if ctx.invoked_subcommand is None:
                 await ctx.send_help(ctx.command)
@@ -43,8 +44,6 @@ class Reminder(Cog):
         )
 
         duration_string = ""
-
-        time_duration = None
         
         for key in duration:
             if len(duration[key]) > 0:
@@ -77,12 +76,36 @@ class Reminder(Cog):
         embed.description = message+f"\nI'll remind you about this in {duration_string.strip()}."
         await ctx.reply(embed=embed)
 
-    @remind_group.command(name='edit', enabled=False)
-    async def edit(self, ctx: Context):
+    @reminder.command(name='edit')
+    async def edit(self, ctx: Context, id: int, *, new_message: str):
         """ Edit a reminder message. """
-        # TODO
+        with dataset.connect(database.get_db()) as db:
+            remind_me = db['remind_me']
+            reminder = remind_me.find_one(
+                id = id
+            )
+            if reminder['author_id'] != ctx.author.id:
+                await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
+                return
+            
+            if reminder['sent']:
+                await embeds.error_message(ctx, "That reminder doesn't exist.")
+                return
+            
+            old_message = reminder['message']
 
-    @remind_group.command(name='list')
+            message = old_message[:old_message.index("with the message:\n")] + f"with the message:\n{new_message}"
+            
+            
+            data = dict(
+                id = reminder['id'],
+                message = message  
+            )
+            remind_me.update(data, ['id'])
+
+        await ctx.reply("Reminder was updated.")
+            
+    @reminder.command(name='list')
     async def _list(self, ctx: Context):
         """ List your reminders. """
         with dataset.connect(database.get_db()) as db:
@@ -107,7 +130,7 @@ class Reminder(Cog):
         await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
         max_size=2000, restrict_to_user=ctx.author)
 
-    @remind_group.command(name='delete')
+    @reminder.command(name='delete')
     async def delete(self, ctx: Context, reminder_id: int):
         """ Delete Reminders. User `reminder list` to find ID """
         with dataset.connect(database.get_db()) as db:
@@ -132,7 +155,7 @@ class Reminder(Cog):
             image_url=config.remind_red, color="soft_red")
         await ctx.send(embed=embed)
     
-    @remind_group.command(name='clear')
+    @reminder.command(name='clear')
     async def clear_reminders(self, ctx):
         """ Clears all reminders. """
         with dataset.connect(database.get_db()) as db:
@@ -145,7 +168,7 @@ class Reminder(Cog):
                 )
                 remind_me.update(updated_data, ['id'])
         
-        await ctx.send("All your reminders have been cleared.")
+        await ctx.reply("All your reminders have been cleared.")
 
 
 
