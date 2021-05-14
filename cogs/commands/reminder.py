@@ -28,7 +28,7 @@ class Reminder(Cog):
     async def remind_group(self, ctx: Context):
         """ Syntax: `!remindme <duration> <message>` """
         # regex derived from setsudo mute regex
-        regex = r"(?:remind(?:me|make|er|\s+make|\s+me)?)+(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+        regex = r"(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
         try:
             match_list = re.findall(regex, ctx.message.content)[0]
