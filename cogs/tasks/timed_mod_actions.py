@@ -31,6 +31,8 @@ class TimedModActionsTask(Cog):
         
         # Wait for bot to start.
         await self.bot.wait_until_ready()
+
+        time_now = datetime.now(tz=timezone.utc)
         
         async def unmute(member: discord.Member, channel: discord.TextChannel):
             """ Unmutes member and logs the action. """
