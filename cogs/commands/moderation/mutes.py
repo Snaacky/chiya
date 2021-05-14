@@ -186,17 +186,15 @@ class MuteCog(Cog):
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="tempmute")
-    async def temp_mute(self, ctx: Context, member: discord.Member, *, reason: str):
+    async def temp_mute(self, ctx: Context, member: discord.Member, *, reason_and_duration: str):
         """ Temporarily Mutes member in guild. """
 
         # regex stolen from setsudo
-        regex = r"(?:tempmute)\s+(?:(?:<@!?)?(\d{17,20})>?)(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+        regex = r"(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
 
-        if not re.search(regex, ctx.message.content):
+        if not re.search(regex, reason_and_duration):
             await embeds.error_message(ctx=ctx, description=f"Syntax: `{config.prefix}mute <userid/mention> <duration> <reason>`")
             return
-
-        # NOTE: this is worthless if the member leaves and then rejoins. (resets roles)
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await self.can_action_member(ctx, member):
@@ -211,7 +209,7 @@ class MuteCog(Cog):
             image_url=config.user_mute, color="soft_red")
         
         # getting the matches from the regex
-        match_list = re.findall(regex, ctx.message.content)[0]
+        match_list = re.findall(regex, reason_and_duration)[0]
 
         reason = match_list[5]
         
@@ -225,14 +223,14 @@ class MuteCog(Cog):
         # string that'll store the duration to be displayed later.
         duration_string = ''
         
-        for key in duration:
-            if (len(duration[key]) > 0):
-                duration_string += f"{duration[key]} {key} "
+        for time_unit in duration:
+            if (len(duration[time_unit]) > 0):
+                duration_string += f"{duration[time_unit]} {time_unit} "
                 # updating the values for ease of conversion to timedelta object later.
-                duration[key] = float(duration[key])
+                duration[time_unit] = float(duration[time_unit])
             else:
                 # value defaults to 0 in case nothing was mentioned
-                duration[key] = 0
+                duration[time_unit] = 0
 
         mute_start_time = datetime.datetime.now(tz=datetime.timezone.utc)
         mute_end_time = mute_start_time + datetime.timedelta(
