@@ -231,7 +231,6 @@ class BanCog(Cog):
             db["timed_mod_actions"].insert(dict(
                 user_id = user.id,
                 mod_id = ctx.author.id,
-                channel_id = ctx.message.channel.id,
                 action_type = 'ban',
                 reason = reason,
                 start_time = ban_start_time.timestamp(),

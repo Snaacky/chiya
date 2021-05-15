@@ -42,7 +42,6 @@ def setup_db():
     timed_mod_actions = db.create_table("timed_mod_actions")
     timed_mod_actions.create_column("user_id", db.types.integer)
     timed_mod_actions.create_column("mod_id", db.types.integer)
-    timed_mod_actions.create_column("channel_id", db.types.integer)
     timed_mod_actions.create_column("action_type", db.types.text)
     timed_mod_actions.create_column("start_time", db.types.integer)
     timed_mod_actions.create_column("end_time", db.types.integer)

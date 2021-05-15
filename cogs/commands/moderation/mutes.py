@@ -268,7 +268,6 @@ class MuteCog(Cog):
             db["timed_mod_actions"].insert(dict(
                 user_id = member.id,
                 mod_id = ctx.author.id,
-                channel_id = ctx.message.channel.id,
                 action_type = 'mute',
                 reason = reason,
                 start_time = mute_start_time.timestamp(),
