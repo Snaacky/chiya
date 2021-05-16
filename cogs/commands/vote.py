@@ -1,5 +1,6 @@
 import logging
 
+import discord
 from discord.ext import commands
 
 import config
@@ -14,22 +15,20 @@ class VoteCog(commands.Cog):
     @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
     @commands.group()
-    async def vote(self, ctx, msg_id: int = None):
+    async def vote(self, ctx, message: discord.Message = None):
         """ Add vote reactions to a message. """
-        await ctx.message.delete()
-        
-        # add to previous message
-        if not msg_id:
-            last_msg = self.bot.cached_messages[-2]
-            await last_msg.add_reaction(config.emote_yes)
-            await last_msg.add_reaction(config.emote_no)
-            return
-        
-        # add the check and cross to the previous message.
-        msg = await ctx.fetch_message(msg_id)
-        await msg.add_reaction(config.emote_yes)
-        await msg.add_reaction(config.emote_no)
-        return
+        async def get_last_message(ctx):
+            messages = await ctx.channel.history(limit=2).flatten()
+            return messages[1]
+
+        message = message or await get_last_message(ctx)
+        try:
+            await ctx.message.delete()
+            await message.add_reaction(config.emote_yes)
+            await message.add_reaction(config.emote_no)
+        except Exception as error:
+            logging.error(error)
+            pass
 
     @commands.before_invoke(record_usage)
     @vote.command(name="remove")
