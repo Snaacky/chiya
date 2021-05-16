@@ -35,15 +35,15 @@ class General(Cog):
 
     @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="addemoji", aliases=["ae", "adde"])
+    @commands.command(name="addemoji", aliases=["ae", "adde", "addemote"])
     async def addemoji(self, ctx, message: discord.Message, *emojis: Union[discord.Emoji, discord.PartialEmoji, discord.Reaction, str]):
         """ Add the given emojis as a reaction to the specified message. """
-
         for emoji in emojis:
             try:
                 await message.add_reaction(emoji)
                 await ctx.message.delete()
-            except discord.errors.HTTPException:
+            except discord.errors.HTTPException as error:
+                logging.error(error)
                 pass
 
     @commands.has_role(config.role_staff)
@@ -60,7 +60,7 @@ class General(Cog):
             await ctx.message.delete()
             await message.add_reaction(config.emote_yes)
             await message.add_reaction(config.emote_no)
-        except Exception as error:
+        except discord.errors.HTTPException as error:
             logging.error(error)
             pass
 
