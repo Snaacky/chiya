@@ -109,10 +109,7 @@ class Reminder(Cog):
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
             remind_me = db['remind_me']
-            result = remind_me.find(
-                sent=False,
-                author_id = ctx.author.id
-            )
+            result = remind_me.find(sent=False, author_id=ctx.author.id)
         
         reminders = []
         # Convert ResultSet to list.
