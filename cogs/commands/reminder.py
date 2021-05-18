@@ -158,12 +158,9 @@ class Reminder(Cog):
         """ Clears all reminders. """
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
-            result = remind_me.find(author_id = ctx.author.id, sent = False)
+            result = remind_me.find(author_id=ctx.author.id, sent=False)
             for reminder in result:
-                updated_data = dict(
-                    id = reminder['id'],
-                    sent = True
-                )
+                updated_data = dict(id=reminder['id'], sent=True)
                 remind_me.update(updated_data, ['id'])
         
         await ctx.reply("All your reminders have been cleared.")
