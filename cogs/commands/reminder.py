@@ -81,9 +81,7 @@ class Reminder(Cog):
         """ Edit a reminder message. """
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
-            reminder = remind_me.find_one(
-                id = id
-            )
+            reminder = remind_me.find_one(id=id)
             if reminder['author_id'] != ctx.author.id:
                 await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
                 return
