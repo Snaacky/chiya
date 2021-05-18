@@ -95,10 +95,7 @@ class Reminder(Cog):
             message = old_message[:old_message.index("with the message:\n")] + f"with the message:\n{new_message}"
             
             
-            data = dict(
-                id = reminder['id'],
-                message = message  
-            )
+            data = dict(id=reminder['id'], message=message)
             remind_me.update(data, ['id'])
 
         await ctx.reply("Reminder was updated.")
