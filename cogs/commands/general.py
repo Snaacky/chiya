@@ -48,7 +48,7 @@ class General(Cog):
 
     @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
-    @commands.comnmand(name="vote")
+    @commands.command(name="vote")
     async def vote(self, ctx, message: discord.Message = None):
         """ Add vote reactions to a message. """
         async def get_last_message(ctx):
