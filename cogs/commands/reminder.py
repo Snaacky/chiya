@@ -137,7 +137,7 @@ class Reminder(Cog):
             # Find all reminders from user and haven't been sent.
             table = db['remind_me']
             result = table.find_one(id=reminder_id)
-            if result is None:
+            if not result:
                 await embeds.error_message("Invalid ID", ctx)
                 return
             if result['author_id'] != ctx.author.id:
