@@ -130,13 +130,13 @@ class Reminder(Cog):
             table = db['remind_me']
             result = table.find_one(id=reminder_id)
             if not result:
-                await embeds.error_message("Invalid ID", ctx)
+                await embeds.error_message(ctx=ctx, description="Invalid ID")
                 return
             if result['author_id'] != ctx.author.id:
-                await embeds.error_message("This is not the reminder you are looking for", ctx)
+                await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
                 return
             if result['sent']:
-                await embeds.error_message("This reminder has already been deleted", ctx)
+                await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
                 return
             
             # All the checks should be done.
