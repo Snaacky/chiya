@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 import dataset
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
+from discord.ext.commands.view import StringView
 
 import config
 from utils import database, embeds
@@ -13,6 +14,21 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
+class EnhancedStringView(StringView):
+    def skip_word(self):
+        pos = 0
+        while not self.eof:
+            try:
+                current = self.buffer[self.index + pos + 1]
+                pos += 1
+                if current is " ":
+                    pos += 1
+                    break
+            except IndexError:
+                break
+        self.previous = self.index
+        self.index += pos
+        return self.previous != self.index
 
 class Reminder(Cog):
     """ Handles reminder commands """
@@ -22,16 +38,35 @@ class Reminder(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.group(name="remind", aliases=["reminder", "remindme"])
-    async def reminder(self, ctx: Context):
+    async def reminder(self, ctx: Context, *, duration_and_message: str = None):
         """ Syntax: `!remindme <duration> <message>` """
         # regex derived from setsudo mute regex
-        regex = r"(?:\s+(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+        regex = r"(?<=^)(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+
+        if not duration_and_message:
+            await ctx.send_help(ctx.command)
+            return
 
         try:
-            match_list = re.findall(regex, ctx.message.content)[0]        
-        except:
+            match_list = re.findall(regex, duration_and_message)[0]
+        except IndexError:
+            ctx.invoked_subcommand = None
+            ctx.subcommand_passed = None
+
+            ctx.view = EnhancedStringView(ctx.view.buffer)
+            ctx.view.skip_word()
+            trigger = ctx.view.get_word()
+
+            if trigger:
+                ctx.subcommand_passed = trigger
+                ctx.invoked_subcommand = self.bot.get_command(f"reminder {trigger}")
+
             if not ctx.invoked_subcommand:
                 await ctx.send_help(ctx.command)
+                return
+
+            ctx.invoked_with = trigger
+            await ctx.invoked_subcommand.invoke(ctx)
             return
 
         message = match_list[4]
