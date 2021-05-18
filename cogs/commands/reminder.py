@@ -30,7 +30,7 @@ class Reminder(Cog):
         try:
             match_list = re.findall(regex, ctx.message.content)[0]        
         except:
-            if ctx.invoked_subcommand is None:
+            if not ctx.invoked_subcommand:
                 await ctx.send_help(ctx.command)
             return
 
