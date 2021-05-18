@@ -104,7 +104,7 @@ class Reminder(Cog):
         await ctx.reply("Reminder was updated.")
             
     @reminder.command(name='list')
-    async def _list(self, ctx: Context):
+    async def list(self, ctx: Context):
         """ List your reminders. """
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
