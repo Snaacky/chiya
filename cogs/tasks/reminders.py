@@ -29,7 +29,8 @@ class ReminderTask(Cog):
         # Find all reminders that are older than current time and have not been sent yet.
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
-            result = remind_me.find(sent=False, date_to_remind={'lt':current_time})        
+            result = remind_me.find(sent=False, date_to_remind={'lt':current_time})
+
         # Iterate over all the results found from the DB query above.
         for reminder in result:
             channel = self.bot.get_channel(reminder['reminder_location'])
