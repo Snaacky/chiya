@@ -14,7 +14,9 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
+""" Extends D.py's StringView to add missing function """
 class EnhancedStringView(StringView):
+    """ Loops through buffer (char[]) until a space is found (if at all)"""
     def skip_word(self):
         pos = 0
         while not self.eof:
@@ -25,7 +27,10 @@ class EnhancedStringView(StringView):
                     pos += 1
                     break
             except IndexError:
+                # Second EOF check
                 break
+
+        # Backup value in case above loop messes up
         self.previous = self.index
         self.index += pos
         return self.previous != self.index
@@ -50,17 +55,22 @@ class Reminder(Cog):
         try:
             match_list = re.findall(regex, duration_and_message)[0]
         except IndexError:
+            # Redundant but safe
             ctx.invoked_subcommand = None
             ctx.subcommand_passed = None
 
+            # Cast the ctx.view instance to add skip word func
             ctx.view = EnhancedStringView(ctx.view.buffer)
+            # Skip the prefix and cmd group name
             ctx.view.skip_word()
+            # Grab the subcommand (if any); "trigger" comes from D.py
             trigger = ctx.view.get_word()
 
             if trigger:
                 ctx.subcommand_passed = trigger
                 ctx.invoked_subcommand = self.bot.get_command(f"reminder {trigger}")
 
+            # RT prob used a hard-r as a subcommand
             if not ctx.invoked_subcommand:
                 await ctx.send_help(ctx.command)
                 return
