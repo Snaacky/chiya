@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 import dataset
 from discord.ext import tasks
@@ -18,21 +18,20 @@ class ReminderTask(Cog):
     def cog_unload(self):
         self.check_for_reminder.cancel()
 
-    # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
     @tasks.loop(seconds=3.0)
     async def check_for_reminder(self) -> None:
         """ Checking for reminders to send """
         await self.bot.wait_until_ready()
 
         # Get current time to compare.
-        current_time = format(datetime.utcnow(), '%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now(tz=timezone.utc).timestamp()
         
         # Find all reminders that are older than current time and have not been sent yet.
         with dataset.connect(database.get_db()) as db:
-            statement = f"SELECT id, reminder_location, author_id, message FROM remind_me WHERE date_to_remind < '{current_time}' AND sent = FALSE"
-            result = db.query(statement)
-        
-        # Iterate over all the results found from the SQL query above.
+            remind_me = db['remind_me']
+            result = remind_me.find(sent=False, date_to_remind={'lt':current_time})
+
+        # Iterate over all the results found from the DB query above.
         for reminder in result:
             channel = self.bot.get_channel(reminder['reminder_location'])
             user = self.bot.get_user(reminder['author_id'])
