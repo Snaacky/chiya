@@ -22,7 +22,6 @@ class General(Cog):
     @commands.command(name='profile_picture', aliases=["pfp", "avi", "pp", "avatar", "profilepic", "av"])
     async def pfp(self, ctx: Context, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
-
         user = user or ctx.author
         embed = embeds.make_embed(ctx=ctx)
         embed.set_image(url=user.avatar_url)
@@ -36,16 +35,34 @@ class General(Cog):
 
     @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name='addemoji', aliases=['ae', 'adde'])
+    @commands.command(name="addemoji", aliases=["ae", "adde", "addemote"])
     async def addemoji(self, ctx, message: discord.Message, *emojis: Union[discord.Emoji, discord.PartialEmoji, discord.Reaction, str]):
         """ Add the given emojis as a reaction to the specified message. """
-
         for emoji in emojis:
             try:
                 await message.add_reaction(emoji)
                 await ctx.message.delete()
-            except discord.errors.HTTPException:
+            except discord.errors.HTTPException as error:
+                logging.error(error)
                 pass
+
+    @commands.has_role(config.role_staff)
+    @commands.before_invoke(record_usage)
+    @commands.command(name="vote")
+    async def vote(self, ctx, message: discord.Message = None):
+        """ Add vote reactions to a message. """
+        async def get_last_message(ctx):
+            messages = await ctx.channel.history(limit=2).flatten()
+            return messages[1]
+
+        message = message or await get_last_message(ctx)
+        try:
+            await ctx.message.delete()
+            await message.add_reaction(config.emote_yes)
+            await message.add_reaction(config.emote_no)
+        except discord.errors.HTTPException as error:
+            logging.error(error)
+            pass
 
 def setup(bot: Bot) -> None:
     """ Load the General cog. """

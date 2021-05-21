@@ -83,6 +83,7 @@ archive_category =   708521071493644339
 # Miscellaneous IDs
 nitro_logs =     825336428719898635
 emoji_guild_id = 785112674332835870
+mod_channel = 624253391563915264
 
 emote_yes = ":yes:778724405333196851"
 emote_no =  ":no:778724416230129705"
