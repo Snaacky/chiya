@@ -4,11 +4,12 @@ from datetime import datetime, timezone
 
 import dataset
 import discord
-from discord.ext import tasks
+from discord.ext import commands, tasks
 from discord.ext.commands import Bot, Cog
 
-from utils import database, embeds
 import config
+
+from utils import database, embeds
 
 log = logging.getLogger(__name__)
 
@@ -25,100 +26,75 @@ class TimedModActionsTask(Cog):
     @tasks.loop(seconds=3.0)
     async def check_for_pending_mod_actions(self) -> None:
         """ Checks for mod actions periodically, and reverses them accordingly if the time lapsed. """
-        
         # Wait for bot to start.
         await self.bot.wait_until_ready()
-
-        time_now = datetime.now(tz=timezone.utc)
         
-        async def unmute(member: discord.Member, channel: discord.TextChannel):
-            """ Unmutes member and logs the action. """
-            guild = self.bot.get_guild(config.guild_id)
-            embed = embeds.make_embed(title=f"Unmuting member: {member}",
-                image_url=config.user_unmute, color="soft_green")
-            embed.description=f"{member.mention} was unmuted as their mute time lapsed."
-
-            try: # Incase user has DM's Blocked.
-                dm_channel = await member.create_dm()
-                mute_embed = embeds.make_embed(author=False, color=0x8a3ac5)
-                mute_embed.title = f"Yay, you've been unmuted!"
-                mute_embed.description = "Review our server rules to avoid being actioned again in the future."
-                mute_embed.add_field(name="Server:", value=guild, inline=True)
-                mute_embed.add_field(name="Reason:", value="Timed mute lapsed.", inline=False)
-                mute_embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
-                await dm_channel.send(embed=mute_embed)
-            except:
-                embed.add_field(name="Notice:", value="Unable to message member about this action.")
-            
-            role = discord.utils.get(guild.roles, name="Muted")
-            await member.remove_roles(role, reason="Timed mute lapsed.")
-
-            if channel:
-                await channel.send(embed=embed)
-        
-        async def unban(user: discord.User, channel: discord.TextChannel):
-            """ Unbans member and logs the action. """
-            guild = self.bot.get_guild(config.guild_id)
-            
-            embed = embeds.make_embed(ctx=None, title=f"Unbanning user: {user}", 
-            image_url=config.user_unban, color="soft_green")
-            embed.description=f"{user.mention} was unbanned as their ban time lapsed."
-
-            await guild.unban(user=user, reason="Ban time lapsed.")
-            
-            await channel.send(embed=embed)
-
-        result = None
-        guild = self.bot.get_guild(config.guild_id)
-
+        # Query the database for all temporary mod actions that haven't executed yet.
         with dataset.connect(database.get_db()) as db:
-            result = db["timed_mod_actions"].find(
-                is_done = False,
-                end_time = {
-                    'lt': datetime.now(tz=timezone.utc).timestamp()
-                }
+            results = db["timed_mod_actions"].find(
+                is_done=False,
+                end_time={"lt": datetime.now(tz=timezone.utc).timestamp()}
             )
 
-        for action in result:
-            channel = guild.get_channel(config.mod_channel)
-            user_id = action['user_id']
+        # Get the guild and mod channel to send the expiration notice into.
+        guild = self.bot.get_guild(config.guild_id)
+        channel = guild.get_channel(config.mod_channel)
 
-            if action['action_type'] == 'mute':
-                # unmuting requires Member
-                member = None
-                try:
-                    member = await guild.fetch_member(user_id)
-                except:
-                    pass
+        for action in results:
+            if action["action_type"] == "mute":
+                # Update the database to mark the mod action as resolved.
+                with dataset.connect(database.get_db()) as db:
+                    db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])    
+                
+                # Get the MuteCog so that we can access functions from it.
+                mutes = self.bot.get_cog("MuteCog")
 
-                if member:
-                    await unmute(member, channel)
+                # Attempt to get the member if they still exist in the guild.
+                member = guild.get_member(action["user_id"])
+
+                # If the user has left the guild, send a message in #moderation and end the function. We don't need to process anything else.
+                if not member:
+                    # Fetch the user object instead because the user is no longer a member of the server.
+                    user = await self.bot.fetch_user(action["user_id"])
+
+                    # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
+                    embed = embeds.make_embed(title=f"Unmuting member: {user}", image_url=config.user_unmute, color="soft_orange")
+                    embed.description=f"Unmuted {user.mention} because their mute time elapsed but they have since left the server."
+
+                    # Archives the mute channel, sends the embed in the moderation channel, and ends the function.
+                    await channel.send(embed=embed)
+                    await mutes.archive_mute_channel(user_id=user.id, guild=guild, reason="Mute time elapsed.")
+                    return
+
+                # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
+                embed = embeds.make_embed(title=f"Unmuting member: {member}", image_url=config.user_unmute, color="soft_green")
+                embed.description=f"{member.mention} was unmuted as their mute time elapsed."
+
+                # Attempt to DM the user to let them know they were unmuted.
+                if not await mutes.send_unmuted_dm_embed(member=member, reason="Timed mute lapsed.", guild=guild):
+                    embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+
+                # Unmutes the user and returns the embed letting the moderator know they were successfully muted.
+                await mutes.unmute_member(member=member, reason="Timed mute lapsed.", guild=guild)
+                await mutes.archive_mute_channel(user_id=member.id, guild=guild, reason="Mute time elapsed.")
+                await channel.send(embed=embed)
+
+            if action["action_type"] == "ban":
+                user = await self.bot.fetch_user(action["user_id"])
+
+                # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
+                embed = embeds.make_embed(ctx=None, title=f"Unbanning user: {user}", image_url=config.user_unban, color="soft_green")
+                embed.description=f"{user.mention} was unbanned as their temporary ban elapsed."
+
+                # Get the MuteCog so that we can access functions from it.
+                bans = self.bot.get_cog("BanCog")
+
+                # Unmutes the user and returns the embed letting the moderator know they were successfully muted.
+                await bans.unban_member(user=user, reason="Temporary ban elapsed.", guild=guild)
+                await channel.send(embed=embed)
 
                 with dataset.connect(database.get_db()) as db:
-                    db['mod_logs'].insert(dict(
-                        user_id=member.id, 
-                        mod_id=action['mod_id'], 
-                        timestamp=time_now.timestamp(), 
-                        reason="Timed mute lapsed.", 
-                        type="unmute"
-                        ))
-
-                    db['timed_mod_actions'].update(dict(id=action['id'], is_done=True), ['id'])    
-            
-            if action['action_type'] == 'ban':
-                member = await self.bot.fetch_user(user_id)
-
-                await unban(member, channel)
-                with dataset.connect(database.get_db()) as db:
-                    db['mod_logs'].insert(dict(
-                        user_id=member.id, 
-                        mod_id=action['mod_id'], 
-                        timestamp=time_now.timestamp(), 
-                        reason="Timed ban lapsed.", 
-                        type="unban"
-                        ))
-
-                    db['timed_mod_actions'].update(dict(id=action['id'], is_done=True), ['id'])
+                    db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])
 
 def setup(bot: Bot) -> None:
     """ Load the TimedModActionsTask cog. """

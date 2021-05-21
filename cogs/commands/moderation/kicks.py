@@ -48,7 +48,7 @@ class KickCog(Cog):
         """ Kicks member from guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_member(ctx=ctx, member=member):
+        if not await self.can_action_member(bot=self.bot, ctx=ctx, member=member):
             return
         
         # Handle cases where the reason is not provided.
