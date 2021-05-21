@@ -31,9 +31,6 @@ async def on_ready():
         )
     )
 
-    # Attempt to create the db, tables, and columns for Chiya.
-    utils.database.setup_db()
-
 @bot.event
 async def on_message(message: discord.Message):
     """This event listener has been moved to message_updates.py
@@ -44,6 +41,9 @@ async def on_message(message: discord.Message):
     # Do nothing
 
 if __name__ == '__main__':
+    # Attempt to create the db, tables, and columns for Chiya.
+    utils.database.setup_db()
+
     # Recursively loads in all the cogs in the folder named cogs.
     # Skips over any cogs that start with '__' or do not end with .py.
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
