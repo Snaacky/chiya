@@ -8,6 +8,7 @@ import config
 from utils import database
 from utils import embeds
 
+
 async def process_embed_reaction(payload):
     # Get the member object for the user who added the reaction.
     member = await payload.member.guild.fetch_member(payload.member.id)
@@ -26,7 +27,8 @@ async def process_embed_reaction(payload):
 
         # If results returns False, we were unable to DM the user because they're not accepting DMs.
         if not results:
-            logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and was unable to DM them.")
+            logging.info(
+                f"{member} tried to create a new ticket but already had one open: {ticket} and was unable to DM them.")
             return
 
         # If we didn't hit any of the above, assume we were able to successfully DM the user about their duplicate ticket.
@@ -47,9 +49,10 @@ async def process_embed_reaction(payload):
     # Insert a pending ticket into the database.
     with dataset.connect(database.get_db()) as db:
         db["tickets"].insert(dict(
-            user_id=member.id, status=0, guild=payload.guild_id, ticket_channel=None, 
+            user_id=member.id, status=0, guild=payload.guild_id, ticket_channel=None,
             dm_embed_id=dm.id, timestamp=int(time.time())
         ))
+
 
 async def process_pending_ticket(bot, message):
     # Open a connection to the database.
@@ -64,7 +67,7 @@ async def process_pending_ticket(bot, message):
     # If the user does not have any pending tickets, create a new ticket channel.
     channel = await create_ticket_channel(bot, ticket, message)
     logging.info(f"{message.author} created a new modmail ticket: {channel.id}")
-    
+
     # Send the user a DM with a link to their ticket so they know it was successfully created.
     embed = embeds.make_embed(author=False, color=0xd56385)
     embed.title = f"Ticket created"
@@ -77,6 +80,7 @@ async def process_pending_ticket(bot, message):
     ticket["status"] = 1
     ticket["ticket_channel"] = channel.id
     table.update(ticket, ["id"])
+
 
 async def process_dm_reaction(bot, payload):
     # Get the member object for the user who added the reaction.
@@ -100,7 +104,7 @@ async def process_dm_reaction(bot, payload):
     ticket["status"] = 3
     table.update(ticket, ["id"])
     logging.info(f"{user} canceled their pending ticket")
-    
+
     # DM the user an embed stating that their ticket was successfully canceled.
     embed = embeds.make_embed(author=False, color=0xf4cdc5)
     embed.title = f"Ticket canceled"
@@ -108,18 +112,20 @@ async def process_dm_reaction(bot, payload):
     embed.set_image(url="https://i.imgur.com/T9ikYl6.gif")
     await user.send(embed=embed)
 
+
 async def check_for_duplicate_tickets(member):
     # Search for a pending ticket by iterating the tickets category for a channel name match.
-    ticket = discord.utils.get(discord.utils.get(member.guild.categories, 
-                                id=config.ticket_category_id).text_channels, 
-                                name=f"ticket-{member.id}")
-    
+    ticket = discord.utils.get(discord.utils.get(member.guild.categories,
+                                                 id=config.ticket_category_id).text_channels,
+                               name=f"ticket-{member.id}")
+
     # If ticket returned no results, no duplicate tickets were found.
     if not ticket:
         return False
 
     # If we hit this point, a duplicate ticket was found.
     return ticket
+
 
 async def check_for_pending_tickets(member):
     # Open a connection to the database.
@@ -128,13 +134,14 @@ async def check_for_pending_tickets(member):
 
     # Search for any pending tickets in the database.
     ticket = table.find_one(user_id=member.id, status=0)
-    
+
     # If ticket returned no results, no pending tickets were found.
     if not ticket:
         return False
 
     # If we hit this point, a pending ticket was found.
     return ticket
+
 
 async def send_pending_ticket_dm(member):
     # Attempt to open a new DM with user so we can get the ticket topic.
@@ -151,6 +158,7 @@ async def send_pending_ticket_dm(member):
     except discord.errors.Forbidden:
         logging.info(f"{member} tried to create a new pending ticket but is not accepting DMs.")
 
+
 async def send_duplicate_ticket_dm(member, ticket):
     # Attempts to create a new DM with the user for the topic. 
     try:
@@ -163,13 +171,15 @@ async def send_duplicate_ticket_dm(member, ticket):
         return True
     # If the user has DMs disabled, we'll receive a forbidden exception.
     except discord.errors.Forbidden:
-        logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and is not accepting DMs.")
+        logging.info(
+            f"{member} tried to create a new ticket but already had one open: {ticket} and is not accepting DMs.")
     return False
+
 
 async def create_ticket_channel(bot, ticket, message):
     guild = bot.get_guild(ticket["guild"])
     member = await guild.fetch_member(message.author.id)
-    category = discord.utils.get(guild.categories, id=config.ticket_category_id) 
+    category = discord.utils.get(guild.categories, id=config.ticket_category_id)
 
     # Create a channel in the tickets category specified in the config.     
     ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
@@ -183,11 +193,11 @@ async def create_ticket_channel(bot, ticket, message):
     for x in member.roles:
         if x.id == config.role_vip:
             await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
-    embed = embeds.make_embed(title="🎫  Ticket created", 
-                                description="Please remain patient for a staff member to assist you.", 
-                                color="default")
+    embed = embeds.make_embed(title="🎫  Ticket created",
+                              description="Please remain patient for a staff member to assist you.",
+                              color="default")
     embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
     embed.add_field(name="Ticket Topic:", value=message.content, inline=False)
     await ticket.send(embed=embed)
-    
+
     return ticket

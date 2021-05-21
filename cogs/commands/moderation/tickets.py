@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import privatebinapi
 
 import dataset
 import discord
@@ -13,6 +14,7 @@ from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
+
 
 class TicketCog(Cog):
     """ Ticket Cog """
@@ -51,20 +53,46 @@ class TicketCog(Cog):
             # default_role is @everyone role, so skip that.
             if role == ctx.guild.default_role:
                 continue
-            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False, manage_messages=False)     
+            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
+                                          manage_messages=False)
+
+        message_count = 0
+        message_log = ""
+        # Loop through all messages in the ticket from old to new.
+        async for message in ctx.channel.history(oldest_first=True):
+            # Ignore the bot commands and replies.
+            if not message.author.bot and not message.content[0] == config.prefix:
+                message_count += 1
+                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
+                formatted_time = str(message.created_at).split(".")[-2]
+                # Append the new messages to the current log as we loop.
+                message_log += f"[{formatted_time}]     {message.author}: {message.content}\n"
+
+        # Dump message log to private bin. This returns a dictionary, and only the url is needed for the embed.
+        token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")
+        url = token["full_url"]
+
+        # Create the embed in #ticket-log with the link after dumping.
+        embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
+        embed_log.title = f"{message_count} messages were logged from {ctx.channel.name}"
+        embed_log.description = f"{url}"
+
+        # Send the embed to #ticket-log.
+        ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)
+        await ticket_log.send(embed=embed_log)
 
         with dataset.connect(database.get_db()) as db:
             table = db["tickets"]
             ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status=1)
             ticket["status"] = 2
-            table.update(ticket, ["id"])           
+            table.update(ticket, ["id"])
 
-        # Sleep for 60 seconds before archiving the channel.
+        # Sleep for 60 seconds before deleting the channel.
         await asyncio.sleep(60)
 
-        # Move the channel to the archive.
-        archive = discord.utils.get(ctx.guild.categories, id=config.archive_category)
-        await ctx.channel.edit(category=archive, sync_permissions=True)
+        # Delete the channel.
+        await ctx.channel.delete()
+
 
 def setup(bot: Bot) -> None:
     """ Load the Ticket cog. """
