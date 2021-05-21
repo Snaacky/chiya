@@ -151,7 +151,7 @@ class BanCog(Cog):
             return
         
         # Discord caps embed fields at a riduclously low character limit, avoids problems with future embeds.
-        if len(reason) > 512:
+        if reason and len(reason) > 512:
             await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
             return
 
