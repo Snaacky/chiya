@@ -23,7 +23,7 @@ class EnhancedStringView(StringView):
             try:
                 current = self.buffer[self.index + pos + 1]
                 pos += 1
-                if current is " ":
+                if current == " ":
                     pos += 1
                     break
             except IndexError:
