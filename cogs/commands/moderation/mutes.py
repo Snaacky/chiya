@@ -61,16 +61,6 @@ class MuteCog(Cog):
                 user_id=member.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
 
-            # Occurs when the unmute function is invoked by the timed mod actions task.
-            if temporary:
-                db["mod_logs"].insert(dict(
-                    user_id=member.id, 
-                    mod_id=moderator, 
-                    timestamp=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(), 
-                    reason="Timed mute lapsed.", 
-                    type="unmute"
-                ))
-
     async def is_user_muted(self, ctx: Context, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
             return True
