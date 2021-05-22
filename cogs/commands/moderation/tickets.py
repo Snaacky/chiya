@@ -57,12 +57,12 @@ class TicketCog(Cog):
         await ctx.send(embed=embed)
 
         # Set the channel into a read only state.
-        # for role in channel.overwrites:
-        #     # default_role is @everyone role, so skip that.
-        #     if role == ctx.guild.default_role:
-        #         continue
-        #     await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
-        #                                   manage_messages=False)
+        for role in channel.overwrites:
+            # default_role is @everyone role, so skip that.
+            if role == ctx.guild.default_role:
+                continue
+            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
+                                          manage_messages=False)
 
         message_count = 0
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
@@ -101,7 +101,7 @@ class TicketCog(Cog):
         table.update(ticket, ["id"])
 
         # Sleep for 60 seconds before deleting the channel.
-        # await asyncio.sleep(60)
+        await asyncio.sleep(60)
 
         # Delete the channel.
         await ctx.channel.delete()
