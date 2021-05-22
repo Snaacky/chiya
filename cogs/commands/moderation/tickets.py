@@ -81,7 +81,7 @@ class TicketCog(Cog):
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
 
         # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
-        token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="5min")
+        token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")
         url = token["full_url"]
 
         # Create the embed in #ticket-log with the link after dumping.
