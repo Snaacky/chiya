@@ -165,7 +165,7 @@ class AdministrationCog(Cog):
             await ctx.message.add_reaction("❌")
             await ctx.send("Module not found, check spelling, it's case sensitive.")
 
-    @commands.has_role(config.role_admin)
+    @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="rules")
@@ -204,7 +204,7 @@ class AdministrationCog(Cog):
         # Clean up the command invoker
         await ctx.message.delete()
 
-    @commands.has_role(config.role_admin)
+    @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="createticketembed")
@@ -217,7 +217,7 @@ class AdministrationCog(Cog):
         await spawned.add_reaction("🎫")
         await ctx.message.delete()
 
-    @commands.has_role(config.role_admin)
+    @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="createcolorrolesembed", aliases=['ccre'])
@@ -238,7 +238,7 @@ class AdministrationCog(Cog):
         await msg.add_reaction(":purplesquare:805032172074696744")
         await ctx.message.delete()
 
-    @commands.has_role(config.role_admin)
+    @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="createassignablerolesembed", aliases=['care'])

@@ -5,7 +5,7 @@ import privatebinapi
 import dataset
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot
 
 import config
 from utils import database
@@ -36,7 +36,15 @@ class TicketCog(Cog):
     async def close(self, ctx):
         """ Closes the modmail ticket."""
         channel = ctx.message.channel
+        member = await ctx.guild.fetch_member(ctx.message.author.id)
 
+        # Get the ticket topic in database for embeds.
+        with dataset.connect(database.get_db()) as db:
+            table = db["tickets"]
+            ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
+            ticket_topic = ticket["ticket_topic"]
+
+        # Warns if the ticket close command is called outside of the current active ticket channel.
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
             return
@@ -49,46 +57,51 @@ class TicketCog(Cog):
         await ctx.send(embed=embed)
 
         # Set the channel into a read only state.
-        for role in channel.overwrites:
-            # default_role is @everyone role, so skip that.
-            if role == ctx.guild.default_role:
-                continue
-            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
-                                          manage_messages=False)
+        # for role in channel.overwrites:
+        #     # default_role is @everyone role, so skip that.
+        #     if role == ctx.guild.default_role:
+        #         continue
+        #     await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
+        #                                   manage_messages=False)
 
         message_count = 0
-        message_log = ""
+        message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
+
         # Loop through all messages in the ticket from old to new.
         async for message in ctx.channel.history(oldest_first=True):
-            # Ignore the bot commands and replies.
-            if not message.author.bot and not message.content[0] == config.prefix:
+
+            # Ignore the bot replies.
+            if not message.author.bot:
                 message_count += 1
+
                 # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
                 formatted_time = str(message.created_at).split(".")[-2]
-                # Append the new messages to the current log as we loop.
-                message_log += f"[{formatted_time}]     {message.author}: {message.content}\n"
 
-        # Dump message log to private bin. This returns a dictionary, and only the url is needed for the embed.
-        token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")
+                # Append the new messages to the current log as we loop.
+                message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
+
+        # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
+        token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="5min")
         url = token["full_url"]
 
         # Create the embed in #ticket-log with the link after dumping.
         embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
         embed_log.title = f"{message_count} messages were logged from {ctx.channel.name}"
-        embed_log.description = f"{url}"
+        embed_log.add_field(name="Ticket Creator: ", value=member.mention)
+        embed_log.add_field(name="Ticket Topic: ", value=ticket_topic, inline=False)
+        embed_log.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)
         await ticket_log.send(embed=embed_log)
 
-        with dataset.connect(database.get_db()) as db:
-            table = db["tickets"]
-            ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status=1)
-            ticket["status"] = 2
-            table.update(ticket, ["id"])
+        # Update the ticket status from "in-progress" to "completed" and update the PrivateBin url.
+        ticket["status"] = "completed"
+        ticket["log_url"] = url
+        table.update(ticket, ["id"])
 
         # Sleep for 60 seconds before deleting the channel.
-        await asyncio.sleep(60)
+        # await asyncio.sleep(60)
 
         # Delete the channel.
         await ctx.channel.delete()

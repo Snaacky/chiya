@@ -1,3 +1,4 @@
+import datetime
 import logging
 import time
 
@@ -40,17 +41,20 @@ async def process_embed_reaction(payload):
 
     # If one exists, log but do nothing because the latest embed is still awaiting their response.
     if ticket:
-        logging.info(f"{member} tried to create a new ticket but already had one pending")
+        logging.info(f"{member} tried to create a new ticket but already had one pending.")
         return
 
     # Send the user the pending ticket DM embed.
     dm = await send_pending_ticket_dm(member)
 
+    # Since Discord uses UTC time for everything, so we use that for timestamp reference.
+    utc_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
     # Insert a pending ticket into the database.
     with dataset.connect(database.get_db()) as db:
         db["tickets"].insert(dict(
-            user_id=member.id, status=0, guild=payload.guild_id, ticket_channel=None,
-            dm_embed_id=dm.id, timestamp=int(time.time())
+            user_id=member.id, status="pending", guild=payload.guild_id, ticket_channel=None,
+            dm_embed_id=dm.id, timestamp=utc_time, ticket_topic=None, log_url=None
         ))
 
 
@@ -60,7 +64,7 @@ async def process_pending_ticket(bot, message):
         table = db["tickets"]
 
     # Check if the user has any currently pending tickets.
-    ticket = table.find_one(user_id=message.author.id, status=0)
+    ticket = table.find_one(user_id=message.author.id, status="pending")
     if not ticket:
         return
 
@@ -76,9 +80,10 @@ async def process_pending_ticket(bot, message):
     embed.set_image(url="https://i.imgur.com/YiIfTLc.gif")
     await message.author.send(embed=embed)
 
-    # Update the state of the ticket in the database from pending to in-progress and store the channel ID.
-    ticket["status"] = 1
+    # Update the ticket in the database from "pending" to "in-progress", and store the channel ID and ticket topic.
+    ticket["status"] = "in-progress"
     ticket["ticket_channel"] = channel.id
+    ticket["ticket_topic"] = message.content
     table.update(ticket, ["id"])
 
 
@@ -94,14 +99,14 @@ async def process_dm_reaction(bot, payload):
     with dataset.connect(database.get_db()) as db:
         table = db["tickets"]
 
-    ticket = table.find_one(dm_embed_id=payload.message_id, status=0)
+    ticket = table.find_one(dm_embed_id=payload.message_id, status="pending")
 
     # If we did not find a ticket, ignore the reaction.
     if not ticket:
         return
 
-    # Update the status of the ticket in the database to canceled.
-    ticket["status"] = 3
+    # Update the status of the ticket in the database to "canceled".
+    ticket["status"] = "canceled"
     table.update(ticket, ["id"])
     logging.info(f"{user} canceled their pending ticket")
 
@@ -133,7 +138,7 @@ async def check_for_pending_tickets(member):
         table = db["tickets"]
 
     # Search for any pending tickets in the database.
-    ticket = table.find_one(user_id=member.id, status=0)
+    ticket = table.find_one(user_id=member.id, status="pending")
 
     # If ticket returned no results, no pending tickets were found.
     if not ticket:
@@ -184,7 +189,7 @@ async def create_ticket_channel(bot, ticket, message):
     # Create a channel in the tickets category specified in the config.     
     ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
 
-    # Give both the staff and the user perms to access the channel. 
+    # Give both the staff and the user perms to access the channel.
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), read_messages=True)
     await ticket.set_permissions(member, read_messages=True)

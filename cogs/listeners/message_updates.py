@@ -10,6 +10,7 @@ from utils import embeds
 
 log = logging.getLogger(__name__)
 
+
 class MessageUpdates(commands.Cog):
     """Message event handler cog."""
 
@@ -114,7 +115,7 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_raw_message_edit
         """
-        
+
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
         """Event Listener which is called when a reaction is added.
@@ -182,6 +183,7 @@ class MessageUpdates(commands.Cog):
         channel = await self.bot.fetch_channel(payload.channel_id)
         if isinstance(channel, discord.DMChannel):
             await tickets.process_dm_reaction(self.bot, payload)
+
 
 def setup(bot: commands.Bot) -> None:
     """Load the message_updates cog."""
