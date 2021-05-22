@@ -28,35 +28,36 @@ class ReminderTask(Cog):
         
         # Find all reminders that are older than current time and have not been sent yet.
         with dataset.connect(database.get_db()) as db:
-            remind_me = db['remind_me']
-            result = remind_me.find(sent=False, date_to_remind={'lt':current_time})
+            remind_me = db["remind_me"]
+            result = remind_me.find(sent=False, date_to_remind={"<": current_time})
 
         # Iterate over all the results found from the DB query above.
         for reminder in result:
-            channel = self.bot.get_channel(reminder['reminder_location'])
-            user = self.bot.get_user(reminder['author_id'])
-            embed = embeds.make_embed(title=f"Here is your reminder", description=reminder['message'])
+            channel = self.bot.get_channel(reminder["reminder_location"])
+            user = self.bot.get_user(reminder["author_id"])
+            embed = embeds.make_embed(title=f"Here is your reminder", description=reminder["message"])
             table = db["remind_me"]
+
+            # Mark the reminder as sent so it doesn't loop again.
+            table.update(dict(id=reminder["id"], sent=True), ["id"])
 
             # Attempt to send the reminder in the channel that it was created in.
             try:
                 await channel.send(user.mention, embed=embed)
-                table.update(dict(id=reminder['id'], sent=True), ['id'])
                 log.info(f"Sent {user}'s {reminder['id']=} in {channel}")
+                return
             except:
                 log.warn(f"Tried to post reminder for {user}'s {reminder['id']=} but don't have access to the channel")
 
-                # If unable to send the reminder in the channel it was created in, attempt to DM it to the user.
-                try:
-                    dm = await user.create_dm()
-                    await dm.send(embed=embed)
-                    table.update(dict(id=reminder['id'], sent=True), ['id'])
-                    log.info(f"Sent {user}'s {reminder['id']=} via DMs because I couldn't access channel {channel} ({reminder['reminder_location']})")
-                except:
-                    log.warn(f"Unable to post {user}'s reminder {reminder['id']=} and the user has DMs blocked")
+            # If unable to send the reminder in the channel it was created in, attempt to DM it to the user.
+            try:
+                dm = await user.create_dm()
+                await dm.send(embed=embed)
+                log.info(f"Sent {user}'s {reminder['id']=} via DMs because I couldn't access channel {channel} ({reminder['reminder_location']})")
+            except:
+                log.warn(f"Unable to post {user}'s reminder {reminder['id']=} and the user has DMs blocked")
 
-            # If all else fails, unable to send the reminder, mark it as failed (None)
-            table.update(dict(id=reminder['id'], sent=None), ['id'])
+            
 
 def setup(bot: Bot) -> None:
     """ Load the ReminderTask cog. """

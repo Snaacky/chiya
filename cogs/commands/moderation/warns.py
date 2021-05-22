@@ -49,14 +49,14 @@ class WarnsCog(Cog):
         except:
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
-        # Send the warning embed DM to the user.
-        await ctx.reply(embed=embed)
-
         # Add the warning to the mod_log database.
         with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="warn"
             ))
+
+        # Send the warning embed DM to the user.
+        await ctx.reply(embed=embed)
 
 def setup(bot: Bot) -> None:
     """ Load the Notes cog. """
