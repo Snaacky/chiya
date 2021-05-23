@@ -35,14 +35,24 @@ class TicketCog(Cog):
     @ticket.command(name="close")
     async def close(self, ctx):
         """ Closes the modmail ticket."""
-        channel = ctx.message.channel
-        member = await ctx.guild.fetch_member(ctx.message.author.id)
 
         # Get the ticket topic in database for embeds.
         with dataset.connect(database.get_db()) as db:
             table = db["tickets"]
             ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
             ticket_topic = ticket["ticket_topic"]
+
+        # Fetch the ticket channel.
+        channel = ctx.message.channel
+
+        # Fetch the member name with discriminator.
+        member = await ctx.guild.fetch_member(ctx.message.author.id)
+
+        # Fetch the staff role.
+        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
+
+        # Fetch the trial mod role.
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
@@ -64,15 +74,17 @@ class TicketCog(Cog):
             await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
                                           manage_messages=False)
 
-        message_count = 0
+        # Initialize the PrivateBin message log string.
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
+
+        # Initialize a list of moderator ids as a set for no duplicates.
+        mod_list = set()
 
         # Loop through all messages in the ticket from old to new.
         async for message in ctx.channel.history(oldest_first=True):
 
             # Ignore the bot replies.
             if not message.author.bot:
-                message_count += 1
 
                 # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
                 formatted_time = str(message.created_at).split(".")[-2]
@@ -80,22 +92,32 @@ class TicketCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
 
+                # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
+                if role_staff or role_trial_mod in message.author.roles:
+                    mod_list.add(message.author.id)
+
+        # Convert the set of participated mod IDs (mod_list) into a string to be used in the embed.
+        participating_mods = ""
+        for mod in mod_list:
+            participating_mods += f"<@{mod}>\n"
+
         # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
         token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")
         url = token["full_url"]
 
-        # Create the embed in #ticket-log with the link after dumping.
+        # Create the embed in #ticket-log.
         embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
-        embed_log.title = f"{message_count} messages were logged from {ctx.channel.name}"
-        embed_log.add_field(name="Ticket Creator: ", value=member.mention)
-        embed_log.add_field(name="Ticket Topic: ", value=ticket_topic, inline=False)
+        embed_log.title = f"{ctx.channel.name} archived"
+        embed_log.add_field(name="Ticket Creator:", value=member.mention, inline=False)
+        embed_log.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
+        embed_log.add_field(name="Participating Moderators:", value=participating_mods, inline=False)
         embed_log.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)
         await ticket_log.send(embed=embed_log)
 
-        # Update the ticket status from "in-progress" to "completed" and update the PrivateBin url.
+        # Update the ticket status from "in-progress" to "completed" and the PrivateBin url field in the database.
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])
