@@ -116,7 +116,7 @@ class ArchiveCog(Cog):
         # Add the ticket to database.
         with dataset.connect(database.get_db()) as db:
             db["tickets"].insert(dict(
-                user_id=ticket_creator, status="completed", guild="622243127435984927",
+                user_id=ticket_creator, status="completed", guild=config.guild_id,
                 dm_embed_id=None, timestamp=utc_time, ticket_topic=ticket_topic, log_url=url
             ))
 
