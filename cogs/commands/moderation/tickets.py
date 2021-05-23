@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import privatebinapi
 
@@ -48,12 +47,6 @@ class TicketCog(Cog):
         # Fetch the member.
         member = await ctx.guild.fetch_member(ctx.message.author.id)
 
-        # Fetch the staff role.
-        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
-
-        # Fetch the trial mod role.
-        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
-
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
@@ -64,6 +57,10 @@ class TicketCog(Cog):
 
         # Initialize a list of moderator ids as a set for no duplicates.
         mod_list = set()
+
+        # Fetch the staff and trial mod role.
+        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
 
         # Loop through all messages in the ticket from old to new.
         async for message in ctx.channel.history(oldest_first=True):
