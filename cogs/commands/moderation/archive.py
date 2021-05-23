@@ -68,7 +68,7 @@ class ArchiveCog(Cog):
         await ctx.send(embed=embed)
 
         # Remove the <@> part in the ticket creator ID string.
-        ticket_creator = re.sub("[<@>]", "", ticket_creator)
+        ticket_creator = re.sub("[^0-9]", "", ticket_creator)
 
         # Initialize the PrivateBin message log string.
         message_log = f"Ticket Creator ID: {ticket_creator}\nTicket Topic: {ticket_topic}\n\n"
