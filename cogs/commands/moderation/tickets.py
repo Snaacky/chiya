@@ -45,7 +45,7 @@ class TicketCog(Cog):
         # Fetch the ticket channel.
         channel = ctx.message.channel
 
-        # Fetch the member name with discriminator.
+        # Fetch the member.
         member = await ctx.guild.fetch_member(ctx.message.author.id)
 
         # Fetch the staff role.
@@ -58,21 +58,6 @@ class TicketCog(Cog):
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
             return
-
-        # Send notice that the channel has been marked read only and will be archived.
-        embed = embeds.make_embed(author=False, color=0xffffc3)
-        embed.title = f"🔒 Your ticket has been closed."
-        embed.description = f"The channel has been marked read-only and will be archived in one minute. If you have additional comments or concerns, feel free to open another ticket."
-        embed.set_image(url="https://i.imgur.com/TodlFQq.gif")
-        await ctx.send(embed=embed)
-
-        # Set the channel into a read only state.
-        for role in channel.overwrites:
-            # default_role is @everyone role, so skip that.
-            if role == ctx.guild.default_role:
-                continue
-            await channel.set_permissions(role, read_messages=True, send_messages=False, add_reactions=False,
-                                          manage_messages=False)
 
         # Initialize the PrivateBin message log string.
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
@@ -94,16 +79,15 @@ class TicketCog(Cog):
 
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                 if role_staff or role_trial_mod in message.author.roles:
-                    mod_list.add(message.author.id)
+                    mod_list.add(message.author)
 
         # Convert the set of participated mod IDs (mod_list) into a string to be used in the embed.
         participating_mods = ""
         for mod in mod_list:
-            participating_mods += f"<@{mod}>\n"
+            participating_mods += f"{mod.mention} "
 
         # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
-        token = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")
-        url = token["full_url"]
+        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
 
         # Create the embed in #ticket-log.
         embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
@@ -121,9 +105,6 @@ class TicketCog(Cog):
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])
-
-        # Sleep for 60 seconds before deleting the channel.
-        await asyncio.sleep(60)
 
         # Delete the channel.
         await ctx.channel.delete()

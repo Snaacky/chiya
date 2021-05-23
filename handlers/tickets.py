@@ -1,5 +1,5 @@
-import datetime
 import logging
+import time
 
 import dataset
 import discord
@@ -46,14 +46,11 @@ async def process_embed_reaction(payload):
     # Send the user the pending ticket DM embed.
     dm = await send_pending_ticket_dm(member)
 
-    # Since Discord uses UTC time for everything, we'll use the same format for timestamp reference.
-    utc_time = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-
     # Insert a pending ticket into the database.
     with dataset.connect(database.get_db()) as db:
         db["tickets"].insert(dict(
             user_id=member.id, status="pending", guild=payload.guild_id,
-            dm_embed_id=dm.id, timestamp=utc_time, ticket_topic=None, log_url=None
+            dm_embed_id=dm.id, timestamp=int(time.time()), ticket_topic=None, log_url=None
         ))
 
 
