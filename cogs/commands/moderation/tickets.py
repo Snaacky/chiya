@@ -79,13 +79,11 @@ class TicketCog(Cog):
                     mod_list.add(message.author)
 
         # Convert the set of participated mod IDs (mod_list) into a string to be used in the embed.
-        participating_mods = ""
-        for mod in mod_list:
-            participating_mods += f"{mod.mention} "
+        participating_mods = " ".join(mod.mention for mod in mod_list)
 
         # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
         url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
-
+        
         # Create the embed in #ticket-log.
         embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
         embed_log.title = f"{ctx.channel.name} archived"
