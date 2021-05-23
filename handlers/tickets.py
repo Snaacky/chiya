@@ -87,7 +87,7 @@ async def process_dm_reaction(bot, payload):
     user = await bot.fetch_user(payload.user_id)
 
     # checking if the reaction is from the bot itself
-    if (user == bot.user):
+    if user == bot.user:
         return
 
     # Search the database for an open pending ticket.
@@ -190,14 +190,15 @@ async def create_ticket_channel(bot, ticket, message):
     await ticket.set_permissions(member, read_messages=True)
 
     # Create an embed at the top of the new ticket so the mod knows who opened it.
-    for x in member.roles:
-        if x.id == config.role_vip:
-            await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
     embed = embeds.make_embed(title="🎫  Ticket created",
                               description="Please remain patient for a staff member to assist you.",
                               color="default")
     embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
     embed.add_field(name="Ticket Topic:", value=message.content, inline=False)
     await ticket.send(embed=embed)
+
+    # If the user is a VIP, send a ping to all senior mods and admins.
+    if any(role.id == config.role_vip for role in member.roles):
+        await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
 
     return ticket
