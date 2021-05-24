@@ -10,7 +10,7 @@
 The easiest way to get started running Chiya is by using [Docker](https://docs.docker.com/engine/reference/run/) however the bot should run in both virtualized and bare metal environments across Windows and \*nix based platforms. Our setup guide will focus on setting up the bot with Docker as that is what we use in our productione environment. 
 
 **Step 1:**
-As the Docker image is currently hosted on a private Github repo, you will need to login into the Github container registry first.
+As the Docker image is currently hosted on a private GitHub repo, you will need to login into the GitHub container registry first.
 
 ```Shell
 docker login https://docker.pkg.github.com -u USERNAME -p TOKEN
@@ -82,7 +82,7 @@ docker run -d \
 
 ### Where do I get a token to download the Docker image?
 
-* Everything you need to learn about creating a Github Personal Access Token can be found [here](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
+* Everything you need to learn about creating a GitHub Personal Access Token can be found [here](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
 
 
 ### Where can I create a Discord bot token?
