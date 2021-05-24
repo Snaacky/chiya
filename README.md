@@ -78,18 +78,18 @@ docker run -d \
     chiya-bot
 ```
 
-# FAQ
+## FAQ
 
-## Where do I get a token to download the Docker image?
+### Where do I get a token to download the Docker image?
 
 * Everything you need to learn about creating a Github Personal Access Token can be found [here](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token).
 
 
-## Where can I create a Discord bot token?
+### Where can I create a Discord bot token?
 
 * You can find a helpful guide on where and how to make one [here](https://www.writebots.com/discord-bot-token/).
 * Be sure you set the correct Intents permissions, or your bot might not work correctly.
 
-## Where do I get a Reddit client ID and secret?
+### Where do I get a Reddit client ID and secret?
 
 * You need to make register your bot application on Reddit, you can do that [here](https://www.reddit.com/prefs/apps/).
