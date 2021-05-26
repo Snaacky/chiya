@@ -27,8 +27,7 @@ async def process_embed_reaction(payload):
 
         # If results returns False, we were unable to DM the user because they're not accepting DMs.
         if not results:
-            logging.info(
-                f"{member} tried to create a new ticket but already had one open: {ticket} and was unable to DM them.")
+            logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and was unable to DM them.")
             return
 
         # If we didn't hit any of the above, assume we were able to successfully DM the user about their duplicate ticket.
@@ -64,6 +63,11 @@ async def process_pending_ticket(bot, message):
     if not ticket:
         return
 
+    # Update the ticket in the database from "pending" to "in-progress", and store the channel ID and ticket topic.
+    ticket["status"] = "in-progress"
+    ticket["ticket_topic"] = message.content
+    table.update(ticket, ["id"])
+
     # If the user does not have any pending tickets, create a new ticket channel.
     channel = await create_ticket_channel(bot, ticket, message)
     logging.info(f"{message.author} created a new modmail ticket: {channel.id}")
@@ -75,11 +79,6 @@ async def process_pending_ticket(bot, message):
     embed.add_field(name="Ticket:", value=channel.mention, inline=False)
     embed.set_image(url="https://i.imgur.com/YiIfTLc.gif")
     await message.author.send(embed=embed)
-
-    # Update the ticket in the database from "pending" to "in-progress", and store the channel ID and ticket topic.
-    ticket["status"] = "in-progress"
-    ticket["ticket_topic"] = message.content
-    table.update(ticket, ["id"])
 
 
 async def process_dm_reaction(bot, payload):
@@ -181,13 +180,20 @@ async def create_ticket_channel(bot, ticket, message):
     member = await guild.fetch_member(message.author.id)
     category = discord.utils.get(guild.categories, id=config.ticket_category_id)
 
-    # Create a channel in the tickets category specified in the config.     
+    # Create a channel in the tickets category specified in the config.
     ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
 
     # Give both the staff and the user perms to access the channel.
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), read_messages=True)
     await ticket.set_permissions(member, read_messages=True)
+
+    # If the ticket creator is a VIP, ping the seniors and admins and restrict message permission to them.
+    if any(role.id == config.role_vip for role in member.roles):
+        await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), send_messages=False)
+        await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), send_messages=False)
+        await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_senior_mod), send_messages=True)
+        await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
 
     # Create an embed at the top of the new ticket so the mod knows who opened it.
     embed = embeds.make_embed(title="🎫  Ticket created",
@@ -196,9 +202,5 @@ async def create_ticket_channel(bot, ticket, message):
     embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
     embed.add_field(name="Ticket Topic:", value=message.content, inline=False)
     await ticket.send(embed=embed)
-
-    # If the user is a VIP, send a ping to all senior mods and admins.
-    if any(role.id == config.role_vip for role in member.roles):
-        await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
 
     return ticket
