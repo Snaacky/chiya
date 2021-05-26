@@ -43,7 +43,8 @@ class TicketCog(Cog):
 
         # Fetch the ticket channel.
         channel = ctx.message.channel
-
+        # Get the member object of the ticket creator.
+        member = await ctx.guild.fetch_member(ctx.message.author.id)
         # Fetch the member.
         member = await ctx.guild.fetch_member(ctx.message.author.id)
 
@@ -74,16 +75,28 @@ class TicketCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
 
+        # Initialize a list of moderator ids as a set for no duplicates.
+        mod_list = set()
+        # Fetch the staff and trial mod role.
+        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
+
+        # Loop through all messages in the ticket from old to new.
+        async for message in ctx.channel.history(oldest_first=True):
+            # Ignore the bot replies.
+            if not message.author.bot:
+                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
+                formatted_time = str(message.created_at).split(".")[-2]
+                # Append the new messages to the current log as we loop.
+                message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                 if role_staff or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
-        # Convert the set of participated mod IDs (mod_list) into a string to be used in the embed.
         participating_mods = " ".join(mod.mention for mod in mod_list)
-
         # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
         url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
-        
+
         # Create the embed in #ticket-log.
         embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
         embed_log.title = f"{ctx.channel.name} archived"
