@@ -64,6 +64,11 @@ async def process_pending_ticket(bot, message):
     if not ticket:
         return
 
+    # Update the ticket in the database from "pending" to "in-progress", and store the channel ID and ticket topic.
+    ticket["status"] = "in-progress"
+    ticket["ticket_topic"] = message.content
+    table.update(ticket, ["id"])
+
     # If the user does not have any pending tickets, create a new ticket channel.
     channel = await create_ticket_channel(bot, ticket, message)
     logging.info(f"{message.author} created a new modmail ticket: {channel.id}")
@@ -75,11 +80,6 @@ async def process_pending_ticket(bot, message):
     embed.add_field(name="Ticket:", value=channel.mention, inline=False)
     embed.set_image(url="https://i.imgur.com/YiIfTLc.gif")
     await message.author.send(embed=embed)
-
-    # Update the ticket in the database from "pending" to "in-progress", and store the channel ID and ticket topic.
-    ticket["status"] = "in-progress"
-    ticket["ticket_topic"] = message.content
-    table.update(ticket, ["id"])
 
 
 async def process_dm_reaction(bot, payload):
