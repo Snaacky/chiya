@@ -197,8 +197,9 @@ async def create_ticket_channel(bot, ticket, message):
     embed.add_field(name="Ticket Topic:", value=message.content, inline=False)
     await ticket.send(embed=embed)
 
-    # If the user is a VIP, send a ping to all senior mods and admins.
+    # If the user is a VIP, send a ping to all senior mods and lock the channel down to them.
     if any(role.id == config.role_vip for role in member.roles):
+        await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), send_messages=False)
         await ticket.send(f"<@&{config.role_admin}> <@&{config.role_senior_mod}>")
 
     return ticket
