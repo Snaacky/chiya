@@ -53,7 +53,7 @@ class BanCog(Cog):
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.unban
         try:
             await guild.unban(user=user, reason=reason)
-        except discord.NotFound:
+        except discord.HTTPException:
             return
 
         # Add the unban to the mod_log database.
@@ -75,7 +75,7 @@ class BanCog(Cog):
         try:
             await guild.fetch_ban(user)
             return True
-        except discord.NotFound:
+        except discord.HTTPException:
             return False
 
     async def send_banned_dm_embed(self, ctx: Context, user: discord.User, reason: str = None, duration: str = None) -> bool:
