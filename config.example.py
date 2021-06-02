@@ -71,6 +71,7 @@ subreddit =         "animepiracy"
 client_id =         ""
 client_secret =     ""
 reddit_posts =      623809718011297792
+modqueue =          000000000000000000
 poll_rate =         3 # In seconds.
 user_agent =        "Chiya (for /r/animepiracy)"
 
