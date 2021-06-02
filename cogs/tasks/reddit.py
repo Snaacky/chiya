@@ -2,6 +2,8 @@ import time
 import logging
 
 import asyncpraw
+import asyncio
+from asyncpraw.reddit import Submission
 import discord
 from discord.ext import tasks, commands
 
@@ -12,7 +14,9 @@ log = logging.getLogger(__name__)
 reddit = asyncpraw.Reddit(
     client_id=config.client_id,
     client_secret=config.client_secret,
-    user_agent=config.user_agent
+    user_agent=config.user_agent,
+    username = config.reddit_username,
+    password = config.reddit_password
 )
 
 class RedditTask(commands.Cog):
@@ -25,6 +29,8 @@ class RedditTask(commands.Cog):
             self.check_for_posts.start()
             self.cache = []
             self.bot_started_at = time.time()
+            self.check_modqueue.start()
+            self.modqueue_cache = []
         else:
             log.warning("Subreddit or discord channel to post is missing from config.")
 
@@ -94,7 +100,87 @@ class RedditTask(commands.Cog):
         except Exception as e:
             log.error(e)
 
+    # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
+    @tasks.loop(seconds=config.poll_rate)
+    async def check_modqueue(self):
+        """Checking for new modqueue items."""
+        # Wait before starting or else new posts may not post to discord.
+        await self.bot.wait_until_ready()
+        await asyncio.sleep(5)
+
+        try:
+            subreddit = await reddit.subreddit(config.subreddit)
+            async for modqueue_item in subreddit.mod.modqueue(limit=None):
+                # Skips over any posts already stored in cache.
+                if modqueue_item.id in self.modqueue_cache:
+                    continue
+
+                # Skips over any posts from before the bot started to avoid infinite loops.
+                if modqueue_item.created_utc <= self.bot_started_at:
+                    continue
+
+                # Loads the subreddit and author so we can access extra data.
+                await modqueue_item.author.load()
+                await modqueue_item.subreddit.load()
+
+                if type(modqueue_item) is Submission:
+                    embed = discord.Embed(
+                        title=modqueue_item.title[0:252],
+                        url=f"https://reddit.com{modqueue_item.permalink}",
+                        description=modqueue_item.selftext[0:350],  # Cuts off the description.
+                    )
+                    embed.set_author(
+                    name=modqueue_item.author.name,
+                    url=f"https://reddit.com/u/{modqueue_item.author.name}",
+                    icon_url=modqueue_item.author.icon_img
+                    )
+
+                    embed.set_footer(
+                        text=f"Post on /r/{modqueue_item.subreddit}",
+                        icon_url=modqueue_item.subreddit.community_icon)
+
+                    # Adds ellipsis if the data is too long to signify cutoff.
+                    if len(modqueue_item.selftext) >= 350:
+                        embed.description = embed.description + "..."
+
+                    if len(modqueue_item.title) >= 252:
+                        embed.title = embed.title + "..."
+                else:
+                    # The submission has to be a comment, mentioning that in title.
+                    embed = discord.Embed(title="Comment removed", 
+                        description=modqueue_item.body[0:350],
+                        url=f"https://reddit.com{modqueue_item.permalink}" 
+                    )
+
+                    # Adds ellipsis if the data is too long to signify cutoff.
+                    if len(modqueue_item.body) >= 350:
+                        embed.description = embed.description + "..."
+                    
+                    # Setting the embed author to the comment author.
+                    embed.set_author(
+                    name=modqueue_item.author.name,
+                    url=f"https://reddit.com/u/{modqueue_item.author.name}",
+                    icon_url=modqueue_item.author.icon_img
+                    )
+                    
+                    embed.set_footer(
+                        text=f"Comment posted on /r/{modqueue_item.subreddit}",
+                        icon_url=modqueue_item.subreddit.community_icon)
+
+                # Attempts to find the channel to send to and skips if unable to locate.
+                channel = self.bot.get_channel(config.modqueue)
+                if not channel:
+                    continue
+
+                # Sends embed into the Discord channel and adds to cache to avoid dupes in the future.
+                await channel.send(embed=embed)
+                self.modqueue_cache.append(modqueue_item.id)
+
+        # Catch all exceptions to avoid crashing and log the error.
+        except Exception as e:
+            log.error(e)
+
 def setup(bot) -> None:
-    """ Load the GeneralCog cog. """
+    """ Load the RedditTask cog. """
     bot.add_cog(RedditTask(bot))
     log.info("Task loaded: reddit")
