@@ -115,8 +115,9 @@ class MuteCog(Cog):
         channel = await ctx.message.guild.create_text_channel(f"mute-{member.id}", category=category)
 
         # Give both the staff and the user perms to access the channel. 
-        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_trial_mod), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_staff), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_reddit_mod), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_discord_mod), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_senior_mod), read_messages=True)
         await channel.set_permissions(member, read_messages=True)
 
         # Create embed at the start of the channel letting the user know how long they're muted for and why.
@@ -146,7 +147,7 @@ class MuteCog(Cog):
                 user_id=user_id, mod_id=moderator, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="mute")
@@ -186,7 +187,7 @@ class MuteCog(Cog):
         await self.mute_member(ctx=ctx, member=member, reason=reason)
         await ctx.reply(embed=embed)
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unmute")
@@ -224,7 +225,7 @@ class MuteCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
         await ctx.reply(embed=embed)
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="tempmute")

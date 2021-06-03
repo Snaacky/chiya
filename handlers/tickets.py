@@ -175,8 +175,9 @@ async def create_ticket_channel(bot, ticket, message):
     ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
 
     # Give both the staff and the user perms to access the channel. 
-    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)
-    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), read_messages=True)
+    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_discord_mod), read_messages=True)
+    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_reddit_mod), read_messages=True)
+    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_senior_mod), read_messages=True)
     await ticket.set_permissions(member, read_messages=True)
 
     # Create an embed at the top of the new ticket so the mod knows who opened it.

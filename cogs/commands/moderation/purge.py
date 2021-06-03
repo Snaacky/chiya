@@ -26,7 +26,7 @@ class PurgeCog(Cog):
         # Otherwise, the purge is fine to execute
         return True
         
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(embed_links=True, manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="remove", aliases=['rm', 'purge'])

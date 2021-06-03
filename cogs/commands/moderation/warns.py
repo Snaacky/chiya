@@ -20,7 +20,7 @@ class WarnsCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="warn")

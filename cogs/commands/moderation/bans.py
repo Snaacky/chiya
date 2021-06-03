@@ -93,7 +93,7 @@ class BanCog(Cog):
             return False
         return True
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="ban")
@@ -137,7 +137,7 @@ class BanCog(Cog):
         await self.ban_member(ctx=ctx, user=user, reason=reason)
         await ctx.reply(embed=embed)
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unban")
@@ -167,7 +167,7 @@ class BanCog(Cog):
         await self.unban_member(ctx=ctx, user=user, reason=reason)
         await ctx.reply(embed=embed)
 
-    @commands.has_role(config.role_staff)
+    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="tempban")

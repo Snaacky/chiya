@@ -1,13 +1,12 @@
 import logging
+
 import dataset
-
-
 import discord
 from discord import Member
 from discord.ext import commands
-from utils import embeds, database
-from utils.record import record_usage
 
+import config
+from utils import database
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -24,10 +23,12 @@ class MutesHandler(commands.Cog):
         with dataset.connect(database.get_db()) as db:
             result = db['timed_mod_actions'].find_one(user_id=member.id, is_done=False, action_type='mute')
             guild = member.guild
-            if result is not None:
-                # Adds "Muted" role to member.
+
+            # Adds "Muted" role to member.
+            if result:
                 role = discord.utils.get(guild.roles, id=config.role_muted)
                 await member.add_roles(role, reason="Re-muted evading member who was previously muted.")
+                
                 channel = guild.get_channel(result['channel_id'])
                 if channel:
                     await channel.send(f"{member.mention} was re-muted after evading a timed mute.")
