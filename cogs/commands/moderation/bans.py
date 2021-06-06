@@ -122,8 +122,9 @@ class BanCog(Cog):
         if reason and len(reason) > 512:
             await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
             return
+
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
+        if reason is None:
             reason = "No reason provided."
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
@@ -157,8 +158,9 @@ class BanCog(Cog):
             if reason and len(reason) > 512:
                 await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
                 return
+
             # Automatically default the reason string to N/A when the moderator does not provide a reason.
-            else:
+            if reason is None:
                 reason = "No reason provided."
 
             # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
