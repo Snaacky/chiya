@@ -40,7 +40,7 @@ class KickCog(Cog):
         # Otherwise, the action is probably valid, return true.
         return True
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(kick_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="kick")

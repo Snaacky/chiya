@@ -147,7 +147,7 @@ class MuteCog(Cog):
                 user_id=user_id, mod_id=moderator, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="mute")
@@ -187,7 +187,7 @@ class MuteCog(Cog):
         await self.mute_member(ctx=ctx, member=member, reason=reason)
         await ctx.reply(embed=embed)
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="unmute")
@@ -225,7 +225,7 @@ class MuteCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
         await ctx.reply(embed=embed)
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="tempmute")

@@ -23,7 +23,7 @@ class NotesCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="addnote", aliases=["add_note", "note"])
@@ -41,7 +41,7 @@ class NotesCog(Cog):
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
             ))
     
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.command(name="search")
     async def search_mod_actions(self, ctx, user: discord.User, action_type: str = None):
         """ Searches for mod actions on a user """
@@ -192,7 +192,7 @@ class NotesCog(Cog):
             if embed is not None:
                 await msg.edit(embed=embed)
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @commands.command(name="edit", aliases=["editnote", "editlog"])

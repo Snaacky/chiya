@@ -20,7 +20,7 @@ class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
     @commands.group()
     async def ticket(self, ctx):
@@ -29,7 +29,7 @@ class TicketCog(Cog):
             await ctx.send_help(ctx.command)
 
     @commands.is_owner()
-    @commands.has_any_role(config.role_admin, config.role_senior_mod, config.role_reddit_mod, config.role_discord_mod)
+    @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
     @ticket.command(name="close")
     async def close(self, ctx):
