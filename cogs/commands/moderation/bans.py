@@ -66,7 +66,7 @@ class BanCog(Cog):
         guild = self.bot.get_guild(guild)
         member = guild.get_member(user.id)
         if member:
-            return True
+            return member
         return False
 
     async def is_user_banned(self, guild: discord.Guild, user: discord.User) -> bool:
@@ -104,16 +104,15 @@ class BanCog(Cog):
     async def ban(self, ctx: Context, user: discord.User, *, reason: str = None):
         """ Bans user from guild. """
 
-        # Checks if the user is already banned and let's the mod know if they already were.
+        # Checks if the user is already banned and let's the mod know if they already are.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
         if banned:
             await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
             return
 
-        # Some basic checks to make sure mods can't cause problems with their ban.
+        # Checks to see if the mod is privileged enough to ban the user they are attempting to ban.
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
-            member = await commands.MemberConverter().convert(ctx, user.mention)
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
                 await embeds.error_message(ctx=ctx, description="Could not action that member.")
                 return
@@ -124,7 +123,7 @@ class BanCog(Cog):
             return
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if reason is None:
+        if not reason:
             reason = "No reason provided."
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
@@ -153,21 +152,21 @@ class BanCog(Cog):
         if not banned:
             await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
             return
-        else:
-            # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-            if reason and len(reason) > 512:
-                await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
-                return
+        
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        if reason and len(reason) > 512:
+            await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
+            return
 
-            # Automatically default the reason string to N/A when the moderator does not provide a reason.
-            if reason is None:
-                reason = "No reason provided."
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        if not reason:
+            reason = "No reason provided."
 
-            # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
-            embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", image_url=config.user_unban, color="soft_green")
-            embed.description = f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
+        # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
+        embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", image_url=config.user_unban, color="soft_green")
+        embed.description = f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
 
-            # Unbans the user and returns the embed letting the moderator know they were successfully banned.
+        # Unbans the user and returns the embed letting the moderator know they were successfully banned.
         await self.unban_member(ctx=ctx, user=user, reason=reason)
         await ctx.reply(embed=embed)
 
@@ -181,7 +180,6 @@ class BanCog(Cog):
         # Some basic checks to make sure mods can't cause problems with their ban.
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
-            member = await commands.MemberConverter().convert(ctx, user.mention)
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
                 await embeds.error_message(ctx=ctx, description="Could not action that member.")
                 return
