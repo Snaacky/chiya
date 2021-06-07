@@ -132,7 +132,7 @@ class BanCog(Cog):
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.
-        sent = await self.send_banned_dm_embed(ctx=ctx, user=user)
+        sent = await self.send_banned_dm_embed(ctx=ctx, user=user, reason=reason)
         if not sent:
             embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
