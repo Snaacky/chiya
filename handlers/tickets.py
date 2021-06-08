@@ -182,16 +182,9 @@ async def create_ticket_channel(bot, ticket, message):
     # Create a channel in the tickets category specified in the config.
     ticket = await member.guild.create_text_channel(f"ticket-{member.id}", category=category)
 
-<<<<<<< HEAD
     # Give both the staff and the user perms to access the channel. 
-    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_discord_mod), read_messages=True)
-    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_reddit_mod), read_messages=True)
-    await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_senior_mod), read_messages=True)
-=======
-    # Give both the staff and the user perms to access the channel.
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_trial_mod), read_messages=True)
     await ticket.set_permissions(discord.utils.get(guild.roles, id=config.role_staff), read_messages=True)
->>>>>>> privatebin
     await ticket.set_permissions(member, read_messages=True)
 
     # If the ticket creator is a VIP, ping the seniors and admins and restrict message permission to them.
