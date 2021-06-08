@@ -110,6 +110,7 @@ class RedditTask(commands.Cog):
 
         try:
             subreddit = await reddit.subreddit(config.subreddit)
+            
             async for modqueue_item in subreddit.mod.modqueue(limit=None):
                 # Skips over any posts already stored in cache.
                 if modqueue_item.id in self.modqueue_cache:
@@ -120,9 +121,16 @@ class RedditTask(commands.Cog):
                     continue
 
                 # Loads the subreddit and author so we can access extra data.
+                await modqueue_item.load()
+
+                reason = ""
+                async for log in subreddit.mod.log(mod='AutoModerator',limit=5):
+                    if modqueue_item.fullname == log.target_fullname:
+                        reason = log.details
+
                 await modqueue_item.author.load()
                 await modqueue_item.subreddit.load()
-
+                
                 if type(modqueue_item) is Submission:
                     embed = discord.Embed(
                         title=modqueue_item.title[0:252],
@@ -132,11 +140,10 @@ class RedditTask(commands.Cog):
                     embed.set_author(
                     name=modqueue_item.author.name,
                     url=f"https://reddit.com/u/{modqueue_item.author.name}",
-                    icon_url=modqueue_item.author.icon_img
                     )
 
                     embed.set_footer(
-                        text=f"Post on /r/{modqueue_item.subreddit}",
+                        text=f"Removal reason: {reason}",
                         icon_url=modqueue_item.subreddit.community_icon)
 
                     # Adds ellipsis if the data is too long to signify cutoff.
@@ -164,7 +171,7 @@ class RedditTask(commands.Cog):
                     )
                     
                     embed.set_footer(
-                        text=f"Comment posted on /r/{modqueue_item.subreddit}",
+                        text=f"Removal reason: {reason}",
                         icon_url=modqueue_item.subreddit.community_icon)
 
                 # Attempts to find the channel to send to and skips if unable to locate.
