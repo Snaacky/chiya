@@ -120,7 +120,6 @@ class RedditTask(commands.Cog):
                 if modqueue_item.created_utc <= self.bot_started_at:
                     continue
 
-                # Loads the subreddit and author so we can access extra data.
                 await modqueue_item.load()
 
                 reason = ""
@@ -128,9 +127,10 @@ class RedditTask(commands.Cog):
                     if modqueue_item.fullname == log.target_fullname:
                         reason = log.details
 
+                # Loads the subreddit and author so we can access extra data.
                 await modqueue_item.author.load()
                 await modqueue_item.subreddit.load()
-                
+
                 if type(modqueue_item) is Submission:
                     embed = discord.Embed(
                         title=modqueue_item.title[0:252],
