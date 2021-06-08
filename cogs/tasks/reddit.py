@@ -140,6 +140,7 @@ class RedditTask(commands.Cog):
                     embed.set_author(
                     name=modqueue_item.author.name,
                     url=f"https://reddit.com/u/{modqueue_item.author.name}",
+                    icon_url=modqueue_item.author.icon_img
                     )
 
                     embed.set_footer(
