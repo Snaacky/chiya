@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 
 import dataset
+import discord
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
@@ -9,8 +10,10 @@ from utils import database, embeds
 
 log = logging.getLogger(__name__)
 
+
 class ReminderTask(Cog):
     """ Reminder Background Task """
+
     def __init__(self, bot: Bot):
         self.bot = bot
         self.check_for_reminder.start()
@@ -25,11 +28,11 @@ class ReminderTask(Cog):
 
         # Get current time to compare.
         current_time = datetime.now(tz=timezone.utc).timestamp()
-        
+
         # Find all reminders that are older than current time and have not been sent yet.
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
-            result = remind_me.find(sent=False, date_to_remind={'lt':current_time})
+            result = remind_me.find(sent=False, date_to_remind={'lt': current_time})
 
         # Iterate over all the results found from the DB query above.
         for reminder in result:
@@ -43,8 +46,8 @@ class ReminderTask(Cog):
                 await channel.send(user.mention, embed=embed)
                 table.update(dict(id=reminder['id'], sent=True), ['id'])
                 log.info(f"Sent {user}'s {reminder['id']=} in {channel}")
-            except:
-                log.warn(f"Tried to post reminder for {user}'s {reminder['id']=} but don't have access to the channel")
+            except discord.HTTPException:
+                log.warning(f"Tried to post reminder for {user}'s {reminder['id']=} but don't have access to the channel")
 
                 # If unable to send the reminder in the channel it was created in, attempt to DM it to the user.
                 try:
@@ -52,11 +55,12 @@ class ReminderTask(Cog):
                     await dm.send(embed=embed)
                     table.update(dict(id=reminder['id'], sent=True), ['id'])
                     log.info(f"Sent {user}'s {reminder['id']=} via DMs because I couldn't access channel {channel} ({reminder['reminder_location']})")
-                except:
-                    log.warn(f"Unable to post {user}'s reminder {reminder['id']=} and the user has DMs blocked")
+                except discord.HTTPException:
+                    log.warning(f"Unable to post {user}'s reminder {reminder['id']=} and the user has DMs blocked")
 
             # If all else fails, unable to send the reminder, mark it as failed (None)
             table.update(dict(id=reminder['id'], sent=None), ['id'])
+
 
 def setup(bot: Bot) -> None:
     """ Load the ReminderTask cog. """
