@@ -27,7 +27,7 @@ async def process_embed_reaction(payload):
 
         # If results returns False, we were unable to DM the user because they're not accepting DMs.
         if not results:
-            logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and was unable to DM them.")
+            logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and was unable to DM them")
             return
 
         # If we didn't hit any of the above, assume we were able to successfully DM the user about their duplicate ticket.
@@ -39,7 +39,7 @@ async def process_embed_reaction(payload):
 
     # If one exists, log but do nothing because the latest embed is still awaiting their response.
     if ticket:
-        logging.info(f"{member} tried to create a new ticket but already had one pending.")
+        logging.info(f"{member} tried to create a new ticket but already had one pending")
         return
 
     # Send the user the pending ticket DM embed.
@@ -114,9 +114,7 @@ async def process_dm_reaction(bot, payload):
 
 async def check_for_duplicate_tickets(member):
     # Search for a pending ticket by iterating the tickets category for a channel name match.
-    ticket = discord.utils.get(discord.utils.get(member.guild.categories,
-                                                 id=config.ticket_category_id).text_channels,
-                               name=f"ticket-{member.id}")
+    ticket = discord.utils.get(discord.utils.get(member.guild.categories, id=config.ticket_category_id).text_channels, name=f"ticket-{member.id}")
 
     # If ticket returned no results, no duplicate tickets were found.
     if not ticket:
@@ -170,8 +168,7 @@ async def send_duplicate_ticket_dm(member, ticket):
         return True
     # If the user has DMs disabled, we'll receive a forbidden exception.
     except discord.errors.Forbidden:
-        logging.info(
-            f"{member} tried to create a new ticket but already had one open: {ticket} and is not accepting DMs.")
+        logging.info(f"{member} tried to create a new ticket but already had one open: {ticket} and is not accepting DMs")
     return False
 
 
