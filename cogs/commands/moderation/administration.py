@@ -17,6 +17,7 @@ from utils.record import record_usage
 # Enabling logs
 log = logging.getLogger(__name__)
 
+
 class AdministrationCog(Cog):
     """ Administration Cog Cog """
 
@@ -52,7 +53,7 @@ class AdministrationCog(Cog):
     async def say(self, ctx, *, args):
         """Echos the input argument."""
         await ctx.send(args)
-    
+
     @commands.is_owner()
     @utilities.command(name="eval")
     async def eval(self, ctx, *, body: str):
@@ -135,15 +136,15 @@ class AdministrationCog(Cog):
             cog = re.search(regex, str(ctx.bot.cogs[name_of_cog]))
             try:
                 self.bot.reload_extension(cog.group())
-                
+
             except commands.ExtensionError as e:
                 await ctx.message.add_reaction("❌")
                 await ctx.send(f'{e.__class__.__name__}: {e}')
-            
+
             else:
                 await ctx.message.add_reaction("✔")
                 await ctx.send(f"Reloaded `{cog.group()}` module!")
-        
+
         elif name_of_cog is None:
             # Reload all the cogs in the folder named cogs.
             # Skips over any cogs that start with '__' or do not end with .py.
@@ -209,8 +210,8 @@ class AdministrationCog(Cog):
     @commands.before_invoke(record_usage)
     @commands.command(name="createticketembed")
     async def create_ticket_embed(self, ctx: Context):
-        embed = embeds.make_embed(title="🎫 Create a new modmail ticket", 
-                                  description="Click the react below to create a new modmail ticket.", 
+        embed = embeds.make_embed(title="🎫 Create a new modmail ticket",
+                                  description="Click the react below to create a new modmail ticket.",
                                   color="default")
         embed.add_field(name="Warning:", value="Serious inquiries only. Abuse may result in warning or ban.")
         spawned = await ctx.send(embed=embed)
@@ -228,7 +229,7 @@ class AdministrationCog(Cog):
         # API call to fetch all the emojis to cache, so that they work in future calls
         emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
         emojis = await emotes_guild.fetch_emojis()
-        
+
         await msg.add_reaction(":redsquare:805032092907601952")
         await msg.add_reaction(":orangesquare:805032107952308235")
         await msg.add_reaction(":yellowsquare:805032120971165709")
@@ -245,7 +246,7 @@ class AdministrationCog(Cog):
     async def create_assignable_roles_embed(self, ctx: Context):
         role_assignment_text = """
         You can react to one of the emotes below to assign yourself an event role.
-        
+
         🎁  <@&832528733763928094> - Receive giveaway pings.
         📢  <@&827611682917711952> - Receive server announcement pings.
         📽  <@&831999443220955136> - Receive group watch event pings.
@@ -259,7 +260,7 @@ class AdministrationCog(Cog):
         # API call to fetch all the emojis to cache, so that they work in future calls
         emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
         await emotes_guild.fetch_emojis()
-        
+
         await msg.add_reaction("🎁")
         await msg.add_reaction("📢")
         await msg.add_reaction("📽")
