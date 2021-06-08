@@ -45,8 +45,6 @@ class TicketCog(Cog):
         channel = ctx.message.channel
         # Get the member object of the ticket creator.
         member = await ctx.guild.fetch_member(ctx.message.author.id)
-        # Fetch the member.
-        member = await ctx.guild.fetch_member(ctx.message.author.id)
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
@@ -55,25 +53,6 @@ class TicketCog(Cog):
 
         # Initialize the PrivateBin message log string.
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
-
-        # Initialize a list of moderator ids as a set for no duplicates.
-        mod_list = set()
-
-        # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
-        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
-
-        # Loop through all messages in the ticket from old to new.
-        async for message in ctx.channel.history(oldest_first=True):
-
-            # Ignore the bot replies.
-            if not message.author.bot:
-
-                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
-                formatted_time = str(message.created_at).split(".")[-2]
-
-                # Append the new messages to the current log as we loop.
-                message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
 
         # Initialize a list of moderator ids as a set for no duplicates.
         mod_list = set()
