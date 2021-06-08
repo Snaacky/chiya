@@ -29,7 +29,6 @@ class TicketCog(Cog):
             # Send the help command for this group
             await ctx.send_help(ctx.command)
 
-    @commands.is_owner()
     @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
     @ticket.command(name="close")
