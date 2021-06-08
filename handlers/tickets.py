@@ -114,7 +114,9 @@ async def process_dm_reaction(bot, payload):
 
 async def check_for_duplicate_tickets(member):
     # Search for a pending ticket by iterating the tickets category for a channel name match.
-    ticket = discord.utils.get(discord.utils.get(member.guild.categories, id=config.ticket_category_id).text_channels, name=f"ticket-{member.id}")
+    ticket = discord.utils.get(discord.utils.get(member.guild.categories,
+                               id=config.ticket_category_id).text_channels,
+                               name=f"ticket-{member.id}")
 
     # If ticket returned no results, no duplicate tickets were found.
     if not ticket:
