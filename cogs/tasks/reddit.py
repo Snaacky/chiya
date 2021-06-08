@@ -106,8 +106,6 @@ class RedditTask(commands.Cog):
         """Checking for new modqueue items."""
         # Wait before starting or else new posts may not post to discord.
         await self.bot.wait_until_ready()
-        await asyncio.sleep(5)
-
         try:
             subreddit = await reddit.subreddit(config.subreddit)
             
