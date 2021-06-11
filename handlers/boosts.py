@@ -32,8 +32,7 @@ async def on_new_boost(before, after):
         # Send a embed in #nitro-logs that someone boosted with a link to a message near the boost.
         nitro_logs = discord.utils.get(after.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")
-        last_message = await after.system_channel.fetch_message(after.system_channel.last_message_id)
-        embed.description(f"[A new boost was added to the server.](https://canary.discord.com/channels/{after.id}/{after.system_channel.id}/{last_message.id})")
+        embed.description(f"[A new boost was added to the server.](https://canary.discord.com/channels/{after.id}/{after.system_channel.id}/{after.system_channel.last_message_id})")
         await nitro_logs.send(embed=embed)
 
         # Log the boost to the console.
