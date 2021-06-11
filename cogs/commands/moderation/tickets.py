@@ -69,7 +69,7 @@ class TicketCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if role_staff or role_trial_mod in message.author.roles:
+                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
         participating_mods = " ".join(mod.mention for mod in mod_list)
