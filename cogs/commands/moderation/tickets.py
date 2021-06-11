@@ -44,7 +44,7 @@ class TicketCog(Cog):
         # Fetch the ticket channel.
         channel = ctx.message.channel
         # Get the member object of the ticket creator.
-        member = await ctx.guild.fetch_member(ctx.message.author.id)
+        member = await ctx.guild.fetch_member(int(ctx.channel.name.replace("ticket-", "")))
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
