@@ -32,7 +32,7 @@ async def on_new_boost(before, after):
         # Send a embed in #nitro-logs that someone boosted with a link to a message near the boost.
         nitro_logs = discord.utils.get(after.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")
-        embed.description(f"[A new boost was added to the server.](https://canary.discord.com/channels/{after.id}/{after.system_channel.id}/{after.system_channel.last_message_id})")
+        embed.description = f"[A new boost was added to the server.](https://canary.discord.com/channels/{after.id}/{after.system_channel.id}/{after.system_channel.last_message_id})"
         await nitro_logs.send(embed=embed)
 
         # Log the boost to the console.
@@ -79,7 +79,7 @@ async def process_new_booster(before, after):
         await channel.send(embed=embed)
 
         # Log the boost removal to the console.
-        log.info(f'{after.mention} boosted {after.guild.name}.')
+        log.info(f'{after} boosted {after.guild.name}.')
 
 async def process_lost_booster(before, after):
     """ 
@@ -101,5 +101,5 @@ async def process_lost_booster(before, after):
         await channel.send(embed=embed)
 
         # Log the booster removal to the console.
-        log.info(f'{after.mention} stopped boosting {after.guild.name}.')
+        log.info(f'{after} stopped boosting {after.guild.name}.')
 

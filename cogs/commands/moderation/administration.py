@@ -45,7 +45,6 @@ class AdministrationCog(Cog):
     @utilities.command(name="ping")
     async def ping(self, ctx):
         """Returns the Discord WebSocket latency."""
-        print("Ping subcommand invoked.")
         await ctx.send(f"{round(self.bot.latency * 1000)}ms.")
 
     @commands.is_owner()
