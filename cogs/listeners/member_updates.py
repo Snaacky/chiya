@@ -95,6 +95,8 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_update
         """ 
+        print(before)
+        print(after)
         # Process any potential new or lost boosters for #nitro-log.
         await boosts.process_new_booster(before, after)
         await boosts.process_lost_booster(before, after)
