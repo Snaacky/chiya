@@ -44,7 +44,7 @@ class TicketCog(Cog):
         # Fetch the ticket channel.
         channel = ctx.message.channel
         # Get the member object of the ticket creator.
-        member = await ctx.guild.fetch_member(ctx.message.author.id)
+        member = await ctx.guild.fetch_member(int(ctx.channel.name.replace("ticket-", "")))
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
@@ -69,7 +69,7 @@ class TicketCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if role_staff or role_trial_mod in message.author.roles:
+                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
         participating_mods = " ".join(mod.mention for mod in mod_list)
