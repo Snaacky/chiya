@@ -115,8 +115,8 @@ class MuteCog(Cog):
         channel = await ctx.message.guild.create_text_channel(f"mute-{member.id}", category=category)
 
         # Give both the staff and the user perms to access the channel. 
-        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_reddit_mod), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_discord_mod), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_trial_mod), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_staff), read_messages=True)
         await channel.set_permissions(discord.utils.get(ctx.message.guild.roles, id=config.role_senior_mod), read_messages=True)
         await channel.set_permissions(member, read_messages=True)
 
