@@ -5,11 +5,15 @@ import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
+
 
 import config
 from utils import database
 from utils import embeds
 from utils.record import record_usage
+from utils.moderation import can_action_member
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -20,35 +24,32 @@ class KickCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_action_member(self, ctx: Context, member: discord.Member) -> bool:
-        """ Stop mods from doing stupid things. """
-        # Stop mods from actioning on the bot.
-        if member.id == self.bot.user.id:
-            await embeds.error_message(ctx=ctx, description="You cannot action that member due to hierarchy.")
-            return False
-
-        # Stop mods from actioning one another, people higher ranked than them or themselves.
-        if member.top_role >= ctx.author.top_role:
-            await embeds.error_message(ctx=ctx, description="You cannot action that member due to hierarchy.")
-            return False
-
-        # Checking if Bot is able to even perform the action
-        if member.top_role >= member.guild.me.top_role:
-            await embeds.error_message(ctx=ctx, description="I cannot action that member.")
-            return False
-
-        # Otherwise, the action is probably valid, return true.
-        return True
-
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(kick_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="kick")
-    async def kick_member(self, ctx: Context, member: discord.Member, *, reason: str = None):
+    @cog_ext.cog_slash(
+        name="kick", 
+        description="Kicks the member from the server", 
+        options=[
+            create_option(
+                name="member",
+                description="The member that will be unmuted",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="The reason why the member is being unmuted",
+                option_type=3,
+                required=False
+            ),
+        ]
+    )
+    async def kick_member(self, ctx: Context, member: discord.Member, reason: str = None):
         """ Kicks member from guild. """
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await self.can_action_member(bot=self.bot, ctx=ctx, member=member):
+        if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
             return
         
         # Handle cases where the reason is not provided.
@@ -78,7 +79,7 @@ class KickCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Send the kick DM to the user.
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
         await ctx.guild.kick(user=member, reason=reason)
