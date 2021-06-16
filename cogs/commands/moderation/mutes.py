@@ -185,7 +185,7 @@ class MuteCog(Cog):
     async def mute(self, ctx: SlashContext, member: discord.User, reason: str = None):
         """ Mutes member in guild. """
 
-        # If we received an int, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
             return
@@ -255,12 +255,10 @@ class MuteCog(Cog):
     async def unmute(self, ctx: SlashContext, member: discord.User, reason: str = None):
         """ Unmutes member in guild. """
 
-        # If we received an int, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
             return
-
-        member = await commands.MemberConverter().convert(ctx, member)
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
@@ -330,12 +328,10 @@ class MuteCog(Cog):
     async def tempmute(self, ctx: SlashContext, member: discord.User, duration: str, reason: str = None):
         """ Temporarily Mutes member in guild. """
 
-        # If we received an int, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
             return
-
-        member = await commands.MemberConverter().convert(ctx, member)
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
