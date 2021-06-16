@@ -130,7 +130,7 @@ class BanCog(Cog):
     async def ban(self, ctx: SlashContext, user: discord.User, reason: str = None):
         """ Bans user from guild. """
 
-        # If we received an int instead of a discord.member.Member, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
         
@@ -260,7 +260,7 @@ class BanCog(Cog):
     async def tempban(self, ctx: SlashContext, user: discord.User, duration: str, reason: str = None):
         """ Temporarily bans member from guild. """
 
-        # If we received an int instead of a discord.member.Member, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
         

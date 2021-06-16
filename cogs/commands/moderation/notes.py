@@ -56,7 +56,7 @@ class NotesCog(Cog):
     async def add_note(self, ctx: SlashContext, user: discord.User, note: str):
         """ Adds a moderator note to a user. """
 
-        # If we received an int instead of a discord.member.Member, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
@@ -103,7 +103,7 @@ class NotesCog(Cog):
     async def search_mod_actions(self, ctx: Context, user: discord.User, action_type: str = None):
         """ Searches for mod actions on a user """
 
-        # If we received an int instead of a discord.member.Member, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
@@ -253,7 +253,6 @@ class NotesCog(Cog):
 
             if embed is not None:
                 await msg.edit(embed=embed)
-
 
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
