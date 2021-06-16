@@ -33,7 +33,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_ban
         """
-        log.info(f'{user.name}-{user.id} was banned from {guild.name}')
+        log.info(f'{user} was banned from {guild.name}')
 
     @commands.Cog.listener()
     async def on_member_unban(self, guild: Guild, user: User) -> None:
@@ -49,7 +49,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_unban
         """
-        log.info(f'{user.name}-{user.id} was unbanned from {guild.name}')
+        log.info(f'{user} was unbanned from {guild.name}')
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member) -> None:
