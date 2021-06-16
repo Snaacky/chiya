@@ -87,7 +87,7 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command Help",
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             ctx=self.context
             )
 
@@ -182,7 +182,7 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command: Help",
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             ctx=self.context
             )
         await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
@@ -206,7 +206,7 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command Help",
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             ctx=self.context
             )
 
