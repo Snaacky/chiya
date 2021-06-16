@@ -53,12 +53,10 @@ class WarnsCog(Cog):
     async def warn(self, ctx: SlashContext, member: discord.User, reason: str):
         """ Sends member a warning DM and logs to database. """
 
-        # If we received an int, the user is not in the server.
+        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
             return
-
-        member = await commands.MemberConverter().convert(ctx, member)
 
         embed = embeds.make_embed(
             ctx=ctx, 
