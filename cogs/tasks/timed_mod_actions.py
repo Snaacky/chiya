@@ -58,7 +58,7 @@ class TimedModActionsTask(Cog):
                     user = await self.bot.fetch_user(action["user_id"])
 
                     # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
-                    embed = embeds.make_embed(title=f"Unmuting member: {user}", image_url=config.user_unmute, color="soft_orange")
+                    embed = embeds.make_embed(title=f"Unmuting member: {user}", thumbnail_url=config.user_unmute, color="soft_orange")
                     embed.description=f"Unmuted {user.mention} because their mute time elapsed but they have since left the server."
 
                     # Archives the mute channel, sends the embed in the moderation channel, and ends the function.
@@ -67,7 +67,7 @@ class TimedModActionsTask(Cog):
                     return
 
                 # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
-                embed = embeds.make_embed(title=f"Unmuting member: {member}", image_url=config.user_unmute, color="soft_green")
+                embed = embeds.make_embed(title=f"Unmuting member: {member}", thumbnail_url=config.user_unmute, color="soft_green")
                 embed.description=f"{member.mention} was unmuted as their mute time elapsed."
 
                 # Attempt to DM the user to let them know they were unmuted.
@@ -83,14 +83,14 @@ class TimedModActionsTask(Cog):
                 user = await self.bot.fetch_user(action["user_id"])
 
                 # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
-                embed = embeds.make_embed(ctx=None, title=f"Unbanning user: {user}", image_url=config.user_unban, color="soft_green")
+                embed = embeds.make_embed(ctx=None, title=f"Unbanning user: {user}", thumbnail_url=config.user_unban, color="soft_green")
                 embed.description=f"{user.mention} was unbanned as their temporary ban elapsed."
 
                 # Get the MuteCog so that we can access functions from it.
                 bans = self.bot.get_cog("BanCog")
 
                 # Unmutes the user and returns the embed letting the moderator know they were successfully muted.
-                await bans.unban_member(user=user, reason="Temporary ban elapsed.", guild=guild)
+                await bans.unban_user(user=user, reason="Temporary ban elapsed.", guild=guild)
                 await channel.send(embed=embed)
 
                 with dataset.connect(database.get_db()) as db:

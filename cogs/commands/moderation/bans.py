@@ -6,7 +6,10 @@ import time
 import dataset
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 import config
 from utils import database
@@ -24,7 +27,7 @@ class BanCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def ban_member(self, ctx: Context, user: discord.User, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def ban_member(self, ctx: SlashContext, user: discord.User, reason: str, temporary: bool = False, end_time: float = None) -> None:
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
 
@@ -46,7 +49,7 @@ class BanCog(Cog):
                     is_done=False
                 ))
 
-    async def unban_member(self, user: discord.User, reason: str, ctx: Context = None, guild: discord.Guild = None) -> None:
+    async def unban_user(self, user: discord.User, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
         guild = guild or ctx.guild
         moderator = ctx.author if ctx else self.bot.user
 
@@ -78,7 +81,7 @@ class BanCog(Cog):
         except discord.HTTPException:
             return False
 
-    async def send_banned_dm_embed(self, ctx: Context, user: discord.User, reason: str = None, duration: str = None) -> bool:
+    async def send_banned_dm_embed(self, ctx: SlashContext, user: discord.User, reason: str = None, duration: str = None) -> bool:
         if not duration:
             duration = "Indefinite"
 
@@ -88,7 +91,7 @@ class BanCog(Cog):
             embed.title = f"Uh-oh, you've been banned!"
             embed.description = "You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy)."
             embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
+            embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
@@ -97,13 +100,40 @@ class BanCog(Cog):
             return False
         return True
 
-    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="ban")
-    async def ban(self, ctx: Context, user: discord.User, *, reason: str = None):
+    @cog_ext.cog_slash(
+        name="ban", 
+        description="Bans the member indefinitely",
+        guild_ids=[622243127435984927],
+        options=[
+            create_option(
+                name="member",
+                description="The member that will be banned",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="The reason why the member is being banned",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            622243127435984927: [
+                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def ban(self, ctx: SlashContext, user: discord.User, reason: str = None):
         """ Bans user from guild. """
 
+        # If we received an int instead of a discord.member.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+        
         # Checks if the user is already banned and let's the mod know if they already are.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
         if banned:
@@ -127,7 +157,7 @@ class BanCog(Cog):
             return
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user.name}", image_url=config.user_ban, color="soft_red")
+        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user.name}", thumbnail_url=config.user_ban, color="soft_red")
         embed.description = f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
@@ -138,14 +168,38 @@ class BanCog(Cog):
 
         # Bans the user and returns the embed letting the moderator know they were successfully banned.
         await self.ban_member(ctx=ctx, user=user, reason=reason)
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_staff)
-    @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="unban")
-    async def unban(self, ctx: Context, user: discord.User, *, reason: str = None):
+    @cog_ext.cog_slash(
+        name="unban", 
+        description="Unbans the user from the server",
+        guild_ids=[622243127435984927],
+        options=[
+            create_option(
+                name="user",
+                description="The user that will be unbanned",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="The reason why the user is being unbanned",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            622243127435984927: [
+                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def unban(self, ctx: SlashContext, user: discord.User, reason: str = None):
         """ Unbans user from guild. """
+        user = await self.bot.fetch_user(user)
 
         # Checks if the user is already banned and let's the mod know if they are not.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
@@ -163,20 +217,53 @@ class BanCog(Cog):
             return
 
         # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", image_url=config.user_unban, color="soft_green")
+        embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", thumbnail_url=config.user_unban, color="soft_green")
         embed.description = f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
 
         # Unbans the user and returns the embed letting the moderator know they were successfully banned.
-        await self.unban_member(ctx=ctx, user=user, reason=reason)
-        await ctx.reply(embed=embed)
+        await self.unban_user(ctx=ctx, user=user, reason=reason)
+        await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="tempban")
-    async def tempban(self, ctx: Context, user: discord.User, *, reason_and_duration: str):
+    @cog_ext.cog_slash(
+        name="tempban", 
+        description="Bans the member for the specified length of time",
+        guild_ids=[622243127435984927],
+        options=[
+            create_option(
+                name="member",
+                description="The member that will be banned",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="duration",
+                description="The length of time the user will be muted for",
+                option_type=3,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="The reason why the member is being banned",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            622243127435984927: [
+                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def tempban(self, ctx: SlashContext, user: discord.User, duration: str, reason: str = None):
         """ Temporarily bans member from guild. """
 
+        # If we received an int instead of a discord.member.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+        
         # Some basic checks to make sure mods can't cause problems with their ban.
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
@@ -192,17 +279,30 @@ class BanCog(Cog):
             return
 
         # Recycled RegEx from https://github.com/r-smashbros/setsudo/ 
-        regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)(?:\s+([\w\W]+))"
+        regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
 
         # Attempt to parse the message argument with the Setsudo RegEx
         try:
-            match_list = re.findall(regex, reason_and_duration)[0]
+            match_list = re.findall(regex, duration)[0]
         except:
-            await embeds.error_message(ctx=ctx, description=f"Syntax: `{config.prefix}tempban <#>d<#>h<#>m<#>s <reason>`")
+            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+            return
+
+        # Check if all the matches are blank and return preemptively if so.
+        if not any(x.isalnum() for x in match_list):
+            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+            return
+
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        if not reason:
+            reason = "No reason provided."
+
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        if reason and len(reason) > 512:
+            await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
             return
 
         # Assign the arguments from the parsed message into variables
-        reason = match_list[5]
         duration = dict(
             days=match_list[1],
             hours=match_list[2],
@@ -231,7 +331,7 @@ class BanCog(Cog):
         )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user}", image_url=config.user_ban, color="soft_red")
+        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user}", thumbnail_url=config.user_ban, color="soft_red")
         embed.description = f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}\n **Duration:** {duration_string}"
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
@@ -242,7 +342,7 @@ class BanCog(Cog):
 
         # Bans the user and returns the embed letting the moderator know they were successfully banned.
         await self.ban_member(ctx=ctx, user=user, reason=reason, temporary=True, end_time=ban_end_time.timestamp())
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
 
 def setup(bot: Bot) -> None:
