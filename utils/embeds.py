@@ -3,7 +3,7 @@ import datetime
 import discord
 from discord.ext.commands import Context
 
-def make_embed(ctx: Context = None, title: str = "", description: str = "", color = "default", image_url: str = None, author=True) -> discord.Embed:
+def make_embed(ctx: Context = None, title: str = "", description: str = "", color = "default", thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
     """General embed template
 
     Args:
@@ -11,7 +11,7 @@ def make_embed(ctx: Context = None, title: str = "", description: str = "", colo
         description (str, optional): Secondary text of your embed. Defaults to None.
         ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
         color (str, optional): Use a predefined name or use a hex color value. Defaults to 'dark_theme'.
-        image_url (str, optional): URL for the side image of embed. Defaults to None.
+        thumbnail_url (str, optional): URL for the side image of embed. Defaults to None.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
 
     Returns:
@@ -43,8 +43,11 @@ def make_embed(ctx: Context = None, title: str = "", description: str = "", colo
         embed.set_author(icon_url=ctx.author.avatar_url, name=str(ctx.author))
 
     # Setting the embed side image if a url was given.
+    if thumbnail_url:
+        embed.set_thumbnail(url=thumbnail_url)
+    
     if image_url:
-        embed.set_thumbnail(url=image_url)
+        embed.set_image(url=image_url)
 
     # Adding Timestamp for ease of tracking when embeds are posted.
     if ctx:
