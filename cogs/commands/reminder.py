@@ -158,8 +158,12 @@ class Reminder(Cog):
             alert_time = alert_time[:alert_time.index('.')]
             reminders.append(f"**ID: {reminder['id']}** | Alert on {alert_time}\n{reminder['message']}")
 
-        embed = embeds.make_embed(ctx=ctx, title="Reminders",
-            image_url=config.remind_blurple, color="soft_blue")
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title="Reminders",
+            thumbnail_url=config.remind_blurple, 
+            color="soft_blue"
+        )
 
         # Paginate results
         await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
@@ -185,9 +189,14 @@ class Reminder(Cog):
             # All the checks should be done.
             data = dict(id=reminder_id, sent=True)
             table.update(data, ['id'])
-        embed = embeds.make_embed(ctx=ctx, title="Reminder deleted", 
+
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title="Reminder deleted", 
             description=f"Reminder ID: {reminder_id} has been deleted.",
-            image_url=config.remind_red, color="soft_red")
+            thumbnail_url=config.remind_red, 
+            color="soft_red"
+        )
         await ctx.send(embed=embed)
     
     @remind.command(name='clear')
