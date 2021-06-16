@@ -1,13 +1,15 @@
 import logging
-from typing import Union
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import Bot, Cog, Context
+from discord.ext.commands import Bot, Cog
 
 import config
 from utils import embeds
 from utils.record import record_usage
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 log = logging.getLogger(__name__)
 
@@ -19,37 +21,76 @@ class General(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(name='profile_picture', aliases=["pfp", "avi", "pp", "avatar", "profilepic", "av"])
-    async def pfp(self, ctx: Context, user: discord.User = None):
+    @cog_ext.cog_slash(
+        name="pfp", 
+        description="Gets the members profile picture",
+        guild_ids=[622243127435984927]
+    )
+    async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
         user = user or ctx.author
-        embed = embeds.make_embed(ctx=ctx)
+
+        if ctx.author:
+            embed = embeds.make_embed(ctx=ctx)
+
+        if user:
+            embed = embeds.make_embed()
+            embed.set_author(icon_url=user.avatar_url, name=str(user))
+
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_staff)
-    @commands.command(aliases=["population", "pop"])
-    async def count(self, ctx):
+    @cog_ext.cog_slash(
+        name="population", 
+        description="Gets the current server population count",
+        guild_ids=[622243127435984927],
+        default_permission=False,
+        permissions={
+            622243127435984927: [
+                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def count(self, ctx: SlashContext):
         """Returns the current guild member count."""
         await ctx.send(ctx.guild.member_count)
 
-    @commands.has_role(config.role_staff)
+    
     @commands.before_invoke(record_usage)
-    @commands.command(name="vote")
+    @cog_ext.cog_slash(
+        name="vote", 
+        description="Adds the vote reactions to a message",
+        guild_ids=[622243127435984927],
+        options=[
+            create_option(
+                name="message",
+                description="The ID for the target message",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            622243127435984927: [
+                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
     async def vote(self, ctx, message: discord.Message = None):
         """ Add vote reactions to a message. """
-        async def get_last_message(ctx):
-            messages = await ctx.channel.history(limit=2).flatten()
-            return messages[1]
+        if message:
+            message = await ctx.channel.fetch_message(message)
 
-        message = message or await get_last_message(ctx)
-        try:
-            await ctx.message.delete()
-            await message.add_reaction(config.emote_yes)
-            await message.add_reaction(config.emote_no)
-        except discord.errors.HTTPException as error:
-            logging.error(error)
-            pass
+        if not message:
+            messages = await ctx.channel.history(limit=1).flatten()
+            message = messages[0]
+
+        await message.add_reaction(config.emote_yes)
+        await message.add_reaction(config.emote_no)
+
+        delete = await ctx.send("success")
+        delete.delete()
+
 
 def setup(bot: Bot) -> None:
     """ Load the General cog. """
