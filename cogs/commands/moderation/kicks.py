@@ -4,10 +4,10 @@ import time
 import dataset
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
-
+from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 import config
 from utils import database
@@ -24,12 +24,11 @@ class KickCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_role(config.role_staff)
-    @commands.bot_has_permissions(kick_members=True, send_messages=True, embed_links=True)
+    @commands.bot_has_permissions(kick_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="kick", 
-        description="Kicks the member from the server", 
+        description="Kicks the member from the server",
         options=[
             create_option(
                 name="member",
@@ -43,10 +42,21 @@ class KickCog(Cog):
                 option_type=3,
                 required=False
             ),
-        ]
+        ],
+        default_permission=False,
+        permissions={
+            622243127435984927: [
+                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
     )
-    async def kick_member(self, ctx: Context, member: discord.Member, reason: str = None):
+    async def kick_member(self, ctx: SlashContext, member: discord.User, reason: str = None):
         """ Kicks member from guild. """
+        
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(member, int):
+            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
+            return
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
@@ -55,26 +65,34 @@ class KickCog(Cog):
         # Handle cases where the reason is not provided.
         if not reason:
             reason = "No reason provided."
-            
+        
+         # Discord caps embed fields at a riduclously low character limit, avoids problems with future embeds.
         if len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
-        embed = embeds.make_embed(ctx=ctx, title=f"Kicking member: {member.name}", 
-            image_url=config.user_ban, color="soft_red")
-        embed.description=f"{member.mention} was kicked by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title=f"Kicking member: {member.name}",
+            description=f"{member.mention} was kicked by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_ban, 
+            color="soft_red"
+        )
 
         # Send user message telling them that they were kicked and why.
         try: # Incase user has DM's Blocked.
             channel = await member.create_dm()
-            kick_embed = embeds.make_embed(author=False, color=0xe49bb3)
-            kick_embed.title = f"Uh-oh, you've been kicked!"
-            kick_embed.description = "I-I guess you can join back if you want? B-baka. https://discord.gg/piracy"
-            kick_embed.add_field(name="Server:", value=ctx.guild, inline=True)
-            kick_embed.add_field(name="Moderator:", value=ctx.message.author.mention, inline=True)
-            kick_embed.add_field(name="Reason:", value=reason, inline=False)
-            kick_embed.set_image(url="https://i.imgur.com/UkrBRur.gif")
-            await channel.send(embed=kick_embed)
+            dm_embed = embeds.make_embed(
+                title = f"Uh-oh, you've been kicked!",
+                description = "I-I guess you can join back if you want? B-baka. https://discord.gg/piracy",
+                image_url="https://i.imgur.com/UkrBRur.gif",
+                author=False, 
+                color=0xe49bb3
+            )
+            dm_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
+            dm_embed.add_field(name="Reason:", value=reason, inline=False)
+            await channel.send(embed=dm_embed)
         except:
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
