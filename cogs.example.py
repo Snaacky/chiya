@@ -79,7 +79,7 @@ class SimpleCog(commands.Cog):
         Check above for a list of events.
         """
 
-        logging.info(f'{user.name}-{user.id} was banned from {guild.name}-{guild.id}')
+        logging.info(f'{user} was banned from {guild.name}')
 
     # Here is an example of nested commands
     @commands.before_invoke(record_usage)
