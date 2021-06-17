@@ -3,6 +3,7 @@ import logging
 
 import discord
 from discord.ext import commands
+from discord_slash import SlashCommand
 
 import __init__
 import config
@@ -11,8 +12,17 @@ import utils.database
 bot = commands.Bot(
     command_prefix=config.prefix,
     intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
-    case_insensitive=True)
+    case_insensitive=True
+)
+
+slash = SlashCommand(
+    bot, 
+    sync_commands=True, # False to avoid rate limiting, set to True to update commands and parameters.
+    sync_on_cog_reload=False
+)
+
 log = logging.getLogger(__name__)
+
 
 @bot.event
 async def on_ready():

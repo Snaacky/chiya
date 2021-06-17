@@ -5,6 +5,9 @@ import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 import config
 from utils import database
@@ -21,19 +24,25 @@ class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_role(config.role_staff)
     @commands.before_invoke(record_usage)
-    @commands.group()
-    async def ticket(self, ctx):
-        if ctx.invoked_subcommand is None:
-            # Send the help command for this group
-            await ctx.send_help(ctx.command)
-
-    @commands.has_role(config.role_staff)
-    @commands.before_invoke(record_usage)
-    @ticket.command(name="close")
-    async def close(self, ctx):
+    @cog_ext.cog_subcommand(
+        base="ticket",
+        name="close",
+        description="Closes an active ticket",
+        guild_ids=[config.guild_id],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def close(self, ctx: SlashContext):
         """ Closes the modmail ticket."""
+        # Warns if the ticket close command is called outside of the current active ticket channel.
+        if not ctx.channel.category_id == config.ticket_category_id or "ticket" not in ctx.channel.name:
+            await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
+            return
 
         # Get the ticket topic in database for embeds.
         with dataset.connect(database.get_db()) as db:
@@ -41,21 +50,21 @@ class TicketCog(Cog):
             ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
             ticket_topic = ticket["ticket_topic"]
 
-        # Fetch the ticket channel.
-        channel = ctx.message.channel
+        # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
+        await ctx.defer()
+
         # Get the member object of the ticket creator.
         member = await ctx.guild.fetch_member(int(ctx.channel.name.replace("ticket-", "")))
-
-        # Warns if the ticket close command is called outside of the current active ticket channel.
-        if not channel.category_id == config.ticket_category_id or "ticket" not in channel.name:
-            await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
-            return
 
         # Initialize the PrivateBin message log string.
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
 
-        # Initialize a list of moderator ids as a set for no duplicates.
+        # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
+
+        # Add the closing mod just in case no other mod interacts with the ticket to avoid an empty embed field.
+        mod_list.add(ctx.author)
+
         # Fetch the staff and trial mod role.
         role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
         role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
@@ -72,23 +81,28 @@ class TicketCog(Cog):
                 if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
-        participating_mods = " ".join(mod.mention for mod in mod_list)
-        # Dump message log to private bin. This returns a dictionary, but only the url is needed for the embed.
+        # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
         url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
 
         # Create the embed in #ticket-log.
-        embed_log = embeds.make_embed(ctx=ctx, author=False, image_url=config.pencil, color=0x00ffdf)
-        embed_log.title = f"{ctx.channel.name} archived"
-        embed_log.add_field(name="Ticket Creator:", value=member.mention, inline=False)
-        embed_log.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
-        embed_log.add_field(name="Participating Moderators:", value=participating_mods, inline=False)
-        embed_log.add_field(name="Ticket Log: ", value=url, inline=False)
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            author=False,
+            title = f"{ctx.channel.name} archived",
+            thumbnail_url=config.pencil, 
+            color=0x00ffdf
+        )
+
+        embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
+        embed.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
+        embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
+        embed.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)
-        await ticket_log.send(embed=embed_log)
+        await ticket_log.send(embed=embed)
 
-        # Update the ticket status from "in-progress" to "completed" and the PrivateBin url field in the database.
+        # Update the ticket status from "in-progress" to "completed" and the PrivateBin URL field in the database.
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])

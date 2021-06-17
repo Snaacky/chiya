@@ -7,7 +7,10 @@ import dataset
 import discord
 from discord.embeds import Embed
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot, Context, Greedy
+from discord.ext.commands import Cog, Bot, Context
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 import config
 from utils import database
@@ -23,17 +26,48 @@ class NotesCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="addnote", aliases=["add_note", "note"])
-    async def add_note(self, ctx: Context, user: discord.User, *, note: str):
+    @cog_ext.cog_slash(
+        name="addnote", 
+        description="Add a note to a user",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="user",
+                description="The user to add the note to",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="note",
+                description="The note to leave on the user",
+                option_type=3,
+                required=True
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def add_note(self, ctx: SlashContext, user: discord.User, note: str):
         """ Adds a moderator note to a user. """
 
-        embed = embeds.make_embed(ctx=ctx, title=f"Noting user: {user.name}", 
-            image_url=config.pencil, color="soft_blue")
-        embed.description=f"{user.mention} was noted by {ctx.author.mention}: {note}"
-        await ctx.reply(embed=embed)
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title=f"Noting user: {user.name}", 
+            description=f"{user.mention} was noted by {ctx.author.mention}: {note}",
+            thumbnail_url=config.pencil, 
+            color="soft_blue"
+        )
+        await ctx.send(embed=embed)
 
         # Add the note to the mod_logs database.
         with dataset.connect(database.get_db()) as db:
@@ -41,10 +75,38 @@ class NotesCog(Cog):
                 user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
             ))
     
-    @commands.has_role(config.role_staff)
-    @commands.command(name="search")
-    async def search_mod_actions(self, ctx, user: discord.User, action_type: str = None):
+    @cog_ext.cog_slash(
+        name="search", 
+        description="View users notes and mod actions history",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="user",
+                description="The user to lookup",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="action",
+                description="Filter specific actions (warns, kicks, mutes, bans, etc.)",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def search_mod_actions(self, ctx: Context, user: discord.User, action_type: str = None):
         """ Searches for mod actions on a user """
+
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+
         result = None
         # querying DB for the list of actions matching the filter criteria (if mentioned)
         with dataset.connect(database.get_db()) as db:
@@ -95,7 +157,7 @@ class NotesCog(Cog):
 
         page_no = 0
 
-        def get_page(action_list, user, page_no: int, ctx: Context) -> Embed:
+        def get_page(action_list, user, page_no: int) -> Embed:
             embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no+1} of {len(action_list)}")
             embed.set_author(name=user, icon_url=user.avatar_url)
             action_emoji = dict(
@@ -124,7 +186,7 @@ class NotesCog(Cog):
             return embed
         
         # sending the first page. We'll edit this during pagination.
-        msg = await ctx.send(embed=get_page(action_list=actions, user=user, page_no=page_no, ctx=ctx))
+        msg = await ctx.send(embed=get_page(action_list=actions, user=user, page_no=page_no))
 
         FIRST_EMOJI = "\u23EE"   # [:track_previous:]
         LEFT_EMOJI = "\u2B05"    # [:arrow_left:]
@@ -187,16 +249,39 @@ class NotesCog(Cog):
                 else:
                     page_no += 1
 
-            embed = get_page(action_list=actions, user=user, page_no=page_no, ctx=ctx)
+            embed = get_page(action_list=actions, user=user, page_no=page_no)
 
             if embed is not None:
                 await msg.edit(embed=embed)
 
-    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
-    @commands.command(name="edit", aliases=["editnote", "editlog"])
-    async def edit_log(self, ctx: Context, id: int, *, reason: str):
+    @cog_ext.cog_slash(
+        name="editlog", 
+        description="Edits an existing log or note for a user",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="id",
+                description="The ID of the log or note to be edited",
+                option_type=4,
+                required=True
+            ),
+            create_option(
+                name="note",
+                description="The updated message for the log or note",
+                option_type=3,
+                required=True
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def edit_log(self, ctx: SlashContext, id: int, reason: str):
         with dataset.connect(database.get_db()) as db:
             table = db["mod_logs"]
 
@@ -206,12 +291,16 @@ class NotesCog(Cog):
             return
 
         user = await self.bot.fetch_user(mod_log["user_id"])
-        embed = embeds.make_embed(ctx=ctx, title=f"Edited log: {user.name}", 
-            image_url=config.pencil, color="soft_green")
-        embed.description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}"
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title=f"Edited log: {user.name}", 
+            description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
+            thumbnail_url=config.pencil, 
+            color="soft_green"
+        )
         embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
         embed.add_field(name="After:", value=reason, inline=False)
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed)
 
         mod_log["reason"] = reason
         table.update(mod_log, ["id"])
