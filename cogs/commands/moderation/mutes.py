@@ -229,7 +229,8 @@ class MuteCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="unmute", 
-        description="Unmutes the member", 
+        description="Unmutes the member",
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="member",
@@ -297,7 +298,8 @@ class MuteCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="tempmute", 
-        description="Mutes the member for the specified length of time", 
+        description="Mutes the member for the specified length of time",
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="member",

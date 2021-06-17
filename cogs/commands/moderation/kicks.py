@@ -29,6 +29,7 @@ class KickCog(Cog):
     @cog_ext.cog_slash(
         name="kick", 
         description="Kicks the member from the server",
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="member",

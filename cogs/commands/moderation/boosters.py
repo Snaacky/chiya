@@ -17,6 +17,7 @@ class BoostersCog(Cog):
     @cog_ext.cog_slash(
         name="boosters", 
         description="List all the current server boosters",
+        guild_ids=[config.guild_id],
         default_permission=False,
         permissions={
             config.guild_id: [
