@@ -30,6 +30,10 @@ class General(Cog):
         """ Returns the profile picture of the invoker or the mentioned user. """
         user = user or ctx.author
 
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+
         if ctx.author:
             embed = embeds.make_embed(ctx=ctx)
 
@@ -87,9 +91,10 @@ class General(Cog):
 
         await message.add_reaction(config.emote_yes)
         await message.add_reaction(config.emote_no)
-
-        delete = await ctx.send("success")
-        delete.delete()
+        
+        # We need to send *something* so the bot doesn't return "This interaction failed"
+        delete = await ctx.send("** **")
+        await delete.delete()
 
 
 def setup(bot: Bot) -> None:
