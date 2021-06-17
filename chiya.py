@@ -17,7 +17,7 @@ bot = commands.Bot(
 
 slash = SlashCommand(
     bot, 
-    sync_commands=False, # False to avoid rate limiting, set to True to update commands and parameters.
+    sync_commands=True, # False to avoid rate limiting, set to True to update commands and parameters.
     sync_on_cog_reload=False
 )
 
