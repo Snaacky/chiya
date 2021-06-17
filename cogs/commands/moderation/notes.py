@@ -257,19 +257,19 @@ class NotesCog(Cog):
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="editnote", 
-        description="Edits an existing note for a user",
+        name="editlog", 
+        description="Edits an existing log or note for a user",
         guild_ids=[622243127435984927],
         options=[
             create_option(
                 name="id",
-                description="The ID of the note to be edited",
+                description="The ID of the log or note to be edited",
                 option_type=4,
                 required=True
             ),
             create_option(
                 name="note",
-                description="The updated note to leave on the user",
+                description="The updated message for the log or note",
                 option_type=3,
                 required=True
             ),
