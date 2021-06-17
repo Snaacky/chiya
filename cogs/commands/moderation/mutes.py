@@ -89,7 +89,7 @@ class MuteCog(Cog):
 
     async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> bool:
         guild = guild or ctx.guild
-        moderator = ctx.author.mention if ctx else self.bot.user.id
+        moderator = ctx.author if ctx else self.bot.user
 
         # Send member message telling them that they were banned and why.
         try: # Incase user has DM's Blocked.
@@ -98,7 +98,7 @@ class MuteCog(Cog):
             embed.title = f"Yay, you've been unmuted!"
             embed.description = "Review our server rules to avoid being actioned again in the future."
             embed.add_field(name="Server:", value=guild, inline=True)
-            embed.add_field(name="Moderator:", value=moderator, inline=True)
+            embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
             await channel.send(embed=embed)
@@ -135,6 +135,7 @@ class MuteCog(Cog):
         return channel
 
     async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None, guild: int = None):
+        
         guild = guild or ctx.guild
         moderator = ctx.author_id if ctx else self.bot.user.id
 
