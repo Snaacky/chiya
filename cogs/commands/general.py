@@ -24,7 +24,7 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="pfp", 
         description="Gets the members profile picture",
-        guild_ids=[622243127435984927]
+        guild_ids=[config.guild_id]
     )
     async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
@@ -47,11 +47,11 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="population", 
         description="Gets the current server population count",
-        guild_ids=[622243127435984927],
+        guild_ids=[config.guild_id],
         default_permission=False,
         permissions={
-            622243127435984927: [
-                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -64,7 +64,7 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="vote", 
         description="Adds the vote reactions to a message",
-        guild_ids=[622243127435984927],
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="message",
@@ -75,8 +75,8 @@ class General(Cog):
         ],
         default_permission=False,
         permissions={
-            622243127435984927: [
-                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

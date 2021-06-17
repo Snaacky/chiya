@@ -19,8 +19,8 @@ class BoostersCog(Cog):
         description="List all the current server boosters",
         default_permission=False,
         permissions={
-            622243127435984927: [
-                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

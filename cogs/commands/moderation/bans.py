@@ -105,7 +105,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="ban", 
         description="Bans the member indefinitely",
-        guild_ids=[622243127435984927],
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="member",
@@ -122,8 +122,8 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            622243127435984927: [
-                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -175,7 +175,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="unban", 
         description="Unbans the user from the server",
-        guild_ids=[622243127435984927],
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="user",
@@ -192,8 +192,8 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            622243127435984927: [
-                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -229,7 +229,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="tempban", 
         description="Bans the member for the specified length of time",
-        guild_ids=[622243127435984927],
+        guild_ids=[config.guild_id],
         options=[
             create_option(
                 name="member",
@@ -252,8 +252,8 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            622243127435984927: [
-                create_permission(763031634379276308, SlashCommandPermissionType.ROLE, True)
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
