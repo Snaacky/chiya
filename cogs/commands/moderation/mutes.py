@@ -343,7 +343,7 @@ class MuteCog(Cog):
             await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
             return
         
-        # regex stolen from setsudo
+        # RegEx stolen from Setsudo and modified
         regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
 
         # Get all of the matches from the RegEx.
