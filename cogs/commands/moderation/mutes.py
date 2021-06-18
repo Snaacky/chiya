@@ -5,6 +5,7 @@ import time
 
 import dataset
 import discord
+import privatebinapi
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
@@ -135,27 +136,86 @@ class MuteCog(Cog):
         return channel
 
     async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None, guild: int = None):
-        
         guild = guild or ctx.guild
         moderator = ctx.author_id if ctx else self.bot.user.id
-
-        # archives mute channel
         category = discord.utils.get(guild.categories, id=config.ticket_category_id)
-        archive = discord.utils.get(guild.categories, id=config.archive_category)
-        channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
+        mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
-        # If the channel doesn't exist for some reason, skip over trying to edit it.
-        if channel:
-            await channel.edit(category=archive, sync_permissions=True)
+        # TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
+        with dataset.connect(database.get_db()) as db:
+            table = db["mod_logs"]
+            # Gets the most recent mute for the user, sorted by descending (-) ID.
+            data = table.find_one(user_id=user_id, type="mute", order_by="-id")
+            mute_reason = data["reason"]
+            moderator = await ctx.guild.fetch_member(data["mod_id"])
 
-        # Add the unmute to the mod_log database.
+        # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
+        await ctx.defer()
+
+        # Get the member object of the ticket creator.
+        member = await ctx.guild.fetch_member(user_id)
+
+        # Initialize the PrivateBin message log string.
+        message_log = (
+            f"Muted User: {member} ({member.id})\n"
+            f"Muted By: {moderator} ({moderator.id})\n"
+            f"Mute Reason: {mute_reason}\n"
+        )
+
+        # Initialize a list of moderator IDs as a set for no duplicates.
+        mod_list = set()
+
+        # Add the closing mod just in case no other mod interacts with the ticket to avoid an empty embed field.
+        mod_list.add(ctx.author)
+
+        # Fetch the staff and trial mod role.
+        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
+
+        # TODO: Implement so it gets the channel when the moderator is the bot
+        # Loop through all messages in the ticket from old to new.
+        async for message in mute_channel.history(oldest_first=True):
+            # Ignore the bot replies.
+            if not message.author.bot:
+                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
+                formatted_time = str(message.created_at).split(".")[-2]
+                # Append the new messages to the current log as we loop.
+                message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
+                # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
+                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
+                    mod_list.add(message.author)
+
+        # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
+        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
+
+        # Create the embed in #mute-log.
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            author=False,
+            title = f"{mute_channel.name} archived",
+            thumbnail_url=config.pencil, 
+            color="blurple"
+        )
+
+        embed.add_field(name="Muted User:", value=member.mention, inline=True)
+        embed.add_field(name="Muted By:", value=moderator.mention, inline=True)
+        embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
+        embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
+        embed.add_field(name="Mute Log: ", value=url, inline=False)
+
+        # Send the embed to #mute-log.
+        mute_log = discord.utils.get(ctx.guild.channels, id=config.mute_log)
+        await mute_log.send(embed=embed)
+
+        # Add the unmute to the mod_logs database.
         with dataset.connect(database.get_db()) as db:
             db["mod_logs"].insert(dict(
-                user_id=user_id, mod_id=moderator, timestamp=int(time.time()), reason=reason, type="unmute"
+                user_id=user_id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
+        
+        # Delete the mute channel.
+        await mute_channel.delete()
 
-    
-    # TODO: Add permission restrictions if @commands.has_role doesn't do anything? I dunno.
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
