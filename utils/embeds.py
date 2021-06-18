@@ -26,7 +26,7 @@ def make_embed(ctx: Context = None, title: str = "", description: str = "", colo
         red=0xe74c3c,dark_red=0x992d22, lighter_grey=0x95a5a6, dark_grey=0x607d8b, light_grey=0x979c9f,
         darker_grey=0x546e7a, blurple=0x7289da, greyple=0x99aab5, dark_theme=0x36393F, nitro_pink=0xff73fa, 
         blank=0x2f3136, quotes_grey=0x4f545c, soft_red=0xcd6d6d, soft_green=0x68c290, soft_orange=0xf9cb54, 
-        soft_blue=0x7289da, bright_green=0x01d277,
+        bright_green=0x01d277,
         # Reddit colors:
         reddit=0xff5700, orange_red=0xFF450, upvote=0xFF8b60, neutral=0xC6C6C6, 
         downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699

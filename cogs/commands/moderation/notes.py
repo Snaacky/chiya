@@ -66,7 +66,7 @@ class NotesCog(Cog):
             title=f"Noting user: {user.name}", 
             description=f"{user.mention} was noted by {ctx.author.mention}: {note}",
             thumbnail_url=config.pencil, 
-            color="soft_blue"
+            color="blurple"
         )
         await ctx.send(embed=embed)
 

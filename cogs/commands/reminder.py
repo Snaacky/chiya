@@ -166,7 +166,7 @@ class Reminder(Cog):
             ctx=ctx, 
             title="Reminders",
             thumbnail_url=config.remind_blurple, 
-            color="soft_blue"
+            color="blurple"
         )
 
         # Paginate results
