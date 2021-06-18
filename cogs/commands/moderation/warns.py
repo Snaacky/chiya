@@ -46,7 +46,8 @@ class WarnsCog(Cog):
         default_permission=False,
         permissions={
             config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True)
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
