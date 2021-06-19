@@ -105,13 +105,18 @@ class TicketCog(Cog):
 
         # DM the user that their ticket was closed.
         try:
-            embed = embeds.make_embed(author=False, color=0xf4cdc5)
-            embed.title = f"Ticket closed"
-            embed.description = "Thank you for reaching out to us! \n\nYour ticket was closed. Please feel free to create a new ticket should you have any further inquiries."
-            embed.set_image(url="https://i.imgur.com/21nJqGC.gif")
+            embed = embeds.make_embed(
+                author=False, 
+                color=0xf4cdc5,
+                title=f"Ticket closed",
+                description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
+                image_url="https://i.imgur.com/21nJqGC.gif"
+            )
+            embed.add_field(name="Ticket log:", value=url)
+
             await member.send(embed=embed)
         except discord.HTTPException:
-            logging.info(f"{member} is not accepting DMs.")
+            logging.info(f"Attempted to send ticket closed DM to {member} but they are not accepting DMs.")
 
         # Update the ticket status from "in-progress" to "completed" and the PrivateBin URL field in the database.
         ticket["status"] = "completed"
