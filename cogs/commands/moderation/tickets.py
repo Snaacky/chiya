@@ -87,10 +87,10 @@ class TicketCog(Cog):
 
         # Create the embed in #ticket-log.
         embed = embeds.make_embed(
-            ctx=ctx, 
+            ctx=ctx,
             author=False,
-            title = f"{ctx.channel.name} archived",
-            thumbnail_url=config.pencil, 
+            title=f"{ctx.channel.name} archived",
+            thumbnail_url=config.pencil,
             color=0x00ffdf
         )
 
@@ -102,6 +102,16 @@ class TicketCog(Cog):
         # Send the embed to #ticket-log.
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)
         await ticket_log.send(embed=embed)
+
+        # DM the user that their ticket was closed.
+        try:
+            embed = embeds.make_embed(author=False, color=0xf4cdc5)
+            embed.title = f"Ticket closed"
+            embed.description = "Thank you for reaching out to us! \n\nYour ticket was closed. Please feel free to create a new ticket should you have any further inquiries."
+            embed.set_image(url="https://i.imgur.com/21nJqGC.gif")
+            await member.send(embed=embed)
+        except discord.HTTPException:
+            logging.info(f"{member} is not accepting DMs.")
 
         # Update the ticket status from "in-progress" to "completed" and the PrivateBin URL field in the database.
         ticket["status"] = "completed"
