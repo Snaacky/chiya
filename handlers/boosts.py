@@ -53,7 +53,7 @@ async def on_removed_boost(before, after):
         # Send an embed in #nitro-logs that someone removed a boost.
         nitro_logs = discord.utils.get(after.channels, id=config.nitro_logs)
         embed = embeds.make_embed(author=False, color="nitro_pink")
-        embed.description(f"A boost was removed from the server.")
+        embed.description = f"A boost was removed from the server."
         await nitro_logs.send(embed=embed)
 
         # Log the boost removal to the console.
