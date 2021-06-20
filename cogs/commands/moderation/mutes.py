@@ -118,7 +118,6 @@ class MuteCog(Cog):
         # Give both the staff and the user perms to access the channel. 
         await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_trial_mod), read_messages=True)
         await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_staff), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_senior_mod), read_messages=True)
         await channel.set_permissions(member, read_messages=True)
 
         # Create embed at the start of the channel letting the user know how long they're muted for and why.
