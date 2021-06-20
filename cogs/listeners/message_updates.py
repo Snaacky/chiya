@@ -1,12 +1,7 @@
 import logging
 
-import discord
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
-
-import config
-from handlers import tickets
-from utils import embeds
 
 log = logging.getLogger(__name__)
 
@@ -126,10 +121,6 @@ class MessageUpdates(commands.Cog):
         if message.author.bot:
             return
 
-        # Process any potential pending tickets
-        if isinstance(message.channel, discord.DMChannel):
-            await tickets.process_pending_ticket(self.bot, message)
-
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
 
@@ -146,15 +137,6 @@ class MessageUpdates(commands.Cog):
         # Ignore reactions added by the bot.
         if payload.user_id == self.bot.user.id:
             return
-
-        # Process any new tickets that may come up.
-        if payload.message_id == config.ticket_embed_id:
-            await tickets.process_embed_reaction(payload)
-
-        # Look for modmail embed reactions and process them.
-        channel = await self.bot.fetch_channel(payload.channel_id)
-        if isinstance(channel, discord.DMChannel):
-            await tickets.process_dm_reaction(self.bot, payload)
 
 
 def setup(bot: commands.Bot) -> None:
