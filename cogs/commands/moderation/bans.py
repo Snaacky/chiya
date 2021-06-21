@@ -27,9 +27,9 @@ class BanCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def ban_member(self, ctx: SlashContext, user: discord.User, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def ban_member(self, ctx: SlashContext, user: discord.User, reason: str, temporary: bool = False, end_time: float = None, delete_message_days: int = 0) -> None:
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
-        await ctx.guild.ban(user=user, reason=reason, delete_message_days=0)
+        await ctx.guild.ban(user=user, reason=reason, delete_message_days=delete_message_days)
 
         # Add the ban to the mod_log database.
         with dataset.connect(database.get_db()) as db:
@@ -119,6 +119,12 @@ class BanCog(Cog):
                 option_type=3,
                 required=False
             ),
+            create_option(
+                name="daystodelete",
+                description="The number of days of messages to delete from the member, up to 7",
+                option_type=4,
+                required=False
+            ),
         ],
         default_permission=False,
         permissions={
@@ -128,7 +134,7 @@ class BanCog(Cog):
             ]
         }
     )
-    async def ban(self, ctx: SlashContext, user: discord.User, reason: str = None):
+    async def ban(self, ctx: SlashContext, user: discord.User, reason: str = None, daystodelete: int = 0):
         """ Bans user from guild. """
 
         # If we received an int instead of a discord.Member, the user is not in the server.
@@ -168,7 +174,7 @@ class BanCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Bans the user and returns the embed letting the moderator know they were successfully banned.
-        await self.ban_member(ctx=ctx, user=user, reason=reason)
+        await self.ban_member(ctx=ctx, user=user, reason=reason, delete_message_days=daystodelete)
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
@@ -251,6 +257,12 @@ class BanCog(Cog):
                 option_type=3,
                 required=False
             ),
+            create_option(
+                name="daystodelete",
+                description="The number of days of messages to delete from the member, up to 7",
+                option_type=4,
+                required=False
+            ),
         ],
         default_permission=False,
         permissions={
@@ -260,7 +272,7 @@ class BanCog(Cog):
             ]
         }
     )
-    async def tempban(self, ctx: SlashContext, user: discord.User, duration: str, reason: str = None):
+    async def tempban(self, ctx: SlashContext, user: discord.User, duration: str, reason: str = None, daystodelete: int = 0):
         """ Temporarily bans member from guild. """
 
         # If we received an int instead of a discord.Member, the user is not in the server.
@@ -344,7 +356,7 @@ class BanCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Bans the user and returns the embed letting the moderator know they were successfully banned.
-        await self.ban_member(ctx=ctx, user=user, reason=reason, temporary=True, end_time=ban_end_time.timestamp())
+        await self.ban_member(ctx=ctx, user=user, delete_message_days=daystodelete, reason=reason, temporary=True, end_time=ban_end_time.timestamp())
         await ctx.send(embed=embed)
 
 
