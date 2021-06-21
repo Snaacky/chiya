@@ -117,7 +117,7 @@ class TicketCog(Cog):
         await ctx.defer()
 
         # Get the member object of the ticket creator.
-        member = await ctx.guild.fetch_member(int(ctx.channel.name.replace("ticket-", "")))
+        member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
 
         # Initialize the PrivateBin message log string.
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
