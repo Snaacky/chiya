@@ -102,6 +102,8 @@ class TicketCog(Cog):
     )
     async def close(self, ctx: SlashContext):
         """ Closes the modmail ticket."""
+        await ctx.defer()
+        
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not ctx.channel.category_id == config.ticket_category_id or "ticket" not in ctx.channel.name:
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
