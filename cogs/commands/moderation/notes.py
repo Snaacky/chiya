@@ -56,6 +56,7 @@ class NotesCog(Cog):
     )
     async def add_note(self, ctx: SlashContext, user: discord.User, note: str):
         """ Adds a moderator note to a user. """
+        await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
@@ -104,6 +105,7 @@ class NotesCog(Cog):
     )
     async def search_mod_actions(self, ctx: Context, user: discord.User, action_type: str = None):
         """ Searches for mod actions on a user """
+        await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
@@ -285,6 +287,8 @@ class NotesCog(Cog):
         }
     )
     async def edit_log(self, ctx: SlashContext, id: int, reason: str):
+        await ctx.defer()
+        
         with dataset.connect(database.get_db()) as db:
             table = db["mod_logs"]
 
