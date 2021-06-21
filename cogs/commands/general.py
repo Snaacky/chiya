@@ -28,6 +28,8 @@ class General(Cog):
     )
     async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
+        await ctx.defer()
+
         user = user or ctx.author
 
         # If we received an int instead of a discord.Member, the user is not in the server.
@@ -58,6 +60,7 @@ class General(Cog):
     )
     async def count(self, ctx: SlashContext):
         """Returns the current guild member count."""
+        await ctx.defer()
         await ctx.send(ctx.guild.member_count)
 
     
@@ -84,6 +87,8 @@ class General(Cog):
     )
     async def vote(self, ctx, message: discord.Message = None):
         """ Add vote reactions to a message. """
+        await ctx.defer()
+        
         if message:
             message = await ctx.channel.fetch_message(message)
 
