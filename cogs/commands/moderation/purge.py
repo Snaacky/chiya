@@ -62,6 +62,7 @@ class PurgeCog(Cog):
     )
     async def remove_messages(self, ctx: SlashContext, number_of_messages: int, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
+        await ctx.defer()
         
         # Check to see if the bot is allowed to purge
         if not await self.can_purge_messages(ctx):
