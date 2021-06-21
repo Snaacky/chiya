@@ -54,6 +54,7 @@ class KickCog(Cog):
     )
     async def kick_member(self, ctx: SlashContext, member: discord.User, reason: str = None):
         """ Kicks member from guild. """
+        await ctx.defer()
         
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
