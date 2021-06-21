@@ -26,9 +26,8 @@ class TicketCog(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @cog_ext.cog_subcommand(
-        base="ticket",
-        name="open",
+    @cog_ext.cog_slash(
+        name="ticket",
         description="Opens a new modmail ticket",
         guild_ids=[config.guild_id],
         options=[
@@ -89,13 +88,12 @@ class TicketCog(Cog):
         
 
     @commands.before_invoke(record_usage)
-    @cog_ext.cog_subcommand(
-        base="ticket",
+    @cog_ext.cog_slash(
         name="close",
-        description="Closes an active ticket",
+        description="Closes a ticket when sent in the ticket channel",
         guild_ids=[config.guild_id],
-        base_default_permission=False,
-        base_permissions={
+        default_permission=False,
+        permissions={
             config.guild_id: [
                 create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
                 create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
