@@ -46,6 +46,7 @@ class Reminder(Cog):
     )
     async def remind(self, ctx: SlashContext, duration: str, message: str):
         """ Sets a reminder message. """
+        await ctx.defer()
 
         # RegEx stolen from Setsudo and modified
         regex = r"(?<=^)(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
@@ -124,6 +125,8 @@ class Reminder(Cog):
     )
     async def edit_reminder(self, ctx: SlashContext, id: int, new_message: str):
         """ Edit a reminder message. """
+        await ctx.defer()
+
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
             reminder = remind_me.find_one(id=id)
@@ -149,6 +152,8 @@ class Reminder(Cog):
     )
     async def list_reminders(self, ctx: SlashContext):
         """ List your reminders. """
+        await ctx.defer()
+
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
             remind_me = db['remind_me']
@@ -189,6 +194,8 @@ class Reminder(Cog):
     )
     async def delete_reminder(self, ctx: SlashContext, reminder_id: int):
         """ Delete Reminders. User `reminder list` to find ID """
+        await ctx.defer()
+
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
             table = db['remind_me']
@@ -227,6 +234,8 @@ class Reminder(Cog):
     )
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """
+        await ctx.defer()
+        
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
             result = remind_me.find(author_id=ctx.author.id, sent=False)
