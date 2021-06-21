@@ -118,7 +118,6 @@ class MuteCog(Cog):
         # Give both the staff and the user perms to access the channel. 
         await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_trial_mod), read_messages=True)
         await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_staff), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config.role_senior_mod), read_messages=True)
         await channel.set_permissions(member, read_messages=True)
 
         # Create embed at the start of the channel letting the user know how long they're muted for and why.
@@ -147,13 +146,14 @@ class MuteCog(Cog):
             # Gets the most recent mute for the user, sorted by descending (-) ID.
             data = table.find_one(user_id=user_id, type="mute", order_by="-id")
             mute_reason = data["reason"]
-            moderator = await ctx.guild.fetch_member(data["mod_id"])
+            moderator = await self.bot.fetch_user(data["mod_id"])
 
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
-        await ctx.defer()
+        if ctx:
+            await ctx.defer()
 
         # Get the member object of the ticket creator.
-        member = await ctx.guild.fetch_member(user_id)
+        member = await self.bot.fetch_user(user_id)
 
         # Initialize the PrivateBin message log string.
         message_log = (
@@ -165,12 +165,12 @@ class MuteCog(Cog):
         # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
 
-        # Add the closing mod just in case no other mod interacts with the ticket to avoid an empty embed field.
-        mod_list.add(ctx.author)
+        # Add the original muting moderator to avoid a blank embed field if no one interacts.
+        mod_list.add(moderator)
 
         # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
-        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
+        role_staff = discord.utils.get(guild.roles, id=config.role_staff)
+        role_trial_mod = discord.utils.get(guild.roles, id=config.role_trial_mod)
 
         # TODO: Implement so it gets the channel when the moderator is the bot
         # Loop through all messages in the ticket from old to new.
@@ -190,8 +190,6 @@ class MuteCog(Cog):
 
         # Create the embed in #mute-log.
         embed = embeds.make_embed(
-            ctx=ctx, 
-            author=False,
             title = f"{mute_channel.name} archived",
             thumbnail_url=config.pencil, 
             color="blurple"
@@ -204,7 +202,7 @@ class MuteCog(Cog):
         embed.add_field(name="Mute Log: ", value=url, inline=False)
 
         # Send the embed to #mute-log.
-        mute_log = discord.utils.get(ctx.guild.channels, id=config.mute_log)
+        mute_log = discord.utils.get(guild.channels, id=config.mute_log)
         await mute_log.send(embed=embed)
 
         # Add the unmute to the mod_logs database.
@@ -354,7 +352,13 @@ class MuteCog(Cog):
         # Attempt to DM the user to let them know they were muted and let's the moderator know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
-        await ctx.send(embed=embed)
+
+        # If the mod sent the /unmute in the mute channel, this will cause a errors.NotFound 404.
+        # We cannot send the embed and then archive the channel because that will cause a error.AlreadyResponded.
+        try:
+            await ctx.send(embed=embed)
+        except discord.errors.NotFound:
+            pass
 
     @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
