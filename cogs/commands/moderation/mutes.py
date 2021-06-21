@@ -148,10 +148,6 @@ class MuteCog(Cog):
             mute_reason = data["reason"]
             moderator = await self.bot.fetch_user(data["mod_id"])
 
-        # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
-        if ctx:
-            await ctx.defer()
-
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(user_id)
 
@@ -244,6 +240,7 @@ class MuteCog(Cog):
     )
     async def mute(self, ctx: SlashContext, member: discord.User, reason: str = None):
         """ Mutes member in guild. """
+        await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
@@ -316,6 +313,7 @@ class MuteCog(Cog):
     @commands.command(name="unmute")
     async def unmute(self, ctx: SlashContext, member: discord.User, reason: str = None):
         """ Unmutes member in guild. """
+        await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
@@ -397,6 +395,7 @@ class MuteCog(Cog):
     )
     async def tempmute(self, ctx: SlashContext, member: discord.User, duration: str, reason: str = None):
         """ Temporarily Mutes member in guild. """
+        await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
