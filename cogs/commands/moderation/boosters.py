@@ -28,6 +28,8 @@ class BoostersCog(Cog):
     )
     async def boosters(self, ctx: SlashContext):
         """ Sends a list of users boosting the server. """
+        await ctx.defer()
+        
         embed = embeds.make_embed(
             ctx=ctx, 
             title=f"Total boosts: {ctx.guild.premium_subscription_count}", 
