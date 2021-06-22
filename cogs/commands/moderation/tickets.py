@@ -102,6 +102,7 @@ class TicketCog(Cog):
     )
     async def close(self, ctx: SlashContext):
         """ Closes the modmail ticket."""
+        # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
         await ctx.defer()
         
         # Warns if the ticket close command is called outside of the current active ticket channel.
@@ -114,9 +115,6 @@ class TicketCog(Cog):
             table = db["tickets"]
             ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
             ticket_topic = ticket["ticket_topic"]
-
-        # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
-        await ctx.defer()
 
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
