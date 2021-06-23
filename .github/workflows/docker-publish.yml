@@ -3,7 +3,7 @@ name: Docker
 on: [push, pull_request]
 
 env:
-  IMAGE_NAME: chiya-bot
+  IMAGE_NAME: chiya
 
 jobs:
   # Run tests.
