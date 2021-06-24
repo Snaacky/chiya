@@ -182,7 +182,21 @@ class MuteCog(Cog):
                     mod_list.add(message.author)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
-        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
+        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="5min")["full_url"]
+
+        # Get the amount of time elapsed since the user was muted.
+        time_delta = datetime.datetime.utcnow() - mute_channel.created_at
+        days = time_delta.days
+        hours, remainder = divmod(time_delta.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        if days == 0 and hours == 0 and minutes == 0:
+            elapsed_time = f"{seconds} seconds"
+        elif days == 0 and hours == 0:
+            elapsed_time = f"{minutes} minutes, {seconds} seconds"
+        elif days == 0:
+            elapsed_time = f"{hours} hours, {minutes} minutes, {seconds} seconds"
+        else:
+            elapsed_time = f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
 
         # Create the embed in #mute-log.
         embed = embeds.make_embed(
@@ -194,6 +208,7 @@ class MuteCog(Cog):
         embed.add_field(name="Muted User:", value=member.mention, inline=True)
         embed.add_field(name="Muted By:", value=moderator.mention, inline=True)
         embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
+        embed.add_field(name="Duration:", value=elapsed_time, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
         embed.add_field(name="Mute Log: ", value=url, inline=False)
 
