@@ -137,7 +137,6 @@ class MuteCog(Cog):
 
     async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None, guild: int = None):
         guild = guild or ctx.guild
-        moderator = ctx.author_id if ctx else self.bot.user.id
         category = discord.utils.get(guild.categories, id=config.ticket_category_id)
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
