@@ -18,6 +18,7 @@ from utils.moderation import can_action_member
 # Enabling logs
 log = logging.getLogger(__name__)
 
+
 class KickCog(Cog):
     """ Kick Cog """
 
@@ -27,7 +28,7 @@ class KickCog(Cog):
     @commands.bot_has_permissions(kick_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="kick", 
+        name="kick",
         description="Kicks the member from the server",
         guild_ids=[config.guild_id],
         options=[
@@ -52,10 +53,10 @@ class KickCog(Cog):
             ]
         }
     )
-    async def kick_member(self, ctx: SlashContext, member: discord.User, reason: str = None):
+    async def kick_member(self, ctx: SlashContext, member: discord.Member, reason: str = None):
         """ Kicks member from guild. """
         await ctx.defer()
-        
+
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(member, int):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
@@ -64,39 +65,39 @@ class KickCog(Cog):
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
             return
-        
+
         # Handle cases where the reason is not provided.
         if not reason:
             reason = "No reason provided."
-        
-         # Discord caps embed fields at a riduclously low character limit, avoids problems with future embeds.
+
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
         embed = embeds.make_embed(
-            ctx=ctx, 
+            ctx=ctx,
             title=f"Kicking member: {member.name}",
             description=f"{member.mention} was kicked by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_ban, 
+            thumbnail_url=config.user_ban,
             color="soft_red"
         )
 
         # Send user message telling them that they were kicked and why.
-        try: # Incase user has DM's Blocked.
+        try:  # In case user has DM blocked.
             channel = await member.create_dm()
             dm_embed = embeds.make_embed(
-                title = f"Uh-oh, you've been kicked!",
-                description = "I-I guess you can join back if you want? B-baka. https://discord.gg/piracy",
+                title=f"Uh-oh, you've been kicked!",
+                description="I-I guess you can join back if you want? B-baka. https://discord.gg/piracy",
                 image_url="https://i.imgur.com/UkrBRur.gif",
-                author=False, 
+                author=False,
                 color=0xe49bb3
             )
-            dm_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            dm_embed.add_field(name="Server:", value=str(ctx.guild), inline=True)
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)
-        except:
+        except discord.HTTPException:
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Send the kick DM to the user.
@@ -110,6 +111,7 @@ class KickCog(Cog):
             db["mod_logs"].insert(dict(
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
             ))
+
 
 def setup(bot: Bot) -> None:
     """ Load the Kick cog. """
