@@ -65,14 +65,14 @@ class BanCog(Cog):
                 user_id=user.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unban"
             ))
 
-    async def is_user_in_guild(self, guild: discord.Guild, user: discord.User) -> bool:
+    async def is_user_in_guild(self, guild: discord.Guild, user: discord.User):
         guild = self.bot.get_guild(guild)
         member = guild.get_member(user.id)
         if member:
             return member
-        return False
+        return None
 
-    async def is_user_banned(self, guild: discord.Guild, user: discord.User) -> bool:
+    async def is_user_banned(self, guild: discord.Guild, user: discord.User):
         # Checks to see if the user is already banned.
         guild = self.bot.get_guild(guild)
         try:
@@ -90,7 +90,7 @@ class BanCog(Cog):
             embed = embeds.make_embed(author=False, color=0xc2bac0)
             embed.title = f"Uh-oh, you've been banned!"
             embed.description = "You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy)."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            embed.add_field(name="Server:", value=str(ctx.guild), inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -160,7 +160,7 @@ class BanCog(Cog):
             reason = "No reason provided."
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        if len(reason) > 512:
             await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
             return
 
@@ -223,7 +223,7 @@ class BanCog(Cog):
             reason = "No reason provided."
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        if len(reason) > 512:
             await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
             return
 
