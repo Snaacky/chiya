@@ -86,7 +86,7 @@ class MuteCog(Cog):
             embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
             await dm_channel.send(embed=embed)
             return True
-        except discord.errors.Forbidden:
+        except discord.HTTPException:
             return False
 
     async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> bool:
