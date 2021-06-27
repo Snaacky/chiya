@@ -326,7 +326,7 @@ class MuteCog(Cog):
         }
     )
     @commands.command(name="unmute")
-    async def unmute(self, ctx: SlashContext, member: discord.member, reason: str = None):
+    async def unmute(self, ctx: SlashContext, member: discord.Member, reason: str = None):
         """ Unmutes member in guild. """
         await ctx.defer()
 
