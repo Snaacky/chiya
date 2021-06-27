@@ -41,7 +41,7 @@ class TicketCog(Cog):
     )
     async def open(self, ctx: SlashContext, topic: str):
         """ Opens a new modmail ticket."""
-        await ctx.defer()
+        await ctx.defer(hidden=True)
 
         # Check if a duplicate ticket already exists for the member.
         category = discord.utils.get(ctx.guild.categories, id=config.ticket_category_id)
@@ -84,7 +84,8 @@ class TicketCog(Cog):
         ping = await channel.send(ctx.author.mention)
         await ping.delete()
 
-        await ctx.send(f"Opened a ticket: {channel.mention}")
+        embed = embeds.make_embed(ctx=ctx, title="Created a ticket", description=f"Opened a ticket: {channel.mention} for: {topic}.")
+        await ctx.send(embed=embed, hidden=True)
         
 
     @commands.before_invoke(record_usage)
