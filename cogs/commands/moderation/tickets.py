@@ -84,7 +84,8 @@ class TicketCog(Cog):
         ping = await channel.send(ctx.author.mention)
         await ping.delete()
 
-        await ctx.send(f"Opened a ticket: {channel.mention}")
+        embed = embeds.make_embed(ctx=ctx, title="Created a ticket", description=f"Opened a ticket: {channel.mention} for: {topic}.")
+        await ctx.send(embed=embed, hidden=True)
         
 
     @commands.before_invoke(record_usage)
