@@ -99,13 +99,13 @@ class MuteCog(Cog):
             embed = embeds.make_embed(author=False, color=0x8a3ac5)
             embed.title = f"Yay, you've been unmuted!"
             embed.description = "Review our server rules to avoid being actioned again in the future."
-            embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{str(guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
             await channel.send(embed=embed)
             return True
-        except discord.errors.Forbidden:
+        except discord.HTTPException:
             return False
 
     async def create_mute_channel(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
@@ -478,7 +478,7 @@ class MuteCog(Cog):
                 duration[time_unit] = 0
                 continue
             # If the time value is 1, make the time unit into singular form.
-            if duration[time_unit] == 1:
+            if duration[time_unit] == "1":
                 elapsed_time += f"{duration[time_unit]} {time_unit[:-1]} "
             else:
                 elapsed_time += f"{duration[time_unit]} {time_unit} "
