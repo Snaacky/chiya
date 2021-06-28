@@ -78,7 +78,7 @@ class MuteCog(Cog):
             embed = embeds.make_embed(author=False, color=0x8083b0)
             embed.title = f"Uh-oh, you've been muted!"
             embed.description = "If you believe this was a mistake, contact staff."
-            embed.add_field(name="Server:", value=str(ctx.guild), inline=True)
+            embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
@@ -99,7 +99,7 @@ class MuteCog(Cog):
             embed = embeds.make_embed(author=False, color=0x8a3ac5)
             embed.title = f"Yay, you've been unmuted!"
             embed.description = "Review our server rules to avoid being actioned again in the future."
-            embed.add_field(name="Server:", value=str(guild), inline=True)
+            embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")

@@ -93,7 +93,7 @@ class KickCog(Cog):
                 author=False,
                 color=0xe49bb3
             )
-            dm_embed.add_field(name="Server:", value=str(ctx.guild), inline=True)
+            dm_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)

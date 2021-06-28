@@ -78,7 +78,7 @@ class WarnsCog(Cog):
             warn_embed = embeds.make_embed(author=False, color=0xf7dcad)
             warn_embed.title = f"Uh-oh, you've received a warning!"
             warn_embed.description = "If you believe this was a mistake, contact staff."
-            warn_embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            warn_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             warn_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             warn_embed.add_field(name="Reason:", value=reason, inline=False)
             warn_embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
