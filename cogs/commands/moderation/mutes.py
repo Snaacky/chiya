@@ -135,7 +135,17 @@ class MuteCog(Cog):
 
         return channel
 
-    async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None, guild: int = None):
+    async def archive_mute_channel(self, user_id: int, unmute_reason: str, ctx: SlashContext = None, guild: int = None):
+
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        if not unmute_reason:
+            reason = "No reason provided."
+
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        if len(unmute_reason) > 512:
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            return
+
         guild = guild or ctx.guild
         category = discord.utils.get(guild.categories, id=config.ticket_category_id)
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
@@ -226,6 +236,7 @@ class MuteCog(Cog):
         embed.add_field(name="Muted By:", value=muter.mention, inline=True)
         embed.add_field(name="Unmuted By:", value=unmuter.mention, inline=True)
         embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
+        embed.add_field(name="Unmute Reason:", value=unmute_reason, inline=False)
         embed.add_field(name="Duration:", value=elapsed_time, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
         embed.add_field(name="Mute Log: ", value=url, inline=False)
