@@ -1,7 +1,12 @@
+import config
+from utils import embeds
+
 import logging
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
+import discord
+
 
 log = logging.getLogger(__name__)
 
@@ -39,6 +44,29 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_raw_message_delete
         """
+        guild = discord.utils.get(self.bot.guilds, id=config.guild_id)
+        self.message_logs = discord.utils.get(guild.channels, id=config.message_logs)
+        channel = discord.utils.get(guild.channels, id=payload.channel_id)
+
+        message = payload.cached_message
+        embed = embeds.make_embed(title="Message deleted", description=None, color="red", thumbnail_url=config.message_delete)
+
+        if message:
+            embed.set_author(name=f"{message.author.name}#{message.author.discriminator}", icon_url=message.author.avatar_url)
+            embed.description = f"**Message:**\n{message.content[0:256]}"
+            if len(message.content) > 256:  
+                embed.description += "..."
+        else:
+            embed.description = "[Message not found in cache!]"
+        
+        embed.description += f"\n\n**Channel:** {channel.mention}"
+
+        await self.message_logs.send(embed=embed)
+            
+        
+        
+            
+        
 
     @commands.Cog.listener()
     async def on_bulk_message_delete(self, messages: list):
