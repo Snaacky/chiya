@@ -72,7 +72,7 @@ class BanCog(Cog):
             return member
         return None
 
-    async def is_user_banned(self, guild: discord.Guild, user: discord.User):
+    async def is_user_banned(self, guild: discord.Guild, user: discord.User) -> bool:
         # Checks to see if the user is already banned.
         guild = self.bot.get_guild(guild)
         try:
