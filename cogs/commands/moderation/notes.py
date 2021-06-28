@@ -119,7 +119,7 @@ class NotesCog(Cog):
             if action_type:
                 # Attempts to check for plurality from action_type. If it still matches nothing, return an error embed instead.
                 if any(action_type or action_type[:-1] != option for option in options):
-                    await embeds.error_message(ctx=ctx, description=f"\"{action_type}\" is not a valid mod action type.")
+                    await embeds.error_message(ctx=ctx, description=f"\"{action_type}\" is not a valid mod action filter.")
                     return
                 results = mod_logs.find(user_id=user.id, type=action_type.lower())
             else:
