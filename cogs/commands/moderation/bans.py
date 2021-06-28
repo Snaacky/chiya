@@ -303,7 +303,7 @@ class BanCog(Cog):
         # Attempt to parse the message argument with the Setsudo RegEx
         try:
             match_list = re.findall(regex, duration)[0]
-        except:
+        except discord.HTTPException:
             await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 
@@ -337,7 +337,7 @@ class BanCog(Cog):
                 duration[time_unit] = 0
                 continue
             # If the time value is 1, make the time unit into singular form.
-            if duration[time_unit] == 1:
+            if duration[time_unit] == "1":
                 elapsed_time += f"{duration[time_unit]} {time_unit[:-1]} "
             else:
                 elapsed_time += f"{duration[time_unit]} {time_unit} "
