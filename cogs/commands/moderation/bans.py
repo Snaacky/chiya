@@ -329,17 +329,20 @@ class BanCog(Cog):
             seconds=match_list[4]
         )
 
-        # Used to store the duration that will be displayed later.
-        duration_string = ""
-
+        # String that will store the duration in a more digestible format.
+        elapsed_time = ""
         for time_unit in duration:
-            if len(duration[time_unit]):
-                duration_string += f"{duration[time_unit]} {time_unit} "
-                # Update the values for ease of conversion to timedelta object later.
-                duration[time_unit] = float(duration[time_unit])
-            else:
-                # Value defaults to 0 for the unused units of time.
+            # If the time value is undeclared, set it to 0 and skip it.
+            if duration[time_unit] == "":
                 duration[time_unit] = 0
+                continue
+            # If the time value is 1, make the time unit into singular form.
+            if duration[time_unit] == 1:
+                elapsed_time += f"{duration[time_unit]} {time_unit[:-1]} "
+            else:
+                elapsed_time += f"{duration[time_unit]} {time_unit} "
+            # Updating the values for ease of conversion to timedelta object later.
+            duration[time_unit] = float(duration[time_unit])
 
         # Adds the timedelta of the ban length to the current time to get the unban datetime.
         ban_end_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
@@ -351,11 +354,12 @@ class BanCog(Cog):
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
         embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user}", thumbnail_url=config.user_ban, color="soft_red")
-        embed.description = f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}\n **Duration:** {duration_string}"
+        embed.description = f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
+        embed.add_field(name="Duration", value=elapsed_time, inline=False)
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.
-        sent = await self.send_banned_dm_embed(ctx=ctx, user=user, reason=reason, duration=duration_string)
+        sent = await self.send_banned_dm_embed(ctx=ctx, user=user, reason=reason, duration=elapsed_time)
         if not sent:
             embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 

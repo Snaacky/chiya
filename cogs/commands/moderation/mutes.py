@@ -28,7 +28,7 @@ class MuteCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: int = None) -> None:
+    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
@@ -46,7 +46,7 @@ class MuteCog(Cog):
                     action_type="mute",
                     reason=reason,
                     start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
-                    end_time=end_time.timestamp(),
+                    end_time=end_time,
                     is_done=False
                 ))
 
@@ -483,7 +483,7 @@ class MuteCog(Cog):
             else:
                 elapsed_time += f"{duration[time_unit]} {time_unit} "
             # Updating the values for ease of conversion to timedelta object later.
-            duration[time_unit] = int(duration[time_unit])
+            duration[time_unit] = float(duration[time_unit])
 
         mute_end_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
             days=duration["days"],
@@ -505,7 +505,7 @@ class MuteCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Mutes the user and stores the unmute time in the database for the background task.
-        await self.mute_member(ctx=ctx, member=member, reason=reason, temporary=True, end_time=mute_end_time)
+        await self.mute_member(ctx=ctx, member=member, reason=reason, temporary=True, end_time=mute_end_time.timestamp())
         await ctx.send(embed=embed)
 
 
