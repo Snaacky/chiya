@@ -70,37 +70,43 @@ class Reminder(Cog):
             seconds=match_list[3]
         )
 
+        # # String that will store the duration in a more digestible format.
         duration_string = ""
-
-        for key in duration:
-            if len(duration[key]) > 0:
-                duration_string += f"{duration[key]} {key} "
-                duration[key] = float(duration[key])
+        for time_unit in duration:
+            # If the time value is undeclared, set it to 0 and skip it.
+            if duration[time_unit] == "":
+                duration[time_unit] = 0
+                continue
+            # If the time value is 1, make the time unit into singular form.
+            if duration[time_unit] == "1":
+                duration_string += f"{duration[time_unit]} {time_unit[:-1]} "
             else:
-                duration[key] = 0
+                duration_string += f"{duration[time_unit]} {time_unit} "
+            # Updating the values for ease of conversion to timedelta object later.
+            duration[time_unit] = float(duration[time_unit])
 
         duration = timedelta(
-            days=duration['days'],
-            hours=duration['hours'],
-            minutes=duration['minutes'],
-            seconds=duration['seconds']
+            days=duration["days"],
+            hours=duration["hours"],
+            minutes=duration["minutes"],
+            seconds=duration["seconds"]
         )
 
         end_time = datetime.now(tz=timezone.utc) + duration
-        time_now = str(datetime.now(tz=timezone.utc))
-        time_now = time_now[:time_now.index('.')]
 
-        with dataset.connect(database.get_db()) as tx:
-            tx["remind_me"].insert(dict(
+        with dataset.connect(database.get_db()) as db:
+            remind_id = db["remind_me"].insert(dict(
                 reminder_location=ctx.channel.id,
                 author_id=ctx.author.id,
                 date_to_remind=end_time.timestamp(),
                 message=message,
                 sent=False
             ))
-        embed = embeds.make_embed(ctx=ctx, title="Reminder Set")
-        embed.description = f"\nI'll remind you about this in {duration_string.strip()}."
-        embed.add_field(name="Message:", value=message)
+
+        embed = embeds.make_embed(ctx=ctx, title="Reminder set")
+        embed.description = f"\nI'll remind you about this in {duration_string[:-1]}."  # Remove the trailing white space.
+        embed.add_field(name="ID: ", value=remind_id, inline=False)
+        embed.add_field(name="Message:", value=message, inline=False)
         await ctx.send(embed=embed)
 
     @cog_ext.cog_subcommand(
@@ -123,13 +129,13 @@ class Reminder(Cog):
             ),
         ]
     )
-    async def edit_reminder(self, ctx: SlashContext, id: int, new_message: str):
+    async def edit_reminder(self, ctx: SlashContext, reminder_id: int, new_message: str):
         """ Edit a reminder message. """
         await ctx.defer()
 
         with dataset.connect(database.get_db()) as db:
             remind_me = db['remind_me']
-            reminder = remind_me.find_one(id=id)
+            reminder = remind_me.find_one(id=reminder_id)
 
             if reminder['author_id'] != ctx.author.id:
                 await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
@@ -142,7 +148,9 @@ class Reminder(Cog):
             data = dict(id=reminder['id'], message=new_message)
             remind_me.update(data, ['id'])
 
-        await ctx.send("Reminder was updated.")
+        embed = embeds.make_embed(ctx=ctx, title="Reminder edited")
+        embed.description = f"Your reminder was updated to: \n\n{new_message}"
+        await ctx.send(embed=embed)
 
     @cog_ext.cog_subcommand(
         base="reminder",
