@@ -89,3 +89,5 @@ emote_yes = ":yes:778724405333196851"
 emote_no =  ":no:778724416230129705"
 
 saucenao_api_key = ""
+
+message_logs = 814849473536458773
