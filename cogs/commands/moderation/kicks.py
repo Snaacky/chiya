@@ -64,6 +64,7 @@ class KickCog(Cog):
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
+            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
             return
 
         # Handle cases where the reason is not provided.

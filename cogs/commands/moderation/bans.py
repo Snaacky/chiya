@@ -152,7 +152,7 @@ class BanCog(Cog):
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-                await embeds.error_message(ctx=ctx, description="Could not action that member.")
+                await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
                 return
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
@@ -288,7 +288,7 @@ class BanCog(Cog):
         if member:
             member = await commands.MemberConverter().convert(ctx, user.mention)
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-                await embeds.error_message(ctx=ctx, description="Could not action that member.")
+                await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
                 return
 
         # Checks if the user is already banned and let's the mod know if they already were.
