@@ -165,9 +165,11 @@ class MuteCog(Cog):
 
         # Initialize the PrivateBin message log string.
         message_log = (
-            f"Muted User: {member} ({member.id})\n"
+            f"Muted User: {member} ({member.id})\n\n"
             f"Muted By: {muter} ({muter.id})\n"
-            f"Mute Reason: {mute_reason}\n"
+            f"Unmuted By: {unmuter} ({unmuter.id})\n"
+            f"Mute Reason: {mute_reason}\n\n"
+            f"Unmute Reason: {unmute_reason}\n"
         )
 
         # Initialize a list of moderator IDs as a set for no duplicates.
