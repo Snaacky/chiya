@@ -28,7 +28,7 @@ class MuteCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: int = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
@@ -144,9 +144,11 @@ class MuteCog(Cog):
         with dataset.connect(database.get_db()) as db:
             table = db["mod_logs"]
             # Gets the most recent mute for the user, sorted by descending (-) ID.
-            data = table.find_one(user_id=user_id, type="mute", order_by="-id")
-            mute_reason = data["reason"]
-            moderator = await self.bot.fetch_user(data["mod_id"])
+            mute_entry = table.find_one(user_id=user_id, type="mute", order_by="-id")
+            unmute_entry = table.find_one(user_id=user_id, type="unmute", order_by="-id")
+            mute_reason = mute_entry["reason"]
+            muter = await self.bot.fetch_user(mute_entry["mod_id"])
+            unmuter = await self.bot.fetch_user(unmute_entry["mod_id"])
 
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(user_id)
@@ -154,7 +156,7 @@ class MuteCog(Cog):
         # Initialize the PrivateBin message log string.
         message_log = (
             f"Muted User: {member} ({member.id})\n"
-            f"Muted By: {moderator} ({moderator.id})\n"
+            f"Muted By: {muter} ({muter.id})\n"
             f"Mute Reason: {mute_reason}\n"
         )
 
@@ -162,7 +164,7 @@ class MuteCog(Cog):
         mod_list = set()
 
         # Add the original muting moderator to avoid a blank embed field if no one interacts.
-        mod_list.add(moderator)
+        mod_list.add(muter)
 
         # Fetch the staff and trial mod role.
         role_staff = discord.utils.get(guild.roles, id=config.role_staff)
@@ -178,7 +180,7 @@ class MuteCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
+                if role_staff or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
@@ -187,16 +189,31 @@ class MuteCog(Cog):
         # Get the amount of time elapsed since the user was muted.
         time_delta = datetime.datetime.utcnow() - mute_channel.created_at
         days = time_delta.days
+
+        # Hours are the time delta in seconds divided by 3600.
         hours, remainder = divmod(time_delta.seconds, 3600)
+
+        # Minutes are the hour remainder divided by 60. The minutes remainder are the seconds.
         minutes, seconds = divmod(remainder, 60)
-        if days == 0 and hours == 0 and minutes == 0:
-            elapsed_time = f"{seconds} seconds"
-        elif days == 0 and hours == 0:
-            elapsed_time = f"{minutes} minutes, {seconds} seconds"
-        elif days == 0:
-            elapsed_time = f"{hours} hours, {minutes} minutes, {seconds} seconds"
-        else:
-            elapsed_time = f"{days} days, {hours} hours, {minutes} minutes, {seconds} seconds"
+
+        # String that will store the duration in a more digestible format.
+        elapsed_time = ""
+        duration = dict(
+            days=days,
+            hours=hours,
+            minutes=minutes,
+            seconds=seconds
+        )
+
+        for time_unit in duration:
+            # If the time value is 0, skip it.
+            if duration[time_unit] == 0:
+                continue
+            # If the time value is 1, make the time unit into singular form.
+            if duration[time_unit] == 1:
+                elapsed_time += f"{duration[time_unit]} {time_unit[:-1]} "
+            else:
+                elapsed_time += f"{duration[time_unit]} {time_unit} "
 
         # Create the embed in #mute-log.
         embed = embeds.make_embed(
@@ -206,7 +223,8 @@ class MuteCog(Cog):
         )
 
         embed.add_field(name="Muted User:", value=member.mention, inline=True)
-        embed.add_field(name="Muted By:", value=moderator.mention, inline=True)
+        embed.add_field(name="Muted By:", value=muter.mention, inline=True)
+        embed.add_field(name="Unmuted By:", value=unmuter.mention, inline=True)
         embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
         embed.add_field(name="Duration:", value=elapsed_time, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
@@ -215,12 +233,6 @@ class MuteCog(Cog):
         # Send the embed to #mute-log.
         mute_log = discord.utils.get(guild.channels, id=config.mute_log)
         await mute_log.send(embed=embed)
-
-        # Add the unmute to the mod_logs database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=user_id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
-            ))
 
         # Delete the mute channel.
         await mute_channel.delete()
@@ -358,9 +370,9 @@ class MuteCog(Cog):
         embed = embeds.make_embed(ctx=ctx, title=f"Unmuting member: {member.name}", color="soft_green", thumbnail_url=config.user_unmute)
         embed.description = f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
 
-        # Unmutes the user and and archives the channel.
-        await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
+        # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.
         await self.unmute_member(ctx=ctx, member=member, reason=reason)
+        await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 
         # Attempt to DM the user to let them and the mods know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
@@ -370,7 +382,7 @@ class MuteCog(Cog):
         # We cannot send the embed and then archive the channel because that will cause a error.AlreadyResponded.
         try:
             await ctx.send(embed=embed)
-        except discord.errors.NotFound:
+        except discord.HTTPException:
             pass
 
     @commands.has_role(config.role_staff)
@@ -459,16 +471,19 @@ class MuteCog(Cog):
         )
 
         # String that will store the duration in a more digestible format.
-        duration_string = ""
-
+        elapsed_time = ""
         for time_unit in duration:
-            if len(duration[time_unit]):
-                duration_string += f"{duration[time_unit]} {time_unit} "
-                # updating the values for ease of conversion to timedelta object later.
-                duration[time_unit] = float(duration[time_unit])
-            else:
-                # value defaults to 0 in case nothing was mentioned
+            # If the time value is undeclared, set it to 0 and skip it.
+            if duration[time_unit] == "":
                 duration[time_unit] = 0
+                continue
+            # If the time value is 1, make the time unit into singular form.
+            if duration[time_unit] == 1:
+                elapsed_time += f"{duration[time_unit]} {time_unit[:-1]} "
+            else:
+                elapsed_time += f"{duration[time_unit]} {time_unit} "
+            # Updating the values for ease of conversion to timedelta object later.
+            duration[time_unit] = int(duration[time_unit])
 
         mute_end_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
             days=duration["days"],
@@ -479,13 +494,14 @@ class MuteCog(Cog):
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
         embed = embeds.make_embed(ctx=ctx, title=f"Muting member: {member}", thumbnail_url=config.user_mute, color="soft_red")
-        embed.description = f"{member.mention} was muted by {ctx.author.mention} for:\n{reason}\n **Duration:** {duration_string}"
+        embed.description = f"{member.mention} was muted by {ctx.author.mention} for: {reason}"
+        embed.add_field(name="Duration", value=elapsed_time, inline=False)
 
         # Create the mute channel in the Staff category.
-        channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason, duration=duration_string)
+        channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason, duration=elapsed_time)
 
         # Attempt to DM the user to let them know they were muted.
-        if not await self.send_muted_dm_embed(ctx=ctx, member=member, channel=channel, reason=reason, duration=duration_string):
+        if not await self.send_muted_dm_embed(ctx=ctx, member=member, channel=channel, reason=reason, duration=elapsed_time):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Mutes the user and stores the unmute time in the database for the background task.
