@@ -139,7 +139,7 @@ class MuteCog(Cog):
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
         if not unmute_reason:
-            reason = "No reason provided."
+            unmute_reason = "No reason provided."
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if len(unmute_reason) > 512:
@@ -385,7 +385,7 @@ class MuteCog(Cog):
 
         # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.
         await self.unmute_member(ctx=ctx, member=member, reason=reason)
-        await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
+        await self.archive_mute_channel(ctx=ctx, user_id=member.id, unmute_reason=reason)
 
         # Attempt to DM the user to let them and the mods know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
