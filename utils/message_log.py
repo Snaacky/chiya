@@ -24,3 +24,5 @@ async def download_file(url: str, filename: str, save_path: str):
         file.write(response.content)
     finally:
         file.close()
+    
+    return filename
