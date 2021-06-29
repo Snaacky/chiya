@@ -141,6 +141,7 @@ class Reminder(Cog):
         with dataset.connect(database.get_db()) as db:
             remind_me = db["remind_me"]
             reminder = remind_me.find_one(id=reminder_id)
+            old_message = reminder["message"]
 
             if reminder["author_id"] != ctx.author.id:
                 await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
@@ -161,6 +162,7 @@ class Reminder(Cog):
         )
         embed.description = "Your reminder was updated"
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
+        embed.add_field(name="Old Message: ", value=old_message, inline=False)
         embed.add_field(name="New Message: ", value=new_message, inline=False)
         await ctx.send(embed=embed)
 
