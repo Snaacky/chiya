@@ -69,8 +69,8 @@ class TicketCog(Cog):
         embed = embeds.make_embed(title="🎫  Ticket created",
                                 description="Please remain patient for a staff member to assist you.",
                                 color="default")
-        embed.add_field(name="Ticket Creator:", value=ctx.author.mention, inline=False)
-        embed.add_field(name="Ticket Topic:", value=topic, inline=False)
+        embed.add_field(name="Ticket creator:", value=ctx.author.mention, inline=False)
+        embed.add_field(name="Ticket topic:", value=topic, inline=False)
         await channel.send(embed=embed)
         
         # Insert a pending ticket into the database.
@@ -120,7 +120,7 @@ class TicketCog(Cog):
         member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
 
         # Initialize the PrivateBin message log string.
-        message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
+        message_log = f"Ticket creator: {member}\nuser ID: {member.id}\nTicket topic: {ticket_topic}\n\n"
 
         # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
@@ -156,10 +156,10 @@ class TicketCog(Cog):
             color=0x00ffdf
         )
 
-        embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
-        embed.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
-        embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
-        embed.add_field(name="Ticket Log: ", value=url, inline=False)
+        embed.add_field(name="Ticket creator:", value=member.mention, inline=False)
+        embed.add_field(name="Ticket topic:", value=ticket_topic, inline=False)
+        embed.add_field(name="Participating moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
+        embed.add_field(name="Ticket log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)

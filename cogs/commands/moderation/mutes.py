@@ -81,7 +81,7 @@ class MuteCog(Cog):
             embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
-            embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
+            embed.add_field(name="Mute channel:", value=channel.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
             await dm_channel.send(embed=embed)
@@ -165,11 +165,11 @@ class MuteCog(Cog):
 
         # Initialize the PrivateBin message log string.
         message_log = (
-            f"Muted User: {member} ({member.id})\n\n"
-            f"Muted By: {muter} ({muter.id})\n"
-            f"Unmuted By: {unmuter} ({unmuter.id})\n"
-            f"Mute Reason: {mute_reason}\n\n"
-            f"Unmute Reason: {unmute_reason}\n"
+            f"Muted user: {member} ({member.id})\n\n"
+            f"Muted by: {muter} ({muter.id})\n"
+            f"Unmuted by: {unmuter} ({unmuter.id})\n"
+            f"Mute reason: {mute_reason}\n\n"
+            f"Unmute reason: {unmute_reason}\n"
         )
 
         # Initialize a list of moderator IDs as a set for no duplicates.
@@ -234,14 +234,14 @@ class MuteCog(Cog):
             color="blurple"
         )
 
-        embed.add_field(name="Muted User:", value=member.mention, inline=True)
-        embed.add_field(name="Muted By:", value=muter.mention, inline=True)
-        embed.add_field(name="Unmuted By:", value=unmuter.mention, inline=True)
-        embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
-        embed.add_field(name="Unmute Reason:", value=unmute_reason, inline=False)
+        embed.add_field(name="Muted user:", value=member.mention, inline=True)
+        embed.add_field(name="Muted by:", value=muter.mention, inline=True)
+        embed.add_field(name="Unmuted by:", value=unmuter.mention, inline=True)
+        embed.add_field(name="Mute reason:", value=mute_reason, inline=False)
+        embed.add_field(name="Unmute reason:", value=unmute_reason, inline=False)
         embed.add_field(name="Duration:", value=elapsed_time, inline=False)
-        embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
-        embed.add_field(name="Mute Log: ", value=url, inline=False)
+        embed.add_field(name="Participating moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
+        embed.add_field(name="Mute log: ", value=url, inline=False)
 
         # Send the embed to #mute-log.
         mute_log = discord.utils.get(guild.channels, id=config.mute_log)
