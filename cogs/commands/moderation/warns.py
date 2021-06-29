@@ -52,7 +52,7 @@ class WarnsCog(Cog):
             ]
         }
     )
-    async def warn(self, ctx: SlashContext, member: discord.User, reason: str = None):
+    async def warn(self, ctx: SlashContext, member: discord.User, reason: str):
         """ Sends member a warning DM and logs to database. """
         await ctx.defer()
 
@@ -60,10 +60,6 @@ class WarnsCog(Cog):
         if isinstance(member, int):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
             return
-
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
 
         if len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
