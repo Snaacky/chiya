@@ -1,9 +1,10 @@
 import config
-from utils import embeds
+from utils import embeds, database, message_log
 
 import logging
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
+import dataset
 from discord.ext import commands
 import discord
 
@@ -16,7 +17,7 @@ class MessageUpdates(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
+    
     @commands.Cog.listener()
     async def on_message_delete(self, message: Message):
         """Event Listener which is called when a message is deleted.
@@ -146,8 +147,25 @@ class MessageUpdates(commands.Cog):
         if message.author.bot:
             return
 
+        file_no = 0
+        for attachment in message.attachments:
+            await message_log.download_file(url=attachment.url, filename=f"{message.id}_{file_no}",
+                save_path="./attachments")
+            file_no += 1
+        # logging the message
+        with dataset.connect(database.get_db()) as db:
+            db['message_logs'].insert(dict(
+                message_id = message.id,
+                author_id = message.author.id,
+                channel_id = message.channel.id,
+                guild_id = message.guild.id,
+                created_at = int(message.created_at.timestamp()),
+                content = message.content,
+                has_attachments = bool(message.attachments)
+            ))
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
