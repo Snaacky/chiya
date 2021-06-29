@@ -103,7 +103,12 @@ class Reminder(Cog):
                 sent=False
             ))
 
-        embed = embeds.make_embed(ctx=ctx, title="Reminder set")
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title="Reminder set",
+            thumbnail_url=config.remind_blurple,
+            color="blurple"
+        )
         embed.description = f"\nI'll remind you about this in {duration_string[:-1]}."  # Remove the trailing white space.
         embed.add_field(name="ID: ", value=remind_id, inline=False)
         embed.add_field(name="Message:", value=message, inline=False)
@@ -134,22 +139,29 @@ class Reminder(Cog):
         await ctx.defer()
 
         with dataset.connect(database.get_db()) as db:
-            remind_me = db['remind_me']
+            remind_me = db["remind_me"]
             reminder = remind_me.find_one(id=reminder_id)
 
-            if reminder['author_id'] != ctx.author.id:
+            if reminder["author_id"] != ctx.author.id:
                 await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
                 return
 
-            if reminder['sent']:
+            if reminder["sent"]:
                 await embeds.error_message(ctx, "That reminder doesn't exist.")
                 return
 
-            data = dict(id=reminder['id'], message=new_message)
-            remind_me.update(data, ['id'])
+            data = dict(id=reminder["id"], message=new_message)
+            remind_me.update(data, ["id"])
 
-        embed = embeds.make_embed(ctx=ctx, title="Reminder edited")
-        embed.description = f"Your reminder was updated to: \n\n{new_message}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title="Reminder set",
+            thumbnail_url=config.remind_green,
+            color="soft_green"
+        )
+        embed.description = "Your reminder was updated"
+        embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
+        embed.add_field(name="New Message: ", value=new_message, inline=False)
         await ctx.send(embed=embed)
 
     @cog_ext.cog_subcommand(
@@ -164,16 +176,17 @@ class Reminder(Cog):
 
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
-            remind_me = db['remind_me']
+            remind_me = db["remind_me"]
             result = remind_me.find(sent=False, author_id=ctx.author.id)
 
         reminders = []
 
         # Convert ResultSet to list.
         for reminder in result:
-            alert_time = str(datetime.fromtimestamp(reminder['date_to_remind']))
-            alert_time = alert_time[:alert_time.index('.')]
-            reminders.append(f"**ID: {reminder['id']}** | Alert on {alert_time}\n{reminder['message']}")
+            alert_time = datetime.fromtimestamp(reminder["date_to_remind"])
+            # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+            alert_time = alert_time.strftime("%A, %b %d, %Y at %X")
+            reminders.append(f"**ID: {reminder['id']}** \n**Alert on:** {alert_time}\n**Message: **{reminder['message']}")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -182,7 +195,7 @@ class Reminder(Cog):
             color="blurple"
         )
 
-        # Paginate results
+        # Paginate results.
         await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
                                      max_size=2000, restrict_to_user=ctx.author)
 
@@ -206,32 +219,34 @@ class Reminder(Cog):
 
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
-            table = db['remind_me']
-            result = table.find_one(id=reminder_id)
+            table = db["remind_me"]
+            reminder = table.find_one(id=reminder_id)
 
-            if not result:
+            if not reminder:
                 await embeds.error_message(ctx=ctx, description="Invalid ID")
                 return
 
-            if result['author_id'] != ctx.author.id:
+            if reminder["author_id"] != ctx.author.id:
                 await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
                 return
 
-            if result['sent']:
+            if reminder["sent"]:
                 await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
                 return
 
             # All the checks should be done.
             data = dict(id=reminder_id, sent=True)
-            table.update(data, ['id'])
+            table.update(data, ["id"])
 
         embed = embeds.make_embed(
             ctx=ctx,
             title="Reminder deleted",
-            description=f"Reminder ID: {reminder_id} has been deleted.",
             thumbnail_url=config.remind_red,
             color="soft_red"
         )
+        embed.description = "Your reminder was deleted"
+        embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
+        embed.add_field(name="Message: ", value=reminder["message"], inline=False)
         await ctx.send(embed=embed)
 
     @cog_ext.cog_subcommand(
@@ -245,11 +260,11 @@ class Reminder(Cog):
         await ctx.defer()
 
         with dataset.connect(database.get_db()) as db:
-            remind_me = db['remind_me']
+            remind_me = db["remind_me"]
             result = remind_me.find(author_id=ctx.author.id, sent=False)
             for reminder in result:
-                updated_data = dict(id=reminder['id'], sent=True)
-                remind_me.update(updated_data, ['id'])
+                updated_data = dict(id=reminder["id"], sent=True)
+                remind_me.update(updated_data, ["id"])
 
         await ctx.send("All your reminders have been cleared.")
 
