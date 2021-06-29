@@ -46,11 +46,13 @@ class MessageUpdates(commands.Cog):
         """
         guild = discord.utils.get(self.bot.guilds, id=config.guild_id)
         self.message_logs = discord.utils.get(guild.channels, id=config.message_logs)
+        
         channel = discord.utils.get(guild.channels, id=payload.channel_id)
 
         message = payload.cached_message
         embed = embeds.make_embed(title="Message deleted", description=None, color="red", thumbnail_url=config.message_delete)
 
+        # message is in internal bot cache, so just use that.
         if message:
             embed.set_author(name=f"{message.author.name}#{message.author.discriminator}", icon_url=message.author.avatar_url)
             embed.description = f"**Message:**\n{message.content[0:256]}"
@@ -63,11 +65,6 @@ class MessageUpdates(commands.Cog):
 
         await self.message_logs.send(embed=embed)
             
-        
-        
-            
-        
-
     @commands.Cog.listener()
     async def on_bulk_message_delete(self, messages: list):
         """Event Listener which is called when messages are bulk deleted.
