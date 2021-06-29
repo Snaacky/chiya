@@ -148,12 +148,25 @@ class MessageUpdates(commands.Cog):
             return
 
         file_no = 0
+        file_list = ""
         for attachment in message.attachments:
-            await message_log.download_file(url=attachment.url, filename=f"{message.id}_{file_no}",
+            filename = await message_log.download_file(url=attachment.url, filename=f"{message.id}_{file_no}",
                 save_path="./attachments")
+            if filename:
+                file_list += filename + " "
             file_no += 1
-        # logging the message
+        
+        file_list = file_list.strip()
+        
+        # logging the message to database
         with dataset.connect(database.get_db()) as db:
+            is_edited = False
+            result = db['message_logs'].find_one(
+                message_id = message.id
+            )
+            if result:
+                is_edited = True
+            
             db['message_logs'].insert(dict(
                 message_id = message.id,
                 author_id = message.author.id,
@@ -161,7 +174,8 @@ class MessageUpdates(commands.Cog):
                 guild_id = message.guild.id,
                 created_at = int(message.created_at.timestamp()),
                 content = message.content,
-                has_attachments = bool(message.attachments)
+                attachments = file_list,
+                is_edited = is_edited
             ))
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
