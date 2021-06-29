@@ -39,6 +39,17 @@ def setup_db():
     timed_mod_actions.create_column("start_time", db.types.integer)
     timed_mod_actions.create_column("end_time", db.types.integer)
     timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
+
+    message_logs = db.create_table("message_logs")
+    message_logs.create_column("message_id", db.types.integer)
+    message_logs.create_column("author_id", db.types.integer)
+    message_logs.create_column("channel_id", db.types.integer)
+    message_logs.create_column("guild_id", db.types.integer)
+    message_logs.create_column("created_at", db.types.integer)
+    message_logs.create_column("content", db.types.text)
+    message_logs.create_column("attachments", db.types.text)
+    message_logs.create_column("embed", db.types.text)
+    message_logs.create_column("stickers", db.types.text)
    
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
