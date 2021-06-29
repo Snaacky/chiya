@@ -47,9 +47,7 @@ def setup_db():
     message_logs.create_column("guild_id", db.types.integer)
     message_logs.create_column("created_at", db.types.integer)
     message_logs.create_column("content", db.types.text)
-    message_logs.create_column("attachments", db.types.text)
-    message_logs.create_column("embed", db.types.text)
-    message_logs.create_column("stickers", db.types.text)
+    message_logs.create_column("has_attachments", db.types.boolean)
    
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
