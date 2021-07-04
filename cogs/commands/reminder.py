@@ -106,10 +106,10 @@ class Reminder(Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title="Reminder set",
+            description=f"\nI'll remind you about this in {duration_string[:-1]}.",  # Remove the trailing white space.
             thumbnail_url=config.remind_blurple,
             color="blurple"
         )
-        embed.description = f"\nI'll remind you about this in {duration_string[:-1]}."  # Remove the trailing white space.
         embed.add_field(name="ID: ", value=remind_id, inline=False)
         embed.add_field(name="Message:", value=message, inline=False)
         await ctx.send(embed=embed)
@@ -157,10 +157,10 @@ class Reminder(Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title="Reminder set",
+            description="Your reminder was updated",
             thumbnail_url=config.remind_green,
             color="soft_green"
         )
-        embed.description = "Your reminder was updated"
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
         embed.add_field(name="Old Message: ", value=old_message, inline=False)
         embed.add_field(name="New Message: ", value=new_message, inline=False)
@@ -243,10 +243,10 @@ class Reminder(Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title="Reminder deleted",
+            description="Your reminder was deleted",
             thumbnail_url=config.remind_red,
             color="soft_red"
         )
-        embed.description = "Your reminder was deleted"
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
         embed.add_field(name="Message: ", value=reminder["message"], inline=False)
         await ctx.send(embed=embed)

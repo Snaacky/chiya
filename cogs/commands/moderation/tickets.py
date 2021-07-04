@@ -87,7 +87,7 @@ class TicketCog(Cog):
         await ping.delete()
 
         await ctx.send(f"Opened a ticket: {channel.mention}")
-        
+
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="close",

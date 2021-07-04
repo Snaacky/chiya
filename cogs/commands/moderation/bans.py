@@ -106,7 +106,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="ban", 
+        name="ban",
         description="Bans the member indefinitely",
         guild_ids=[config.guild_id],
         options=[
@@ -144,7 +144,7 @@ class BanCog(Cog):
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
-        
+
         # Checks if the user is already banned and let's the mod know if they already are.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
         if banned:
@@ -189,7 +189,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="unban", 
+        name="unban",
         description="Unbans the user from the server",
         guild_ids=[config.guild_id],
         options=[
@@ -251,7 +251,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="tempban", 
+        name="tempban",
         description="Bans the member for the specified length of time",
         guild_ids=[config.guild_id],
         options=[
@@ -295,7 +295,7 @@ class BanCog(Cog):
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
-        
+
         # Some basic checks to make sure mods can't cause problems with their ban.
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:

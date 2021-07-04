@@ -319,7 +319,7 @@ class MuteCog(Cog):
             description=f"{member.mention} was muted by {ctx.author.mention} for: {reason}",
             thumbnail_url=config.user_mute,
             color="soft_red",
-            )
+        )
 
         # Create the mute channel in the Staff category.
         channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason)
