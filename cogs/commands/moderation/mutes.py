@@ -321,7 +321,6 @@ class MuteCog(Cog):
         await self.mute_member(ctx=ctx, member=member, reason=reason)
         await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
@@ -398,7 +397,6 @@ class MuteCog(Cog):
         except discord.HTTPException:
             pass
 
-    @commands.has_role(config.role_staff)
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
