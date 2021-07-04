@@ -75,9 +75,12 @@ class MuteCog(Cog):
 
         try:  # In case user has DM blocked.
             dm_channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0x8083b0)
-            embed.title = f"Uh-oh, you've been muted!"
-            embed.description = "If you believe this was a mistake, contact staff."
+            embed = embeds.make_embed(
+                author=False,
+                title=f"Uh-oh, you've been muted!",
+                description="If you believe this was a mistake, contact staff.",
+                color=0x8083b0
+            )
             embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
@@ -96,9 +99,12 @@ class MuteCog(Cog):
         # Send member message telling them that they were banned and why.
         try:  # In case user has DM blocked.
             channel = await member.create_dm()
-            embed = embeds.make_embed(author=False, color=0x8a3ac5)
-            embed.title = f"Yay, you've been unmuted!"
-            embed.description = "Review our server rules to avoid being actioned again in the future."
+            embed = embeds.make_embed(
+                author=False,
+                title=f"Yay, you've been unmuted!",
+                description="Review our server rules to avoid being actioned again in the future.",
+                color=0x8a3ac5
+            )
             embed.add_field(name="Server:", value=f"[{str(guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -307,8 +313,13 @@ class MuteCog(Cog):
             return
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
-        embed = embeds.make_embed(ctx=ctx, title=f"Muting member: {member.name}", color="soft_red", thumbnail_url=config.user_mute)
-        embed.description = f"{member.mention} was muted by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Muting member: {member.name}",
+            description=f"{member.mention} was muted by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_mute,
+            color="soft_red",
+            )
 
         # Create the mute channel in the Staff category.
         channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason)

@@ -87,9 +87,12 @@ class BanCog(Cog):
 
         try:  # In case user has DM Blocked.
             channel = await user.create_dm()
-            embed = embeds.make_embed(author=False, color=0xc2bac0)
-            embed.title = f"Uh-oh, you've been banned!"
-            embed.description = "You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy)."
+            embed = embeds.make_embed(
+                author=False,
+                title=f"Uh-oh, you've been banned!",
+                description="You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy).",
+                color=0xc2bac0
+            )
             embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
@@ -165,8 +168,13 @@ class BanCog(Cog):
             return
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user.name}", thumbnail_url=config.user_ban, color="soft_red")
-        embed.description = f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Banning user: {user.name}",
+            description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_ban,
+            color="soft_red"
+        )
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.
@@ -228,8 +236,13 @@ class BanCog(Cog):
             return
 
         # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", thumbnail_url=config.user_unban, color="soft_green")
-        embed.description = f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Unbanning user: {user.name}",
+            description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_unban,
+            color="soft_green"
+        )
 
         # Unbans the user and returns the embed letting the moderator know they were successfully banned.
         await self.unban_user(ctx=ctx, user=user, reason=reason)
@@ -353,8 +366,13 @@ class BanCog(Cog):
         )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user}", thumbnail_url=config.user_ban, color="soft_red")
-        embed.description = f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Banning user: {user}",
+            description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_ban,
+            color="soft_red"
+        )
         embed.add_field(name="Duration", value=elapsed_time, inline=False)
 
         # Attempt to DM the user that they have been banned with various information about their ban. 

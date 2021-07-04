@@ -66,13 +66,15 @@ class TicketCog(Cog):
             await channel.send(f"<@&{config.role_staff}>")
 
         # Create an embed at the top of the new ticket so the mod knows who opened it.
-        embed = embeds.make_embed(title="🎫  Ticket created",
-                                description="Please remain patient for a staff member to assist you.",
-                                color="default")
+        embed = embeds.make_embed(
+            title="🎫  Ticket created",
+            description="Please remain patient for a staff member to assist you.",
+            color="default"
+        )
         embed.add_field(name="Ticket creator:", value=ctx.author.mention, inline=False)
         embed.add_field(name="Ticket topic:", value=topic, inline=False)
         await channel.send(embed=embed)
-        
+
         # Insert a pending ticket into the database.
         with dataset.connect(database.get_db()) as db:
             db["tickets"].insert(dict(
@@ -86,7 +88,6 @@ class TicketCog(Cog):
 
         await ctx.send(f"Opened a ticket: {channel.mention}")
         
-
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="close",
@@ -104,7 +105,7 @@ class TicketCog(Cog):
         """ Closes the modmail ticket."""
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
         await ctx.defer()
-        
+
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not ctx.channel.category_id == config.ticket_category_id or "ticket" not in ctx.channel.name:
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
@@ -168,7 +169,7 @@ class TicketCog(Cog):
         # DM the user that their ticket was closed.
         try:
             embed = embeds.make_embed(
-                author=False, 
+                author=False,
                 color=0xf4cdc5,
                 title=f"Ticket closed",
                 description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",

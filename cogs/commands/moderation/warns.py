@@ -77,9 +77,12 @@ class WarnsCog(Cog):
         # Send member message telling them that they were warned and why.
         try:  # In case user has DM blocked.
             channel = await member.create_dm()
-            warn_embed = embeds.make_embed(author=False, color=0xf7dcad)
-            warn_embed.title = f"Uh-oh, you've received a warning!"
-            warn_embed.description = "If you believe this was a mistake, contact staff."
+            warn_embed = embeds.make_embed(
+                author=False,
+                title=f"Uh-oh, you've received a warning!",
+                description="If you believe this was a mistake, contact staff.",
+                color=0xf7dcad
+            )
             warn_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
             warn_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             warn_embed.add_field(name="Reason:", value=reason, inline=False)
