@@ -27,10 +27,13 @@ class MutesHandler(commands.Cog):
             if action:
                 user = await self.bot.fetch_user(member.id)
                 # Creating the embed used to alert the moderators that the mute evading member was banned.
-                embed = embeds.make_embed(ctx=None,
-                                          title=f"Member {user.name}#{user.discriminator} banned.",
-                                          description=f"User {user.mention} was permanently banned because they evaded their timed mute by leaving."
-                                          )
+                embed = embeds.make_embed(
+                    ctx=None,
+                    title=f"Member {user.name}#{user.discriminator} banned.",
+                    description=f"User {user.mention} was permanently banned because they evaded their timed mute by leaving.",
+                    thumbnail_url=config.user_ban,
+                    color="soft_red"
+                )
 
                 channel = guild.get_channel(config.mod_channel)
                 await guild.ban(user, reason="Mute Evasion.")
@@ -48,10 +51,11 @@ class MutesHandler(commands.Cog):
 
                 # Archive the mute channel
                 mutes = self.bot.get_cog("MuteCog")
-                await mutes.archive_mute_channel(user_id=user.id,
-                                                 guild=guild,
-                                                 unmute_reason="Mute channel archived after member banned due to mute evasion."
-                                                 )
+                await mutes.archive_mute_channel(
+                    user_id=user.id,
+                    guild=guild,
+                    unmute_reason="Mute channel archived after member banned due to mute evasion."
+                )
                 await channel.send(embed=embed)
 
 
