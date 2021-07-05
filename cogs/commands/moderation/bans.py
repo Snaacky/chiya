@@ -370,7 +370,7 @@ class BanCog(Cog):
             thumbnail_url=config.user_ban,
             color="soft_red"
         )
-        embed.add_field(name="Duration: ", value=duration_string, inline=False)
+        embed.add_field(name="Duration:", value=duration_string, inline=False)
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.

@@ -513,7 +513,7 @@ class MuteCog(Cog):
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
         embed = embeds.make_embed(ctx=ctx, title=f"Muting member: {member}", thumbnail_url=config.user_mute, color="soft_red")
         embed.description = f"{member.mention} was muted by {ctx.author.mention} for: {reason}"
-        embed.add_field(name="Duration", value=duration_string, inline=False)
+        embed.add_field(name="Duration:", value=duration_string, inline=False)
 
         # Create the mute channel in the Staff category.
         channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason, duration=duration_string)
