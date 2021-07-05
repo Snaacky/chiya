@@ -30,7 +30,7 @@ class MutesHandler(commands.Cog):
                 embed = embeds.make_embed(
                     ctx=None,
                     title=f"Member {user.name}#{user.discriminator} banned.",
-                    description=f"User {user.mention} was permanently banned because they evaded their timed mute by leaving.",
+                    description=f"User {user.mention} was banned indefinitely because they evaded their timed mute by leaving.",
                     thumbnail_url=config.user_ban,
                     color="soft_red"
                 )

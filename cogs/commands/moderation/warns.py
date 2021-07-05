@@ -75,7 +75,7 @@ class WarnsCog(Cog):
         embed.description = f"{member.mention} was warned by {ctx.author.mention} for: {reason}"
 
         # Send member message telling them that they were warned and why.
-        try:  # In case user has DM blocked.
+        try:  # In case user has DMs blocked.
             channel = await member.create_dm()
             warn_embed = embeds.make_embed(
                 author=False,

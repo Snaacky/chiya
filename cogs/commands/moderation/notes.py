@@ -138,12 +138,12 @@ class NotesCog(Cog):
         for entry in results:
             # Appending dict of action to the particular page.
             page.append(dict(
-                id=entry['id'],
-                user_id=entry['user_id'],
-                mod_id=entry['mod_id'],
-                reason=entry['reason'],
-                type=entry['type'],
-                timestamp=entry['timestamp']
+                id=entry["id"],
+                user_id=entry["user_id"],
+                mod_id=entry["mod_id"],
+                reason=entry["reason"],
+                type=entry["type"],
+                timestamp=entry["timestamp"]
             ).copy())
 
             if (page_no + 1) % per_page == 0 and page_no != 0:

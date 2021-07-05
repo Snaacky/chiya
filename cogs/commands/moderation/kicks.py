@@ -67,14 +67,13 @@ class KickCog(Cog):
             await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
             return
 
-        # Handle cases where the reason is not provided.
-        if not reason:
-            reason = "No reason provided."
-
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if len(reason) > 512:
+        if reason and len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        else:
+            reason = "No reason provided."
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -85,7 +84,7 @@ class KickCog(Cog):
         )
 
         # Send user message telling them that they were kicked and why.
-        try:  # In case user has DM blocked.
+        try:  # In case user has DMs blocked.
             channel = await member.create_dm()
             dm_embed = embeds.make_embed(
                 title=f"Uh-oh, you've been kicked!",
@@ -94,7 +93,7 @@ class KickCog(Cog):
                 author=False,
                 color=0xe49bb3
             )
-            dm_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
+            dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)

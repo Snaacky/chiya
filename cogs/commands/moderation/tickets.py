@@ -71,8 +71,8 @@ class TicketCog(Cog):
             description="Please remain patient for a staff member to assist you.",
             color="default"
         )
-        embed.add_field(name="Ticket creator:", value=ctx.author.mention, inline=False)
-        embed.add_field(name="Ticket topic:", value=topic, inline=False)
+        embed.add_field(name="Ticket Creator:", value=ctx.author.mention, inline=False)
+        embed.add_field(name="Ticket Topic:", value=topic, inline=False)
         await channel.send(embed=embed)
 
         # Insert a pending ticket into the database.
@@ -121,7 +121,11 @@ class TicketCog(Cog):
         member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
 
         # Initialize the PrivateBin message log string.
-        message_log = f"Ticket creator: {member}\nuser ID: {member.id}\nTicket topic: {ticket_topic}\n\n"
+        message_log = (
+            f"Ticket Creator: {member}\n"
+            f"User ID: {member.id}\n"
+            f"Ticket Topic: {ticket_topic}\n\n"
+        )
 
         # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
@@ -157,10 +161,10 @@ class TicketCog(Cog):
             color=0x00ffdf
         )
 
-        embed.add_field(name="Ticket creator:", value=member.mention, inline=False)
-        embed.add_field(name="Ticket topic:", value=ticket_topic, inline=False)
-        embed.add_field(name="Participating moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
-        embed.add_field(name="Ticket log: ", value=url, inline=False)
+        embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
+        embed.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
+        embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
+        embed.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.ticket_log)
@@ -175,8 +179,8 @@ class TicketCog(Cog):
                 description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
                 image_url="https://i.imgur.com/21nJqGC.gif"
             )
-            embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=False)
-            embed.add_field(name="Ticket log:", value=url, inline=False)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=False)
+            embed.add_field(name="Ticket Log:", value=url, inline=False)
             await member.send(embed=embed)
         except discord.HTTPException:
             logging.info(f"Attempted to send ticket closed DM to {member} but they are not accepting DMs.")

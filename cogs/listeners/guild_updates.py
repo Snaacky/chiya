@@ -40,7 +40,7 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_unavailable
         """
-        log.info(f'{guild.name} has become unavailable.')
+        log.info(f'{guild.name} is now unavailable.')
 
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel) -> None:
