@@ -65,12 +65,12 @@ class BanCog(Cog):
                 user_id=user.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unban"
             ))
 
-    async def is_user_in_guild(self, guild: discord.Guild, user: discord.User) -> bool:
+    async def is_user_in_guild(self, guild: discord.Guild, user: discord.User):
         guild = self.bot.get_guild(guild)
         member = guild.get_member(user.id)
         if member:
             return member
-        return False
+        return None
 
     async def is_user_banned(self, guild: discord.Guild, user: discord.User) -> bool:
         # Checks to see if the user is already banned.
@@ -85,12 +85,15 @@ class BanCog(Cog):
         if not duration:
             duration = "Indefinite"
 
-        try:  # In case user has DM Blocked.
+        try:  # In case user has DMs Blocked.
             channel = await user.create_dm()
-            embed = embeds.make_embed(author=False, color=0xc2bac0)
-            embed.title = f"Uh-oh, you've been banned!"
-            embed.description = "You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy)."
-            embed.add_field(name="Server:", value=ctx.guild, inline=True)
+            embed = embeds.make_embed(
+                author=False,
+                title=f"Uh-oh, you've been banned!",
+                description="You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy).",
+                color=0xc2bac0
+            )
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -103,7 +106,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True, embed_links=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="ban", 
+        name="ban",
         description="Bans the member indefinitely",
         guild_ids=[config.guild_id],
         options=[
@@ -141,7 +144,7 @@ class BanCog(Cog):
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
-        
+
         # Checks if the user is already banned and let's the mod know if they already are.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
         if banned:
@@ -152,21 +155,25 @@ class BanCog(Cog):
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-                await embeds.error_message(ctx=ctx, description="Could not action that member.")
+                await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
                 return
-
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if reason and len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        else:
+            reason = "No reason provided."
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user.name}", thumbnail_url=config.user_ban, color="soft_red")
-        embed.description = f"{user.mention} was banned by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Banning user: {user.name}",
+            description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_ban,
+            color="soft_red"
+        )
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.
@@ -181,7 +188,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="unban", 
+        name="unban",
         description="Unbans the user from the server",
         guild_ids=[config.guild_id],
         options=[
@@ -218,18 +225,22 @@ class BanCog(Cog):
             await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
             return
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
-
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if reason and len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        else:
+            reason = "No reason provided."
 
         # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Unbanning user: {user.name}", thumbnail_url=config.user_unban, color="soft_green")
-        embed.description = f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Unbanning user: {user.name}",
+            description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_unban,
+            color="soft_green"
+        )
 
         # Unbans the user and returns the embed letting the moderator know they were successfully banned.
         await self.unban_user(ctx=ctx, user=user, reason=reason)
@@ -238,7 +249,7 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="tempban", 
+        name="tempban",
         description="Bans the member for the specified length of time",
         guild_ids=[config.guild_id],
         options=[
@@ -282,13 +293,13 @@ class BanCog(Cog):
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
-        
+
         # Some basic checks to make sure mods can't cause problems with their ban.
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
             member = await commands.MemberConverter().convert(ctx, user.mention)
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-                await embeds.error_message(ctx=ctx, description="Could not action that member.")
+                await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
                 return
 
         # Checks if the user is already banned and let's the mod know if they already were.
@@ -303,7 +314,7 @@ class BanCog(Cog):
         # Attempt to parse the message argument with the Setsudo RegEx
         try:
             match_list = re.findall(regex, duration)[0]
-        except:
+        except discord.HTTPException:
             await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 
@@ -312,14 +323,13 @@ class BanCog(Cog):
             await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
-
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if reason and len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description=f"Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        else:
+            reason = "No reason provided."
 
         # Assign the arguments from the parsed message into variables
         duration = dict(
@@ -329,17 +339,20 @@ class BanCog(Cog):
             seconds=match_list[4]
         )
 
-        # Used to store the duration that will be displayed later.
+        # String that will store the duration in a more digestible format.
         duration_string = ""
-
         for time_unit in duration:
-            if len(duration[time_unit]):
-                duration_string += f"{duration[time_unit]} {time_unit} "
-                # Update the values for ease of conversion to timedelta object later.
-                duration[time_unit] = float(duration[time_unit])
-            else:
-                # Value defaults to 0 for the unused units of time.
+            # If the time value is undeclared, set it to 0 and skip it.
+            if duration[time_unit] == "":
                 duration[time_unit] = 0
+                continue
+            # If the time value is 1, make the time unit into singular form.
+            if duration[time_unit] == "1":
+                duration_string += f"{duration[time_unit]} {time_unit[:-1]} "
+            else:
+                duration_string += f"{duration[time_unit]} {time_unit} "
+            # Updating the values for ease of conversion to timedelta object later.
+            duration[time_unit] = float(duration[time_unit])
 
         # Adds the timedelta of the ban length to the current time to get the unban datetime.
         ban_end_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
@@ -350,8 +363,14 @@ class BanCog(Cog):
         )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(ctx=ctx, title=f"Banning user: {user}", thumbnail_url=config.user_ban, color="soft_red")
-        embed.description = f"{user.mention} was banned by {ctx.author.mention} for:\n{reason}\n **Duration:** {duration_string}"
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Banning user: {user}",
+            description=f"{user.mention} was temporarily banned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_ban,
+            color="soft_red"
+        )
+        embed.add_field(name="Duration:", value=duration_string, inline=False)
 
         # Attempt to DM the user that they have been banned with various information about their ban. 
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.

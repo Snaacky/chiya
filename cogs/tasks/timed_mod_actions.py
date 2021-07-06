@@ -82,14 +82,14 @@ class TimedModActionsTask(Cog):
             if action["action_type"] == "ban":
                 user = await self.bot.fetch_user(action["user_id"])
 
-                # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
+                # Start creating the embed that will be used to alert the moderator that the user was successfully unbanned.
                 embed = embeds.make_embed(ctx=None, title=f"Unbanning user: {user}", thumbnail_url=config.user_unban, color="soft_green")
                 embed.description=f"{user.mention} was unbanned as their temporary ban elapsed."
 
-                # Get the MuteCog so that we can access functions from it.
+                # Get the BanCog so that we can access functions from it.
                 bans = self.bot.get_cog("BanCog")
 
-                # Unmutes the user and returns the embed letting the moderator know they were successfully muted.
+                # Unbans the user and returns the embed letting the moderator know they were successfully unbanned.
                 await bans.unban_user(user=user, reason="Temporary ban elapsed.", guild=guild)
                 await channel.send(embed=embed)
 

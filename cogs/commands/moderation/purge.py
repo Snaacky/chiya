@@ -13,6 +13,7 @@ from utils.record import record_usage
 # Enabling logs
 log = logging.getLogger(__name__)
 
+
 class PurgeCog(Cog):
     """ Purge Cog """
 
@@ -31,11 +32,11 @@ class PurgeCog(Cog):
 
         # Otherwise, the purge is fine to execute
         return True
-        
+
     @commands.bot_has_permissions(manage_messages=True, send_messages=True, read_message_history=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="purge", 
+        name="purge",
         description="Purges the last X amount of messages",
         guild_ids=[config.guild_id],
         options=[
@@ -63,7 +64,7 @@ class PurgeCog(Cog):
     async def remove_messages(self, ctx: SlashContext, number_of_messages: int, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
         await ctx.defer()
-        
+
         # Check to see if the bot is allowed to purge
         if not await self.can_purge_messages(ctx):
             return
@@ -80,17 +81,17 @@ class PurgeCog(Cog):
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
+        deleted = await ctx.channel.purge(limit=number_of_messages)
         embed = embeds.make_embed(
-            ctx=ctx, 
-            title=f"Removed messages", 
-            thumbnail_url=config.message_delete, 
+            ctx=ctx,
+            title=f"Removed messages",
+            description=f"{ctx.author.mention} removed the previous {len(deleted)} messages.",
+            thumbnail_url=config.message_delete,
             color="soft_red"
         )
-
-        deleted = await ctx.channel.purge(limit=number_of_messages)
-        embed.description=f"{ctx.author.mention} removed the previous {len(deleted)} messages."
         embed.add_field(name="Reason:", value=reason, inline=False)
         await ctx.send(embed=embed)
+
 
 def setup(bot: Bot) -> None:
     """ Load the Purge cog. """

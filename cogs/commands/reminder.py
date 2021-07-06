@@ -3,12 +3,11 @@ import re
 from datetime import datetime, timedelta, timezone
 
 import dataset
+import discord
 from discord.ext import commands
-from discord.ext.commands import Bot, Cog, Context
-from discord.ext.commands.view import StringView
+from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
-from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import create_option
 
 import config
 from utils import database, embeds
@@ -16,6 +15,7 @@ from utils.pagination import LinePaginator
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
+
 
 class Reminder(Cog):
     """ Handles reminder commands """
@@ -26,7 +26,7 @@ class Reminder(Cog):
     @commands.before_invoke(record_usage)
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @cog_ext.cog_slash(
-        name="remindme", 
+        name="remindme",
         description="Sets a reminder note to be sent at a future date",
         guild_ids=[config.guild_id],
         options=[
@@ -54,7 +54,7 @@ class Reminder(Cog):
         # Get all of the matches from the RegEx.
         try:
             match_list = re.findall(regex, duration)[0]
-        except:
+        except discord.HTTPException:
             await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 
@@ -64,43 +64,54 @@ class Reminder(Cog):
             return
 
         duration = dict(
-            days = match_list[0],
-            hours = match_list[1],
-            minutes = match_list[2],
-            seconds = match_list[3]
+            days=match_list[0],
+            hours=match_list[1],
+            minutes=match_list[2],
+            seconds=match_list[3]
         )
 
+        # # String that will store the duration in a more digestible format.
         duration_string = ""
-        
-        for key in duration:
-            if len(duration[key]) > 0:
-                duration_string += f"{duration[key]} {key} "
-                duration[key] = float(duration[key])
-            else: 
-                duration[key] = 0
-        
+        for time_unit in duration:
+            # If the time value is undeclared, set it to 0 and skip it.
+            if duration[time_unit] == "":
+                duration[time_unit] = 0
+                continue
+            # If the time value is 1, make the time unit into singular form.
+            if duration[time_unit] == "1":
+                duration_string += f"{duration[time_unit]} {time_unit[:-1]} "
+            else:
+                duration_string += f"{duration[time_unit]} {time_unit} "
+            # Updating the values for ease of conversion to timedelta object later.
+            duration[time_unit] = float(duration[time_unit])
+
         duration = timedelta(
-                days=duration['days'], 
-                hours=duration['hours'],
-                minutes=duration['minutes'],
-                seconds=duration['seconds']
+            days=duration["days"],
+            hours=duration["hours"],
+            minutes=duration["minutes"],
+            seconds=duration["seconds"]
         )
 
-        end_time = datetime.now(tz=timezone.utc)+duration
-        time_now = str(datetime.now(tz=timezone.utc))
-        time_now = time_now[:time_now.index('.')]
-        
-        with dataset.connect(database.get_db()) as tx:
-            tx["remind_me"].insert(dict(
+        end_time = datetime.now(tz=timezone.utc) + duration
+
+        with dataset.connect(database.get_db()) as db:
+            remind_id = db["remind_me"].insert(dict(
                 reminder_location=ctx.channel.id,
                 author_id=ctx.author.id,
                 date_to_remind=end_time.timestamp(),
                 message=message,
                 sent=False
             ))
-        embed = embeds.make_embed(ctx=ctx, title="Reminder Set")
-        embed.description = f"\nI'll remind you about this in {duration_string.strip()}."
-        embed.add_field(name="Message:", value=message)
+
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title="Reminder set",
+            description=f"\nI'll remind you about this in {duration_string[:-1]}.",  # Remove the trailing white space.
+            thumbnail_url=config.remind_blurple,
+            color="blurple"
+        )
+        embed.add_field(name="ID: ", value=remind_id, inline=False)
+        embed.add_field(name="Message:", value=message, inline=False)
         await ctx.send(embed=embed)
 
     @cog_ext.cog_subcommand(
@@ -123,27 +134,38 @@ class Reminder(Cog):
             ),
         ]
     )
-    async def edit_reminder(self, ctx: SlashContext, id: int, new_message: str):
+    async def edit_reminder(self, ctx: SlashContext, reminder_id: int, new_message: str):
         """ Edit a reminder message. """
         await ctx.defer()
 
         with dataset.connect(database.get_db()) as db:
-            remind_me = db['remind_me']
-            reminder = remind_me.find_one(id=id)
+            remind_me = db["remind_me"]
+            reminder = remind_me.find_one(id=reminder_id)
+            old_message = reminder["message"]
 
-            if reminder['author_id'] != ctx.author.id:
+            if reminder["author_id"] != ctx.author.id:
                 await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
                 return
-            
-            if reminder['sent']:
+
+            if reminder["sent"]:
                 await embeds.error_message(ctx, "That reminder doesn't exist.")
                 return
 
-            data = dict(id=reminder['id'], message=new_message)
-            remind_me.update(data, ['id'])
+            data = dict(id=reminder["id"], message=new_message)
+            remind_me.update(data, ["id"])
 
-        await ctx.send("Reminder was updated.")
-            
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title="Reminder set",
+            description="Your reminder was updated",
+            thumbnail_url=config.remind_green,
+            color="soft_green"
+        )
+        embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
+        embed.add_field(name="Old Message: ", value=old_message, inline=False)
+        embed.add_field(name="New Message: ", value=new_message, inline=False)
+        await ctx.send(embed=embed)
+
     @cog_ext.cog_subcommand(
         base="reminder",
         name="list",
@@ -156,27 +178,28 @@ class Reminder(Cog):
 
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
-            remind_me = db['remind_me']
+            remind_me = db["remind_me"]
             result = remind_me.find(sent=False, author_id=ctx.author.id)
-        
+
         reminders = []
 
         # Convert ResultSet to list.
         for reminder in result:
-            alert_time = str(datetime.fromtimestamp(reminder['date_to_remind']))
-            alert_time = alert_time[:alert_time.index('.')]
-            reminders.append(f"**ID: {reminder['id']}** | Alert on {alert_time}\n{reminder['message']}")
-    
+            alert_time = datetime.fromtimestamp(reminder["date_to_remind"])
+            # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+            alert_time = alert_time.strftime("%A, %b %d, %Y at %X")
+            reminders.append(f"**ID: {reminder['id']}** \n**Alert on:** {alert_time}\n**Message: **{reminder['message']}")
+
         embed = embeds.make_embed(
-            ctx=ctx, 
+            ctx=ctx,
             title="Reminders",
-            thumbnail_url=config.remind_blurple, 
+            thumbnail_url=config.remind_blurple,
             color="blurple"
         )
 
-        # Paginate results
+        # Paginate results.
         await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
-        max_size=2000, restrict_to_user=ctx.author)
+                                     max_size=2000, restrict_to_user=ctx.author)
 
     @cog_ext.cog_subcommand(
         base="reminder",
@@ -198,34 +221,36 @@ class Reminder(Cog):
 
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
-            table = db['remind_me']
-            result = table.find_one(id=reminder_id)
+            table = db["remind_me"]
+            reminder = table.find_one(id=reminder_id)
 
-            if not result:
+            if not reminder:
                 await embeds.error_message(ctx=ctx, description="Invalid ID")
                 return
 
-            if result['author_id'] != ctx.author.id:
+            if reminder["author_id"] != ctx.author.id:
                 await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
                 return
 
-            if result['sent']:
+            if reminder["sent"]:
                 await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
                 return
-            
+
             # All the checks should be done.
             data = dict(id=reminder_id, sent=True)
-            table.update(data, ['id'])
+            table.update(data, ["id"])
 
         embed = embeds.make_embed(
-            ctx=ctx, 
-            title="Reminder deleted", 
-            description=f"Reminder ID: {reminder_id} has been deleted.",
-            thumbnail_url=config.remind_red, 
+            ctx=ctx,
+            title="Reminder deleted",
+            description="Your reminder was deleted",
+            thumbnail_url=config.remind_red,
             color="soft_red"
         )
+        embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
+        embed.add_field(name="Message: ", value=reminder["message"], inline=False)
         await ctx.send(embed=embed)
-    
+
     @cog_ext.cog_subcommand(
         base="reminder",
         name="clear",
@@ -235,15 +260,16 @@ class Reminder(Cog):
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """
         await ctx.defer()
-        
+
         with dataset.connect(database.get_db()) as db:
-            remind_me = db['remind_me']
+            remind_me = db["remind_me"]
             result = remind_me.find(author_id=ctx.author.id, sent=False)
             for reminder in result:
-                updated_data = dict(id=reminder['id'], sent=True)
-                remind_me.update(updated_data, ['id'])
-        
+                updated_data = dict(id=reminder["id"], sent=True)
+                remind_me.update(updated_data, ["id"])
+
         await ctx.send("All your reminders have been cleared.")
+
 
 def setup(bot: Bot) -> None:
     """ Load the Reminder cog. """

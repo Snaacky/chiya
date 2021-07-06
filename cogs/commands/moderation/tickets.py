@@ -3,12 +3,12 @@ import time
 
 import dataset
 import discord
+import privatebinapi
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
 from discord_slash.model import SlashCommandPermissionType
-import privatebinapi
+from discord_slash.utils.manage_commands import create_option, create_permission
 
 import config
 from utils import database
@@ -66,13 +66,15 @@ class TicketCog(Cog):
             await channel.send(f"<@&{config.role_staff}>")
 
         # Create an embed at the top of the new ticket so the mod knows who opened it.
-        embed = embeds.make_embed(title="🎫  Ticket created",
-                                description="Please remain patient for a staff member to assist you.",
-                                color="default")
+        embed = embeds.make_embed(
+            title="🎫  Ticket created",
+            description="Please remain patient for a staff member to assist you.",
+            color="default"
+        )
         embed.add_field(name="Ticket Creator:", value=ctx.author.mention, inline=False)
         embed.add_field(name="Ticket Topic:", value=topic, inline=False)
         await channel.send(embed=embed)
-        
+
         # Insert a pending ticket into the database.
         with dataset.connect(database.get_db()) as db:
             db["tickets"].insert(dict(
@@ -86,7 +88,6 @@ class TicketCog(Cog):
 
         embed = embeds.make_embed(ctx=ctx, title="Created a ticket", description=f"Opened a ticket: {channel.mention} for: {topic}.")
         await ctx.send(embed=embed, hidden=True)
-        
 
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
@@ -105,7 +106,7 @@ class TicketCog(Cog):
         """ Closes the modmail ticket."""
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
         await ctx.defer()
-        
+
         # Warns if the ticket close command is called outside of the current active ticket channel.
         if not ctx.channel.category_id == config.ticket_category_id or "ticket" not in ctx.channel.name:
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
@@ -121,7 +122,11 @@ class TicketCog(Cog):
         member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
 
         # Initialize the PrivateBin message log string.
-        message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\nTicket Topic: {ticket_topic}\n\n"
+        message_log = (
+            f"Ticket Creator: {member}\n"
+            f"User ID: {member.id}\n"
+            f"Ticket Topic: {ticket_topic}\n\n"
+        )
 
         # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
@@ -169,14 +174,14 @@ class TicketCog(Cog):
         # DM the user that their ticket was closed.
         try:
             embed = embeds.make_embed(
-                author=False, 
+                author=False,
                 color=0xf4cdc5,
                 title=f"Ticket closed",
                 description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
                 image_url="https://i.imgur.com/21nJqGC.gif"
             )
-            embed.add_field(name="Ticket log:", value=url)
-
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=False)
+            embed.add_field(name="Ticket Log:", value=url, inline=False)
             await member.send(embed=embed)
         except discord.HTTPException:
             logging.info(f"Attempted to send ticket closed DM to {member} but they are not accepting DMs.")
