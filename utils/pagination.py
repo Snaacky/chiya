@@ -16,12 +16,9 @@ PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMO
 
 log = logging.getLogger(__name__)
 
-
 class EmptyPaginatorEmbed(Exception):
     """Raised when attempting to paginate with empty contents."""
-
     pass
-
 
 class LinePaginator(Paginator):
     """ A class that aids in paginating code blocks for Discord messages.

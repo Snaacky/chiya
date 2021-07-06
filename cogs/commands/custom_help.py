@@ -8,14 +8,12 @@ from utils import embeds
 from utils.pagination import LinePaginator
 import config
 
-
 # Enabling logs.
 log = logging.getLogger(__name__)
 
 COMMANDS_PER_PAGE = 7
 PREFIX = config.prefix
 TIME_TO_LIVE = 120 # In seconds, how long an embed should remain until self-destruct.
-
 
 class CustomHelpCommand(HelpCommand):
     """CustomHelpCommand"""
@@ -89,8 +87,8 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command Help",
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
-            context=self.context
+            thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            ctx=self.context
             )
 
         # Retrieves the fully qualified parent command name.
@@ -184,8 +182,8 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command: Help",
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
-            context=self.context
+            thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            ctx=self.context
             )
         await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
             max_size=2000, restrict_to_user=self.context.author, time_to_delete=TIME_TO_LIVE)
@@ -208,8 +206,8 @@ class CustomHelpCommand(HelpCommand):
 
         embed = embeds.make_embed(
             title="Command Help",
-            image_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
-            context=self.context
+            thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
+            ctx=self.context
             )
 
         if cog.description is None:
@@ -314,8 +312,7 @@ class Help(Cog):
         """Reset the help command when the cog is unloaded."""
         self.bot.help_command = self.old_help_command
 
-
 def setup(bot: Bot) -> None:
     """Load the Help cog."""
     bot.add_cog(Help(bot))
-    log.info("Cog loaded: Help")
+    log.info("Commands loaded: help")

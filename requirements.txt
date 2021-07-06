@@ -5,13 +5,10 @@
 # Run the command below to install the requirements.
 # pip3 install -r requirements.txt
 
-
-###### Requirements without Version Specifiers ######
-coloredlogs                         # https://coloredlogs.readthedocs.io/en/latest/
-parsedatetime                       # https://pypi.org/project/parsedatetime/
-
-###### Requirements with Version Specifiers ######
-dataset==1.4.4                      # https://dataset.readthedocs.io/
 discord.py==1.6.0                   # https://discordpy.readthedocs.io/
-pyyaml==5.4.1                       # https://pyyaml.org/wiki/PyYAMLDocumentation/
+dataset==1.4.4                      # https://dataset.readthedocs.io/
 asyncpraw==7.1.0                    # https://asyncpraw.readthedocs.io/
+coloredlogs==15.0                   # https://coloredlogs.readthedocs.io/en/latest/
+parsedatetime==2.6                  # https://pypi.org/project/parsedatetime/
+PrivateBinAPI~=1.0.0                # https://pypi.org/project/PrivateBinAPI/
+discord-py-slash-command==1.2.2     # https://discord-py-slash-command.readthedocs.io/en/latest/

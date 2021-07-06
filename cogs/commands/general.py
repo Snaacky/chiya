@@ -1,16 +1,17 @@
 import logging
-from typing import Union
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import Bot, Cog, Context
+from discord.ext.commands import Bot, Cog
 
 import config
 from utils import embeds
 from utils.record import record_usage
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 log = logging.getLogger(__name__)
-
 
 class General(Cog):
     """ General Commands Cog """
@@ -20,37 +21,90 @@ class General(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.bot_has_permissions(embed_links=True)
-    @commands.command(name='profile_picture', aliases=["pfp", "avi", "pp", "avatar", "profilepic", "av"])
-    async def pfp(self, ctx: Context, user: discord.User = None):
+    @cog_ext.cog_slash(
+        name="pfp", 
+        description="Gets the members profile picture",
+        guild_ids=[config.guild_id]
+    )
+    async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
+        await ctx.defer()
 
         user = user or ctx.author
-        embed = embeds.make_embed(context=ctx)
+
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+
+        if ctx.author:
+            embed = embeds.make_embed(ctx=ctx)
+
+        if user:
+            embed = embeds.make_embed()
+            embed.set_author(icon_url=user.avatar_url, name=str(user))
+
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.has_role(config.role_staff)
-    @commands.command(aliases=["population", "pop"])
-    async def count(self, ctx):
+    @cog_ext.cog_slash(
+        name="population", 
+        description="Gets the current server population count",
+        guild_ids=[config.guild_id],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def count(self, ctx: SlashContext):
         """Returns the current guild member count."""
+        await ctx.defer()
         await ctx.send(ctx.guild.member_count)
 
-    @commands.bot_has_permissions(read_message_history=True, add_reactions=True)
+    
     @commands.before_invoke(record_usage)
-    @commands.command(name='addemoji', aliases=['ae', 'adde'])
-    async def addemoji(self, ctx, message: discord.Message, *emojis: Union[discord.Emoji, discord.PartialEmoji, discord.Reaction, str]):
-        """ Add the given emojis as a reaction to the specified message. """
+    @cog_ext.cog_slash(
+        name="vote", 
+        description="Adds the vote reactions to a message",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="message",
+                description="The ID for the target message",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def vote(self, ctx, message: discord.Message = None):
+        """ Add vote reactions to a message. """
+        await ctx.defer()
+        
+        if message:
+            message = await ctx.channel.fetch_message(message)
 
-        for emoji in emojis:
-            try:
-                await message.add_reaction(emoji)
-                await ctx.message.delete()
-            except discord.errors.HTTPException:
-                pass
+        if not message:
+            messages = await ctx.channel.history(limit=1).flatten()
+            message = messages[0]
 
+        await message.add_reaction(config.emote_yes)
+        await message.add_reaction(config.emote_no)
+        
+        # We need to send *something* so the bot doesn't return "This interaction failed"
+        delete = await ctx.send("** **")
+        await delete.delete()
 
 
 def setup(bot: Bot) -> None:
     """ Load the General cog. """
     bot.add_cog(General(bot))
-    log.info("Cog loaded: General")
+    log.info("Commands loaded: general")

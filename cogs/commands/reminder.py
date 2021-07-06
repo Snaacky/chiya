@@ -1,12 +1,14 @@
 import logging
 import re
-import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import dataset
-import parsedatetime.parsedatetime as pdt
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
+from discord.ext.commands.view import StringView
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.model import SlashCommandPermissionType
 
 import config
 from utils import database, embeds
@@ -15,119 +17,235 @@ from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
-
 class Reminder(Cog):
-    """ Handels reminder commands """
+    """ Handles reminder commands """
 
     def __init__(self, bot: Bot):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.group(name='remind', aliases=['reminder'])
-    async def remind_group(self, ctx: Context):
-        """ Make a message to remind you in the future. """
-        if ctx.invoked_subcommand is None:
-            # Send the help command for this group
-            await ctx.send_help(ctx.command)
+    @commands.bot_has_permissions(ban_members=True, send_messages=True)
+    @cog_ext.cog_slash(
+        name="remindme", 
+        description="Sets a reminder note to be sent at a future date",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="duration",
+                description="How long until you want the reminder to be sent",
+                option_type=3,
+                required=True
+            ),
+            create_option(
+                name="message",
+                description="The message that you want to be reminded of",
+                option_type=3,
+                required=True
+            ),
+        ]
+    )
+    async def remind(self, ctx: SlashContext, duration: str, message: str):
+        """ Sets a reminder message. """
+        await ctx.defer()
 
-    @remind_group.command(name='make', aliases=["me"])
-    async def make(self, ctx: Context, *, time_with_message_in_quotes: str):
-        """ !Remind Me TIME_HERE "MESSAGE" (with quotes) """
+        # RegEx stolen from Setsudo and modified
+        regex = r"(?<=^)(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
 
-        # Spliting date and message
-        message_split = time_with_message_in_quotes.split('"', 1)
-        if len(message_split) == 2 and message_split[1].endswith('"'):
-            message_split[1] = message_split[1][:-1]
+        # Get all of the matches from the RegEx.
+        try:
+            match_list = re.findall(regex, duration)[0]
+        except:
+            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+            return
 
-        cal = pdt.Calendar()
-        # Convert text to a date somehow.
-        replyDate = cal.parse(message_split[0], ctx.message.created_at)
+        # Check if all the matches are blank and return preemptively if so.
+        if not any(x.isalnum() for x in match_list):
+            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+            return
 
-        # date too long or unknown input.
-        if replyDate[1] == 0:
-            # default time: 1 day.
-            replyDate = cal.parse("1 day", ctx.message.created_at)
-            replyMessage = "**Defaulted to one day.**\n\n"
-        # Converting time.
-        # 9999/12/31 HH/MM/SS.
-        date_to_remind = time.strftime('%Y-%m-%d %H:%M:%S', replyDate[0])
+        duration = dict(
+            days = match_list[0],
+            hours = match_list[1],
+            minutes = match_list[2],
+            seconds = match_list[3]
+        )
 
-        # Making message to store.
-        current_time = ctx.message.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        message = (f"[**This message**]({ctx.message.jump_url}) from " +
-            f"[**{current_time} UTC**](http://www.wolframalpha.com/input/?i="
-            f"{current_time.replace(' ', '+')}+UTC+To+Local+Time):\n"
-            f"{message_split[1]}")
+        duration_string = ""
+        
+        for key in duration:
+            if len(duration[key]) > 0:
+                duration_string += f"{duration[key]} {key} "
+                duration[key] = float(duration[key])
+            else: 
+                duration[key] = 0
+        
+        duration = timedelta(
+                days=duration['days'], 
+                hours=duration['hours'],
+                minutes=duration['minutes'],
+                seconds=duration['seconds']
+        )
 
+        end_time = datetime.now(tz=timezone.utc)+duration
+        time_now = str(datetime.now(tz=timezone.utc))
+        time_now = time_now[:time_now.index('.')]
+        
         with dataset.connect(database.get_db()) as tx:
             tx["remind_me"].insert(dict(
                 reminder_location=ctx.channel.id,
                 author_id=ctx.author.id,
-                date_to_remind=date_to_remind,
+                date_to_remind=end_time.timestamp(),
                 message=message,
                 sent=False
             ))
-        embed = embeds.make_embed(context=ctx, title="Reminder Set",
-            description="I will be messaging you here on "
-        f"[**{date_to_remind} UTC**](http://www.wolframalpha.com/input/?i="
-        f"{date_to_remind.replace(' ', '+')}+UTC+To+Local+Time)\n\n"
-        f"{message}",
-        image_url=config.remind_green, color=config.soft_green)
-        await ctx.reply(embed=embed)
+        embed = embeds.make_embed(ctx=ctx, title="Reminder Set")
+        embed.description = f"\nI'll remind you about this in {duration_string.strip()}."
+        embed.add_field(name="Message:", value=message)
+        await ctx.send(embed=embed)
 
-    @remind_group.command(name='edit', enabled=False)
-    async def edit(self, ctx: Context):
+    @cog_ext.cog_subcommand(
+        base="reminder",
+        name="edit",
+        description="Edit an existing reminder",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="id",
+                description="The ID of the reminder to be updated",
+                option_type=3,
+                required=True
+            ),
+            create_option(
+                name="message",
+                description="The updated message for the reminder",
+                option_type=3,
+                required=True
+            ),
+        ]
+    )
+    async def edit_reminder(self, ctx: SlashContext, id: int, new_message: str):
         """ Edit a reminder message. """
-        # TODO
+        await ctx.defer()
 
-    @remind_group.command(name='list')
-    async def _list(self, ctx: Context):
+        with dataset.connect(database.get_db()) as db:
+            remind_me = db['remind_me']
+            reminder = remind_me.find_one(id=id)
+
+            if reminder['author_id'] != ctx.author.id:
+                await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
+                return
+            
+            if reminder['sent']:
+                await embeds.error_message(ctx, "That reminder doesn't exist.")
+                return
+
+            data = dict(id=reminder['id'], message=new_message)
+            remind_me.update(data, ['id'])
+
+        await ctx.send("Reminder was updated.")
+            
+    @cog_ext.cog_subcommand(
+        base="reminder",
+        name="list",
+        description="List your existing reminders",
+        guild_ids=[config.guild_id],
+    )
+    async def list_reminders(self, ctx: SlashContext):
         """ List your reminders. """
+        await ctx.defer()
+
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
-            statement = f"SELECT id, date_to_remind, message FROM remind_me WHERE author_id = {ctx.author.id} AND sent = FALSE"
-            result = db.query(statement)
+            remind_me = db['remind_me']
+            result = remind_me.find(sent=False, author_id=ctx.author.id)
         
-        messages = []
-        # Convert dict to list.
-        for message in result:
-            alert_time = (f"[**{message['date_to_remind']} UTC**](http://www.wolframalpha.com/input/?i="
-                f"{message['date_to_remind'].replace(' ', '+')}+UTC+To+Local+Time):")
-            messages.append(f"**ID: {message['id']}** | Alert on {alert_time}\n{message['message']}")
+        reminders = []
 
-        embed = embeds.make_embed(context=ctx, title="Reminders",
-            image_url=config.remind_blurple, color=config.soft_blue)
+        # Convert ResultSet to list.
+        for reminder in result:
+            alert_time = str(datetime.fromtimestamp(reminder['date_to_remind']))
+            alert_time = alert_time[:alert_time.index('.')]
+            reminders.append(f"**ID: {reminder['id']}** | Alert on {alert_time}\n{reminder['message']}")
+    
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title="Reminders",
+            thumbnail_url=config.remind_blurple, 
+            color="blurple"
+        )
 
         # Paginate results
-        await LinePaginator.paginate(messages, ctx=ctx, embed=embed, max_lines=5,
+        await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
         max_size=2000, restrict_to_user=ctx.author)
 
-    @remind_group.command(name='delete')
-    async def delete(self, ctx: Context, reminder_id: int):
+    @cog_ext.cog_subcommand(
+        base="reminder",
+        name="delete",
+        description="Delete an existing reminder",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="id",
+                description="The ID of the reminder deleted",
+                option_type=3,
+                required=True
+            ),
+        ]
+    )
+    async def delete_reminder(self, ctx: SlashContext, reminder_id: int):
         """ Delete Reminders. User `reminder list` to find ID """
+        await ctx.defer()
+
         with dataset.connect(database.get_db()) as db:
             # Find all reminders from user and haven't been sent.
-            table = db.load_table('remind_me')
+            table = db['remind_me']
             result = table.find_one(id=reminder_id)
-            if result is None:
-                await embeds.error_message("Invalid ID", ctx)
+
+            if not result:
+                await embeds.error_message(ctx=ctx, description="Invalid ID")
                 return
+
             if result['author_id'] != ctx.author.id:
-                await embeds.error_message("This is not the reminder you are looking for", ctx)
+                await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
                 return
+
             if result['sent']:
-                await embeds.error_message("This reminder has already been deleted", ctx)
+                await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
                 return
             
             # All the checks should be done.
             data = dict(id=reminder_id, sent=True)
             table.update(data, ['id'])
-        embed = embeds.make_embed(context=ctx, title="Reminder deleted", 
+
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title="Reminder deleted", 
             description=f"Reminder ID: {reminder_id} has been deleted.",
-            image_url=config.remind_red, color=config.soft_red)
+            thumbnail_url=config.remind_red, 
+            color="soft_red"
+        )
         await ctx.send(embed=embed)
+    
+    @cog_ext.cog_subcommand(
+        base="reminder",
+        name="clear",
+        description="Clears all of your existing reminders",
+        guild_ids=[config.guild_id]
+    )
+    async def clear_reminders(self, ctx: SlashContext):
+        """ Clears all reminders. """
+        await ctx.defer()
+        
+        with dataset.connect(database.get_db()) as db:
+            remind_me = db['remind_me']
+            result = remind_me.find(author_id=ctx.author.id, sent=False)
+            for reminder in result:
+                updated_data = dict(id=reminder['id'], sent=True)
+                remind_me.update(updated_data, ['id'])
+        
+        await ctx.send("All your reminders have been cleared.")
 
 def setup(bot: Bot) -> None:
     """ Load the Reminder cog. """
     bot.add_cog(Reminder(bot))
-    log.info("Cog loaded: reminder")
+    log.info("Commands loaded: reminder")
