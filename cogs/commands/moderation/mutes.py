@@ -143,13 +143,13 @@ class MuteCog(Cog):
 
     async def archive_mute_channel(self, user_id: int, unmute_reason: str, ctx: SlashContext = None, guild: int = None):
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not unmute_reason:
-            unmute_reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(unmute_reason) > 512:
+        if unmute_reason and len(unmute_reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        else:
+            unmute_reason = "No reason provided."
 
         guild = guild or ctx.guild
         category = discord.utils.get(guild.categories, id=config.ticket_category_id)
