@@ -41,7 +41,7 @@ class TicketCog(Cog):
     )
     async def open(self, ctx: SlashContext, topic: str):
         """ Opens a new modmail ticket."""
-        await ctx.defer()
+        await ctx.defer(hidden=True)
 
         # Check if a duplicate ticket already exists for the member.
         category = discord.utils.get(ctx.guild.categories, id=config.ticket_category_id)

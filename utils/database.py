@@ -39,6 +39,16 @@ def setup_db():
     timed_mod_actions.create_column("start_time", db.types.integer)
     timed_mod_actions.create_column("end_time", db.types.integer)
     timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
+
+    # create ticket table and columns to store the ticket status information
+    tickets = db.create_table("tickets")
+    tickets.create_column("user_id", db.types.integer)
+    tickets.create_column("status", db.types.text)
+    tickets.create_column("guild", db.types.bigint)
+    tickets.create_column("timestamp", db.types.bigint)
+    tickets.create_column("ticket_topic", db.types.text)
+    tickets.create_column("log_url", db.types.text)
+
    
     db.commit()
     # TODO: Retain what tables didn't exist/were created so we can print those to console.
