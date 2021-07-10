@@ -159,12 +159,12 @@ class BanCog(Cog):
                 return
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        if not reason:
+            reason = "No reason provided."
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            reason = "No reason provided."
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
         embed = embeds.make_embed(
@@ -226,12 +226,12 @@ class BanCog(Cog):
             return
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        if not reason:
+            reason = "No reason provided."
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            reason = "No reason provided."
 
         # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
         embed = embeds.make_embed(
@@ -324,12 +324,12 @@ class BanCog(Cog):
             return
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        if not reason:
+            reason = "No reason provided."
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            reason = "No reason provided."
 
         # Assign the arguments from the parsed message into variables
         duration = dict(
