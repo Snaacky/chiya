@@ -141,15 +141,15 @@ class MuteCog(Cog):
 
         return channel
 
-    async def archive_mute_channel(self, user_id: int, unmute_reason: str, ctx: SlashContext = None, guild: int = None):
+    async def archive_mute_channel(self, user_id: int, reason: str = None, ctx: SlashContext = None, guild: int = None):
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if unmute_reason and len(unmute_reason) > 512:
+        if not reason:
+            reason = "No reason provided."
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            unmute_reason = "No reason provided."
 
         guild = guild or ctx.guild
         category = discord.utils.get(guild.categories, id=config.ticket_category_id)
@@ -174,7 +174,7 @@ class MuteCog(Cog):
             f"Muted By: {muter} ({muter.id})\n"
             f"Mute Reason: {mute_reason}\n\n"
             f"Unmuted By: {unmuter} ({unmuter.id})\n"
-            f"Unmute Reason: {unmute_reason}\n\n"
+            f"Unmute Reason: {reason}\n\n"
         )
 
         # Initialize a list of moderator IDs as a set for no duplicates.
@@ -243,7 +243,7 @@ class MuteCog(Cog):
         embed.add_field(name="Muted By:", value=muter.mention, inline=True)
         embed.add_field(name="Unmuted By:", value=unmuter.mention, inline=True)
         embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
-        embed.add_field(name="Unmute Reason:", value=unmute_reason, inline=False)
+        embed.add_field(name="Unmute Reason:", value=reason, inline=False)
         embed.add_field(name="Duration:", value=elapsed_time, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
         embed.add_field(name="Mute Log: ", value=url, inline=False)
@@ -302,13 +302,13 @@ class MuteCog(Cog):
             await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
             return
 
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        if not reason:
+            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            reason = "No reason provided."
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
         embed = embeds.make_embed(
@@ -378,13 +378,13 @@ class MuteCog(Cog):
             await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
             return
 
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        if not reason:
+            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            reason = "No reason provided."
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully unmuted.
         embed = embeds.make_embed(ctx=ctx, title=f"Unmuting member: {member.name}", color="soft_green", thumbnail_url=config.user_unmute)
@@ -392,7 +392,7 @@ class MuteCog(Cog):
 
         # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.
         await self.unmute_member(ctx=ctx, member=member, reason=reason)
-        await self.archive_mute_channel(ctx=ctx, user_id=member.id, unmute_reason=reason)
+        await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 
         # Attempt to DM the user to let them and the mods know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
@@ -473,13 +473,13 @@ class MuteCog(Cog):
             await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 
+        # Automatically default the reason string to N/A when the moderator does not provide a reason.
+        if not reason:
+            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if reason and len(reason) > 512:
+        elif len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        else:
-            reason = "No reason provided."
 
         duration = dict(
             days=match_list[1],
