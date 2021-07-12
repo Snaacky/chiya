@@ -131,9 +131,6 @@ class TicketCog(Cog):
         # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
 
-        # Add the closing mod just in case no other mod interacts with the ticket to avoid an empty embed field.
-        mod_list.add(ctx.author)
-
         # Fetch the staff and trial mod role.
         role_staff = discord.utils.get(ctx.guild.roles, id=config.role_staff)
         role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.role_trial_mod)
@@ -162,7 +159,8 @@ class TicketCog(Cog):
             color=0x00ffdf
         )
 
-        embed.add_field(name="Ticket Creator:", value=member.mention, inline=False)
+        embed.add_field(name="Ticket Creator:", value=member.mention, inline=True)
+        embed.add_field(name="Closed By:", value=ctx.author.mention, inline=True)
         embed.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
         embed.add_field(name="Ticket Log: ", value=url, inline=False)
