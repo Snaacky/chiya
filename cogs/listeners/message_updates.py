@@ -1,7 +1,10 @@
 import logging
+import re
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
+
+import config
 
 log = logging.getLogger(__name__)
 
@@ -120,6 +123,24 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
+
+        # Some #general experiments.
+        if message.channel.id == config.channel_general:
+            # Remove all Tenor GIFs.
+            if "tenor.com" in message.content:
+                await message.delete()
+
+            # Remove messages that only contain attachments.
+            if len(message.content) == 0 and len(message.attachments) > 0:
+                await message.delete()
+
+            # Remove all emote usage that is in a standalone message.
+            if re.match(r"^(?:\s*(?:<a?:)(\w+)(?::)(\d+)(?:>)\s*)+$", message.content):
+                await message.delete()
+
+            # Delete fake Discord nitro emotes
+            if "https://cdn.discordapp.com/emojis/" in message.content:
+                await message.delete()
         
         # Temporary auto-ban solution for scam bots.
         scam_links = ["stearncommunytiy.ru"]
