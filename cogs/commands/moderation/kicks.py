@@ -34,13 +34,13 @@ class KickCog(Cog):
         options=[
             create_option(
                 name="member",
-                description="The member that will be unmuted",
+                description="The member that will be kicked",
                 option_type=6,
                 required=True
             ),
             create_option(
                 name="reason",
-                description="The reason why the member is being unmuted",
+                description="The reason why the member is being kicked",
                 option_type=3,
                 required=False
             ),
