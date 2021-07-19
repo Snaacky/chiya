@@ -188,7 +188,9 @@ class Reminder(Cog):
             alert_time = datetime.fromtimestamp(reminder["date_to_remind"])
             # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
             alert_time = alert_time.strftime("%A, %b %d, %Y at %X")
-            reminders.append(f"**ID: {reminder['id']}** \n**Alert on:** {alert_time}\n**Message: **{reminder['message']}")
+            reminders.append(f"**ID: {reminder['id']}** \n"
+                             f"**Alert on:** {alert_time} UTC\n"
+                             f"**Message: **{reminder['message']}")
 
         embed = embeds.make_embed(
             ctx=ctx,
