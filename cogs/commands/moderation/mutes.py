@@ -35,7 +35,7 @@ class MuteCog(Cog):
         return False
 
     @staticmethod
-    async def mute_user(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def mute_member(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
@@ -57,7 +57,7 @@ class MuteCog(Cog):
                     is_done=False
                 ))
 
-    async def unmute_user(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
+    async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
         guild = guild or ctx.guild
         moderator = ctx.author if ctx else self.bot.user
 
@@ -338,7 +338,7 @@ class MuteCog(Cog):
                 embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
             # Mutes the user and returns the embed letting the moderator know they were successfully muted.
-            await self.mute_user(ctx=ctx, member=member, reason=reason)
+            await self.mute_member(ctx=ctx, member=member, reason=reason)
             await ctx.send(embed=embed)
             return
 
@@ -404,7 +404,7 @@ class MuteCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Mutes the user and stores the unmute time in the database for the background task.
-        await self.mute_user(ctx=ctx, member=member, reason=reason, temporary=True, end_time=mute_end_time.timestamp())
+        await self.mute_member(ctx=ctx, member=member, reason=reason, temporary=True, end_time=mute_end_time.timestamp())
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
@@ -472,7 +472,7 @@ class MuteCog(Cog):
         )
 
         # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.
-        await self.unmute_user(ctx=ctx, member=member, reason=reason)
+        await self.unmute_member(ctx=ctx, member=member, reason=reason)
         await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 
         # Attempt to DM the user to let them and the mods know they were unmuted.
