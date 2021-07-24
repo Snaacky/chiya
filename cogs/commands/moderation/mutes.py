@@ -45,7 +45,7 @@ class MuteCog(Cog):
                 user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
             ))
 
-            # Occurs when the mute function is invoked as /tempmute instead of /mute.
+            # Occurs when the duration in /mute is specified (tempmute).
             if temporary:
                 db["timed_mod_actions"].insert(dict(
                     user_id=member.id,
