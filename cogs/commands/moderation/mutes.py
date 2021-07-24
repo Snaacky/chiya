@@ -99,7 +99,7 @@ class MuteCog(Cog):
         guild = guild or ctx.guild
         moderator = ctx.author if ctx else self.bot.user
 
-        # Send member message telling them that they were banned and why.
+        # Send member message telling them that they were unmuted and why.
         try:  # In case user has DMs blocked.
             channel = await member.create_dm()
             embed = embeds.make_embed(
