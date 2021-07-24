@@ -1,16 +1,13 @@
 import logging
 from typing import Union
-import dataset
 
 from discord import User, Member, Guild
-import discord
 from discord.ext import commands
 
-import config
 from handlers import boosts
-from utils import database
 
 log = logging.getLogger(__name__)
+
 
 class MemberUpdates(commands.Cog):
     """Member event handler cog."""
@@ -64,7 +61,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_join
         """
-        log.info(f'{member} has joined {member.guild.name}.')       
+        log.info(f'{member} has joined {member.guild.name}.')
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
@@ -94,10 +91,11 @@ class MemberUpdates(commands.Cog):
 
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_update
-        """ 
+        """
         # Process any potential new or lost boosters for #nitro-log.
         await boosts.process_new_booster(before, after)
         await boosts.process_lost_booster(before, after)
+
 
 def setup(bot: commands.Bot) -> None:
     """Load the member_updates cog."""
