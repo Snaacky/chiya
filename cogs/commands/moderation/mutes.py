@@ -320,6 +320,7 @@ class MuteCog(Cog):
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
+        # If duration is not specified, default it to a permanent mute.
         if not duration:
             # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
             embed = embeds.make_embed(
