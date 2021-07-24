@@ -205,7 +205,7 @@ class MuteCog(Cog):
                     mod_list.add(message.author)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
-        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="5min")["full_url"]
+        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
 
         # Get the amount of time elapsed since the user was muted.
         time_delta = datetime.datetime.utcnow() - mute_channel.created_at
@@ -280,7 +280,7 @@ class MuteCog(Cog):
             ),
             create_option(
                 name="reason",
-                description="The reason why the member is being unmuted",
+                description="The reason why the member is being muted",
                 option_type=3,
                 required=False
             ),
