@@ -1,8 +1,7 @@
 version: "3.3"
 services:
   bot:
-    build: .
-    image: chiya:latest
+    image: docker.pkg.github.com/ranimepiracy/chiya/chiya:latest
     restart: unless-stopped
     volumes:
         - /srv/chiya/config.py:/app/config.py
@@ -13,7 +12,6 @@ services:
         - MYSQL_USER=chiya
         - MYSQL_PASSWORD=YOUR_SECURE_PASSWORD_HERE
         - LOG_LEVEL=info
-
   db:
     image: mariadb
     restart: unless-stopped
