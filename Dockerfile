@@ -21,10 +21,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /app
 COPY . /app
 
-# Switching to a non-root user, please refer to https://aka.ms/vscode-docker-python-user-rights
-RUN useradd discordbot && chown -R discordbot /app
-USER discordbot
-
 # For persistant data and ability to access data outside container
 VOLUME [ "/app/chiya.db" ]
 VOLUME [ "/app/config.py" ]
