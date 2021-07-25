@@ -4,7 +4,6 @@
 
 # Run the command below to install the requirements.
 # pip3 install -r requirements.txt
-
 discord.py==1.6.0                   # https://discordpy.readthedocs.io/
 dataset==1.4.4                      # https://dataset.readthedocs.io/
 asyncpraw==7.1.0                    # https://asyncpraw.readthedocs.io/
@@ -12,3 +11,4 @@ coloredlogs==15.0                   # https://coloredlogs.readthedocs.io/en/late
 parsedatetime==2.6                  # https://pypi.org/project/parsedatetime/
 PrivateBinAPI~=1.0.0                # https://pypi.org/project/PrivateBinAPI/
 discord-py-slash-command==1.2.2     # https://discord-py-slash-command.readthedocs.io/en/latest/
+mysqlclient==2.0.3                  # https://pypi.org/project/mysqlclient/2.0.3/
