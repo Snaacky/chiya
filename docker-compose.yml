@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  bot:
+    build: .
+    image: chiya:latest
+    restart: unless-stopped
+    volumes:
+        - /srv/chiya/chiya.db:/app/chiya.db
+        - /srv/chiya/config.py:/app/config.py
+        - /srv/chiya/logs/:/app/logs/
+    environment:
+        - MYSQL_HOST=db
+        - MYSQL_DATABASE=chiya
+        - MYSQL_USER=chiya
+        - MYSQL_PASSWORD=YOUR_SECURE_PASSWORD_HERE
+        - LOG_LEVEL=info
+
+  db:
+    image: mariadb
+    restart: unless-stopped
+    volumes:
+        - /srv/chiya/db/:/var/lib/mysql
+    environment:
+        MYSQL_DATABASE: chiya
+        MYSQL_USER: chiya
+        MYSQL_PASSWORD: YOUR_SECURE_PASSWORD_HERE
+        MYSQL_ROOT_PASSWORD: YOUR_EVEN_MORE_SECURE_ROOT_PASSWORD_HERE
