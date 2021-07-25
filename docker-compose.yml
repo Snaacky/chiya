@@ -5,7 +5,6 @@ services:
     image: chiya:latest
     restart: unless-stopped
     volumes:
-        - /srv/chiya/chiya.db:/app/chiya.db
         - /srv/chiya/config.py:/app/config.py
         - /srv/chiya/logs/:/app/logs/
     environment:
