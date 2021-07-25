@@ -2,7 +2,6 @@ import logging
 import time
 
 import dataset
-import discord
 from discord import Member
 from discord.ext import commands
 
@@ -21,17 +20,6 @@ class MutesHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
-        """Event Listener which is called when a Member leaves a Guild.
-
-        Args:
-            member (Member): The member who left.
-
-        Note:
-            This requires Intents.members to be enabled.
-
-        For more information:
-            https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_remove
-        """
         with dataset.connect(database.get_db()) as db:
             action = db['timed_mod_actions'].find_one(user_id=member.id, is_done=False, action_type='mute')
             guild = member.guild
@@ -69,30 +57,7 @@ class MutesHandler(commands.Cog):
                     unmute_reason="Mute channel archived after member banned due to mute evasion."
                 )
                 await channel.send(embed=embed)
-    
-    @commands.Cog.listener()
-    async def on_member_update(self, before: Member, after: Member) -> None:
-        """Event Listener which is called when a Member updates their profile.
 
-        Args:
-            before (Member): The updated member’s old info.
-            after (Member): The updated member’s updated info.
-
-        Note:
-            This requires Intents.members to be enabled.
-
-        For more information:
-            https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_update
-        """
-
-        # If the mute role is manually removed from a user, re-add it automatically.
-        # Only do this operation on role count changes to try avoiding hitting Discord API unnecessarily.
-        if len(before.roles) != len(after.roles):
-            mute_role = discord.utils.get(before.guild.roles, id=config.role_muted)
-            if mute_role in before.roles and mute_role not in after.roles:
-                mute_cog = self.bot.get_cog("MuteCog")
-                if await mute_cog.is_user_muted(guild=before.guild, member=before):
-                    await before.add_roles(mute_role)
 
 def setup(bot) -> None:
     """Load the cog."""

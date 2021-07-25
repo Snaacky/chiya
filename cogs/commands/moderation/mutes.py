@@ -64,11 +64,8 @@ class MuteCog(Cog):
                 user_id=member.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
             ))
 
-    async def is_user_muted(self, member: discord.Member, ctx: SlashContext = None, guild: discord.Guild = None) -> bool:
-        guild = guild or ctx.guild
-        category = discord.utils.get(guild.categories, id=config.ticket_category_id)
-        mute_channel = discord.utils.get(guild.text_channels, name=f"mute-{member.id}")
-        if mute_channel in category.text_channels:
+    async def is_user_muted(self, ctx: SlashContext, member: discord.Member) -> bool:
+        if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
             return True
         return False
 
@@ -145,6 +142,7 @@ class MuteCog(Cog):
         return channel
 
     async def archive_mute_channel(self, user_id: int, reason: str = None, ctx: SlashContext = None, guild: int = None):
+
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if not reason:
             reason = "No reason provided."
