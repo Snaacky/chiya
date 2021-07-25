@@ -3,13 +3,16 @@ import os
 
 import dataset
 
-import config
-
 log = logging.getLogger(__name__)
 
 def get_db():
     """ Returns the OS friendly path to the SQLite database. """
-    return "".join(["sqlite:///", os.path.join(os.getcwd(), config.database)])
+    HOST = os.getenv("MYSQL_HOST")
+    DATABASE = os.getenv("MYSQL_DATABASE")
+    USER = os.getenv("MYSQL_USER")
+    PASSWORD = os.getenv("MYSQL_PASSWORD")
+   
+    return f"mysql://{USER}:{PASSWORD}@{HOST}/{DATABASE}"
 
 def setup_db():
     """ Sets up the tables needed for Chiya. """
