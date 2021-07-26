@@ -71,6 +71,11 @@ class MuteCog(Cog):
         db["mod_logs"].insert(dict(
             user_id=member.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
         ))
+        timed_mod_actions = db["timed_mod_actions"]
+        tempmute_entry = timed_mod_actions.find_one(user_id=member.id, is_done=False)
+        if tempmute_entry:
+            tempmute_entry["is_done"] = True
+            timed_mod_actions.update(tempmute_entry, ["id"])
 
         # Commit the changes to the database and close the connection.
         db.commit()
