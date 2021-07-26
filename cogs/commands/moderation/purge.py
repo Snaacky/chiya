@@ -82,12 +82,16 @@ class PurgeCog(Cog):
         if number_of_messages > 100:
             number_of_messages = 100
 
+        message = "messages"
+        if number_of_messages == 1:
+            message = message[:-1]
+
         await ctx.channel.purge(limit=number_of_messages + 1)
 
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Removed messages",
-            description=f"{ctx.author.mention} removed the previous {number_of_messages} messages.",
+            description=f"{ctx.author.mention} removed the previous {number_of_messages} {message}.",
             thumbnail_url=config.message_delete,
             color="soft_red"
         )
