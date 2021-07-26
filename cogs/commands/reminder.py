@@ -94,14 +94,20 @@ class Reminder(Cog):
 
         end_time = datetime.now(tz=timezone.utc) + duration
 
-        with dataset.connect(database.get_db()) as db:
-            remind_id = db["remind_me"].insert(dict(
-                reminder_location=ctx.channel.id,
-                author_id=ctx.author.id,
-                date_to_remind=end_time.timestamp(),
-                message=message,
-                sent=False
-            ))
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
+        remind_id = db["remind_me"].insert(dict(
+            reminder_location=ctx.channel.id,
+            author_id=ctx.author.id,
+            date_to_remind=end_time.timestamp(),
+            message=message,
+            sent=False
+        ))
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -138,21 +144,27 @@ class Reminder(Cog):
         """ Edit a reminder message. """
         await ctx.defer()
 
-        with dataset.connect(database.get_db()) as db:
-            remind_me = db["remind_me"]
-            reminder = remind_me.find_one(id=reminder_id)
-            old_message = reminder["message"]
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
 
-            if reminder["author_id"] != ctx.author.id:
-                await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
-                return
+        remind_me = db["remind_me"]
+        reminder = remind_me.find_one(id=reminder_id)
+        old_message = reminder["message"]
 
-            if reminder["sent"]:
-                await embeds.error_message(ctx, "That reminder doesn't exist.")
-                return
+        if reminder["author_id"] != ctx.author.id:
+            await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
+            return
 
-            data = dict(id=reminder["id"], message=new_message)
-            remind_me.update(data, ["id"])
+        if reminder["sent"]:
+            await embeds.error_message(ctx, "That reminder doesn't exist.")
+            return
+
+        data = dict(id=reminder["id"], message=new_message)
+        remind_me.update(data, ["id"])
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -176,10 +188,16 @@ class Reminder(Cog):
         """ List your reminders. """
         await ctx.defer()
 
-        with dataset.connect(database.get_db()) as db:
-            # Find all reminders from user and haven't been sent.
-            remind_me = db["remind_me"]
-            result = remind_me.find(sent=False, author_id=ctx.author.id)
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
+        # Find all reminders from user and haven't been sent.
+        remind_me = db["remind_me"]
+        result = remind_me.find(sent=False, author_id=ctx.author.id)
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         reminders = []
 
@@ -221,26 +239,32 @@ class Reminder(Cog):
         """ Delete Reminders. User `reminder list` to find ID """
         await ctx.defer()
 
-        with dataset.connect(database.get_db()) as db:
-            # Find all reminders from user and haven't been sent.
-            table = db["remind_me"]
-            reminder = table.find_one(id=reminder_id)
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        
+        # Find all reminders from user and haven't been sent.
+        table = db["remind_me"]
+        reminder = table.find_one(id=reminder_id)
 
-            if not reminder:
-                await embeds.error_message(ctx=ctx, description="Invalid ID")
-                return
+        if not reminder:
+            await embeds.error_message(ctx=ctx, description="Invalid ID")
+            return
 
-            if reminder["author_id"] != ctx.author.id:
-                await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
-                return
+        if reminder["author_id"] != ctx.author.id:
+            await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
+            return
 
-            if reminder["sent"]:
-                await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
-                return
+        if reminder["sent"]:
+            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
+            return
 
-            # All the checks should be done.
-            data = dict(id=reminder_id, sent=True)
-            table.update(data, ["id"])
+        # All the checks should be done.
+        data = dict(id=reminder_id, sent=True)
+        table.update(data, ["id"])
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -262,13 +286,19 @@ class Reminder(Cog):
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """
         await ctx.defer()
+        
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        
+        remind_me = db["remind_me"]
+        result = remind_me.find(author_id=ctx.author.id, sent=False)
+        for reminder in result:
+            updated_data = dict(id=reminder["id"], sent=True)
+            remind_me.update(updated_data, ["id"])
 
-        with dataset.connect(database.get_db()) as db:
-            remind_me = db["remind_me"]
-            result = remind_me.find(author_id=ctx.author.id, sent=False)
-            for reminder in result:
-                updated_data = dict(id=reminder["id"], sent=True)
-                remind_me.update(updated_data, ["id"])
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         await ctx.send("All your reminders have been cleared.")
 

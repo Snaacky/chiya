@@ -32,23 +32,29 @@ class MuteCog(Cog):
         role = discord.utils.get(ctx.guild.roles, id=config.role_muted)
         await member.add_roles(role, reason=reason)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the mute to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
+        db["mod_logs"].insert(dict(
+            user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="mute"
+        ))
+
+        # Occurs when the mute function is invoked as /tempmute instead of /mute.
+        if temporary:
+            db["timed_mod_actions"].insert(dict(
+                user_id=member.id,
+                mod_id=ctx.author.id,
+                action_type="mute",
+                reason=reason,
+                start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
+                end_time=end_time,
+                is_done=False
             ))
 
-            # Occurs when the mute function is invoked as /tempmute instead of /mute.
-            if temporary:
-                db["timed_mod_actions"].insert(dict(
-                    user_id=member.id,
-                    mod_id=ctx.author.id,
-                    action_type="mute",
-                    reason=reason,
-                    start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
-                    end_time=end_time,
-                    is_done=False
-                ))
+        # Commit the changes to the database.
+        db.commit()
+        db.close()
 
     async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
         guild = guild or ctx.guild
@@ -58,11 +64,17 @@ class MuteCog(Cog):
         role = discord.utils.get(guild.roles, id=config.role_muted)
         await member.remove_roles(role, reason=reason)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the unmute to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
-            ))
+        db["mod_logs"].insert(dict(
+            user_id=member.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unmute"
+        ))
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
     async def is_user_muted(self, ctx: SlashContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config.role_muted) in member.roles:
@@ -155,15 +167,21 @@ class MuteCog(Cog):
         category = discord.utils.get(guild.categories, id=config.ticket_category_id)
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
-        # TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
-        with dataset.connect(database.get_db()) as db:
-            table = db["mod_logs"]
-            # Gets the most recent mute for the user, sorted by descending (-) ID.
-            mute_entry = table.find_one(user_id=user_id, type="mute", order_by="-id")
-            unmute_entry = table.find_one(user_id=user_id, type="unmute", order_by="-id")
-            mute_reason = mute_entry["reason"]
-            muter = await self.bot.fetch_user(mute_entry["mod_id"])
-            unmuter = await self.bot.fetch_user(unmute_entry["mod_id"])
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
+        #  TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
+        table = db["mod_logs"]
+        # Gets the most recent mute for the user, sorted by descending (-) ID.
+        mute_entry = table.find_one(user_id=user_id, type="mute", order_by="-id")
+        unmute_entry = table.find_one(user_id=user_id, type="unmute", order_by="-id")
+        mute_reason = mute_entry["reason"]
+        muter = await self.bot.fetch_user(mute_entry["mod_id"])
+        unmuter = await self.bot.fetch_user(unmute_entry["mod_id"])
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(user_id)
