@@ -25,9 +25,8 @@ class MutesHandler(commands.Cog):
 
         action = db['timed_mod_actions'].find_one(user_id=member.id, is_done=False, action_type='mute')
         guild = member.guild
-
+        user = await self.bot.fetch_user(member.id)
         if action:
-            user = await self.bot.fetch_user(member.id)
             # Creating the embed used to alert the moderators that the mute evading member was banned.
             embed = embeds.make_embed(
                 ctx=None,
