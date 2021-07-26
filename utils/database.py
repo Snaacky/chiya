@@ -5,6 +5,7 @@ import dataset
 
 log = logging.getLogger(__name__)
 
+
 def get_db():
     """ Returns the OS friendly path to the SQLite database. """
     HOST = os.getenv("MYSQL_HOST")
@@ -12,6 +13,7 @@ def get_db():
     USER = os.getenv("MYSQL_USER")
     PASSWORD = os.getenv("MYSQL_PASSWORD")
     return f"mysql://{USER}:{PASSWORD}@{HOST}/{DATABASE}"
+
 
 def setup_db():
     """ Sets up the tables needed for Chiya. """
@@ -29,7 +31,7 @@ def setup_db():
 
     # Create remind_me table and columns to store remind_me messages.
     remind_me = db.create_table("remind_me")
-    remind_me.create_column("reminder_location", db.types.integer)
+    remind_me.create_column("reminder_location", db.types.bigint)
     remind_me.create_column("author_id", db.types.bigint)
     remind_me.create_column("date_to_remind", db.types.float)
     remind_me.create_column("message", db.types.text)
