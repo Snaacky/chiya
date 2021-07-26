@@ -5,7 +5,6 @@ from discord.ext import commands
 
 import config
 from utils import embeds
-from utils.utils import contains_link, has_attachment
 from utils import automod
 
 log = logging.getLogger(__name__)
@@ -131,6 +130,7 @@ class MessageUpdates(commands.Cog):
 
         if (automod.check_message(message)):
             await message.add_reaction('❌')
+            
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """Event Listener which is called when a reaction is added.
