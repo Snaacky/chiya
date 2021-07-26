@@ -159,6 +159,11 @@ class TicketCog(Cog):
                 if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
+        # An empty mod_list (ticket with no conversation) will raise a HTTPException for using an empty field in embed.
+        # Using "\u200b" (zero width space) is also not an option because .mention cannot be called on it.
+        if len(mod_list) == 0:
+            mod_list.add(self.bot.user)
+
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
         url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
 
