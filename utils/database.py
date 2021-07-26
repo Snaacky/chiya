@@ -30,23 +30,23 @@ def setup_db():
     # Create remind_me table and columns to store remind_me messages.
     remind_me = db.create_table("remind_me")
     remind_me.create_column("reminder_location", db.types.integer)
-    remind_me.create_column("author_id", db.types.integer)
-    remind_me.create_column("date_to_remind", db.types.integer)
+    remind_me.create_column("author_id", db.types.bigint)
+    remind_me.create_column("date_to_remind", db.types.float)
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
 
     # create timed_mod_actions table and columns to store timed moderator actions.
     timed_mod_actions = db.create_table("timed_mod_actions")
-    timed_mod_actions.create_column("user_id", db.types.integer)
-    timed_mod_actions.create_column("mod_id", db.types.integer)
+    timed_mod_actions.create_column("user_id", db.types.bigint)
+    timed_mod_actions.create_column("mod_id", db.types.bigint)
     timed_mod_actions.create_column("action_type", db.types.text)
-    timed_mod_actions.create_column("start_time", db.types.integer)
-    timed_mod_actions.create_column("end_time", db.types.integer)
+    timed_mod_actions.create_column("start_time", db.types.bigint)
+    timed_mod_actions.create_column("end_time", db.types.bigint)
     timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
 
     # create ticket table and columns to store the ticket status information
     tickets = db.create_table("tickets")
-    tickets.create_column("user_id", db.types.integer)
+    tickets.create_column("user_id", db.types.bigint)
     tickets.create_column("status", db.types.text)
     tickets.create_column("guild", db.types.bigint)
     tickets.create_column("timestamp", db.types.bigint)
