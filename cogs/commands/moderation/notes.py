@@ -63,22 +63,24 @@ class NotesCog(Cog):
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Noting user: {user.name}",
-            description=f"{user.mention} was noted by {ctx.author.mention}: {note}",
-            thumbnail_url=config.pencil,
-            color="blurple"
-        )
-        await ctx.send(embed=embed)
-
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
         
         # Add the note to the mod_logs database.
-        db["mod_logs"].insert(dict(
+        note_id = db["mod_logs"].insert(dict(
             user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
         ))
+
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Noting user: {user.name}",
+            description=f"{user.mention} was noted by {ctx.author.mention}",
+            thumbnail_url=config.pencil,
+            color="blurple"
+        )
+        embed.add_field(name="ID: ", value=note_id, inline=False)
+        embed.add_field(name="Note: ", value=note, inline=False)
+        await ctx.send(embed=embed)
         
         # Commit the changes to the database and close the connection.
         db.commit()
