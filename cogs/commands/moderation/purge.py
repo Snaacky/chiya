@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from discord.ext import commands
@@ -20,7 +21,8 @@ class PurgeCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_purge_messages(self, ctx: SlashContext):
+    @staticmethod
+    async def can_purge_messages(ctx: SlashContext):
         # Implement override for the owner.
         if ctx.author_id == ctx.guild.owner.id:
             return True
@@ -69,28 +71,29 @@ class PurgeCog(Cog):
         if not await self.can_purge_messages(ctx):
             return
 
+        # Handle cases where the reason is not provided.
+        if not reason:
+            reason = "No reason provided."
+        elif len(reason) > 512:
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            return
+
         # Limit the command at 100 messages maximum to avoid abuse.
         if number_of_messages > 100:
             number_of_messages = 100
 
-        # Handle cases where the reason is not provided.
-        if not reason:
-            reason = "No reason provided."
+        await ctx.channel.purge(limit=number_of_messages + 1)
 
-        if len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
-
-        deleted = await ctx.channel.purge(limit=number_of_messages)
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Removed messages",
-            description=f"{ctx.author.mention} removed the previous {len(deleted)} messages.",
+            description=f"{ctx.author.mention} removed the previous {number_of_messages} messages.",
             thumbnail_url=config.message_delete,
             color="soft_red"
         )
         embed.add_field(name="Reason:", value=reason, inline=False)
-        await ctx.send(embed=embed)
+        # Do not use ctx.send(). See: https://discord-py-slash-command.readthedocs.io/en/latest/faq.html#what-is-the-difference-between-ctx-send-and-ctx-channel-send
+        await ctx.channel.send(embed=embed)
 
 
 def setup(bot: Bot) -> None:
