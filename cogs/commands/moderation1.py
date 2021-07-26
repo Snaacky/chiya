@@ -323,7 +323,7 @@ class ModerationCog(Cog):
             result = db.query(query)
 
             embed = embeds.make_embed(
-                "Censored terms list", "List of censored terms", ctx)
+                title="Censored terms list", description="List of censored terms", ctx=ctx)
             censored_terms_list = ""
             for x in result:
                 if x['censor_type'] == 'fuzzy':
@@ -339,7 +339,7 @@ class ModerationCog(Cog):
                 return
 
             # throws an error if no words are added.
-            await embeds.error_message("No terms in censor list!", ctx)
+            await embeds.error_message(description="No terms in censor list!", ctx=ctx)
 
     @censor.command(name="add")
     async def censor_add(self, ctx: Context, censor_type: str, *, censor_term: str):
@@ -401,7 +401,7 @@ class ModerationCog(Cog):
                     return
 
         # User did not specify censor type properly, so throw an error.
-        await embeds.error_message("Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx)
+        await embeds.error_message(description="Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx=ctx)
 
     @censor.command(name="remove", aliases=['delete', 'rm'])
     async def censor_remove(self, ctx: Context, *, term: str):
@@ -410,7 +410,7 @@ class ModerationCog(Cog):
             query = f"SELECT * FROM censor where censor_term ='{term.lower().strip()}'"
             result = db.query(query)
             if(len(list(result)) == 0):
-                await embeds.error_message("No such term in censor list!", ctx)
+                await embeds.error_message(description="No such term in censor list!", ctx=ctx)
                 return
 
             db['censor'].delete(censor_term=term.lower().strip())
