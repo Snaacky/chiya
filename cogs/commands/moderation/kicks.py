@@ -88,7 +88,7 @@ class KickCog(Cog):
             channel = await member.create_dm()
             dm_embed = embeds.make_embed(
                 title=f"Uh-oh, you've been kicked!",
-                description="I-I guess you can join back if you want? B-baka. https://discord.gg/piracy",
+                description="I-I guess you can join back if you want? B-baka!",
                 image_url="https://i.imgur.com/UkrBRur.gif",
                 author=False,
                 color=0xe49bb3
