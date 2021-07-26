@@ -8,39 +8,35 @@ from fuzzywuzzy import fuzz
 def check_message(message: discord.Message) -> bool:
     """ Checks Messages by calling various other methods. """
     with dataset.connect(database.get_db()) as db:
-        statement = "SELECT * FROM censor WHERE censor_type=\'regex\'"
-        result = db.query(statement)
-        for x in result:
+        # querying everything from the database
+        regex_censors = db['censor'].find(censor_type="regex")
+        for censor in regex_censors:
             # regex checking
-            if(check_regex(message.content, result['censor_term'])):
+            if(check_regex(message.content, censor['censor_term'])):
                 return True
         
-        statement = "SELECT * from censor WHERE censor_type=\'exact\'"
-        result = db.query(statement)
-        for x in result:
-            # exact word matching
-            if(check_exact(message.content, x['censor_term'])):
+        exact_censors = db['censor'].find(censor_type="exact")
+        for censor in exact_censors:
+            # regex checking the "exact" censor terms
+            if(check_exact(message.content, censor['censor_term'])):
                 return True
         
-        statement = "SELECT * from censor WHERE censor_type=\'substring\'"
-        result = db.query(statement)
-        for x in result:
-            # substring matching
-            if(check_substring(message.content, x['censor_term'])):
+        substring_censors = db['censor'].find(censor_type="substring")
+        for censor in substring_censors:
+            # regex checking for substrings of the censor terms
+            if(check_substring(message.content, censor['censor_term'])):
                 return True
-
-        statement = "SELECT * from censor WHERE censor_type=\'url\'"
-        result = db.query(statement)
-        for x in result:
-            # exact word matching
-            if(check_url(message.content, x['censor_term'])):
+            
+        url_censors = db['censor'].find(censor_type="url")
+        for censor in url_censors:
+            # regex checking for a URL matching ones read from the DB
+            if(check_url(message.content, censor['censor_term'])):
                 return True
-    
-        statement = "SELECT * from censor WHERE censor_type=\'fuzzy\'"
-        result = db.query(statement)
-        for x in result:
-            # exact word matching
-            if(check_fuzzy(message.content, x['censor_term'], x['censor_threshold'])):
+        
+        fuzzy_censors = db['censor'].find(censor_type="fuzzy")
+        for censor in fuzzy_censors:
+            # Doing a fuzzy matching with the word, with the specified threshold
+            if(check_fuzzy(message.content, censor['censor_term'], censor['censor_threshold'])):
                 return True
 
     # nothing matched :(
