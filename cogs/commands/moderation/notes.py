@@ -125,8 +125,11 @@ class NotesCog(Cog):
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
-        options = ["ban", "bans", "unban", "unbans", "mute", "mutes", "unmute", "unmutes", "warn", "warns", "kick", "kicks", "note", "notes"]
+        options = ["ban", "unban", "mute", "unmute", "warn", "kick", "note"]
         if action_type:
+            # Attempt to check for the plural form of the options and strip it.
+            if action_type[-1] == "s":
+                action_type = action_type[:-1]
             if any(action_type == option for option in options):
                 results = mod_logs.find(user_id=user.id, type=action_type.lower())
             else:
