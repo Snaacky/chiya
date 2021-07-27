@@ -125,15 +125,16 @@ class NotesCog(Cog):
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
-        options = ["ban", "unban", "mute", "unmute", "warn", "kick"]
+        options = ["ban", "bans", "unban", "unbans", "mute", "mutes", "unmute", "unmutes", "warn", "warns", "kick", "kicks", "note", "notes"]
         if action_type:
-            # Attempts to check for plurality from action_type. If it still matches nothing, return an error embed instead.
-            if any(action_type or action_type[:-1] != option for option in options):
+            if any(action_type == option for option in options):
+                results = mod_logs.find(user_id=user.id, type=action_type.lower())
+            else:
                 await embeds.error_message(
                     ctx=ctx,
-                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, warn, kick")
+                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, warn, kick, note"
+                )
                 return
-            results = mod_logs.find(user_id=user.id, type=action_type.lower())
         else:
             results = mod_logs.find(user_id=user.id)
         
