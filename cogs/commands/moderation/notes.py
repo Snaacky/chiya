@@ -138,8 +138,7 @@ class NotesCog(Cog):
         else:
             results = mod_logs.find(user_id=user.id)
         
-        # Commit the changes to the database and close the connection.
-        db.commit()
+        # Close the connection.
         db.close()
 
         # Creating a list to store actions for the paginator.
