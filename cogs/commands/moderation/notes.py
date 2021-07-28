@@ -137,12 +137,11 @@ class NotesCog(Cog):
                     ctx=ctx,
                     description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, warn, kick, note"
                 )
+                # Close the connection.
+                db.close()
                 return
         else:
             results = mod_logs.find(user_id=user.id)
-        
-        # Close the connection.
-        db.close()
 
         # Creating a list to store actions for the paginator.
         actions = []
@@ -182,6 +181,9 @@ class NotesCog(Cog):
 
         page_no = 0
 
+        # Close the connection.
+        db.close()
+        
         def get_page(action_list, user, page_no: int) -> Embed:
             embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no + 1} of {len(action_list)}")
             embed.set_author(name=user, icon_url=user.avatar_url)
@@ -277,6 +279,7 @@ class NotesCog(Cog):
 
             if embed is not None:
                 await msg.edit(embed=embed)
+
 
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
