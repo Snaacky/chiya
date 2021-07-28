@@ -31,23 +31,29 @@ class BanCog(Cog):
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=delete_message_days)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the ban to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
+        db["mod_logs"].insert(dict(
+            user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
+        ))
+
+        # Stores the action in a separate table for the scheduler to handle unbanning later.
+        if temporary:
+            db["timed_mod_actions"].insert(dict(
+                user_id=user.id,
+                mod_id=ctx.author.id,
+                action_type="ban",
+                reason=reason,
+                start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
+                end_time=end_time,
+                is_done=False
             ))
 
-            # Stores the action in a separate table for the scheduler to handle unbanning later.
-            if temporary:
-                db["timed_mod_actions"].insert(dict(
-                    user_id=user.id,
-                    mod_id=ctx.author.id,
-                    action_type="ban",
-                    reason=reason,
-                    start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
-                    end_time=end_time,
-                    is_done=False
-                ))
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
     async def unban_user(self, user: discord.User, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
         guild = guild or ctx.guild
@@ -59,11 +65,18 @@ class BanCog(Cog):
         except discord.HTTPException:
             return
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the unban to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=user.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unban"
-            ))
+        db["mod_logs"].insert(dict(
+            user_id=user.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unban"
+        ))
+        
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
+        
 
     async def is_user_in_guild(self, guild: discord.Guild, user: discord.User):
         guild = self.bot.get_guild(guild)

@@ -75,12 +75,22 @@ class TicketCog(Cog):
         embed.add_field(name="Ticket Topic:", value=topic, inline=False)
         await channel.send(embed=embed)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Insert a pending ticket into the database.
-        with dataset.connect(database.get_db()) as db:
-            db["tickets"].insert(dict(
-                user_id=ctx.author.id, status="in-progress", guild=ctx.guild.id,
-                timestamp=int(time.time()), ticket_topic=topic, log_url=None
-            ))
+        db["tickets"].insert(dict(
+            user_id=ctx.author.id, 
+            status="in-progress", 
+            guild=ctx.guild.id,
+            timestamp=int(time.time()), 
+            ticket_topic=topic, 
+            log_url=None
+        ))
+        
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         # Send the user a ping and then immediately delete it because mentions via embeds do not ping.
         ping = await channel.send(ctx.author.mention)
@@ -112,11 +122,13 @@ class TicketCog(Cog):
             await embeds.error_message(ctx=ctx, description="You can only run this command in active ticket channels.")
             return
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Get the ticket topic in database for embeds.
-        with dataset.connect(database.get_db()) as db:
-            table = db["tickets"]
-            ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
-            ticket_topic = ticket["ticket_topic"]
+        table = db["tickets"]
+        ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
+        ticket_topic = ticket["ticket_topic"]
 
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
@@ -146,6 +158,11 @@ class TicketCog(Cog):
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                 if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
+
+        # An empty mod_list (ticket with no conversation) will raise a HTTPException for using an empty field in embed.
+        # Using "\u200b" (zero width space) is also not an option because .mention cannot be called on it.
+        if len(mod_list) == 0:
+            mod_list.add(self.bot.user)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
         url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
@@ -188,6 +205,10 @@ class TicketCog(Cog):
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])
+        
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         # Delete the channel.
         await ctx.channel.delete()

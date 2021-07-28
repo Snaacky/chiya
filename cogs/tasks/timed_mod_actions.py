@@ -28,12 +28,14 @@ class TimedModActionsTask(Cog):
         # Wait for bot to start.
         await self.bot.wait_until_ready()
         
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        
         # Query the database for all temporary mod actions that haven't executed yet.
-        with dataset.connect(database.get_db()) as db:
-            results = db["timed_mod_actions"].find(
-                is_done=False,
-                end_time={"lt": datetime.now(tz=timezone.utc).timestamp()}
-            )
+        results = db["timed_mod_actions"].find(
+            is_done=False,
+            end_time={"lt": datetime.now(tz=timezone.utc).timestamp()}
+        )
 
         # Get the guild and mod channel to send the expiration notice into.
         guild = self.bot.get_guild(config.guild_id)
@@ -42,8 +44,7 @@ class TimedModActionsTask(Cog):
         for action in results:
             if action["action_type"] == "mute":
                 # Update the database to mark the mod action as resolved.
-                with dataset.connect(database.get_db()) as db:
-                    db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])    
+                db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])
                 
                 # Get the MuteCog so that we can access functions from it.
                 mutes = self.bot.get_cog("MuteCog")
@@ -91,9 +92,10 @@ class TimedModActionsTask(Cog):
                 # Unbans the user and returns the embed letting the moderator know they were successfully unbanned.
                 await bans.unban_user(user=user, reason="Temporary ban elapsed.", guild=guild)
                 await channel.send(embed=embed)
+                db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])
 
-                with dataset.connect(database.get_db()) as db:
-                    db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])
+        # Close the connection to the database once we're done.
+        db.close()
 
 def setup(bot: Bot) -> None:
     """ Load the TimedModActionsTask cog. """

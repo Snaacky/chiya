@@ -63,20 +63,28 @@ class NotesCog(Cog):
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        
+        # Add the note to the mod_logs database.
+        note_id = db["mod_logs"].insert(dict(
+            user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
+        ))
+
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Noting user: {user.name}",
-            description=f"{user.mention} was noted by {ctx.author.mention}: {note}",
+            description=f"{user.mention} was noted by {ctx.author.mention}",
             thumbnail_url=config.pencil,
             color="blurple"
         )
+        embed.add_field(name="ID: ", value=note_id, inline=False)
+        embed.add_field(name="Note: ", value=note, inline=False)
         await ctx.send(embed=embed)
-
-        # Add the note to the mod_logs database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
-            ))
+        
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
     @cog_ext.cog_slash(
         name="search",
@@ -112,20 +120,28 @@ class NotesCog(Cog):
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
-        with dataset.connect(database.get_db()) as db:
-            mod_logs = db["mod_logs"]
-            options = ["ban", "unban", "mute", "unmute", "warn", "kick"]
-            if action_type:
-                # Attempts to check for plurality from action_type. If it still matches nothing, return an error embed instead.
-                if any(action_type or action_type[:-1] != option for option in options):
-                    await embeds.error_message(
-                        ctx=ctx,
-                        description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, warn, kick")
-                    return
+        mod_logs = db["mod_logs"]
+        options = ["ban", "unban", "mute", "unmute", "warn", "kick", "note"]
+        if action_type:
+            # Attempt to check for the plural form of the options and strip it.
+            if action_type[-1] == "s":
+                action_type = action_type[:-1]
+            if any(action_type == option for option in options):
                 results = mod_logs.find(user_id=user.id, type=action_type.lower())
             else:
-                results = mod_logs.find(user_id=user.id)
+                await embeds.error_message(
+                    ctx=ctx,
+                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, warn, kick, note"
+                )
+                # Close the connection.
+                db.close()
+                return
+        else:
+            results = mod_logs.find(user_id=user.id)
 
         # Creating a list to store actions for the paginator.
         actions = []
@@ -165,6 +181,9 @@ class NotesCog(Cog):
 
         page_no = 0
 
+        # Close the connection.
+        db.close()
+        
         def get_page(action_list, user, page_no: int) -> Embed:
             embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no + 1} of {len(action_list)}")
             embed.set_author(name=user, icon_url=user.avatar_url)
@@ -261,6 +280,7 @@ class NotesCog(Cog):
             if embed is not None:
                 await msg.edit(embed=embed)
 
+
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
@@ -292,8 +312,10 @@ class NotesCog(Cog):
     async def edit_log(self, ctx: SlashContext, id: int, reason: str):
         await ctx.defer()
 
-        with dataset.connect(database.get_db()) as db:
-            table = db["mod_logs"]
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
+        table = db["mod_logs"]
 
         mod_log = table.find_one(id=id)
         if not mod_log:
@@ -314,6 +336,10 @@ class NotesCog(Cog):
 
         mod_log["reason"] = reason
         table.update(mod_log, ["id"])
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
 
 def setup(bot: Bot) -> None:

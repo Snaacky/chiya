@@ -88,7 +88,7 @@ class KickCog(Cog):
             channel = await member.create_dm()
             dm_embed = embeds.make_embed(
                 title=f"Uh-oh, you've been kicked!",
-                description="I-I guess you can join back if you want? B-baka. https://discord.gg/piracy",
+                description="I-I guess you can join back if you want? B-baka!",
                 image_url="https://i.imgur.com/UkrBRur.gif",
                 author=False,
                 color=0xe49bb3
@@ -106,11 +106,17 @@ class KickCog(Cog):
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.kick
         await ctx.guild.kick(user=member, reason=reason)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the kick to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
-            ))
+        db["mod_logs"].insert(dict(
+            user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
+        ))
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
 
 def setup(bot: Bot) -> None:

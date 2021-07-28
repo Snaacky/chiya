@@ -91,11 +91,21 @@ class WarnsCog(Cog):
         except discord.HTTPException:
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the warning to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="warn"
-            ))
+        db["mod_logs"].insert(dict(
+            user_id=member.id, 
+            mod_id=ctx.author.id, 
+            timestamp=int(time.time()), 
+            reason=reason, 
+            type="warn"
+        ))
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
         await ctx.send(embed=embed)
 
