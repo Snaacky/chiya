@@ -195,10 +195,6 @@ class Reminder(Cog):
         remind_me = db["remind_me"]
         result = remind_me.find(sent=False, author_id=ctx.author.id)
 
-        # Commit the changes to the database and close the connection.
-        db.commit()
-        db.close()
-
         reminders = []
 
         # Convert ResultSet to list.
@@ -216,6 +212,9 @@ class Reminder(Cog):
             thumbnail_url=config.remind_blurple,
             color="blurple"
         )
+
+        # Close the connection to the database.
+        db.close()
 
         # Paginate results.
         await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
