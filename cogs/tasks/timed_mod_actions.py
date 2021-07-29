@@ -103,6 +103,7 @@ class TimedModActionsTask(Cog):
                 # Attempt to get the member if they still exist in the guild.
                 member = guild.get_member(action["user_id"])
 
+                # If the user has left the guild, send a message in #moderation and end the function.
                 if not member:
                     # Fetch the user object instead because the user is no longer a member of the server.
                     user = await self.bot.fetch_user(action["user_id"])

@@ -23,6 +23,7 @@ class RestrictsHandler(commands.Cog):
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
 
+        # Get the guild that the member belongs to.
         guild = member.guild
 
         # Get the "Restricted" role.
