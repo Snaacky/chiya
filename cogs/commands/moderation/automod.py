@@ -50,25 +50,27 @@ class AutomodCog(commands.Cog):
         await ctx.defer()
         
         censored_terms = []
-        with dataset.connect(database.get_db()) as db:
-            censors = None
-            if not censor_type:
-                censors = db['censor'].all()
-            else:
-                censors = db['censor'].find(
-                    censor_type = censor_type
-                )
-            
-            for censor in censors:
-                censor_term = censor['censor_term']
-                if censor['censor_type'] == 'fuzzy':
-                    censor_term = f"{censor['censor_term']} ({censor['censor_threshold']}%)"
-                censored_term = f"**ID: {censor['id']} ** | **{censor['censor_type']}**\n```{censor_term}```"
-                censored_terms.append(censored_term)
-            
-            embed = embeds.make_embed(ctx=ctx, title = "Censored Terms", thumbnail_url=config.defcon_disabled, color="gold")
+        db = dataset.connect(database.get_db())
+        censors = None
+        if not censor_type:
+            censors = db['censor'].all()
+        else:
+            censors = db['censor'].find(
+                censor_type = censor_type
+            )
+        
+        for censor in censors:
+            censor_term = censor['censor_term']
+            if censor['censor_type'] == 'fuzzy':
+                censor_term = f"{censor['censor_term']} ({censor['censor_threshold']}%)"
+            censored_term = f"**ID: {censor['id']} ** | **{censor['censor_type']}**\n```{censor_term}```"
+            censored_terms.append(censored_term)
+        
+        embed = embeds.make_embed(ctx=ctx, title = "Censored Terms", thumbnail_url=config.defcon_disabled, color="gold")
 
-            await LinePaginator.paginate(censored_terms, ctx=ctx, embed=embed, max_lines=5, max_size=2000, time_to_delete=30)
+        await LinePaginator.paginate(censored_terms, ctx=ctx, embed=embed, max_lines=5, max_size=2000, time_to_delete=30)
+
+        db.close()
 
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
@@ -144,14 +146,19 @@ class AutomodCog(commands.Cog):
                             await embeds.error_message(description="Fuzziness threshold must be less than 100!", ctx=ctx)
                             return
 
-                with dataset.connect(database.get_db()) as db:
-                    db['censor'].insert(dict(
-                        censor_term=censor_term,
-                        censor_type=x['name'],
-                        censor_threshold=censor_threshold
-                    ))
-                    await ctx.send(f"Censor term \"{censor_term}\" of type `{x['name']}` was added.")
-                    return
+                db = dataset.connect(database.get_db())
+                db['censor'].insert(dict(
+                    censor_term=censor_term,
+                    censor_type=x['name'],
+                    censor_threshold=censor_threshold
+                ))
+                
+                db.commit()
+                db.close()
+
+                await ctx.send(f"Censor term \"{censor_term}\" of type `{x['name']}` was added.")
+                return
+
 
         # User did not specify censor type properly, so throw an error.
         await embeds.error_message(description="Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx=ctx)
