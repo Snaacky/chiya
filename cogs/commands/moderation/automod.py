@@ -156,7 +156,7 @@ class AutomodCog(commands.Cog):
                 db.commit()
                 db.close()
 
-                await ctx.send(f"Censor term \"{censor_term}\" of type `{x['name']}` was added.")
+                await ctx.send(f"Censor term `{censor_term}` of type `{x['name']}` was added.")
                 return
 
 
@@ -186,8 +186,10 @@ class AutomodCog(commands.Cog):
     )    
     async def remove_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
+        
         db = dataset.connect(database.get_db())
-        censor = db['censor'].find_one(id)
+        censor = db['censor'].find_one(id=id)
+        
         if not censor:
             await embeds.error_message(ctx=ctx, description="The censor with that ID does not exist!")
             return
@@ -195,7 +197,7 @@ class AutomodCog(commands.Cog):
         db['censor'].delete(id=id)
         db.commit()
         db.close()
-        
+
         await ctx.send(f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was deleted.")
             
 def setup(bot) -> None:
