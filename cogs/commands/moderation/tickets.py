@@ -1,4 +1,5 @@
 import logging
+import re
 import time
 
 import dataset
@@ -128,10 +129,25 @@ class TicketCog(Cog):
         # Get the ticket topic in database for embeds.
         table = db["tickets"]
         ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
-        ticket_topic = ticket["ticket_topic"]
+
+        ticket_creator_id = ""
+        ticket_topic = ""
+
+        # Attempts to get only the first embedded message by Chiya in the ticket channel.
+        async for message in ctx.channel.history(oldest_first=True):
+            # If the message author's ID is the same as Chiya.
+            if message.author.id == self.bot.user.id:
+
+                # There should be only 1 embed in the message, so we get the first item.
+                # The first field's value is guaranteed to be the ticket creator. We strip the non-digit chars and turn the rest into an int.
+                ticket_creator_id = int(re.sub(r"\D+", "", message.embeds[0].fields[0].value))
+
+                # The second field's value is guaranteed to be the ticket topic.
+                ticket_topic = message.embeds[0].fields[1].value
+                break
 
         # Get the member object of the ticket creator.
-        member = await self.bot.fetch_user(int(ctx.channel.name.replace("ticket-", "")))
+        member = await self.bot.fetch_user(ticket_creator_id)
 
         # Initialize the PrivateBin message log string.
         message_log = (
@@ -151,10 +167,13 @@ class TicketCog(Cog):
         async for message in ctx.channel.history(oldest_first=True):
             # Ignore the bot replies.
             if not message.author.bot:
+
                 # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
                 formatted_time = str(message.created_at).split(".")[-2]
+
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
+
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                 if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
@@ -201,10 +220,21 @@ class TicketCog(Cog):
         except discord.HTTPException:
             logging.info(f"Attempted to send ticket closed DM to {member} but they are not accepting DMs.")
 
-        # Update the ticket status from "in-progress" to "completed" and the PrivateBin URL field in the database.
-        ticket["status"] = "completed"
-        ticket["log_url"] = url
-        table.update(ticket, ["id"])
+        # If the ticket somehow does not exists in the database, we add it.
+        if not ticket:
+            db["tickets"].insert(dict(
+                user_id=ticket_creator_id,
+                status="completed",
+                guild=ctx.guild.id,
+                timestamp=int(time.time()),
+                ticket_topic=ticket_topic,
+                log_url=url
+            ))
+        else:
+            # Otherwise, update the ticket status from "in-progress" to "completed" and the PrivateBin URL field in the database.
+            ticket["status"] = "completed"
+            ticket["log_url"] = url
+            table.update(ticket, ["id"])
         
         # Commit the changes to the database and close the connection.
         db.commit()
