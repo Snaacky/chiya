@@ -107,7 +107,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
+            embed.set_image(url="https://i.imgur.com/NlXwNqW.gif")
             await dm_channel.send(embed=embed)
             return True
         except discord.HTTPException:
@@ -129,7 +129,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy/)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
+            embed.set_image(url="https://i.imgur.com/rvvnpV2.gif")
             await channel.send(embed=embed)
             return True
         except discord.HTTPException:
