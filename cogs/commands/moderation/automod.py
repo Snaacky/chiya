@@ -162,7 +162,41 @@ class AutomodCog(commands.Cog):
 
         # User did not specify censor type properly, so throw an error.
         await embeds.error_message(description="Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx=ctx)
-
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_slash(
+        name = "remove",
+        description="Removes a term from the censor list.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            )
+        ],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )    
+    async def remove_censor(self, ctx: SlashContext, id: int):
+        await ctx.defer()
+        db = dataset.connect(database.get_db())
+        censor = db['censor'].find_one(id)
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="The censor with that ID does not exist!")
+            return
+        
+        db['censor'].delete(id=id)
+        db.commit()
+        db.close()
+        
+        await ctx.send(f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was deleted.")
             
 def setup(bot) -> None:
     bot.add_cog(AutomodCog(bot))
