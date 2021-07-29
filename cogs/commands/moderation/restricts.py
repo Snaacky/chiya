@@ -34,27 +34,32 @@ class RestrictCog(Cog):
         return False
 
     @staticmethod
-    async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config.role_restricted)
         await member.add_roles(role, reason=reason)
 
-        # Add the restrict to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="restrict"
-            ))
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
 
-            # Occurs when the duration in /restrict is specified (temporary restrict).
-            if temporary:
-                db["timed_mod_actions"].insert(dict(
-                    user_id=member.id,
-                    mod_id=ctx.author.id,
-                    action_type="restrict",
-                    reason=reason,
-                    start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
-                    end_time=end_time,
-                    is_done=False
-                ))
+        # Add the restrict to the mod_log database.
+        db["mod_logs"].insert(dict(
+            user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="restrict"
+        ))
+
+        # Add the entry to timed_mod_actions so that it's easier to check for is_done and handle the restrict evasions.
+        db["timed_mod_actions"].insert(dict(
+            user_id=member.id,
+            mod_id=ctx.author.id,
+            action_type="restrict",
+            reason=reason,
+            start_time=datetime.datetime.now(tz=datetime.timezone.utc).timestamp(),
+            end_time=end_time,
+            is_done=False
+        ))
+
+        # Commit the changes to the database.
+        db.commit()
+        db.close()
 
     async def unrestrict_member(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
         guild = guild or ctx.guild
@@ -64,11 +69,26 @@ class RestrictCog(Cog):
         role = discord.utils.get(guild.roles, id=config.role_restricted)
         await member.remove_roles(role, reason=reason)
 
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+
         # Add the unrestrict to the mod_log database.
-        with dataset.connect(database.get_db()) as db:
-            db["mod_logs"].insert(dict(
-                user_id=member.id, mod_id=moderator.id, timestamp=int(time.time()), reason=reason, type="unrestrict"
-            ))
+        db["mod_logs"].insert(dict(
+            user_id=member.id,
+            mod_id=moderator.id,
+            timestamp=int(time.time()),
+            reason=reason,
+            type="unrestrict"
+        ))
+
+        # Update the unrestrict in timed_mod_actions.
+        timed_restriction_entry = db["timed_mod_actions"].find_one(user_id=member.id, is_done=False)
+        if timed_restriction_entry:
+            db["timed_mod_actions"].update(dict(id=timed_restriction_entry["id"], is_done=True), ["id"])
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
 
     @staticmethod
     async def send_restricted_dm_embed(ctx: SlashContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
@@ -255,7 +275,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Restricts the user and stores the unrestrict time in the database for the background task.
-        await self.restrict_member(ctx=ctx, member=member, reason=reason, temporary=True, end_time=restrict_end_time.timestamp())
+        await self.restrict_member(ctx=ctx, member=member, reason=reason, end_time=restrict_end_time.timestamp())
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
@@ -302,7 +322,7 @@ class RestrictCog(Cog):
 
         # Check if the user is not restricted already.
         if not await self.is_user_restricted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is not restrictd.")
+            await embeds.error_message(ctx=ctx, description=f"{member.mention} is not restricted.")
             return
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
@@ -317,7 +337,7 @@ class RestrictCog(Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unrestricting member: {member.name}",
-            description=f"{member.mention} was unrestrictd by {ctx.author.mention} for: {reason}",
+            description=f"{member.mention} was unrestricted by {ctx.author.mention} for: {reason}",
             color="soft_green",
             thumbnail_url=config.user_unrestrict
         )
