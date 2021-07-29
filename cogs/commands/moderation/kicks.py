@@ -58,7 +58,7 @@ class KickCog(Cog):
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
-        if isinstance(member, int):
+        if not isinstance(member, discord.Member):
             await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
             return
 
