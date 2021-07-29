@@ -28,7 +28,7 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_available
         """
-        log.info(f'{guild.name} has has become available.')
+        log.info(f'{guild.name} has become available.')
 
     @commands.Cog.listener()
     async def on_guild_unavailable(self, guild: discord.Guild) -> None:
@@ -40,7 +40,7 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_unavailable
         """
-        log.info(f'{guild.name} has has become unavailable.')
+        log.info(f'{guild.name} is now unavailable.')
 
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel) -> None:
@@ -55,7 +55,7 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_create
         """
-        log.info(f'{channel.name} has has been created in {channel.guild}.')
+        log.info(f'{channel.name} has been created in {channel.guild}.')
 
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
@@ -70,7 +70,7 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_delete
         """
-        log.info(f'{channel.name} has has been deleted in {channel.guild}.')
+        log.info(f'{channel.name} has been deleted in {channel.guild}.')
 
     @commands.Cog.listener()
     async def on_guild_channel_pins_update(self, channel: discord.abc.GuildChannel, last_pin: datetime.datetime) -> None:

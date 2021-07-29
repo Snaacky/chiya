@@ -146,3 +146,4 @@ config.py
 *.db*
 notes.txt
 *.bat
+db/*
