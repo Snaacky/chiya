@@ -80,4 +80,5 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
 
 def check_url(message: str, term: str) -> bool:
     """ URL checking """
+    # TODO: Implement links checking.
     return False
