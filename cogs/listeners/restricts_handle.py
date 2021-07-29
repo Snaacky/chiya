@@ -39,6 +39,10 @@ class RestrictsHandler(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
+        # Ignore bot messages.
+        if message.author.bot:
+            return
+
         # Get the guild that the member belongs to.
         guild = message.author.guild
 
