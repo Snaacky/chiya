@@ -9,8 +9,8 @@ from discord.embeds import Embed
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
 from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import create_option, create_permission
 
 import config
 from utils import database
@@ -65,7 +65,7 @@ class NotesCog(Cog):
 
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
-        
+
         # Add the note to the mod_logs database.
         note_id = db["mod_logs"].insert(dict(
             user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=note, type="note"
@@ -81,7 +81,7 @@ class NotesCog(Cog):
         embed.add_field(name="ID: ", value=note_id, inline=False)
         embed.add_field(name="Note: ", value=note, inline=False)
         await ctx.send(embed=embed)
-        
+
         # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
@@ -125,7 +125,7 @@ class NotesCog(Cog):
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
-        options = ["ban", "unban", "mute", "unmute", "warn", "kick", "note"]
+        options = ["ban", "unban", "mute", "unmute", "restrict", "unrestrict", "warn", "kick", "note"]
         if action_type:
             # Attempt to check for the plural form of the options and strip it.
             if action_type[-1] == "s":
@@ -135,7 +135,7 @@ class NotesCog(Cog):
             else:
                 await embeds.error_message(
                     ctx=ctx,
-                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, warn, kick, note"
+                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
                 )
                 # Close the connection.
                 db.close()
@@ -183,7 +183,7 @@ class NotesCog(Cog):
 
         # Close the connection.
         db.close()
-        
+
         def get_page(action_list, user, page_no: int) -> Embed:
             embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no + 1} of {len(action_list)}")
             embed.set_author(name=user, icon_url=user.avatar_url)
@@ -194,6 +194,8 @@ class NotesCog(Cog):
                 kick="👢",
                 ban="🔨",
                 unban="⚒",
+                restrict="🚫",
+                unrestrict="✅",
                 note="🗒️"
             )
             for action in action_list[page_no]:
@@ -279,7 +281,6 @@ class NotesCog(Cog):
 
             if embed is not None:
                 await msg.edit(embed=embed)
-
 
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
