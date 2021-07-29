@@ -60,7 +60,7 @@ class NotesCog(Cog):
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
-        if not isinstance(user, discord.User):
+        if not isinstance(user, discord.Member):
             user = await self.bot.fetch_user(user)
 
         # Open a connection to the database.
@@ -117,7 +117,7 @@ class NotesCog(Cog):
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
-        if not isinstance(user, discord.User):
+        if not isinstance(user, discord.Member):
             user = await self.bot.fetch_user(user)
 
         # Open a connection to the database.
