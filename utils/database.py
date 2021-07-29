@@ -61,6 +61,12 @@ def setup_db():
     tickets.create_column("ticket_topic", db.types.text)
     tickets.create_column("log_url", db.types.text)
 
+    # create censor table and columns to store the automod censor terms
+    censor = db.create_table("censor")
+    censor.create_column("censor_term", db.types.text)
+    censor.create_column("censor_type", db.types.text)
+    censor.create_column("censor_threshold", db.types.integer)
+
     # Commit the changes to the database and close the connection.
     db.commit()
     db.close()
