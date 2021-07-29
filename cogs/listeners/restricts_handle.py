@@ -2,7 +2,7 @@ import logging
 
 import dataset
 import discord
-from discord import Member
+from discord import Member, Message
 from discord.ext import commands
 
 import config
@@ -36,6 +36,19 @@ class RestrictsHandler(commands.Cog):
 
         # Close the connection.
         db.close()
+
+    @commands.Cog.listener()
+    async def on_message(self, message: Message):
+        # Get the guild that the member belongs to.
+        guild = message.author.guild
+
+        # Get the "Restricted" role.
+        role_restricted = discord.utils.get(guild.roles, id=config.role_restricted)
+
+        # Automatically deletes fake Discord Nitro emotes.
+        if role_restricted in message.author.roles:
+            if "https://cdn.discordapp.com/emojis/" in message.content:
+                await message.delete()
 
 
 def setup(bot) -> None:
