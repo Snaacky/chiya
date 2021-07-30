@@ -2,6 +2,7 @@ import logging
 
 
 import dataset
+from sqlalchemy.sql.expression import desc
 
 import config
 from utils import database
@@ -156,7 +157,8 @@ class AutomodCog(commands.Cog):
                 db.commit()
                 db.close()
 
-                await ctx.send(f"Censor term `{censor_term}` of type `{x['name']}` was added.")
+                embed = embeds.make_embed(ctx=ctx, description=f"Censor term `{censor_term}` of type `{x['name']}` was added.", color="green")
+                await ctx.send(embed=embed)
                 return
 
 
@@ -198,7 +200,8 @@ class AutomodCog(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.send(f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was deleted.")
+        embed = embeds.make_embed(ctx=ctx, description=f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was deleted.", color='red')
+        await ctx.send(embed=embed)
             
 def setup(bot) -> None:
     bot.add_cog(AutomodCog(bot))

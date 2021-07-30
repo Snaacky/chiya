@@ -139,7 +139,7 @@ class MessageUpdates(commands.Cog):
         await self.bot.process_commands(message)
 
         if (automod.check_message(message)):
-            await message.add_reaction('❌')
+            await message.delete()
             
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
