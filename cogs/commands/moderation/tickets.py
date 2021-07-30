@@ -126,25 +126,28 @@ class TicketCog(Cog):
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
 
-        # Get the ticket topic in database for embeds.
+        # Get the ticket in the database.
         table = db["tickets"]
         ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
 
-        ticket_creator_id = ""
-        ticket_topic = ""
+        # Get the ticket topic from database and ticket creator's ID from channel name.
+        ticket_topic = ticket["ticket_topic"]
+        ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
 
-        # Attempts to get only the first embedded message by Chiya in the ticket channel.
-        async for message in ctx.channel.history(oldest_first=True):
-            # If the message author's ID is the same as Chiya.
-            if message.author.id == self.bot.user.id:
+        # If somehow the ticket topic or ticket creator ID was not found in the database.
+        if not ticket_topic or ticket_creator_id:
+            # Attempts to get only the first embedded message by Chiya in the ticket channel.
+            async for message in ctx.channel.history(oldest_first=True):
+                # If the message author's ID is the same as Chiya.
+                if message.author.id == self.bot.user.id:
 
-                # There should be only 1 embed in the message, so we get the first item.
-                # The first field's value is guaranteed to be the ticket creator. We strip the non-digit chars and turn the rest into an int.
-                ticket_creator_id = int(re.sub(r"\D+", "", message.embeds[0].fields[0].value))
+                    # There should be only 1 embed in the message, so we get the first item.
+                    # The first field's value is guaranteed to be the ticket creator. We strip the non-digit chars and turn the rest into an int.
+                    ticket_creator_id = int(re.sub(r"\D+", "", message.embeds[0].fields[0].value))
 
-                # The second field's value is guaranteed to be the ticket topic.
-                ticket_topic = message.embeds[0].fields[1].value
-                break
+                    # The second field's value is guaranteed to be the ticket topic.
+                    ticket_topic = message.embeds[0].fields[1].value
+                    break
 
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(ticket_creator_id)
