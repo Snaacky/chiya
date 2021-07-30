@@ -130,21 +130,20 @@ class TicketCog(Cog):
         table = db["tickets"]
         ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
 
-        # Get the ticket topic from database and ticket creator's ID from channel name.
-        ticket_topic = ticket["ticket_topic"]
-        ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
-
-        # If somehow the ticket topic or ticket creator ID was not found in the database.
-        if not ticket_topic or ticket_creator_id:
+        # If the ticket exists in the database.
+        if ticket:
+            # Get the ticket topic from database and ticket creator's ID from channel name.
+            ticket_topic = ticket["ticket_topic"]
+            ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
+        # If somehow the ticket doesn't exist in the database.
+        else:
             # Attempts to get only the first embedded message by Chiya in the ticket channel.
             async for message in ctx.channel.history(oldest_first=True):
                 # If the message author's ID is the same as Chiya.
                 if message.author.id == self.bot.user.id:
-
                     # There should be only 1 embed in the message, so we get the first item.
                     # The first field's value is guaranteed to be the ticket creator. We strip the non-digit chars and turn the rest into an int.
                     ticket_creator_id = int(re.sub(r"\D+", "", message.embeds[0].fields[0].value))
-
                     # The second field's value is guaranteed to be the ticket topic.
                     ticket_topic = message.embeds[0].fields[1].value
                     break
