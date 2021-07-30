@@ -121,67 +121,6 @@ class BanCog(Cog):
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="unban",
-        description="Unbans the user from the server",
-        guild_ids=[config.guild_id],
-        options=[
-            create_option(
-                name="user",
-                description="The user that will be unbanned",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the user is being unbanned",
-                option_type=3,
-                required=False
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def unban(self, ctx: SlashContext, user: discord.User, reason: str = None):
-        """ Unbans user from guild. """
-        await ctx.defer()
-
-        user = await self.bot.fetch_user(user)
-
-        # Checks if the user is already banned and let's the mod know if they are not.
-        banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
-        if not banned:
-            await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
-            return
-
-        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if not reason:
-            reason = "No reason provided."
-        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
-
-        # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Unbanning user: {user.name}",
-            description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_unban,
-            color="soft_green"
-        )
-
-        # Unbans the user and returns the embed letting the moderator know they were successfully banned.
-        await self.unban_user(ctx=ctx, user=user, reason=reason)
-        await ctx.send(embed=embed)
-
-    @commands.bot_has_permissions(ban_members=True, send_messages=True)
-    @commands.before_invoke(record_usage)
-    @cog_ext.cog_slash(
         name="ban",
         description="Bans the member for the specified length of time",
         guild_ids=[config.guild_id],
@@ -288,7 +227,7 @@ class BanCog(Cog):
         )
         embed.add_field(name="Duration:", value=duration_string, inline=False)
 
-        # Attempt to DM the user that they have been banned with various information about their ban. 
+        # Attempt to DM the user that they have been banned with various information about their ban.
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.
         sent = await self.send_banned_dm_embed(ctx=ctx, user=user, reason=reason, duration=duration_string)
         if not sent:
@@ -296,6 +235,67 @@ class BanCog(Cog):
 
         # Bans the user and returns the embed letting the moderator know they were successfully banned.
         await self.ban_member(ctx=ctx, user=user, delete_message_days=daystodelete, reason=reason, temporary=True, end_time=ban_end_time.timestamp())
+        await ctx.send(embed=embed)
+
+    @commands.bot_has_permissions(ban_members=True, send_messages=True)
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_slash(
+        name="unban",
+        description="Unbans the user from the server",
+        guild_ids=[config.guild_id],
+        options=[
+            create_option(
+                name="user",
+                description="The user that will be unbanned",
+                option_type=6,
+                required=True
+            ),
+            create_option(
+                name="reason",
+                description="The reason why the user is being unbanned",
+                option_type=3,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def unban(self, ctx: SlashContext, user: discord.User, reason: str = None):
+        """ Unbans user from guild. """
+        await ctx.defer()
+
+        user = await self.bot.fetch_user(user)
+
+        # Checks if the user is already banned and let's the mod know if they are not.
+        banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
+        if not banned:
+            await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
+            return
+
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        if not reason:
+            reason = "No reason provided."
+        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
+        elif len(reason) > 512:
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            return
+
+        # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Unbanning user: {user.name}",
+            description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
+            thumbnail_url=config.user_unban,
+            color="soft_green"
+        )
+
+        # Unbans the user and returns the embed letting the moderator know they were successfully banned.
+        await self.unban_user(ctx=ctx, user=user, reason=reason)
         await ctx.send(embed=embed)
 
 
