@@ -1,15 +1,14 @@
 import logging
-import re
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 
 import dataset
-import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import config
+import utils.duration
 from utils import database, embeds
 from utils.pagination import LinePaginator
 from utils.record import record_usage
@@ -48,51 +47,12 @@ class Reminder(Cog):
         """ Sets a reminder message. """
         await ctx.defer()
 
-        # RegEx stolen from Setsudo and modified
-        regex = r"(?<=^)(?:(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
-
-        # Get all of the matches from the RegEx.
-        try:
-            match_list = re.findall(regex, duration)[0]
-        except discord.HTTPException:
-            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+        # Get the duration string for embed and ban end time for the specified duration.
+        duration_string, end_time = utils.duration.get_duration(duration=duration)
+        # If the duration string is empty due to Regex not matching anything, send and error embed and return.
+        if duration_string == "":
+            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
-
-        # Check if all the matches are blank and return preemptively if so.
-        if not any(x.isalnum() for x in match_list):
-            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
-
-        duration = dict(
-            days=match_list[0],
-            hours=match_list[1],
-            minutes=match_list[2],
-            seconds=match_list[3]
-        )
-
-        # # String that will store the duration in a more digestible format.
-        duration_string = ""
-        for time_unit in duration:
-            # If the time value is undeclared, set it to 0 and skip it.
-            if duration[time_unit] == "":
-                duration[time_unit] = 0
-                continue
-            # If the time value is 1, make the time unit into singular form.
-            if duration[time_unit] == "1":
-                duration_string += f"{duration[time_unit]} {time_unit[:-1]} "
-            else:
-                duration_string += f"{duration[time_unit]} {time_unit} "
-            # Updating the values for ease of conversion to timedelta object later.
-            duration[time_unit] = float(duration[time_unit])
-
-        duration = timedelta(
-            days=duration["days"],
-            hours=duration["hours"],
-            minutes=duration["minutes"],
-            seconds=duration["seconds"]
-        )
-
-        end_time = datetime.now(tz=timezone.utc) + duration
 
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
