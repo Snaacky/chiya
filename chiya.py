@@ -1,5 +1,6 @@
 import glob
 import logging
+import os
 
 import discord
 from discord.ext import commands
@@ -45,7 +46,7 @@ async def on_ready():
 async def on_message(message: discord.Message):
     """This event listener has been moved to message_updates.py
 
-    Unfortuneatley, this listener has to remain and do nothing, otherwise,
+    Unfortunately, this listener has to remain and do nothing, otherwise,
     any message will be ran twice and cause issues. Lame, i know
     """
     # Do nothing
@@ -61,6 +62,9 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("\\", ".")[:-3])
         else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
-
-    # Finally, run the bot.
-    bot.run(config.token)
+    
+    token = os.getenv("BOT_TOKEN")
+    if token:
+        bot.run(token)
+    else:
+        print("Error! Unable to find BOT_TOKEN environment variable, exiting...")
