@@ -27,7 +27,8 @@ class AutomodCog(commands.Cog):
         self.bot = bot
     
     @commands.before_invoke(record_usage)
-    @cog_ext.cog_slash(
+    @cog_ext.cog_subcommand(
+        base="censor",
         name = "list",
         description="Lists all the currently censored terms.",
         guild_ids=[config.guild_id],
@@ -39,8 +40,8 @@ class AutomodCog(commands.Cog):
                 required=False
             )
         ],
-        default_permission=False,
-        permissions={
+        base_default_permission=False,
+        base_permissions={
             config.guild_id: [
                 create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
                 create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
@@ -74,7 +75,8 @@ class AutomodCog(commands.Cog):
         db.close()
 
     @commands.before_invoke(record_usage)
-    @cog_ext.cog_slash(
+    @cog_ext.cog_subcommand(
+        base="censor",
         name = "add",
         description="Adds a term to the censor list.",
         guild_ids=[config.guild_id],
@@ -98,8 +100,8 @@ class AutomodCog(commands.Cog):
                 required=False
             )
         ],
-        default_permission=False,
-        permissions={
+        base_default_permission=False,
+        base_permissions={
             config.guild_id: [
                 create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
                 create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
@@ -166,7 +168,8 @@ class AutomodCog(commands.Cog):
         await embeds.error_message(description="Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx=ctx)
     
     @commands.before_invoke(record_usage)
-    @cog_ext.cog_slash(
+    @cog_ext.cog_subcommand(
+        base="censor",
         name = "remove",
         description="Removes a term from the censor list.",
         guild_ids=[config.guild_id],
@@ -178,8 +181,8 @@ class AutomodCog(commands.Cog):
                 required=True
             )
         ],
-        default_permission=False,
-        permissions={
+        base_default_permission=False,
+        base_permissions={
             config.guild_id: [
                 create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
                 create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
