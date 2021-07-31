@@ -51,6 +51,7 @@ def setup_db():
     timed_mod_actions.create_column("start_time", db.types.bigint)
     timed_mod_actions.create_column("end_time", db.types.bigint)
     timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
+    timed_mod_actions.create_column("reason", db.types.text)
 
     # create ticket table and columns to store the ticket status information
     tickets = db.create_table("tickets")

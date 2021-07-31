@@ -155,7 +155,7 @@ class BanCog(Cog):
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
-        if isinstance(user, int):
+        if not isinstance(user, discord.Member):
             user = await self.bot.fetch_user(user)
 
         # Checks if the user is already banned and let's the mod know if they already are.
@@ -304,7 +304,7 @@ class BanCog(Cog):
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
-        if isinstance(user, int):
+        if not isinstance(user, discord.Member):
             user = await self.bot.fetch_user(user)
 
         # Some basic checks to make sure mods can't cause problems with their ban.
