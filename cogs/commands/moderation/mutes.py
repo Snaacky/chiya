@@ -222,7 +222,7 @@ class MuteCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if any(role.id == role_staff or role.id == role_trial_mod for role in message.author.roles):
+                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
