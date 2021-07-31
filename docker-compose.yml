@@ -7,6 +7,7 @@ services:
         - /srv/chiya/config.py:/app/config.py
         - /srv/chiya/logs/:/app/logs/
     environment:
+        - BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
         - MYSQL_HOST=db
         - MYSQL_DATABASE=chiya
         - MYSQL_USER=chiya
