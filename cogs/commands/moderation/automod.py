@@ -28,7 +28,7 @@ class AutomodCog(commands.Cog):
     
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
-        base="censor",
+        base="automod",
         name = "list",
         description="Lists all the currently censored terms.",
         guild_ids=[config.guild_id],
@@ -76,7 +76,7 @@ class AutomodCog(commands.Cog):
 
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
-        base="censor",
+        base="automod",
         name = "add",
         description="Adds a term to the censor list.",
         guild_ids=[config.guild_id],
@@ -169,7 +169,7 @@ class AutomodCog(commands.Cog):
     
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
-        base="censor",
+        base="automod",
         name = "remove",
         description="Removes a term from the censor list.",
         guild_ids=[config.guild_id],
