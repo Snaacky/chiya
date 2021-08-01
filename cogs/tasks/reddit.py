@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 
@@ -10,9 +11,9 @@ import config
 log = logging.getLogger(__name__)
 
 reddit = asyncpraw.Reddit(
-    client_id=config.client_id,
-    client_secret=config.client_secret,
-    user_agent=config.user_agent
+    client_id=os.getenv("REDDIT_CLIENT_ID"),
+    client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
+    user_agent=os.getenv("REDDIT_USER_AGENT")
 )
 
 class RedditTask(commands.Cog):
