@@ -79,6 +79,68 @@ class Settings(Cog):
 
     @cog_ext.cog_subcommand(
         base="settings",
+        name="edit",
+        description="Edit an existing setting in the database",
+        guild_ids=[config.guild_id],
+        base_default_permission=False,
+        options=[
+            create_option(
+                name="name",
+                description="The name of the setting to be edited",
+                option_type=3,
+                required=True
+            ),
+            create_option(
+                name="value",
+                description="The updated value for the setting",
+                option_type=3,
+                required=True
+            ),
+            create_option(
+                name="censored",
+                description="The updated value for the censored value",
+                option_type=5,
+                required=False
+            ),
+        ],
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            ]
+        }
+    )
+    async def edit(self, ctx: SlashContext, name: str, value: str, censored: bool = None):
+        await ctx.defer()
+
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        table = db["settings"]
+        result = table.find_one(name=name)
+
+        # Error if a setting does not exist with that name.
+        if not result:
+            embed = embeds.make_embed(description="A setting with that name does not exist.", color="soft_red")
+            await ctx.send(embed=embed)
+            return
+
+        # Update the value(s) in the database.
+        result["value"] = value
+
+        # Only update the censored value if the user specified the optional parameter.
+        if censored is not None:
+            result["censored"] = censored
+        table.update(result, ["id"])
+
+        # Send a confirmation embed to the command invoker.
+        embed = embeds.make_embed(description=f"Updated '{name}' in the database.", color="soft_green")
+        await ctx.send(embed=embed)
+
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
+
+    @cog_ext.cog_subcommand(
+        base="settings",
         name="delete",
         description="Delete an existing setting from the database",
         guild_ids=[config.guild_id],
