@@ -2,6 +2,8 @@ import logging
 import os
 
 import dataset
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +19,11 @@ def get_db():
 
 def setup_db():
     """ Sets up the tables needed for Chiya. """
+    # Create the database if it doesn't already exist.
+    engine = create_engine(get_db())
+    if not database_exists(engine.url):
+        create_database(engine.url)
+
     # Open a connection to the database.
     db = dataset.connect(get_db())
 
@@ -33,7 +40,7 @@ def setup_db():
     remind_me = db.create_table("remind_me")
     remind_me.create_column("reminder_location", db.types.bigint)
     remind_me.create_column("author_id", db.types.bigint)
-    remind_me.create_column("date_to_remind", db.types.float)
+    remind_me.create_column("date_to_remind", db.types.bigint)
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
 
