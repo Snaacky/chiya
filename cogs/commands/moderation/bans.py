@@ -28,7 +28,7 @@ class BanCog(Cog):
         self.bot = bot
 
     @staticmethod
-    async def ban_member(ctx: SlashContext, user: discord.User, reason: str, temporary: bool = False, end_time: float = None, delete_message_days: int = 0) -> None:
+    async def ban_member(ctx: SlashContext, user: discord.User, reason: str, temporary: bool = False, end_time: float = None, delete_message_days: int = 0):
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=delete_message_days)
 
@@ -56,7 +56,7 @@ class BanCog(Cog):
         db.commit()
         db.close()
 
-    async def unban_user(self, user: discord.User, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
+    async def unban_user(self, user: discord.User, reason: str, ctx: SlashContext = None, guild: discord.Guild = None):
         guild = guild or ctx.guild
         moderator = ctx.author if ctx else self.bot.user
 
@@ -122,7 +122,7 @@ class BanCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="ban",
-        description="Bans the member for the specified length of time",
+        description="Bans the user",
         guild_ids=[config.guild_id],
         options=[
             create_option(
@@ -169,7 +169,6 @@ class BanCog(Cog):
         # Some basic checks to make sure mods can't cause problems with their ban.
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
-            member = await commands.MemberConverter().convert(ctx, user.mention)
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
                 await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
                 return
@@ -213,7 +212,7 @@ class BanCog(Cog):
         # Get the duration string for embed and ban end time for the specified duration.
         duration_string, ban_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
-        if duration_string == "":
+        if not duration_string:
             await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 

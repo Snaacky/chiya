@@ -50,7 +50,7 @@ class Reminder(Cog):
         # Get the duration string for embed and ban end time for the specified duration.
         duration_string, end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
-        if duration_string == "":
+        if not duration_string:
             await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 

@@ -284,7 +284,7 @@ class MuteCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="mute",
-        description="Mutes the member for the specified length of time",
+        description="Mutes the member",
         guild_ids=[config.guild_id],
         options=[
             create_option(
@@ -301,7 +301,7 @@ class MuteCog(Cog):
             ),
             create_option(
                 name="reason",
-                description="The reason why the member is being unmuted",
+                description="The reason why the member is being muted",
                 option_type=3,
                 required=False
             ),
@@ -315,7 +315,7 @@ class MuteCog(Cog):
         }
     )
     async def mute(self, ctx: SlashContext, member: discord.Member, duration: str = None, reason: str = None):
-        """ Temporarily Mutes member in guild. """
+        """ Mutes member in guild. """
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
@@ -367,7 +367,7 @@ class MuteCog(Cog):
         # Get the duration string for embed and mute end time for the specified duration.
         duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
-        if duration_string == "":
+        if not duration_string:
             await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
 
