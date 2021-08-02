@@ -1,6 +1,5 @@
 import datetime
 import logging
-import re
 import time
 
 import dataset
@@ -12,6 +11,7 @@ from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import config
+import utils.duration
 from utils import database
 from utils import embeds
 from utils.moderation import can_action_member
@@ -216,49 +216,12 @@ class RestrictCog(Cog):
             await ctx.send(embed=embed)
             return
 
-        # RegEx stolen from Setsudo and modified.
-        regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
-
-        # Get all of the matches from the RegEx.
-        try:
-            match_list = re.findall(regex, duration)[0]
-        except discord.HTTPException:
-            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+        # Get the duration string for embed and restrict end time for the specified duration.
+        duration_string, restrict_end_time = utils.duration.get_duration(duration=duration)
+        # If the duration string is empty due to Regex not matching anything, send and error embed and return.
+        if not duration_string:
+            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
-
-        # Check if all the matches are blank and return preemptively if so.
-        if not any(x.isalnum() for x in match_list):
-            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
-
-        duration = dict(
-            days=match_list[1],
-            hours=match_list[2],
-            minutes=match_list[3],
-            seconds=match_list[4]
-        )
-
-        # String that will store the duration in a more digestible format.
-        duration_string = ""
-        for time_unit in duration:
-            # If the time value is undeclared, set it to 0 and skip it.
-            if duration[time_unit] == "":
-                duration[time_unit] = 0
-                continue
-            # If the time value is 1, make the time unit into singular form.
-            if duration[time_unit] == "1":
-                duration_string += f"{duration[time_unit]} {time_unit[:-1]} "
-            else:
-                duration_string += f"{duration[time_unit]} {time_unit} "
-            # Updating the values for ease of conversion to timedelta object later.
-            duration[time_unit] = float(duration[time_unit])
-
-        restrict_end_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
-            days=duration["days"],
-            hours=duration["hours"],
-            minutes=duration["minutes"],
-            seconds=duration["seconds"]
-        )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully restricted.
         embed = embeds.make_embed(
