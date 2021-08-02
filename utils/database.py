@@ -2,6 +2,8 @@ import logging
 import os
 
 import dataset
+from sqlalchemy import create_engine
+from sqlalchemy_utils import database_exists, create_database
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +19,11 @@ def get_db():
 
 def setup_db():
     """ Sets up the tables needed for Chiya. """
+    # Create the database if it doesn't already exist.
+    engine = create_engine(get_db())
+    if not database_exists(engine.url):
+        create_database(engine.url)
+
     # Open a connection to the database.
     db = dataset.connect(get_db())
 
