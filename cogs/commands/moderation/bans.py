@@ -124,7 +124,7 @@ class BanCog(Cog):
         guild_ids=[config.guild_id],
         options=[
             create_option(
-                name="member",
+                name="user",
                 description="The member that will be banned",
                 option_type=6,
                 required=True

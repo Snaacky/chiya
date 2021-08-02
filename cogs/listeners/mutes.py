@@ -55,7 +55,6 @@ class MutesHandler(commands.Cog):
                 user_id=user.id,
                 reason="Mute channel archived after member banned due to mute evasion.",
                 guild=guild,
-
             )
 
             # Add the ban to the mod_log database.
@@ -73,7 +72,7 @@ class MutesHandler(commands.Cog):
             # Creating the embed used to alert the moderators that the mute evading member was banned.
             embed = embeds.make_embed(
                 ctx=None,
-                title=f"Member {user.name}#{user.discriminator} banned.",
+                title=f"Member {user.name}#{user.discriminator} banned",
                 description=f"User {user.mention} was banned indefinitely because they evaded their timed mute by leaving.",
                 thumbnail_url=config.user_ban,
                 color="soft_red"
