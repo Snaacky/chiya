@@ -40,7 +40,7 @@ def setup_db():
     remind_me = db.create_table("remind_me")
     remind_me.create_column("reminder_location", db.types.bigint)
     remind_me.create_column("author_id", db.types.bigint)
-    remind_me.create_column("date_to_remind", db.types.float)
+    remind_me.create_column("date_to_remind", db.types.bigint)
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
 
