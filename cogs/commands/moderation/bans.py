@@ -122,7 +122,7 @@ class BanCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="ban",
-        description="Bans the user",
+        description="Bans the user from the server",
         guild_ids=[config.guild_id],
         options=[
             create_option(
