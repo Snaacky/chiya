@@ -112,7 +112,7 @@ class NotesCog(Cog):
             ]
         }
     )
-    async def search_mod_actions(self, ctx: SlashContext, user: discord.User, action_type: str = None):
+    async def search_mod_actions(self, ctx: SlashContext, user: discord.User, action: str = None):
         """ Searches for mod actions on a user """
         await ctx.defer()
 
@@ -126,16 +126,16 @@ class NotesCog(Cog):
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
         options = ["ban", "unban", "mute", "unmute", "restrict", "unrestrict", "warn", "kick", "note"]
-        if action_type:
+        if action:
             # Attempt to check for the plural form of the options and strip it.
-            if action_type[-1] == "s":
-                action_type = action_type[:-1]
-            if any(action_type == option for option in options):
-                results = mod_logs.find(user_id=user.id, type=action_type.lower())
+            if action[-1] == "s":
+                action_type = action[:-1]
+            if any(action == option for option in options):
+                results = mod_logs.find(user_id=user.id, type=action.lower())
             else:
                 await embeds.error_message(
                     ctx=ctx,
-                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
+                    description=f"\"{action}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
                 )
                 # Close the connection.
                 db.close()
