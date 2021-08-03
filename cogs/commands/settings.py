@@ -2,6 +2,7 @@ import logging
 
 import dataset
 from discord.ext.commands import Bot, Cog
+from discord.ext.commands.cooldowns import CooldownMapping
 
 import config
 from utils import database
@@ -178,6 +179,44 @@ class Settings(Cog):
         embed = embeds.make_embed(description=f"Deleted '{name}' from the database.", color="soft_green")
         await ctx.send(embed=embed)
 
+        # Commit the changes to the database and close the connection.
+        db.commit()
+        db.close()
+
+    @cog_ext.cog_subcommand(
+        base="settings",
+        name="list",
+        description="Lists all of the settings in the database",
+        guild_ids=[config.guild_id],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            ]
+        }
+    )
+    async def list(self, ctx: SlashContext):
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        table = db["settings"]
+        settings = table.all()
+
+        # Append all of the setting names to a list.
+        names = [setting["name"] for setting in settings]
+
+        # Error if the list is empty because it means the table is empty.
+        if not names:
+            embed = embeds.make_embed(description="Unable to find any settings in the database.", color="soft_red")
+            await ctx.send(embed=embed)
+            return
+        
+        # Format the list entries into inline codeblocks for the embed.
+        names = f", ".join(f'`{name}`' for name in names)
+
+        # Create and send the embed containing the settings list to the command invoker.
+        embed = embeds.make_embed(description=f"Found the following settings: {names}", color="soft_green")
+        await ctx.send(embed=embed)
+        
         # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
