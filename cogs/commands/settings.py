@@ -217,8 +217,7 @@ class Settings(Cog):
         embed = embeds.make_embed(description=f"Found the following settings: {names}", color="soft_green")
         await ctx.send(embed=embed)
         
-        # Commit the changes to the database and close the connection.
-        db.commit()
+        # Close the connection to the database.
         db.close()
 
 
