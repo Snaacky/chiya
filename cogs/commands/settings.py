@@ -72,7 +72,12 @@ class Settings(Cog):
 
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Added '{name}' to the database.", color="soft_green")
-        await ctx.send(embed=embed)
+
+        # Hides the command invokation if the censored parameter was used.
+        if censored:
+            await ctx.send(embed=embed, hidden=True)
+        else:
+            await ctx.send(embed=embed)
 
         # Commit the changes to the database and close the connection.
         db.commit()
@@ -149,7 +154,7 @@ class Settings(Cog):
         options=[
             create_option(
                 name="name",
-                description="The name of the constant to be edited",
+                description="The name of the setting to be edited",
                 option_type=3,
                 required=True
             )
@@ -217,6 +222,54 @@ class Settings(Cog):
         embed = embeds.make_embed(description=f"Found the following settings: {names}", color="soft_green")
         await ctx.send(embed=embed)
         
+        # Close the connection to the database.
+        db.close()
+    
+    @cog_ext.cog_subcommand(
+        base="settings",
+        name="view",
+        description="View the current values for a setting",
+        guild_ids=[config.guild_id],
+        base_default_permission=False,
+        options=[
+            create_option(
+                name="name",
+                description="The name of the setting to be viewed",
+                option_type=3,
+                required=True
+            )
+        ],
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            ]
+        }
+    )
+    async def view(self, ctx: SlashContext, name: str):
+        # Open a connection to the database.
+        db = dataset.connect(database.get_db())
+        table = db["settings"]
+        result = table.find_one(name=name)
+
+        # Error if a setting does not exist with that name.
+        if not result:
+            embed = embeds.make_embed(description="A setting with that name does not exist.", color="soft_red")
+            await ctx.send(embed=embed)
+            return
+        
+        # If the value is set to censored in the database, censor all but the first and last characters.
+        if result.get("censored") == True:
+            value = result['value'][:1] + "\*" * (len(result['value']) - 2) + result['value'][-1:]
+        else:
+            value = result["value"]
+
+        # Create and send the embed containing the setting data to the command invoker.
+        embed = embeds.make_embed(title=result['name'])
+        embed.add_field(name="Name:", value=result['name'], inline=False)
+        embed.add_field(name="Value:", value=value, inline=False)
+        embed.add_field(name="Censored:", value=bool(result['censored']), inline=False)
+        await ctx.send(embed=embed)
+       
         # Close the connection to the database.
         db.close()
 
