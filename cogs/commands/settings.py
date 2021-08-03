@@ -18,6 +18,12 @@ class Settings(Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.settings = {}
+
+        # Get all of the settings from the table and load them into the dictionary.
+        data = database.get_data_by_table("settings")
+        for setting in data:
+            self.settings[setting['name']] = {"value": setting['value'], "censored": bool(setting['censored'])}
 
     @cog_ext.cog_subcommand(
         base="settings",
@@ -69,6 +75,9 @@ class Settings(Cog):
             value=value,
             censored=censored
         ))
+
+        # Add the setting to the settings dictionary in memory.
+        self.settings[name] = {"value": value, "censored": bool(censored)}
 
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Added '{name}' to the database.", color="soft_green")
@@ -132,10 +141,16 @@ class Settings(Cog):
         # Update the value(s) in the database.
         result["value"] = value
 
+        # Update the setting in the settings dictionary in memory.
+        self.settings[name]["value"] = value
+
         # Only update the censored value if the user specified the optional parameter.
         if censored is not None:
             result["censored"] = censored
+            # Update the setting in the settings dictionary in memory.
+            self.settings[name]["censored"] = censored
         table.update(result, ["id"])
+
 
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Updated '{name}' in the database.", color="soft_green")
@@ -180,6 +195,9 @@ class Settings(Cog):
         # Delete the setting from the database.
         table.delete(name=name)
 
+        # Delete the setting in the settings dictionary in memory.
+        self.settings.pop(name)
+        
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Deleted '{name}' from the database.", color="soft_green")
         await ctx.send(embed=embed)

@@ -16,6 +16,14 @@ def get_db():
     PASSWORD = os.getenv("MYSQL_PASSWORD")
     return f"mysql://{USER}:{PASSWORD}@{HOST}/{DATABASE}"
 
+def get_data_by_table(table):
+    db = dataset.connect(get_db())
+    data = db[table].all()
+    # TODO: Closing so soon causes MySQLdb._exceptions.OperationalError
+    # on settings __init__ but not closing causes leaks. Does not actually affect
+    # data retrival. Needs fixing.
+    db.close()
+    return data
 
 def setup_db():
     """ Sets up the tables needed for Chiya. """
