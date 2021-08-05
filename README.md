@@ -58,20 +58,14 @@ REDDIT_USER_AGENT=
 
 **Step 3:** Pull the Docker image by executing `docker-compose pull` in the same folder as the `docker-compose.yml`
 
-**Step 4:** Start Chiya by executing `docker container start chiya_bot_1`
+**Step 4:** Start Chiya by executing `docker-compose up -d`
 
 ## Building
 
-The process of building Chiya from the source code is similar but slightly different. Like in the installation guide, make sure you have your `.env` file in the same folder as the source code.
+Building the Docker container from the source code differs from installing the container because the `docker-compose.yml` file is written to pull the Chiya image directly from the latest commit of the repositories master branch without the need for any additional source files. 
 
-**Step 1:** Clone the repository to your local file system as you'll need the source code to build:
-```
-$ git clone https://github.com/ranimepiracy/Chiya
-```
+In order to build from the source code, follow the guide above up until step 2 and then use the provided development `docker-compose-dev.yml` to build the container like so:
 
-**Step 2:** Make your changes to the source code.
-
-**Step 3:** Build the container using the the developer `docker-compose.yml` file by executing:
 ```
 $ docker-compose -f "docker-compose-dev.yml" up -d
 ```
