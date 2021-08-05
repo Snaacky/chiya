@@ -28,7 +28,7 @@ def check_message(message: discord.Message) -> bool:
         if(check_substring(message.content, censor['censor_term'])):
             return True
         
-    url_censors = db['censor'].find(censor_type="url")
+    url_censors = db['censor'].find(censor_type="links")
     for censor in url_censors:
         # regex checking for a URL matching ones read from the DB
         if(check_url(message.content, censor['censor_term'])):
@@ -65,7 +65,7 @@ def check_exact(message: str, term: str) -> bool:
 def check_substring(message: str, term: str) -> bool:
     """ Substring checking. """
     if re.search(term, message, re.IGNORECASE):
-        return True
+        return   True
     
     return False
 
@@ -78,7 +78,14 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
     return False
 
 
-def check_url(message: str, term: str) -> bool:
+def check_url(message: str, automod_url: str) -> bool:
     """ URL checking """
     # TODO: Implement links checking.
+    url_regex = re.compile(r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)")
+    urls = re.findall(url_regex, message)
+    for url in urls:
+        print(url)
+        if url == automod_url:
+            return True
+    
     return False
