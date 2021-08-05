@@ -75,7 +75,7 @@ class NotesCog(Cog):
             ctx=ctx,
             title=f"Noting user: {user.name}",
             description=f"{user.mention} was noted by {ctx.author.mention}",
-            thumbnail_url=config.pencil,
+            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="blurple"
         )
         embed.add_field(name="ID: ", value=note_id, inline=False)
@@ -328,7 +328,7 @@ class NotesCog(Cog):
             ctx=ctx,
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
-            thumbnail_url=config.pencil,
+            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="soft_green"
         )
         embed.add_field(name="Before:", value=mod_log["reason"], inline=False)

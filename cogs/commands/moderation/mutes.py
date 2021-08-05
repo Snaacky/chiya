@@ -260,7 +260,7 @@ class MuteCog(Cog):
         # Create the embed in #mute-log.
         embed = embeds.make_embed(
             title=f"{mute_channel.name} archived",
-            thumbnail_url=config.pencil,
+            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="blurple"
         )
 
@@ -348,7 +348,7 @@ class MuteCog(Cog):
                 ctx=ctx,
                 title=f"Muting member: {member.name}",
                 description=f"{member.mention} was muted by {ctx.author.mention} for: {reason}",
-                thumbnail_url=config.user_mute,
+                thumbnail_url="https://i.imgur.com/rHtYWIt.png",
                 color="soft_red",
             )
 
@@ -372,7 +372,12 @@ class MuteCog(Cog):
             return
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
-        embed = embeds.make_embed(ctx=ctx, title=f"Muting member: {member}", thumbnail_url=config.user_mute, color="soft_red")
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title=f"Muting member: {member}", 
+            thumbnail_url="https://i.imgur.com/rHtYWIt.png", 
+            color="soft_red"
+        )
         embed.description = f"{member.mention} was muted by {ctx.author.mention} for: {reason}"
         embed.add_field(name="Duration:", value=duration_string, inline=False)
 
@@ -443,7 +448,12 @@ class MuteCog(Cog):
             return
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully unmuted.
-        embed = embeds.make_embed(ctx=ctx, title=f"Unmuting member: {member.name}", color="soft_green", thumbnail_url=config.user_unmute)
+        embed = embeds.make_embed(
+            ctx=ctx, 
+            title=f"Unmuting member: {member.name}", 
+            color="soft_green", 
+            thumbnail_url="https://i.imgur.com/W7DpUHC.png"
+        )
         embed.description = f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
 
         # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.

@@ -79,7 +79,7 @@ class KickCog(Cog):
             ctx=ctx,
             title=f"Kicking member: {member.name}",
             description=f"{member.mention} was kicked by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_ban,
+            thumbnail_url="https://i.imgur.com/l0jyxkz.png",
             color="soft_red"
         )
 

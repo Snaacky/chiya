@@ -73,7 +73,7 @@ class Reminder(Cog):
             ctx=ctx,
             title="Reminder set",
             description=f"\nI'll remind you about this in {duration_string[:-1]}.",  # Remove the trailing white space.
-            thumbnail_url=config.remind_blurple,
+            thumbnail_url="https://i.imgur.com/VZV64W0.png",
             color="blurple"
         )
         embed.add_field(name="ID: ", value=remind_id, inline=False)
@@ -130,7 +130,7 @@ class Reminder(Cog):
             ctx=ctx,
             title="Reminder set",
             description="Your reminder was updated",
-            thumbnail_url=config.remind_green,
+            thumbnail_url="https://i.imgur.com/UUbR5J1.png",
             color="soft_green"
         )
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
@@ -169,7 +169,7 @@ class Reminder(Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title="Reminders",
-            thumbnail_url=config.remind_blurple,
+            thumbnail_url="https://i.imgur.com/VZV64W0.png",
             color="blurple"
         )
 
@@ -229,7 +229,7 @@ class Reminder(Cog):
             ctx=ctx,
             title="Reminder deleted",
             description="Your reminder was deleted",
-            thumbnail_url=config.remind_red,
+            thumbnail_url="https://i.imgur.com/03bmvBX.png",
             color="soft_red"
         )
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)

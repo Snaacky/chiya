@@ -68,7 +68,7 @@ class WarnsCog(Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Warning member: {member.name}",
-            thumbnail_url=config.user_warn,
+            thumbnail_url="https://i.imgur.com/4jeFA3h.png",
             color="soft_orange"
         )
 
