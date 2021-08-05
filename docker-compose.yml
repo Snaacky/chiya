@@ -15,7 +15,7 @@ services:
         - MYSQL_DATABASE=chiya
         - MYSQL_USER=chiya
         - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-        - LOG_LEVEL=info
+        - LOG_LEVEL=${LOG_LEVEL}
   db:
     image: mariadb
     restart: unless-stopped
