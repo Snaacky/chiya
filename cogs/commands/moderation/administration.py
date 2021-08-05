@@ -11,6 +11,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context
 
 import config
+from cogs.commands import settings
 from utils import embeds
 from utils.record import record_usage
 
@@ -222,11 +223,11 @@ class AdministrationCog(Cog):
     @commands.before_invoke(record_usage)
     @commands.command(name="createcolorrolesembed", aliases=['ccre'])
     async def create_color_roles_embed(self, ctx: Context):
-        embed = discord.Embed(description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{config.role_server_booster}> to receive a custom colored role.")
+        embed = discord.Embed(description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{settings.get_value('role_server_booster')}> to receive a custom colored role.")
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
+        emotes_guild = await ctx.bot.fetch_guild(settings.get_value("emoji_guild_id"))
         emojis = await emotes_guild.fetch_emojis()
 
         await msg.add_reaction(":redsquare:805032092907601952")
@@ -257,7 +258,7 @@ class AdministrationCog(Cog):
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(config.emoji_guild_id)
+        emotes_guild = await ctx.bot.fetch_guild(settings.get_value("emoji_guild_id"))
         await emotes_guild.fetch_emojis()
 
         await msg.add_reaction("🎁")
