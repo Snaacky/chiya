@@ -214,10 +214,10 @@ class TicketCog(Cog):
                 color=0xf4cdc5,
                 title=f"Ticket closed",
                 description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
-                image_url="https://i.imgur.com/21nJqGC.gif"
             )
             embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=False)
             embed.add_field(name="Ticket Log:", value=url, inline=False)
+            embed.set_image(url="https://i.imgur.com/21nJqGC.gif")
             await member.send(embed=embed)
         except discord.HTTPException:
             logging.info(f"Attempted to send ticket closed DM to {member} but they are not accepting DMs.")
