@@ -1,19 +1,21 @@
-import logging
 import itertools
+import logging
+import os
 from typing import List, Union
 
 from discord import Embed
 from discord.ext.commands import Bot, Cog, Command, Group, HelpCommand, CommandError
+
 from utils import embeds
 from utils.pagination import LinePaginator
-import config
 
 # Enabling logs.
 log = logging.getLogger(__name__)
 
 COMMANDS_PER_PAGE = 7
-PREFIX = config.prefix
-TIME_TO_LIVE = 120 # In seconds, how long an embed should remain until self-destruct.
+PREFIX = os.getenv("BOT_PREFIX")
+TIME_TO_LIVE = 120  # In seconds, how long an embed should remain until self-destruct.
+
 
 class CustomHelpCommand(HelpCommand):
     """CustomHelpCommand"""
@@ -89,7 +91,7 @@ class CustomHelpCommand(HelpCommand):
             title="Command Help",
             thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             ctx=self.context
-            )
+        )
 
         # Retrieves the fully qualified parent command name.
         # For example, in `?one two three` the parent name would be `one two`.
@@ -112,7 +114,6 @@ class CustomHelpCommand(HelpCommand):
         except CommandError:
             command_details += "***You cannot run this command.***\n\n"
 
-
         if command.help is None:
             command_details += "*No details provided.*\n"
         else:
@@ -122,7 +123,7 @@ class CustomHelpCommand(HelpCommand):
 
         return embed
 
-    async def send_bot_help (self, mapping: dict) -> None:
+    async def send_bot_help(self, mapping: dict) -> None:
         """ Handles the implementation of the bot command page in the help command.
         This function is called when the help command is called with no arguments.
 
@@ -157,8 +158,8 @@ class CustomHelpCommand(HelpCommand):
 
             # Split cogs or categories which have too many commands to fit in one page.
             # The length of commands is included for later use when aggregating into pages for the paginator.
-            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE*2):
-                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE*2]
+            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE * 2):
+                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE * 2]
                 joined_lines = "".join(truncated_lines)
                 cog_or_category_pages.append((f"**{cog_or_category}**{joined_lines}", len(truncated_lines)))
 
@@ -167,7 +168,7 @@ class CustomHelpCommand(HelpCommand):
         page = ""
         for page_details, length in cog_or_category_pages:
             counter += length
-            if counter > COMMANDS_PER_PAGE*2:
+            if counter > COMMANDS_PER_PAGE * 2:
                 # force a new page on paginator even if it falls short of the max pages
                 # since we still want to group categories/cogs.
                 counter = length
@@ -184,14 +185,20 @@ class CustomHelpCommand(HelpCommand):
             title="Command: Help",
             thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             ctx=self.context
-            )
-        await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
-            max_size=2000, restrict_to_user=self.context.author, time_to_delete=TIME_TO_LIVE)
-
+        )
+        await LinePaginator.paginate(
+            pages,
+            self.context,
+            embed=embed,
+            max_lines=1,
+            max_size=2000,
+            restrict_to_user=self.context.author,
+            time_to_delete=TIME_TO_LIVE
+        )
 
         log.trace(pages)
 
-    async def send_cog_help (self, cog: Cog) -> None:
+    async def send_cog_help(self, cog: Cog) -> None:
         """Handles the implementation of the cog page in the help command.
         This function is called when the help command is called with a cog as the argument.
 
@@ -208,7 +215,7 @@ class CustomHelpCommand(HelpCommand):
             title="Command Help",
             thumbnail_url="https://cdn.discordapp.com/emojis/512367613339369475.png",
             ctx=self.context
-            )
+        )
 
         if cog.description is None:
             embed.description = f"**{cog.qualified_name}**\n*No details provided.*"
@@ -222,7 +229,7 @@ class CustomHelpCommand(HelpCommand):
 
         await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
 
-    async def send_group_help (self, group: Group) -> None:
+    async def send_group_help(self, group: Group) -> None:
         """Handles the implementation of the group page in the help command.
         This function is called when the help command is called with a group as the argument.
 
@@ -258,8 +265,8 @@ class CustomHelpCommand(HelpCommand):
 
             # Split cogs or categories which have too many commands to fit in one page.
             # The length of commands is included for later use when aggregating into pages for the paginator.
-            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE*2):
-                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE*2]
+            for index in range(0, len(sorted_commands), COMMANDS_PER_PAGE * 2):
+                truncated_lines = command_detail_lines[index:index + COMMANDS_PER_PAGE * 2]
                 joined_lines = "".join(truncated_lines)
                 group_pages.append((f"{joined_lines}", len(truncated_lines)))
 
@@ -268,7 +275,7 @@ class CustomHelpCommand(HelpCommand):
         page = ""
         for page_details, length in group_pages:
             counter += length
-            if counter > COMMANDS_PER_PAGE*2:
+            if counter > COMMANDS_PER_PAGE * 2:
                 # force a new page on paginator even if it falls short of the max pages
                 counter = length
                 pages.append(embed.description + page)
@@ -281,10 +288,17 @@ class CustomHelpCommand(HelpCommand):
             pages.append(embed.description + page)
 
         log.debug("Sending group help to paginator")
-        await LinePaginator.paginate(pages, self.context, embed=embed, max_lines=1,
-        max_size=2000, restrict_to_user=self.context.author, time_to_delete=TIME_TO_LIVE)
+        await LinePaginator.paginate(
+            pages,
+            self.context,
+            embed=embed,
+            max_lines=1,
+            max_size=2000,
+            restrict_to_user=self.context.author,
+            time_to_delete=TIME_TO_LIVE
+        )
 
-    async def send_command_help (self, command: Command) -> None:
+    async def send_command_help(self, command: Command) -> None:
         """Handles the implementation of the single command page in the help command.
         This function is called when the help command is called with a command as the argument.
 
@@ -296,6 +310,7 @@ class CustomHelpCommand(HelpCommand):
         """
         embed = await self.command_formatting(command)
         await self.context.send(embed=embed, delete_after=TIME_TO_LIVE)
+
 
 class Help(Cog):
     """Custom Embed Pagination Help feature."""
@@ -311,6 +326,7 @@ class Help(Cog):
     def cog_unload(self) -> None:
         """Reset the help command when the cog is unloaded."""
         self.bot.help_command = self.old_help_command
+
 
 def setup(bot: Bot) -> None:
     """Load the Help cog."""
