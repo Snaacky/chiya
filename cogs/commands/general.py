@@ -96,8 +96,8 @@ class General(Cog):
             messages = await ctx.channel.history(limit=1).flatten()
             message = messages[0]
 
-        await message.add_reaction(config.emote_yes)
-        await message.add_reaction(config.emote_no)
+        await message.add_reaction(":yes:778724405333196851")
+        await message.add_reaction(":no:778724416230129705")
         
         # We need to send *something* so the bot doesn't return "This interaction failed"
         delete = await ctx.send("** **")
