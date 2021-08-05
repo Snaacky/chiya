@@ -13,18 +13,21 @@ from utils import embeds
 log = logging.getLogger(__name__)
 
 
-def get_config(config: str):
-    settings = {}
-
+def get_value(config: str):
     # Get all of the settings from the table and load them into the dictionary.
     data = database.get_data_by_table("settings")
-    for setting in data:
-        settings[setting['name']] = {"value": setting['value'], "censored": bool(setting['censored'])}
 
-    if settings[f"{config}"]["value"].isdecimal():
-        return int(settings[f"{config}"]["value"])
-    else:
-        return settings[f"{config}"]["value"]
+    # Iterate through database entries and add them as a dictionary.
+    settings = {}
+    for setting in data:
+        settings[setting["name"]] = {"value": setting["value"], "censored": bool(setting["censored"])}
+
+    # If the entry's value consists of only numbers, return it as an int.
+    if settings[config]["value"].isdecimal():
+        return int(settings[config]["value"])
+
+    # Otherwise, return the value normally (as a string by default).
+    return settings[config]["value"]
 
 
 class Settings(Cog):
@@ -37,7 +40,7 @@ class Settings(Cog):
         base="settings",
         name="add",
         description="Add a new setting to the database",
-        guild_ids=[get_config("guild_id")],
+        guild_ids=[get_value("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -84,9 +87,6 @@ class Settings(Cog):
             censored=censored
         ))
 
-        # Add the setting to the settings dictionary in memory.
-        self.settings[name] = {"value": value, "censored": bool(censored)}
-
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Added '{name}' to the database.", color="soft_green")
 
@@ -104,7 +104,7 @@ class Settings(Cog):
         base="settings",
         name="edit",
         description="Edit an existing setting in the database",
-        guild_ids=[get_config("guild_id")],
+        guild_ids=[get_value("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -149,14 +149,9 @@ class Settings(Cog):
         # Update the value(s) in the database.
         result["value"] = value
 
-        # Update the setting in the settings dictionary in memory.
-        self.settings[name]["value"] = value
-
         # Only update the censored value if the user specified the optional parameter.
         if censored is not None:
             result["censored"] = censored
-            # Update the setting in the settings dictionary in memory.
-            self.settings[name]["censored"] = censored
         table.update(result, ["id"])
 
         # Send a confirmation embed to the command invoker.
@@ -171,7 +166,7 @@ class Settings(Cog):
         base="settings",
         name="delete",
         description="Delete an existing setting from the database",
-        guild_ids=[get_config("guild_id")],
+        guild_ids=[get_value("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -202,9 +197,6 @@ class Settings(Cog):
         # Delete the setting from the database.
         table.delete(name=name)
 
-        # Delete the setting in the settings dictionary in memory.
-        self.settings.pop(name)
-
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Deleted '{name}' from the database.", color="soft_green")
         await ctx.send(embed=embed)
@@ -217,7 +209,7 @@ class Settings(Cog):
         base="settings",
         name="list",
         description="Lists all of the settings in the database",
-        guild_ids=[get_config("guild_id")],
+        guild_ids=[get_value("guild_id")],
         base_default_permission=False,
         base_permissions={
             config.guild_id: [
@@ -254,7 +246,7 @@ class Settings(Cog):
         base="settings",
         name="view",
         description="View the current values for a setting",
-        guild_ids=[get_config("guild_id")],
+        guild_ids=[get_value("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
