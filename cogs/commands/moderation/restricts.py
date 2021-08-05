@@ -10,8 +10,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-import config
 import utils.duration
+from cogs.commands import settings
 from utils import database
 from utils import embeds
 from utils.moderation import can_action_member
@@ -29,13 +29,13 @@ class RestrictCog(Cog):
 
     @staticmethod
     async def is_user_restricted(ctx: SlashContext, member: discord.Member) -> bool:
-        if discord.utils.get(ctx.guild.roles, id=config.role_restricted) in member.roles:
+        if discord.utils.get(ctx.guild.roles, id=settings.get_value("role_restricted")) in member.roles:
             return True
         return False
 
     @staticmethod
     async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
-        role = discord.utils.get(ctx.guild.roles, id=config.role_restricted)
+        role = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_restricted"))
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
@@ -66,7 +66,7 @@ class RestrictCog(Cog):
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Restricted" role from member.
-        role = discord.utils.get(guild.roles, id=config.role_restricted)
+        role = discord.utils.get(guild.roles, id=settings.get_value("role_restricted"))
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
@@ -140,7 +140,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="restrict",
         description="Restricts message permissions from the member for the specified length of time",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="member",
@@ -163,9 +163,9 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -203,7 +203,7 @@ class RestrictCog(Cog):
                 ctx=ctx,
                 title=f"Restricting member: {member.name}",
                 description=f"{member.mention} was restricted by {ctx.author.mention} for: {reason}",
-                thumbnail_url=config.user_restrict,
+                thumbnail_url="https://i.imgur.com/rHtYWIt.png",
                 color="soft_red"
             )
 
@@ -228,7 +228,7 @@ class RestrictCog(Cog):
             ctx=ctx,
             title=f"Restricting member: {member}",
             description=f"{member.mention} was restricted by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_restrict,
+            thumbnail_url="https://i.imgur.com/rHtYWIt.png",
             color="soft_red"
         )
         embed.add_field(name="Duration:", value=duration_string, inline=False)
@@ -246,7 +246,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="unrestrict",
         description="Unrestricts the member",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="member",
@@ -263,9 +263,9 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -302,7 +302,7 @@ class RestrictCog(Cog):
             title=f"Unrestricting member: {member.name}",
             description=f"{member.mention} was unrestricted by {ctx.author.mention} for: {reason}",
             color="soft_green",
-            thumbnail_url=config.user_unrestrict
+            thumbnail_url="https://i.imgur.com/W7DpUHC.png"
         )
 
         # Unrestricts the user.
