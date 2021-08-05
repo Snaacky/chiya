@@ -33,7 +33,7 @@ class BoostersCog(Cog):
         embed = embeds.make_embed(
             ctx=ctx, 
             title=f"Total boosts: {ctx.guild.premium_subscription_count}", 
-            thumbnail_url=config.nitro, 
+            thumbnail_url="https://i.imgur.com/22ZZG7h.png", 
             color="nitro_pink", 
             author=False
         )

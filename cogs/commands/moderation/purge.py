@@ -91,7 +91,7 @@ class PurgeCog(Cog):
             ctx=ctx,
             title=f"Removed messages",
             description=f"{ctx.author.mention} removed the previous {amount} {message}.",
-            thumbnail_url=config.message_delete,
+            thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color="soft_red"
         )
         embed.add_field(name="Reason:", value=reason, inline=False)

@@ -193,7 +193,7 @@ class TicketCog(Cog):
             ctx=ctx,
             author=False,
             title=f"{ctx.channel.name} archived",
-            thumbnail_url=config.pencil,
+            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=0x00ffdf
         )
 

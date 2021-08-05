@@ -195,7 +195,7 @@ class BanCog(Cog):
                 ctx=ctx,
                 title=f"Banning user: {user.name}",
                 description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
-                thumbnail_url=config.user_ban,
+                thumbnail_url="https://i.imgur.com/l0jyxkz.png",
                 color="soft_red"
             )
 
@@ -222,7 +222,7 @@ class BanCog(Cog):
             ctx=ctx,
             title=f"Banning user: {user}",
             description=f"{user.mention} was temporarily banned by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_ban,
+            thumbnail_url="https://i.imgur.com/l0jyxkz.png",
             color="soft_red"
         )
         embed.add_field(name="Duration:", value=duration_string, inline=False)
@@ -290,7 +290,7 @@ class BanCog(Cog):
             ctx=ctx,
             title=f"Unbanning user: {user.name}",
             description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_unban,
+            thumbnail_url="https://i.imgur.com/4H0IYJH.png",
             color="soft_green"
         )
 

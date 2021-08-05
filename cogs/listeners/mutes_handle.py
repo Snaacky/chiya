@@ -74,7 +74,7 @@ class MutesHandler(commands.Cog):
                 ctx=None,
                 title=f"Member {user.name}#{user.discriminator} banned",
                 description=f"User {user.mention} was banned indefinitely because they evaded their timed mute by leaving.",
-                thumbnail_url=config.user_ban,
+                thumbnail_url="https://i.imgur.com/l0jyxkz.png",
                 color="soft_red"
             )
             await mod_channel.send(embed=embed)
