@@ -6,16 +6,17 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-import config
 from utils import database
 from utils import embeds
+from utils.database import get_db
 
 log = logging.getLogger(__name__)
 
 
 def get_value(config: str):
     # Get all of the settings from the table and load them into the dictionary.
-    data = database.get_data_by_table("settings")
+    db = dataset.connect(get_db())
+    data = db["settings"].all()
 
     # Iterate through database entries and add them as a dictionary.
     settings = {}
@@ -24,9 +25,11 @@ def get_value(config: str):
 
     # If the entry's value consists of only numbers, return it as an int.
     if settings[config]["value"].isdecimal():
+        db.close()
         return int(settings[config]["value"])
 
     # Otherwise, return the value normally (as a string by default).
+    db.close()
     return settings[config]["value"]
 
 
