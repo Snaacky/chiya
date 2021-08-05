@@ -129,7 +129,7 @@ class NotesCog(Cog):
         if action:
             # Attempt to check for the plural form of the options and strip it.
             if action[-1] == "s":
-                action_type = action[:-1]
+                action = action[:-1]
             if any(action == option for option in options):
                 results = mod_logs.find(user_id=user.id, type=action.lower())
             else:
@@ -310,7 +310,7 @@ class NotesCog(Cog):
             ]
         }
     )
-    async def edit_log(self, ctx: SlashContext, id: int, reason: str):
+    async def edit_log(self, ctx: SlashContext, id: int, note: str):
         await ctx.defer()
 
         # Open a connection to the database.
@@ -332,10 +332,10 @@ class NotesCog(Cog):
             color="soft_green"
         )
         embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
-        embed.add_field(name="After:", value=reason, inline=False)
+        embed.add_field(name="After:", value=note, inline=False)
         await ctx.send(embed=embed)
 
-        mod_log["reason"] = reason
+        mod_log["reason"] = note
         table.update(mod_log, ["id"])
 
         # Commit the changes to the database and close the connection.
