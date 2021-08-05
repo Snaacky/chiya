@@ -3,15 +3,16 @@ import logging
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
+from discord_slash import cog_ext, SlashContext
+from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import create_option, create_permission
 
-import config
+from cogs.commands import settings
 from utils import embeds
 from utils.record import record_usage
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
-from discord_slash.model import SlashCommandPermissionType
 
 log = logging.getLogger(__name__)
+
 
 class General(Cog):
     """ General Commands Cog """
@@ -22,9 +23,9 @@ class General(Cog):
     @commands.before_invoke(record_usage)
     @commands.bot_has_permissions(embed_links=True)
     @cog_ext.cog_slash(
-        name="pfp", 
+        name="pfp",
         description="Gets the members profile picture",
-        guild_ids=[config.guild_id]
+        guild_ids=[settings.get_value("guild_id")]
     )
     async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
@@ -47,14 +48,14 @@ class General(Cog):
         await ctx.send(embed=embed)
 
     @cog_ext.cog_slash(
-        name="population", 
+        name="population",
         description="Gets the current server population count",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -63,12 +64,11 @@ class General(Cog):
         await ctx.defer()
         await ctx.send(ctx.guild.member_count)
 
-    
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
-        name="vote", 
+        name="vote",
         description="Adds the vote reactions to a message",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="message",
@@ -79,16 +79,16 @@ class General(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
     async def vote(self, ctx, message: discord.Message = None):
         """ Add vote reactions to a message. """
         await ctx.defer()
-        
+
         if message:
             message = await ctx.channel.fetch_message(message)
 
@@ -98,7 +98,7 @@ class General(Cog):
 
         await message.add_reaction(":yes:778724405333196851")
         await message.add_reaction(":no:778724416230129705")
-        
+
         # We need to send *something* so the bot doesn't return "This interaction failed"
         delete = await ctx.send("** **")
         await delete.delete()

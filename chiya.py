@@ -6,8 +6,6 @@ import discord
 from discord.ext import commands
 from discord_slash import SlashCommand
 
-import __init__
-import config
 import utils.database
 
 bot = commands.Bot(
@@ -17,8 +15,8 @@ bot = commands.Bot(
 )
 
 slash = SlashCommand(
-    bot, 
-    sync_commands=True, # False to avoid rate limiting, set to True to update commands and parameters.
+    bot,
+    sync_commands=True,  # False to avoid rate limiting, set to True to update commands and parameters.
     sync_on_cog_reload=False
 )
 
@@ -38,9 +36,10 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.prefix}help"
+            name="your every command!"
         )
     )
+
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -50,6 +49,7 @@ async def on_message(message: discord.Message):
     any message will be ran twice and cause issues. Lame, i know
     """
     # Do nothing
+
 
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
@@ -62,9 +62,6 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("\\", ".")[:-3])
         else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
-    
-    token = os.getenv("BOT_TOKEN")
-    if not token:
-        bot.run(token)
-    else:
-        print("Error! Unable to find BOT_TOKEN environment variable, exiting...")
+
+    # Run the bot with the token as an environment variable.
+    bot.run(os.getenv("BOT_TOKEN"))

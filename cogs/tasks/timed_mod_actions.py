@@ -5,7 +5,7 @@ import dataset
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
-import config
+from cogs.commands import settings
 from utils import database, embeds
 
 log = logging.getLogger(__name__)
@@ -37,8 +37,8 @@ class TimedModActionsTask(Cog):
         )
 
         # Get the guild and mod channel to send the expiration notice into.
-        guild = self.bot.get_guild(config.guild_id)
-        channel = guild.get_channel(config.mod_channel)
+        guild = self.bot.get_guild(settings.get_value("guild_id"))
+        channel = guild.get_channel(settings.get_value("channel_moderation"))
 
         for action in results:
             if action["action_type"] == "mute":
@@ -58,8 +58,8 @@ class TimedModActionsTask(Cog):
 
                     # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
                     embed = embeds.make_embed(
-                        title=f"Unmuting member: {user}", 
-                        thumbnail_url="https://i.imgur.com/W7DpUHC.png", 
+                        title=f"Unmuting member: {user}",
+                        thumbnail_url="https://i.imgur.com/W7DpUHC.png",
                         color="soft_orange"
                     )
                     embed.description = f"Unmuted {user.mention} because their mute time elapsed but they have since left the server."
@@ -71,8 +71,8 @@ class TimedModActionsTask(Cog):
 
                 # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
                 embed = embeds.make_embed(
-                    title=f"Unmuting member: {member}", 
-                    thumbnail_url="https://i.imgur.com/W7DpUHC.png", 
+                    title=f"Unmuting member: {member}",
+                    thumbnail_url="https://i.imgur.com/W7DpUHC.png",
                     color="soft_green"
                 )
                 embed.description = f"{member.mention} was unmuted as their mute time elapsed."
@@ -91,9 +91,9 @@ class TimedModActionsTask(Cog):
 
                 # Start creating the embed that will be used to alert the moderator that the user was successfully unbanned.
                 embed = embeds.make_embed(
-                    ctx=None, 
-                    title=f"Unbanning user: {user}", 
-                    thumbnail_url="https://i.imgur.com/4H0IYJH.png", 
+                    ctx=None,
+                    title=f"Unbanning user: {user}",
+                    thumbnail_url="https://i.imgur.com/4H0IYJH.png",
                     color="soft_green"
                 )
                 embed.description = f"{user.mention} was unbanned as their temporary ban elapsed."
@@ -125,7 +125,7 @@ class TimedModActionsTask(Cog):
                     embed = embeds.make_embed(
                         title=f"Unrestricting member: {user}",
                         description=f"Unrestricted {user.mention} because their restrict time elapsed but they have since left the server.",
-                        thumbnail_url=config.user_unrestrict,
+                        thumbnail_url="https://i.imgur.com/W7DpUHC.png",
                         color="soft_orange"
                     )
 
@@ -135,7 +135,7 @@ class TimedModActionsTask(Cog):
                 # Otherwise, create and send an embed to alert the moderator that the user was unrestricted.
                 embed = embeds.make_embed(
                     title=f"Unrestricting member: {member}",
-                    thumbnail_url=config.user_unrestrict,
+                    thumbnail_url="https://i.imgur.com/W7DpUHC.png",
                     description=f"{member.mention} was unrestricted as their restrict time elapsed.",
                     color="soft_green"
                 )

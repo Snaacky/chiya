@@ -64,10 +64,10 @@ def setup_db():
     tickets.create_column("log_url", db.types.text)
 
     # Create settings table and columns to store key:value pairs.
-    tickets = db.create_table("settings")
-    tickets.create_column("name", db.types.text)
-    tickets.create_column("value", db.types.text)
-    tickets.create_column("censored", db.types.boolean)
+    settings = db.create_table("settings")
+    settings.create_column("name", db.types.text)
+    settings.create_column("value", db.types.text)
+    settings.create_column("censored", db.types.boolean)
 
     # Commit the changes to the database and close the connection.
     db.commit()
