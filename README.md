@@ -60,6 +60,23 @@ REDDIT_USER_AGENT=
 
 **Step 4:** Start Chiya by executing `docker container start chiya_bot_1`
 
+## Building
+
+The process of building Chiya from the source code is similar but slightly different. Like in the installation guide, make sure you have your `.env` file in the same folder as the source code.
+
+**Step 1:** Clone the repository to your local file system as you'll need the source code to build:
+```
+$ git clone https://github.com/ranimepiracy/Chiya
+```
+
+**Step 2:** Make your changes to the source code.
+
+**Step 3:** Build the container using the the developer `docker-compose.yml` file by executing:
+```
+$ docker-compose -f "docker-compose-dev.yml" up -d
+```
+
+
 ## Contributing
 
 Contributors are more than welcome to help make Chiya a better bot. Please follow these steps to get your work merged in:
