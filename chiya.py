@@ -11,7 +11,7 @@ import config
 import utils.database
 
 bot = commands.Bot(
-    command_prefix=config.prefix,
+    command_prefix=os.getenv("BOT_PREFIX"),
     intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
     case_insensitive=True
 )
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("/", ".")[:-3])
     
     token = os.getenv("BOT_TOKEN")
-    if token:
+    if not token:
         bot.run(token)
     else:
         print("Error! Unable to find BOT_TOKEN environment variable, exiting...")

@@ -8,6 +8,7 @@ services:
         - ${LOGS_FOLDER}:/app/logs/
     environment:
         - BOT_TOKEN=${BOT_TOKEN}
+        - BOT_PREFIX=${BOT_PREFIX}
         - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
         - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
         - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
