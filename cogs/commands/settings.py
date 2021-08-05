@@ -2,34 +2,42 @@ import logging
 
 import dataset
 from discord.ext.commands import Bot, Cog
-from discord.ext.commands.cooldowns import CooldownMapping
+from discord_slash import cog_ext, SlashContext
+from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import create_option, create_permission
 
 import config
 from utils import database
 from utils import embeds
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
-from discord_slash.model import SlashCommandPermissionType
 
 log = logging.getLogger(__name__)
+
+
+def get_config(config: str):
+    settings = {}
+
+    # Get all of the settings from the table and load them into the dictionary.
+    data = database.get_data_by_table("settings")
+    for setting in data:
+        settings[setting['name']] = {"value": setting['value'], "censored": bool(setting['censored'])}
+
+    if settings[f"{config}"]["value"].isdecimal():
+        return int(settings[f"{config}"]["value"])
+    else:
+        return settings[f"{config}"]["value"]
+
 
 class Settings(Cog):
     """ General Commands Cog """
 
     def __init__(self, bot: Bot):
         self.bot = bot
-        self.settings = {}
-
-        # Get all of the settings from the table and load them into the dictionary.
-        data = database.get_data_by_table("settings")
-        for setting in data:
-            self.settings[setting['name']] = {"value": setting['value'], "censored": bool(setting['censored'])}
 
     @cog_ext.cog_subcommand(
         base="settings",
         name="add",
         description="Add a new setting to the database",
-        guild_ids=[config.guild_id],
+        guild_ids=[get_config("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -71,7 +79,7 @@ class Settings(Cog):
 
         # Add the setting to the database.
         table.insert(dict(
-            name=name, 
+            name=name,
             value=value,
             censored=censored
         ))
@@ -96,7 +104,7 @@ class Settings(Cog):
         base="settings",
         name="edit",
         description="Edit an existing setting in the database",
-        guild_ids=[config.guild_id],
+        guild_ids=[get_config("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -151,7 +159,6 @@ class Settings(Cog):
             self.settings[name]["censored"] = censored
         table.update(result, ["id"])
 
-
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Updated '{name}' in the database.", color="soft_green")
         await ctx.send(embed=embed)
@@ -164,7 +171,7 @@ class Settings(Cog):
         base="settings",
         name="delete",
         description="Delete an existing setting from the database",
-        guild_ids=[config.guild_id],
+        guild_ids=[get_config("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -197,7 +204,7 @@ class Settings(Cog):
 
         # Delete the setting in the settings dictionary in memory.
         self.settings.pop(name)
-        
+
         # Send a confirmation embed to the command invoker.
         embed = embeds.make_embed(description=f"Deleted '{name}' from the database.", color="soft_green")
         await ctx.send(embed=embed)
@@ -210,7 +217,7 @@ class Settings(Cog):
         base="settings",
         name="list",
         description="Lists all of the settings in the database",
-        guild_ids=[config.guild_id],
+        guild_ids=[get_config("guild_id")],
         base_default_permission=False,
         base_permissions={
             config.guild_id: [
@@ -232,22 +239,22 @@ class Settings(Cog):
             embed = embeds.make_embed(description="Unable to find any settings in the database.", color="soft_red")
             await ctx.send(embed=embed)
             return
-        
+
         # Format the list entries into inline codeblocks for the embed.
         names = f", ".join(f'`{name}`' for name in names)
 
         # Create and send the embed containing the settings list to the command invoker.
         embed = embeds.make_embed(description=f"Found the following settings: {names}", color="soft_green")
         await ctx.send(embed=embed)
-        
+
         # Close the connection to the database.
         db.close()
-    
+
     @cog_ext.cog_subcommand(
         base="settings",
         name="view",
         description="View the current values for a setting",
-        guild_ids=[config.guild_id],
+        guild_ids=[get_config("guild_id")],
         base_default_permission=False,
         options=[
             create_option(
@@ -274,7 +281,7 @@ class Settings(Cog):
             embed = embeds.make_embed(description="A setting with that name does not exist.", color="soft_red")
             await ctx.send(embed=embed)
             return
-        
+
         # If the value is set to censored in the database, censor all but the first and last characters.
         if result.get("censored") == True:
             value = result['value'][:1] + "\*" * (len(result['value']) - 2) + result['value'][-1:]
@@ -287,7 +294,7 @@ class Settings(Cog):
         embed.add_field(name="Value:", value=value, inline=False)
         embed.add_field(name="Censored:", value=bool(result['censored']), inline=False)
         await ctx.send(embed=embed)
-       
+
         # Close the connection to the database.
         db.close()
 
