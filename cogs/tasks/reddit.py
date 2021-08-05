@@ -1,12 +1,12 @@
+import logging
 import os
 import time
-import logging
 
 import asyncpraw
 import discord
 from discord.ext import tasks, commands
 
-import config
+from cogs.commands import settings
 
 log = logging.getLogger(__name__)
 
@@ -16,31 +16,33 @@ reddit = asyncpraw.Reddit(
     user_agent=os.getenv("REDDIT_USER_AGENT")
 )
 
+
 class RedditTask(commands.Cog):
     """Reddit Background Task"""
+
     def __init__(self, bot):
         self.bot = bot
-        if config.subreddit and config.reddit_posts:
+        if settings.get_value("subreddit") and settings.get_value("channel_reddit"):
             # Only start if there is a place to post and a subreddit to monitor.
             log.info("Starting loop for polling reddit")
             self.check_for_posts.start()
             self.cache = []
             self.bot_started_at = time.time()
         else:
-            log.warning("Subreddit or discord channel to post is missing from config.")
+            log.warning("Subreddit or discord channel to post is missing in settings.")
 
     def cog_unload(self):
         self.check_for_posts.cancel()
 
     # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
-    @tasks.loop(seconds=config.poll_rate)
+    @tasks.loop(seconds=settings.get_value("poll_rate"))
     async def check_for_posts(self):
         """Checking for new reddit posts"""
         # Wait before starting or else new posts may not post to discord.
         await self.bot.wait_until_ready()
 
         try:
-            subreddit = await reddit.subreddit(config.subreddit)
+            subreddit = await reddit.subreddit(settings.get_value("subreddit"))
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
             async for submission in subreddit.new(limit=10):
                 # Skips over any posts already stored in cache.
@@ -82,7 +84,7 @@ class RedditTask(commands.Cog):
                     embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate.
-                channel = self.bot.get_channel(config.reddit_posts)
+                channel = self.bot.get_channel(settings.get_value("channel_reddit"))
                 if not channel:
                     log.warning(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue
@@ -94,6 +96,7 @@ class RedditTask(commands.Cog):
         # Catch all exceptions to avoid crashing and log the error.
         except Exception as e:
             log.error(e)
+
 
 def setup(bot) -> None:
     """ Load the GeneralCog cog. """
