@@ -62,7 +62,7 @@ class PurgeCog(Cog):
             ]
         }
     )
-    async def remove_messages(self, ctx: SlashContext, number_of_messages: int, reason: str = None):
+    async def remove_messages(self, ctx: SlashContext, amount: int, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
         await ctx.defer()
 
@@ -78,19 +78,19 @@ class PurgeCog(Cog):
             return
 
         # Limit the command at 100 messages maximum to avoid abuse.
-        if number_of_messages > 100:
-            number_of_messages = 100
+        if amount > 100:
+            amount = 100
 
         message = "messages"
-        if number_of_messages == 1:
+        if amount == 1:
             message = message[:-1]
 
-        await ctx.channel.purge(limit=number_of_messages + 1)
+        await ctx.channel.purge(limit=amount + 1)
 
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Removed messages",
-            description=f"{ctx.author.mention} removed the previous {number_of_messages} {message}.",
+            description=f"{ctx.author.mention} removed the previous {amount} {message}.",
             thumbnail_url=config.message_delete,
             color="soft_red"
         )
