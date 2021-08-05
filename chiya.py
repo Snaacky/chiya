@@ -63,5 +63,5 @@ if __name__ == '__main__':
         else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
 
-    token = os.getenv("BOT_TOKEN")
-    bot.run(token)
+    # Run the bot with the token as an environment variable.
+    bot.run(os.getenv("BOT_TOKEN"))
