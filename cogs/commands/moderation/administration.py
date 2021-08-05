@@ -1,16 +1,15 @@
+import glob
 import io
 import logging
+import re
 import textwrap
 import traceback
 from contextlib import redirect_stdout
-import glob
-import re
 
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context
 
-import config
 from cogs.commands import settings
 from utils import embeds
 from utils.record import record_usage
