@@ -64,7 +64,7 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("/", ".")[:-3])
 
     token = os.getenv("BOT_TOKEN")
-    if not token:
+    if token:
         bot.run(token)
     else:
         print("Error! Unable to find BOT_TOKEN environment variable, exiting...")
