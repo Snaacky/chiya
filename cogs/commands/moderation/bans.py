@@ -10,9 +10,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from cogs.commands import settings
-import config
 import utils.duration
+from cogs.commands import settings
 from utils import database
 from utils import embeds
 from utils.moderation import can_action_member
