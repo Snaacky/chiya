@@ -44,7 +44,7 @@ def setup_db():
     remind_me.create_column("message", db.types.text)
     remind_me.create_column("sent", db.types.boolean, default=False)
 
-    # create timed_mod_actions table and columns to store timed moderator actions.
+    # Create timed_mod_actions table and columns to store timed moderator actions.
     timed_mod_actions = db.create_table("timed_mod_actions")
     timed_mod_actions.create_column("user_id", db.types.bigint)
     timed_mod_actions.create_column("mod_id", db.types.bigint)
@@ -54,7 +54,7 @@ def setup_db():
     timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
     timed_mod_actions.create_column("reason", db.types.text)
 
-    # create ticket table and columns to store the ticket status information
+    # Create ticket table and columns to store the ticket status information
     tickets = db.create_table("tickets")
     tickets.create_column("user_id", db.types.bigint)
     tickets.create_column("status", db.types.text)
@@ -62,6 +62,12 @@ def setup_db():
     tickets.create_column("timestamp", db.types.bigint)
     tickets.create_column("ticket_topic", db.types.text)
     tickets.create_column("log_url", db.types.text)
+
+    # Create settings table and columns to store key:value pairs.
+    tickets = db.create_table("settings")
+    tickets.create_column("name", db.types.text)
+    tickets.create_column("value", db.types.text)
+    tickets.create_column("censored", db.types.boolean)
 
     # Commit the changes to the database and close the connection.
     db.commit()
