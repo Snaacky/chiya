@@ -63,8 +63,8 @@ class Settings(Cog):
             ),
         ],
         base_permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            get_value("guild_id"): [
+                create_permission(get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
             ]
         }
     )
@@ -127,8 +127,8 @@ class Settings(Cog):
             ),
         ],
         base_permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            get_value("guild_id"): [
+                create_permission(get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
             ]
         }
     )
@@ -177,8 +177,8 @@ class Settings(Cog):
             )
         ],
         base_permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            get_value("guild_id"): [
+                create_permission(get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
             ]
         }
     )
@@ -212,8 +212,8 @@ class Settings(Cog):
         guild_ids=[get_value("guild_id")],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            get_value("guild_id"): [
+                create_permission(get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
             ]
         }
     )
@@ -257,8 +257,8 @@ class Settings(Cog):
             )
         ],
         base_permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+            get_value("guild_id"): [
+                create_permission(get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
             ]
         }
     )
@@ -275,7 +275,7 @@ class Settings(Cog):
             return
 
         # If the value is set to censored in the database, censor all but the first and last characters.
-        if result.get("censored") == True:
+        if result.get("censored"):
             value = result['value'][:1] + "\*" * (len(result['value']) - 2) + result['value'][-1:]
         else:
             value = result["value"]
@@ -284,7 +284,7 @@ class Settings(Cog):
         embed = embeds.make_embed(title=result['name'])
         embed.add_field(name="Name:", value=result['name'], inline=False)
         embed.add_field(name="Value:", value=value, inline=False)
-        embed.add_field(name="Censored:", value=bool(result['censored']), inline=False)
+        embed.add_field(name="Censored:", value=str(bool(result["censored"])), inline=False)
         await ctx.send(embed=embed)
 
         # Close the connection to the database.
