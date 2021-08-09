@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from discord_slash import SlashCommand
 
+import __init__
 import utils.database
 
 bot = commands.Bot(
@@ -15,8 +16,8 @@ bot = commands.Bot(
 )
 
 slash = SlashCommand(
-    bot,
-    sync_commands=True,  # False to avoid rate limiting, set to True to update commands and parameters.
+    bot, 
+    sync_commands=True, # False to avoid rate limiting, set to True to update commands and parameters.
     sync_on_cog_reload=False
 )
 
@@ -36,10 +37,9 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name="your every command!"
+            name="your command!"
         )
     )
-
 
 @bot.event
 async def on_message(message: discord.Message):
@@ -49,7 +49,6 @@ async def on_message(message: discord.Message):
     any message will be ran twice and cause issues. Lame, i know
     """
     # Do nothing
-
 
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
