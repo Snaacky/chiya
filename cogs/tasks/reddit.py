@@ -27,7 +27,7 @@ class RedditTask(commands.Cog):
             return
 
         # Only start the task if the subreddit and output channel settings exist.
-        if not settings.get_value("subreddit") and settings.get_value("channel_reddit"):
+        if not all([settings.get_value("subreddit"), settings.get_value("channel_reddit"), settings.get_value("poll_rate")]):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
 
         self.reddit = asyncpraw.Reddit(
