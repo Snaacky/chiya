@@ -26,7 +26,7 @@ class RedditTask(commands.Cog):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
             return
 
-        # Only start the task if the subreddit and output channel settings exist.
+        # Only start the task if the needed prerequisites exist in the settings database.
         if not all([settings.get_value("subreddit"), settings.get_value("channel_reddit"), settings.get_value("poll_rate")]):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
             return
