@@ -149,14 +149,14 @@ class RestrictCog(Cog):
                 required=True
             ),
             create_option(
-                name="duration",
-                description="The length of time the user will be restricted for",
+                name="reason",
+                description="The reason why the member is being restricted",
                 option_type=3,
                 required=False
             ),
             create_option(
-                name="reason",
-                description="The reason why the member is being restricted",
+                name="duration",
+                description="The length of time the user will be restricted for",
                 option_type=3,
                 required=False
             ),

@@ -6,8 +6,6 @@ from pathlib import Path
 
 import coloredlogs
 
-import config
-
 log_level = os.getenv("LOG_LEVEL")
 if not log_level:
     log_level = "NOTSET"
