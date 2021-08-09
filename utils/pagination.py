@@ -247,7 +247,7 @@ class LinePaginator(Paginator):
                 log.exception(f"Failed to add line to paginator: '{line}'")
                 raise  # Should propagate
             else:
-                log.debug(f"Added line to paginator: '{line}'")
+                log.trace(f"Added line to paginator: '{line}'")
 
         log.debug(f"Paginator created with {len(paginator.pages)} pages")
 
@@ -256,11 +256,11 @@ class LinePaginator(Paginator):
         if len(paginator.pages) <= 1:
             if footer_text:
                 embed.set_footer(text=footer_text)
-                log.debug(f"Setting embed footer to '{footer_text}'")
+                log.trace(f"Setting embed footer to '{footer_text}'")
 
             if url:
                 embed.url = url
-                log.debug(f"Setting embed url to '{url}'")
+                log.trace(f"Setting embed url to '{url}'")
 
             log.debug("There's less than two pages, so we won't paginate - sending single page on its own")
             return await ctx.send(embed=embed, delete_after=time_to_delete)
@@ -269,11 +269,11 @@ class LinePaginator(Paginator):
                 embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
             else:
                 embed.set_footer(text=f"Page {current_page + 1}/{len(paginator.pages)}")
-            log.debug(f"Setting embed footer to '{embed.footer.text}'")
+            log.trace(f"Setting embed footer to '{embed.footer.text}'")
 
             if url:
                 embed.url = url
-                log.debug(f"Setting embed url to '{url}'")
+                log.trace(f"Setting embed url to '{url}'")
 
             log.debug("Sending first page to channel...")
             message = await ctx.send(embed=embed, delete_after=time_to_delete)
@@ -282,13 +282,13 @@ class LinePaginator(Paginator):
 
         for emoji in PAGINATION_EMOJI:
             # Add all the applicable emoji to the message
-            log.debug(f"Adding reaction: {repr(emoji)}")
+            log.trace(f"Adding reaction: {repr(emoji)}")
             await message.add_reaction(emoji)
 
         while True:
             try:
                 reaction, user = await ctx.bot.wait_for("reaction_add", timeout=timeout, check=event_check)
-                log.debug(f"Got reaction: {reaction}")
+                log.trace(f"Got reaction: {reaction}")
             except asyncio.TimeoutError:
                 log.debug("Timed out waiting for a reaction")
                 break  # We're done, no reactions for the last 5 minutes

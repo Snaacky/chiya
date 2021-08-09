@@ -36,7 +36,7 @@ class error_handle(Cog):
         Returns:
             discord.Embed: discord embed object.
         """
-        log.debug(f"{title}, {body}")
+        log.trace(f"{title}, {body}")
         embed = embeds.error_embed(title=title, description=body, ctx=ctx)
         embed.set_footer(
             text=f"This message will self-destruct in {AUTO_DELETE_TIME} seconds.",
@@ -71,7 +71,7 @@ class error_handle(Cog):
 
         # Checking if error hasn't already been handled locally
         if hasattr(error, "handled"):
-            log.debug(f"Command {command} had its error already handled locally; ignoring.")
+            log.trace(f"Command {command} had its error already handled locally; ignoring.")
             return
 
         # Going through diffrent types of errors to handle them differently.
