@@ -37,16 +37,14 @@ class RedditTask(commands.Cog):
             user_agent=self.user_agent
         )
 
-        log.info("Starting Reddit functionality background task")
+        log.info("Starting reddit functionality background task")
         self.cache = []
         self.bot_started_at = time.time()
-        self.check_for_posts.start()
-            
+        self.check_for_posts.start() 
 
     def cog_unload(self):
         self.check_for_posts.cancel()
 
-    # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
     @tasks.loop(seconds=settings.get_value("poll_rate"))
     async def check_for_posts(self):
         """ Checking for new reddit posts """
