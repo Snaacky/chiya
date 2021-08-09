@@ -10,39 +10,49 @@ from cogs.commands import settings
 
 log = logging.getLogger(__name__)
 
-reddit = asyncpraw.Reddit(
-    client_id=os.getenv("REDDIT_CLIENT_ID"),
-    client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-    user_agent=os.getenv("REDDIT_USER_AGENT")
-)
-
-
 class RedditTask(commands.Cog):
-    """Reddit Background Task"""
+    """ Reddit Background Task """
 
     def __init__(self, bot):
         self.bot = bot
-        if settings.get_value("subreddit") and settings.get_value("channel_reddit"):
-            # Only start if there is a place to post and a subreddit to monitor.
-            log.info("Starting loop for polling reddit")
-            self.check_for_posts.start()
-            self.cache = []
-            self.bot_started_at = time.time()
-        else:
-            log.warning("Subreddit or discord channel to post is missing in settings.")
+
+        # Attempt to get the environment variables, defaults to None if non-existent.
+        self.client_id = os.getenv("REDDIT_CLIENT_ID")
+        self.client_secret = os.getenv("REDDIT_CLIENT_SECRET")
+        self.user_agent = os.getenv("REDDIT_USER_AGENT")
+
+        # Only define the object if all the env variable prerequisites exist.
+        if not all([self.client_id, self.client_secret, self.user_agent]):
+            log.warning("Reddit functionality is disabled due to missing prerequisites")
+            return
+
+        # Only start the task if the needed prerequisites exist in the settings database.
+        if not all([settings.get_value("subreddit"), settings.get_value("channel_reddit"), settings.get_value("poll_rate")]):
+            log.warning("Reddit functionality is disabled due to missing prerequisites")
+            return
+
+        self.reddit = asyncpraw.Reddit(
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            user_agent=self.user_agent
+        )
+
+        log.info("Starting reddit functionality background task")
+        self.cache = []
+        self.bot_started_at = time.time()
+        self.check_for_posts.start() 
 
     def cog_unload(self):
         self.check_for_posts.cancel()
 
-    # Loop 3 seconds to avoid ravaging the CPU and Reddit's API.
     @tasks.loop(seconds=settings.get_value("poll_rate"))
     async def check_for_posts(self):
-        """Checking for new reddit posts"""
+        """ Checking for new reddit posts """
         # Wait before starting or else new posts may not post to discord.
         await self.bot.wait_until_ready()
 
         try:
-            subreddit = await reddit.subreddit(settings.get_value("subreddit"))
+            subreddit = await self.reddit.subreddit(settings.get_value("subreddit"))
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
             async for submission in subreddit.new(limit=10):
                 # Skips over any posts already stored in cache.
@@ -99,6 +109,6 @@ class RedditTask(commands.Cog):
 
 
 def setup(bot) -> None:
-    """ Load the GeneralCog cog. """
+    """ Load the reddit cog. """
     bot.add_cog(RedditTask(bot))
     log.info("Task loaded: reddit")
