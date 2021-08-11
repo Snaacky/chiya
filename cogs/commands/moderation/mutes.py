@@ -221,9 +221,11 @@ class MuteCog(Cog):
                 formatted_time = str(message.created_at).split(".")[-2]
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
-                # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
-                    mod_list.add(message.author)
+                # Iterates only through members that is still in the server.
+                if isinstance(member, discord.Member):
+                    # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
+                    if role_staff in message.author.roles or role_trial_mod in message.author.roles:
+                        mod_list.add(message.author)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
         url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
