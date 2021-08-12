@@ -1,14 +1,10 @@
 import logging
 from typing import Union
-import dataset
 
 from discord import User, Member, Guild
-import discord
 from discord.ext import commands
 
-import config
 from handlers import boosts
-from utils import database
 
 log = logging.getLogger(__name__)
 
