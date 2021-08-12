@@ -6,11 +6,8 @@ from pathlib import Path
 
 import coloredlogs
 
-import config
-
-log_level = config.log_level
-
-if log_level is None:
+log_level = os.getenv("LOG_LEVEL")
+if not log_level:
     log_level = "NOTSET"
 
 # Adding Trace to enchance debugging verbose logs. DO NOT USE FOR PRODUCTION

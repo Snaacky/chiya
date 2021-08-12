@@ -146,6 +146,16 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
+        
+        # Temporary auto-ban solution for scam bots.
+        scam_links = ["stearncommunytiy.ru", "stearncormuntity.ru", "discord-drop.info"]
+        for link in scam_links:
+            if link in message.clean_content:
+                await message.guild.ban(
+                    user=message.author, 
+                    reason=f"Scam link: {link}",
+                    delete_message_days=1
+                )
 
         file_no = 0
         file_list = ""

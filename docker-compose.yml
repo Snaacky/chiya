@@ -1,0 +1,28 @@
+version: "3.3"
+services:
+  bot:
+    image: docker.pkg.github.com/ranimepiracy/chiya/chiya:latest
+    restart: unless-stopped
+    volumes:
+        - ${LOGS_FOLDER}:/app/logs/
+    environment:
+        - BOT_TOKEN=${BOT_TOKEN}
+        - BOT_PREFIX=${BOT_PREFIX}
+        - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
+        - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
+        - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
+        - MYSQL_HOST=db
+        - MYSQL_DATABASE=chiya
+        - MYSQL_USER=chiya
+        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - LOG_LEVEL=${LOG_LEVEL}
+  db:
+    image: mariadb
+    restart: unless-stopped
+    volumes:
+        - ${DATABASE_FOLDER}:/var/lib/mysql
+    environment:
+        MYSQL_DATABASE: chiya
+        MYSQL_USER: chiya
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
