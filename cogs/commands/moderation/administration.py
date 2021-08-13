@@ -195,7 +195,7 @@ class AdministrationCog(Cog):
         embed.add_field(name="Discord:", inline=True, value="> [discord.gg/piracy](https://discord.gg/piracy)")
         embed.add_field(name="Index:", inline=True, value="> [piracy.moe](https://piracy.moe)")
         embed.add_field(name="Wiki:", inline=True, value="> [wiki.piracy.moe](https://wiki.piracy.moe)")
-        embed.add_field(name="Seadex:", inline=True, value="> [seadex.piracy.moe](https://seadex.piracy.moe)")
+        embed.add_field(name="Seadex:", inline=True, value="> [releases.moe](https://releases.moe)")
         embed.add_field(name="GitHub:", inline=True, value="> [github.com/ranimepiracy](https://github.com/ranimepiracy)")
         embed.add_field(name="Twitter:", inline=True, value="> [@ranimepiracy](https://twitter.com/ranimepiracy)")
         embed.add_field(name="Uptime Status:", inline=True, value="> [status.piracy.moe](https://status.piracy.moe/)")
