@@ -67,25 +67,36 @@ class Achievements(Cog):
         length = len(message.content.split())
 
         # Heavily punishes emote spams, links, gifs, etc.
-        # All values are rounded to 2 decimals.
         if length in range(0, 3):
-            stats["buffer"] += length * 0.33
+            multiplier = 0.33
         # Discourage very short messages.
         elif length in range(3, 5):
-            stats["buffer"] += length * 0.67
+            multiplier = 0.67
         # Slightly punish short messages.
         elif length in range(5, 8):
-            stats["buffer"] += length * 0.9
+            multiplier = 0.9
         # Normal multiplier to average messages.
         elif length in range(8, 11):
-            stats["buffer"] += length
-        # Encourages longer messages.
+            multiplier = 1
+        # Slightly encourages longer messages.
         elif length in range(11, 16):
-            stats["buffer"] += length * 1.1
-        # Further encourage long messages.
-        elif length in range(16, 26):
-            stats["buffer"] += length * 1.2
-        # Set a max cap to avoid abuse (low effort copy paste, trolling, copypasta, etc.)
+            multiplier = 1.1
+        # Further encourages long messages.
+        else:
+            multiplier = 1.2
+
+        # Calculate the baseline buffer.
+        buffer = length * multiplier
+
+        # If the message author is a server booster, give them 20% more buffer per message.
+        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
+        is_booster = True if role_server_booster in message.author.roles else False
+        if is_booster:
+            buffer = buffer + buffer * 0.2
+
+        # Set a max cap to prevent abuse (low effort copy paste, trolling, copypasta, etc.)
+        if buffer <= 40:
+            stats["buffer"] += buffer
         else:
             stats["buffer"] += 40
 
@@ -152,6 +163,10 @@ class Achievements(Cog):
 
         # Return true if the message was sent in #mudae-lounge.
         if message.channel.id == settings.get_value("channel_mudae_lounge"):
+            return True
+
+        # TODO: Remove this on production. This is solely for testing convenience purpose.
+        if message.channel.id == settings.get_value("channel_bots"):
             return True
 
         # Return false otherwise.
@@ -269,7 +284,7 @@ class Achievements(Cog):
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
-                embed.add_field(name="Condition:", value="You must have at least 1 GB buffer.", inline=False)
+                embed.add_field(name="Condition:", value="You must have at least 5 GB buffer.", inline=False)
             if not user_class_check:
                 embed.add_field(name="Condition:", value="User class must be 'Elite' or higher.", inline=False)
             if custom_role_check:
