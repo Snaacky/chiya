@@ -69,6 +69,11 @@ def setup_db():
     settings.create_column("value", db.types.text)
     settings.create_column("censored", db.types.boolean)
 
+    # Create achievements table and columns to store user stats.
+    achievements = db.create_table("achievements")
+    achievements.create_column("user_id", db.types.bigint)
+    achievements.create_column("stats", db.types.json)
+
     # Commit the changes to the database and close the connection.
     db.commit()
     db.close()
