@@ -196,6 +196,11 @@ class Achievements(Cog):
         """ Purchase a role and assign it to themselves. """
         await ctx.defer()
 
+        # Warns if the command is called outside of #bots channel.
+        if not ctx.channel.id == settings.get_value("channel_bots"):
+            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+            return
+
         # Connect to the database and get the achievement table.
         db = dataset.connect(database.get_db())
         achievements = db["achievements"]
@@ -317,6 +322,11 @@ class Achievements(Cog):
     async def buy_color(self, ctx: SlashContext):
         """ Roll a random role color for a small amount of buffer. """
         await ctx.defer()
+
+        # Warns if the command is called outside of #bots channel.
+        if not ctx.channel.id == settings.get_value("channel_bots"):
+            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+            return
 
         # Connect to the database and get the achievement table.
         db = dataset.connect(database.get_db())
