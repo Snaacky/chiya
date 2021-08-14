@@ -41,7 +41,7 @@ class BansHandler(commands.Cog):
                 user_id=user.id,
                 mod_id=logs.user.id,
                 timestamp=int(time.time()),
-                reason=f"{ban_entry.reason}",
+                reason=ban_entry.reason,
                 type="ban"
             ))
 
