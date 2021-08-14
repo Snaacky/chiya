@@ -189,8 +189,8 @@ class Achievements(Cog):
         return buffer_string
 
     @staticmethod
-    async def generate_hue(options) -> int:
-        """ Generates a random hue value on the HSV scale. """
+    async def generate_hsv(hue_upgrade: list, saturation_upgrade: int, value_upgrade: int) -> tuple:
+        """ Generates a random HSV tuple affected by the purchased upgrades. """
         # Declare a list of possible color packs.
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
 
@@ -211,16 +211,24 @@ class Achievements(Cog):
         )
 
         # Declare an empty list to append the roll values later.
-        roll_values = list()
+        hue = list()
 
         # Iterate through the input parameter that is a list of purchased color packs.
-        for option in options:
+        for pack in hue_upgrade:
             # If one of the options matches one of the strings in "colors", append to the list of roll values range from the dictionary.
-            if option in colors:
-                roll_values += color_map[option]
+            if pack in colors:
+                hue += color_map[pack]
 
-        # Finally, return a random value from the appended list.
-        return random.choice(roll_values)
+        """
+        Hue, saturation, and value is divided by 360, 100, 100 accordingly because it is using the fourth coordinate group described in
+        https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
+        This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
+        """
+        # Finally, return random HSV tuple, affected by the purchased upgrades.
+        return \
+            random.choice(hue) / 360,\
+            random.randint(0, saturation_upgrade + 1) / 100,\
+            random.randint(0, value_upgrade + 1) / 100
 
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
@@ -262,11 +270,14 @@ class Achievements(Cog):
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
 
+        # Cost of the transaction. Declared separately to give less headaches on future balance changes.
+        cost = 5120
+
         # Declare the allowed user classes for the custom role purchase.
         allowed_classes = ["Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"]
 
         # Condition: Buffer must be above 5 GB.
-        buffer_check = bool(stats["buffer"] >= 1024 * 5)
+        buffer_check = bool(stats["buffer"] >= cost)
 
         # Condition: User class must be "Elite" or higher.
         user_class_check = bool(any(stats["user_class"] == allowed_class for allowed_class in allowed_classes))
@@ -284,7 +295,7 @@ class Achievements(Cog):
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
-                embed.add_field(name="Condition:", value="You must have at least 5 GB buffer.", inline=False)
+                embed.add_field(name="Condition:", value=f"You must have at least {self.get_buffer_string(cost)} buffer.", inline=False)
             if not user_class_check:
                 embed.add_field(name="Condition:", value="User class must be 'Elite' or higher.", inline=False)
             if custom_role_check:
@@ -335,7 +346,7 @@ class Achievements(Cog):
         await ctx.guild.edit_role_positions(positions=positions, reason="Custom role purchase.")
 
         # Update the JSON object accordingly.
-        stats["buffer"] -= 1024 * 5
+        stats["buffer"] -= cost
         stats["has_custom_role"] = True
 
         # Get the formatted buffer string.
@@ -391,8 +402,11 @@ class Achievements(Cog):
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
 
+        # Cost of the transaction. Declared separately to give less headaches on future balance changes.
+        cost = 128
+
         # Condition: Buffer must be above 256 MB.
-        buffer_check = bool(stats["buffer"] >= 128)
+        buffer_check = bool(stats["buffer"] >= cost)
 
         # Condition: Must have purchased at least 1 color pack.
         if len(stats["hue_upgrade"]) == 0:
@@ -413,7 +427,7 @@ class Achievements(Cog):
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
-                embed.add_field(name="Condition:", value="You must have at least 256 MB buffer.", inline=False)
+                embed.add_field(name="Condition:", value=f"You must have at least {self.get_buffer_string(cost)} buffer.", inline=False)
             if not color_check:
                 embed.add_field(name="Condition:", value="You must have purchased at least one color pack.", inline=False)
             if not custom_role_check:
@@ -422,22 +436,16 @@ class Achievements(Cog):
             db.close()
             return
 
-        # Generate a hue from the purchased color packs.
-        hue = await self.generate_hue(stats["hue_upgrade"])
-
-        """
-        Roll a HSV color. Hue is divided by 360 because it is using the fourth coordinate group described in
-        https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
-        This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
-        """
-        color = discord.Color.from_hsv(hue / 360, 1.0, 1.0)
+        # Generates a HSV color from the purchased color packs, saturation and value upgrade.
+        hue, saturation, value = await self.generate_hsv(stats["hue_upgrade"], stats["saturation_upgrade"], stats["value_upgrade"])
+        color = discord.Color.from_hsv(hue, saturation, value)
 
         # Get the role from user's custom role ID to edit the color.
         role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
         await role.edit(color=color)
 
         # Update the JSON object accordingly.
-        stats["buffer"] -= 128
+        stats["buffer"] -= cost
 
         # Get the formatted buffer string.
         buffer_string = await self.get_buffer_string(stats["buffer"])
@@ -497,6 +505,9 @@ class Achievements(Cog):
         # Purchasable color pack options.
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
 
+        # Cost of the transaction. Declared separately to give less headaches on future balance changes.
+        cost = 2048
+
         # Condition: The input color pack choice must match at least one of the items in the allowed colors.
         color_check = True if any(pack == color for color in colors) else False
 
@@ -504,7 +515,7 @@ class Achievements(Cog):
         owned_check = True if any(pack == color for color in stats["hue_upgrade"]) else False
 
         # Condition: Buffer must be above 1 GB.
-        buffer_check = bool(stats["buffer"] >= 1024)
+        buffer_check = bool(stats["buffer"] >= cost)
 
         # Condition: Must already own a custom role.
         custom_role_check = stats["has_custom_role"]
@@ -523,7 +534,7 @@ class Achievements(Cog):
             if owned_check:
                 embed.add_field(name="Condition:", value="You must not already owned the color pack yet.")
             if not buffer_check:
-                embed.add_field(name="Condition:", value="You must have at least 1 GB buffer.", inline=False)
+                embed.add_field(name="Condition:", value=f"You must have at least {self.get_buffer_string(cost)} buffer.", inline=False)
             if not custom_role_check:
                 embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
             await ctx.send(embed=embed)
@@ -535,7 +546,7 @@ class Achievements(Cog):
             stats["hue_upgrade"].append(pack)
 
         # Update the JSON object accordingly.
-        stats["buffer"] -= 1024
+        stats["buffer"] -= cost
 
         # Get the formatted buffer string.
         buffer_string = await self.get_buffer_string(stats["buffer"])
