@@ -25,6 +25,7 @@ class Achievements(Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
+        """ The entry point for buffer calculation and promotion/demotion on every messages sent. """
 
         # If the author is a bot, skip them.
         if message.author.bot:
@@ -53,33 +54,37 @@ class Achievements(Cog):
             stats_json = await self.calculate_buffer(message, stats)
             # Update the user stats in the database.
             achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+
         # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
     @staticmethod
     async def calculate_buffer(message: Message, stats):
+        """ Calculate the amount of buffers gained from messages and promote/demote conditionally. """
+
+        # Get the number of words in a message.
         length = len(message.content.split())
 
         # Heavily punishes emote spams, links, gifs, etc.
         # All values are rounded to 2 decimals.
         if length in range(0, 3):
-            stats["buffer"] += round(length * 0.33, 2)
+            stats["buffer"] += length * 0.33, 2
         # Discourage very short messages.
         elif length in range(3, 5):
-            stats["buffer"] += round(length * 0.67, 2)
+            stats["buffer"] += length * 0.67, 2
         # Slightly punish short messages.
         elif length in range(5, 8):
-            stats["buffer"] += round(length * 0.9, 2)
+            stats["buffer"] += length * 0.9, 2
         # Normal multiplier to average messages.
         elif length in range(8, 11):
-            stats["buffer"] += round(length, 2)
+            stats["buffer"] += length, 2
         # Encourages longer messages.
         elif length in range(11, 16):
-            stats["buffer"] += round(length * 1.1, 2)
+            stats["buffer"] += length * 1.1, 2
         # Further encourage long messages.
         elif length in range(16, 26):
-            stats["buffer"] += round(length * 1.2, 2)
+            stats["buffer"] += length * 1.2, 2
         # Set a max cap to avoid abuse (low effort copy paste, trolling, copypasta, etc.)
         else:
             stats["buffer"] += 40
@@ -115,6 +120,8 @@ class Achievements(Cog):
 
     @staticmethod
     async def create_user():
+        """ Initialize the JSON object for user stats if it doesn't exist yet. """
+
         # Initialize the user's entry in the database.
         stats = {
             "user_class": "Member",
@@ -134,6 +141,8 @@ class Achievements(Cog):
 
     @staticmethod
     async def is_in_enabled_channels(message: Message) -> bool:
+        """ Check if the sent message is from one of the enabled channels or not. """
+
         # Get all categories from the guild.
         categories = message.guild.categories
 
@@ -149,32 +158,53 @@ class Achievements(Cog):
         return False
 
     @staticmethod
-    async def get_buffer_string(buffer):
+    async def get_buffer_string(buffer) -> str:
         """ Display the buffer in a beautified format of MB, GB, and TB. """
+        # If buffer is larger than 1024 GB, display it in TB instead.
         if buffer >= 1024 ** 2:
             buffer_string = f"{round(buffer / (1024 ** 2), 2)} TB"
+        # Else if buffer is larger than 1024 MB, display it in GB instead.
         elif buffer >= 1024:
             buffer_string = f"{round(buffer / 1024, 2)} GB"
+        # Otherwise, display it in MB.
         else:
-            buffer_string = f"{buffer} MB"
+            buffer_string = f"{round(buffer, 2)} MB"
+
+        # Finally, return the formatted string.
         return buffer_string
 
     @staticmethod
-    async def generate_hue(options):
+    async def generate_hue(options) -> int:
+        """ Generates a random hue value on the HSV scale. """
+        # Declare a list of possible color packs.
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
+
+        # Create a dictionary that maps the color pack name with the range of roll values, unpacked into a list with the * operator.
         color_map = dict(
+            # Red-like colors span from 331-360 and 1-30 degrees on the HSV scale.
             red=[*range(331, 361), *range(1, 31)],
+            # Yellow-like colors span from 31-90 degrees on the HSV scale.
             yellow=[*range(31, 91)],
+            # Green-like colors span from 91-150 degrees on the HSV scale.
             green=[*range(91, 151)],
+            # Cyan-like colors span from 151-210 degrees on the HSV scale.
             cyan=[*range(151, 211)],
+            # Blue-like colors span from 211-270 degrees on the HSV scale.
             blue=[*range(211, 271)],
+            # Magenta-like colors span from 271-330 degrees on the HSV scale.
             magenta=[*range(271, 331)]
         )
-        roll_values = []
+
+        # Declare an empty list to append the roll values later.
+        roll_values = list()
+
+        # Iterate through the input parameter that is a list of purchased color packs.
         for option in options:
+            # If one of the options matches one of the strings in "colors", append to the list of roll values range from the dictionary.
             if option in colors:
                 roll_values += color_map[option]
 
+        # Finally, return a random value from the appended list.
         return random.choice(roll_values)
 
     @commands.before_invoke(record_usage)
@@ -237,6 +267,7 @@ class Achievements(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red"
             )
+            # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
                 embed.add_field(name="Condition:", value="You must have at least 1 GB buffer.", inline=False)
             if not user_class_check:
@@ -309,6 +340,7 @@ class Achievements(Cog):
         stats_json = json.dumps(stats)
         achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
 
+        # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
@@ -320,7 +352,7 @@ class Achievements(Cog):
         guild_ids=[settings.get_value("guild_id")],
     )
     async def buy_color(self, ctx: SlashContext):
-        """ Roll a random role color for a small amount of buffer. """
+        """ Roll a random role color using buffer. """
         await ctx.defer()
 
         # Warns if the command is called outside of #bots channel.
@@ -364,6 +396,7 @@ class Achievements(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red"
             )
+            # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
                 embed.add_field(name="Condition:", value="You must have at least 256 MB buffer.", inline=False)
             if not color_check:
@@ -407,6 +440,7 @@ class Achievements(Cog):
         stats_json = json.dumps(stats)
         achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
 
+        # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
@@ -414,7 +448,7 @@ class Achievements(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="hue",
-        description="Upgrade the range of colors you can roll",
+        description="Increase the amount of possible colors that you can roll",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
@@ -426,6 +460,7 @@ class Achievements(Cog):
         ],
     )
     async def upgrade_hue(self, ctx: SlashContext, pack: str):
+        """ Purchase a color pack to increase the amount of possible colors that can be rolled. """
         await ctx.defer()
 
         # Connect to the database and get the achievement table.
@@ -467,6 +502,7 @@ class Achievements(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red"
             )
+            # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not color_check:
                 embed.add_field(name="Condition:", value="Color pack must be one the following options: red, yellow, green, cyan, blue, magenta.", inline=False)
             if owned_check:
@@ -503,6 +539,7 @@ class Achievements(Cog):
         stats_json = json.dumps(stats)
         achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
 
+        # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
