@@ -69,22 +69,22 @@ class Achievements(Cog):
         # Heavily punishes emote spams, links, gifs, etc.
         # All values are rounded to 2 decimals.
         if length in range(0, 3):
-            stats["buffer"] += length * 0.33, 2
+            stats["buffer"] += length * 0.33
         # Discourage very short messages.
         elif length in range(3, 5):
-            stats["buffer"] += length * 0.67, 2
+            stats["buffer"] += length * 0.67
         # Slightly punish short messages.
         elif length in range(5, 8):
-            stats["buffer"] += length * 0.9, 2
+            stats["buffer"] += length * 0.9
         # Normal multiplier to average messages.
         elif length in range(8, 11):
-            stats["buffer"] += length, 2
+            stats["buffer"] += length
         # Encourages longer messages.
         elif length in range(11, 16):
-            stats["buffer"] += length * 1.1, 2
+            stats["buffer"] += length * 1.1
         # Further encourage long messages.
         elif length in range(16, 26):
-            stats["buffer"] += length * 1.2, 2
+            stats["buffer"] += length * 1.2
         # Set a max cap to avoid abuse (low effort copy paste, trolling, copypasta, etc.)
         else:
             stats["buffer"] += 40
