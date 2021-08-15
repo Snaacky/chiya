@@ -3,10 +3,15 @@ import re
 import dataset
 from utils import database
 from fuzzywuzzy import fuzz
+from cogs.commands import settings
 
 
-def check_message(message: discord.Message) -> bool:
+async def check_message(message: discord.Message) -> bool:
     """ Checks Messages by calling various other methods. """
+
+    # Ignore the message if it's not from the automod-enabled channels/categories
+    if not await is_in_enabled_channels(message):
+        return False
     
     db = dataset.connect(database.get_db())
     # querying everything from the database
@@ -76,4 +81,24 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
         return True
 
     return False
+
+async def is_in_enabled_channels(message: discord.Message) -> bool:
+        """ Check if the sent message is from one of the enabled channels or not. """
+
+        # Get all categories from the guild.
+        categories = message.guild.categories
+
+        # Return true if the message was sent any channel under the community category.
+        if any(message.channel.category.id == settings.get_value("category_community") for category in categories):
+            return True
+        
+        # Return true if the message was sent any channel under the bots category.
+        if any(message.channel.category.id == settings.get_value("category_bots") for category in categories):
+            return True
+
+        # Return true if the message was sent any channel under the voice category.
+        if any(message.channel.category.id == settings.get_value("category_voice") for category in categories):
+            return True
+
+        return False
 

@@ -135,7 +135,7 @@ class MessageUpdates(commands.Cog):
                     delete_message_days=1
                 )
         
-        if (automod.check_message(message)):
+        if (await automod.check_message(message)):
             await message.delete()
             return
 
