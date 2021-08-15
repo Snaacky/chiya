@@ -80,12 +80,7 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
 
 def check_url(message: str, automod_url: str) -> bool:
     """ URL checking """
-    # TODO: Implement links checking.
-    url_regex = re.compile(r"[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)")
-    urls = re.findall(url_regex, message)
-    for url in urls:
-        print(url)
-        if url == automod_url:
-            return True
+    if re.search(automod_url, message, re.IGNORECASE):
+        return True
     
     return False
