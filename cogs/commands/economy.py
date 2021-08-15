@@ -295,7 +295,7 @@ class Achievements(Cog):
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
-                embed.add_field(name="Condition:", value=f"You must have at least {self.get_buffer_string(cost)} buffer.", inline=False)
+                embed.add_field(name="Condition:", value=f"You must have at least {await self.get_buffer_string(cost)} buffer.", inline=False)
             if not user_class_check:
                 embed.add_field(name="Condition:", value="User class must be 'Elite' or higher.", inline=False)
             if custom_role_check:
@@ -427,7 +427,7 @@ class Achievements(Cog):
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
-                embed.add_field(name="Condition:", value=f"You must have at least {self.get_buffer_string(cost)} buffer.", inline=False)
+                embed.add_field(name="Condition:", value=f"You must have at least {await self.get_buffer_string(cost)} buffer.", inline=False)
             if not color_check:
                 embed.add_field(name="Condition:", value="You must have purchased at least one color pack.", inline=False)
             if not custom_role_check:
@@ -534,7 +534,7 @@ class Achievements(Cog):
             if owned_check:
                 embed.add_field(name="Condition:", value="You must not already owned the color pack yet.")
             if not buffer_check:
-                embed.add_field(name="Condition:", value=f"You must have at least {self.get_buffer_string(cost)} buffer.", inline=False)
+                embed.add_field(name="Condition:", value=f"You must have at least {await self.get_buffer_string(cost)} buffer.", inline=False)
             if not custom_role_check:
                 embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
             await ctx.send(embed=embed)
