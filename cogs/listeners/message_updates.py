@@ -134,12 +134,15 @@ class MessageUpdates(commands.Cog):
                     reason=f"Scam link: {link}",
                     delete_message_days=1
                 )
+        
+        if (automod.check_message(message)):
+            await message.delete()
+            return
 
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
 
-        if (automod.check_message(message)):
-            await message.delete()
+        
             
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):

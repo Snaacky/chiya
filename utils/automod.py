@@ -31,7 +31,7 @@ def check_message(message: discord.Message) -> bool:
     url_censors = db['censor'].find(censor_type="links")
     for censor in url_censors:
         # regex checking for a URL matching ones read from the DB
-        if(check_url(message.content, censor['censor_term'])):
+        if(check_substring(message.content, censor['censor_term'])):
             return True
     
     fuzzy_censors = db['censor'].find(censor_type="fuzzy")
@@ -77,10 +77,3 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
 
     return False
 
-
-def check_url(message: str, automod_url: str) -> bool:
-    """ URL checking """
-    if re.search(automod_url, message, re.IGNORECASE):
-        return True
-    
-    return False
