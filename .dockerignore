@@ -172,4 +172,5 @@ config.py
 *config.ymal
 *.db*
 notes.txt
-cog.example.py
+*.bat
+db/*

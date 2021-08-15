@@ -6,14 +6,14 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
 from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import create_option, create_permission
 
-import config
+from cogs.commands import settings
 from utils import database
 from utils import embeds
-from utils.record import record_usage
 from utils.moderation import can_action_member
+from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class KickCog(Cog):
     @cog_ext.cog_slash(
         name="kick",
         description="Kicks the member from the server",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="member",
@@ -47,9 +47,9 @@ class KickCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -79,7 +79,7 @@ class KickCog(Cog):
             ctx=ctx,
             title=f"Kicking member: {member.name}",
             description=f"{member.mention} was kicked by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_ban,
+            thumbnail_url="https://i.imgur.com/l0jyxkz.png",
             color="soft_red"
         )
 

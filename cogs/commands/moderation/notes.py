@@ -12,7 +12,7 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-import config
+from cogs.commands import settings
 from utils import database
 from utils import embeds
 from utils.record import record_usage
@@ -32,7 +32,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="addnote",
         description="Add a note to a user",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="user",
@@ -49,9 +49,9 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -75,7 +75,7 @@ class NotesCog(Cog):
             ctx=ctx,
             title=f"Noting user: {user.name}",
             description=f"{user.mention} was noted by {ctx.author.mention}",
-            thumbnail_url=config.pencil,
+            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="blurple"
         )
         embed.add_field(name="ID: ", value=note_id, inline=False)
@@ -89,7 +89,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="search",
         description="View users notes and mod actions history",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="user",
@@ -106,13 +106,13 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
-    async def search_mod_actions(self, ctx: SlashContext, user: discord.User, action_type: str = None):
+    async def search_mod_actions(self, ctx: SlashContext, user: discord.User, action: str = None):
         """ Searches for mod actions on a user """
         await ctx.defer()
 
@@ -126,16 +126,16 @@ class NotesCog(Cog):
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
         options = ["ban", "unban", "mute", "unmute", "restrict", "unrestrict", "warn", "kick", "note"]
-        if action_type:
+        if action:
             # Attempt to check for the plural form of the options and strip it.
-            if action_type[-1] == "s":
-                action_type = action_type[:-1]
-            if any(action_type == option for option in options):
-                results = mod_logs.find(user_id=user.id, type=action_type.lower())
+            if action[-1] == "s":
+                action = action[:-1]
+            if any(action == option for option in options):
+                results = mod_logs.find(user_id=user.id, type=action.lower())
             else:
                 await embeds.error_message(
                     ctx=ctx,
-                    description=f"\"{action_type}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
+                    description=f"\"{action}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
                 )
                 # Close the connection.
                 db.close()
@@ -287,7 +287,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="editlog",
         description="Edits an existing log or note for a user",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="id",
@@ -304,13 +304,13 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
-    async def edit_log(self, ctx: SlashContext, id: int, reason: str):
+    async def edit_log(self, ctx: SlashContext, id: int, note: str):
         await ctx.defer()
 
         # Open a connection to the database.
@@ -328,14 +328,14 @@ class NotesCog(Cog):
             ctx=ctx,
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
-            thumbnail_url=config.pencil,
+            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="soft_green"
         )
         embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
-        embed.add_field(name="After:", value=reason, inline=False)
+        embed.add_field(name="After:", value=note, inline=False)
         await ctx.send(embed=embed)
 
-        mod_log["reason"] = reason
+        mod_log["reason"] = note
         table.update(mod_log, ["id"])
 
         # Commit the changes to the database and close the connection.

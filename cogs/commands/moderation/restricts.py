@@ -1,6 +1,5 @@
 import datetime
 import logging
-import re
 import time
 
 import dataset
@@ -11,7 +10,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-import config
+import utils.duration
+from cogs.commands import settings
 from utils import database
 from utils import embeds
 from utils.moderation import can_action_member
@@ -29,13 +29,13 @@ class RestrictCog(Cog):
 
     @staticmethod
     async def is_user_restricted(ctx: SlashContext, member: discord.Member) -> bool:
-        if discord.utils.get(ctx.guild.roles, id=config.role_restricted) in member.roles:
+        if discord.utils.get(ctx.guild.roles, id=settings.get_value("role_restricted")) in member.roles:
             return True
         return False
 
     @staticmethod
     async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
-        role = discord.utils.get(ctx.guild.roles, id=config.role_restricted)
+        role = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_restricted"))
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
@@ -66,7 +66,7 @@ class RestrictCog(Cog):
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Restricted" role from member.
-        role = discord.utils.get(guild.roles, id=config.role_restricted)
+        role = discord.utils.get(guild.roles, id=settings.get_value("role_restricted"))
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
@@ -140,7 +140,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="restrict",
         description="Restricts message permissions from the member for the specified length of time",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="member",
@@ -149,23 +149,23 @@ class RestrictCog(Cog):
                 required=True
             ),
             create_option(
-                name="duration",
-                description="The length of time the user will be restricted for",
+                name="reason",
+                description="The reason why the member is being restricted",
                 option_type=3,
                 required=False
             ),
             create_option(
-                name="reason",
-                description="The reason why the member is being restricted",
+                name="duration",
+                description="The length of time the user will be restricted for",
                 option_type=3,
                 required=False
             ),
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -203,7 +203,7 @@ class RestrictCog(Cog):
                 ctx=ctx,
                 title=f"Restricting member: {member.name}",
                 description=f"{member.mention} was restricted by {ctx.author.mention} for: {reason}",
-                thumbnail_url=config.user_restrict,
+                thumbnail_url="https://i.imgur.com/rHtYWIt.png",
                 color="soft_red"
             )
 
@@ -216,56 +216,19 @@ class RestrictCog(Cog):
             await ctx.send(embed=embed)
             return
 
-        # RegEx stolen from Setsudo and modified.
-        regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
-
-        # Get all of the matches from the RegEx.
-        try:
-            match_list = re.findall(regex, duration)[0]
-        except discord.HTTPException:
-            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+        # Get the duration string for embed and restrict end time for the specified duration.
+        duration_string, restrict_end_time = utils.duration.get_duration(duration=duration)
+        # If the duration string is empty due to Regex not matching anything, send and error embed and return.
+        if not duration_string:
+            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
             return
-
-        # Check if all the matches are blank and return preemptively if so.
-        if not any(x.isalnum() for x in match_list):
-            await embeds.error_message(ctx=ctx, description="Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
-
-        duration = dict(
-            days=match_list[1],
-            hours=match_list[2],
-            minutes=match_list[3],
-            seconds=match_list[4]
-        )
-
-        # String that will store the duration in a more digestible format.
-        duration_string = ""
-        for time_unit in duration:
-            # If the time value is undeclared, set it to 0 and skip it.
-            if duration[time_unit] == "":
-                duration[time_unit] = 0
-                continue
-            # If the time value is 1, make the time unit into singular form.
-            if duration[time_unit] == "1":
-                duration_string += f"{duration[time_unit]} {time_unit[:-1]} "
-            else:
-                duration_string += f"{duration[time_unit]} {time_unit} "
-            # Updating the values for ease of conversion to timedelta object later.
-            duration[time_unit] = float(duration[time_unit])
-
-        restrict_end_time = datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
-            days=duration["days"],
-            hours=duration["hours"],
-            minutes=duration["minutes"],
-            seconds=duration["seconds"]
-        )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully restricted.
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Restricting member: {member}",
             description=f"{member.mention} was restricted by {ctx.author.mention} for: {reason}",
-            thumbnail_url=config.user_restrict,
+            thumbnail_url="https://i.imgur.com/rHtYWIt.png",
             color="soft_red"
         )
         embed.add_field(name="Duration:", value=duration_string, inline=False)
@@ -283,7 +246,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="unrestrict",
         description="Unrestricts the member",
-        guild_ids=[config.guild_id],
+        guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="member",
@@ -300,9 +263,9 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config.guild_id: [
-                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
-                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -339,7 +302,7 @@ class RestrictCog(Cog):
             title=f"Unrestricting member: {member.name}",
             description=f"{member.mention} was unrestricted by {ctx.author.mention} for: {reason}",
             color="soft_green",
-            thumbnail_url=config.user_unrestrict
+            thumbnail_url="https://i.imgur.com/W7DpUHC.png"
         )
 
         # Unrestricts the user.

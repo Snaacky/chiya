@@ -126,7 +126,7 @@ class MessageUpdates(commands.Cog):
             return
         
         # Temporary auto-ban solution for scam bots.
-        scam_links = ["stearncommunytiy.ru"]
+        scam_links = ["stearncommunytiy.ru", "stearncormuntity.ru", "discord-drop.info"]
         for link in scam_links:
             if link in message.clean_content:
                 await message.guild.ban(

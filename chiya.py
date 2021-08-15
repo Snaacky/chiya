@@ -7,11 +7,10 @@ from discord.ext import commands
 from discord_slash import SlashCommand
 
 import __init__
-import config
 import utils.database
 
 bot = commands.Bot(
-    command_prefix=config.prefix,
+    command_prefix=os.getenv("BOT_PREFIX"),
     intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
     case_insensitive=True
 )
@@ -38,7 +37,7 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
-            name=f"{config.prefix}help"
+            name="your command!"
         )
     )
 
@@ -62,9 +61,6 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("\\", ".")[:-3])
         else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
-    
-    token = os.getenv("BOT_TOKEN")
-    if token:
-        bot.run(token)
-    else:
-        print("Error! Unable to find BOT_TOKEN environment variable, exiting...")
+
+    # Run the bot with the token as an environment variable.
+    bot.run(os.getenv("BOT_TOKEN"))
