@@ -1,7 +1,9 @@
+import asyncio
 import logging
 
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
+from discord.message import Message
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
@@ -65,7 +67,6 @@ class PurgeCog(Cog):
     async def remove_messages(self, ctx: SlashContext, amount: int, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
         await ctx.defer()
-
         # Check to see if the bot is allowed to purge
         if not await self.can_purge_messages(ctx):
             return
@@ -85,7 +86,8 @@ class PurgeCog(Cog):
         if amount == 1:
             message = message[:-1]
 
-        await ctx.channel.purge(limit=amount + 1)
+        # purging from oldest first to keep the deferring message till the end
+        await ctx.channel.purge(limit=amount+1, oldest_first=True)
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -95,10 +97,13 @@ class PurgeCog(Cog):
             color="soft_red"
         )
         embed.add_field(name="Reason:", value=reason, inline=False)
-        # Do not use ctx.send(). See: https://discord-py-slash-command.readthedocs.io/en/latest/faq.html#what-is-the-difference-between-ctx-send-and-ctx-channel-send
+        # Sending an empty message and deleting it immediately afterwards to deal with the deferring
+        empty_message = await ctx.send('** **')
+        await empty_message.delete()
+        
         await ctx.channel.send(embed=embed)
-
-
+    
+        
 def setup(bot: Bot) -> None:
     """ Load the Purge cog. """
     bot.add_cog(PurgeCog(bot))
