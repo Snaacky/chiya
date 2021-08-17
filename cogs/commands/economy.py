@@ -101,28 +101,28 @@ class Achievements(Cog):
             stats["buffer"] += 40
 
         # Demoted to "Member" if buffer is smaller than 10 GB.
-        if stats["buffer"] < 1024 * 10:
+        if stats["buffer"] < 10240:
             stats["user_class"] = "Member"
-        # Promotes to "User" if buffer is above 10 GB, but demotes to it if below 25 GB. At least 500 messages are required.
-        elif stats["buffer"] < 1024 * 25 and stats["message_count"] >= 500:
+        # Promotes to "User" if buffer is above 10 GB, but demotes to it if below 25 GB. At least 1000 messages are required.
+        elif stats["buffer"] < 25600 and stats["message_count"] >= 1000:
             stats["user_class"] = "User"
         # Promotes to "Power User" if buffer is above 25 GB, but demotes to it if below 50 GB. At least 2,500 messages are required.
-        elif stats["buffer"] < 1024 * 50 and stats["message_count"] >= 1000:
+        elif stats["buffer"] < 51200 and stats["message_count"] >= 2500:
             stats["user_class"] = "Power User"
         # Promotes to "Elite" if buffer is above 50 GB, but demotes to it if below 100 GB. At least 5,500 messages are required.
-        elif stats["buffer"] < 1024 * 100 and stats["message_count"] >= 2500:
+        elif stats["buffer"] < 102400 and stats["message_count"] >= 5000:
             stats["user_class"] = "Elite"
-        # Promotes to "Torrent Master" if buffer is above 100 GB, but demotes to it if below 250 GB. At least 7,500 messages are required.
-        elif stats["buffer"] < 1024 * 250 and stats["message_count"] >= 5000:
+        # Promotes to "Torrent Master" if buffer is above 100 GB, but demotes to it if below 250 GB. At least 10,000 messages are required.
+        elif stats["buffer"] < 256000 and stats["message_count"] >= 10000:
             stats["user_class"] = "Torrent Master"
-        # Promotes to "Power TM" if buffer is above 250 GB, but demotes to it if below 500 GB. At least 10,000 messages are required.
-        elif stats["buffer"] < 1024 * 500 and stats["message_count"] >= 10000:
+        # Promotes to "Power TM" if buffer is above 250 GB, but demotes to it if below 500 GB. At least 22,500 messages are required.
+        elif stats["buffer"] < 512000 and stats["message_count"] >= 22500:
             stats["user_class"] = "Power TM"
-        # Promotes to "Elite TM" if buffer is above 500 GB, but demotes to it if below 1 TB. At least 25,000 messages are required.
-        elif stats["buffer"] < 1024 ** 2 and stats["message_count"] >= 25000:
+        # Promotes to "Elite TM" if buffer is above 500 GB, but demotes to it if below 1 TB. At least 45,000 messages are required.
+        elif stats["buffer"] < 1048576 and stats["message_count"] >= 45000:
             stats["user_class"] = "Elite TM"
-        # Promotes to "Legend" if buffer is above 1 TB. At least 50,000 messages are required.
-        elif stats["buffer"] >= 1024 ** 2 and stats["message_count"] >= 50000:
+        # Promotes to "Legend" if buffer is above 1 TB. At least 80,000 messages are required.
+        elif stats["buffer"] >= 1048576 and stats["message_count"] >= 80000:
             stats["user_class"] = "Legend"
 
         # Dumps the manipulated dictionary into a JSON object and return it.
@@ -405,7 +405,7 @@ class Achievements(Cog):
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
         cost = 128
 
-        # Condition: Buffer must be above 256 MB.
+        # Condition: Buffer must be above 128 MB.
         buffer_check = bool(stats["buffer"] >= cost)
 
         # Condition: Must have purchased at least 1 color pack.
@@ -556,6 +556,106 @@ class Achievements(Cog):
             ctx=ctx,
             title=f"Color unlocked: {str(pack)}",
             description=f"You can now roll {pack}-like colors.",
+            color="green"
+        )
+        embed.add_field(name="New buffer:", value=buffer_string)
+        await ctx.send(embed=embed)
+
+        # Dump the modified JSON into the db and close it.
+        stats_json = json.dumps(stats)
+        achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+
+        # Commit the changes to the database and close it.
+        db.commit()
+        db.close()
+
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="upgrade",
+        name="saturation",
+        description="Allows more saturated colors to be rolled",
+        guild_ids=[settings.get_value("guild_id")],
+        options=[
+            create_option(
+                name="amount",
+                description="Number of upgrades to purchase. ",
+                option_type=4,
+                required=True
+            ),
+        ],
+    )
+    async def upgrade_saturation(self, ctx: SlashContext, amount: int):
+        """ Allows more saturated colors to be rolled. """
+        await ctx.defer()
+
+        # Connect to the database and get the achievement table.
+        db = dataset.connect(database.get_db())
+        achievements = db["achievements"]
+
+        # Attempt to find the user who issued the command.
+        user = achievements.find_one(user_id=ctx.author.id)
+
+        # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
+        if not user:
+            stats_json = await self.create_user()
+            achievements.insert(dict(user_id=ctx.author.id, stats=stats_json))
+            user = achievements.find_one(user_id=ctx.author.id)
+
+        # Loads the JSON object in the database into a dictionary to manipulate.
+        stats = json.loads(user["stats"])
+
+        # Baseline cost of the transaction. Declared separately to give less headaches on future balance changes.
+        cost = 3
+
+        # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
+        inflated_cost = stats["saturation_upgrade"] * cost + amount * cost
+
+        # Condition: Must have more buffer than the cost of the transaction.
+        buffer_check = bool(stats["buffer"] >= inflated_cost)
+
+        # Condition: Must have purchased at least 1 color pack.
+        if len(stats["hue_upgrade"]) == 0:
+            color_check = False
+        else:
+            color_check = True
+
+        # Condition: The total number of upgrades must not exceed 100.
+        availability_check = True if amount + stats["saturation_upgrade"] <= 100 else False
+
+        # Condition: Must already own a custom role.
+        custom_role_check = stats["has_custom_role"]
+
+        # If any of the conditions were not met, return an error embed.
+        if not buffer_check or not color_check or not availability_check or not custom_role_check:
+            embed = embeds.make_embed(
+                ctx=ctx,
+                title="Transaction failed",
+                description="One or more of the following conditions were not met:",
+                color="red"
+            )
+            # Dynamically add the reason(s) why the transaction was unsuccessful.
+            if not buffer_check:
+                embed.add_field(name="Condition:", value=f"You must have at least {await self.get_buffer_string(inflated_cost)} buffer.", inline=False)
+            if not color_check:
+                embed.add_field(name="Condition:", value="You must have purchased at least one color pack.", inline=False)
+            if not custom_role_check:
+                embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
+            if not availability_check:
+                embed.add_field(name="Condition:", value=f" You can only purchase this upgrade {100 - stats['saturation_upgrade']} more times!", inline=False)
+            await ctx.send(embed=embed)
+            db.close()
+            return
+
+        stats["saturation_upgrade"] += amount
+
+        # Get the formatted buffer string.
+        buffer_string = await self.get_buffer_string(stats["buffer"])
+
+        # Create an embed upon successful transaction.
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Upgrade purchased: saturation",
+            description=f"You reached saturation level {stats['saturation_upgrade']}!",
             color="green"
         )
         embed.add_field(name="New buffer:", value=buffer_string)
