@@ -230,6 +230,7 @@ class Achievements(Cog):
             random.randint(0, saturation_upgrade + 1) / 100,\
             random.randint(0, value_upgrade + 1) / 100
 
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="buy",
@@ -370,6 +371,7 @@ class Achievements(Cog):
         db.commit()
         db.close()
 
+    @commands.bot_has_permissions(send_messages=True, manage_roles=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="buy",
@@ -467,6 +469,7 @@ class Achievements(Cog):
         db.commit()
         db.close()
 
+    @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="upgrade",
@@ -569,6 +572,7 @@ class Achievements(Cog):
         db.commit()
         db.close()
 
+    @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="upgrade",
@@ -646,6 +650,7 @@ class Achievements(Cog):
             db.close()
             return
 
+        # Update the JSON object.
         stats["saturation_upgrade"] += amount
 
         # Get the formatted buffer string.
