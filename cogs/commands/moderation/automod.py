@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 
 import dataset
@@ -205,6 +206,24 @@ class AutomodCog(commands.Cog):
 
         embed = embeds.make_embed(ctx=ctx, description=f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was deleted.", color='red')
         await ctx.send(embed=embed)
+    
+    async def paginate(self, ctx: SlashContext, title: str, items: list, color: str = "default", per_page: int = 5):
+        current_page = 0
+        total_pages = len(items)%per_page + 1
+
+        if len(items) == 0:
+            # if the given list is empty
+            embed = embeds.make_embed(ctx=ctx, title=str, description="(Nothing to display)", color = color)
+            return
+        # store the per_page number of items temporarily
+        page = []
+        # store the pages for the paginator
+        pages = []
+            
+
+        
+
+
             
 def setup(bot) -> None:
     bot.add_cog(AutomodCog(bot))
