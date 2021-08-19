@@ -170,6 +170,8 @@ class LevelingCog(Cog):
 
     @staticmethod
     async def verify_integrity(stats):
+        """ Verify the JSON object to make sure that it doesn't have missing keys. """
+        # The stats template, copied from create_user().
         stats_template = {
             "user_class": "Member",
             "message_count": 0,
@@ -183,12 +185,14 @@ class LevelingCog(Cog):
             "daily_timestamp:": 0,
             "achievements": []
         }
+        # Iterate through the keys and values of the stats template.
         for key, value in stats_template.items():
+            # If a key doesn't exist in the dictionary from parameter yet, add it.
             if key not in stats:
                 stats[key] = value
 
-        stats_json = json.dumps(stats)
-        return stats_json
+        # Finally, return the new dictionary.
+        return stats
 
     @staticmethod
     async def is_in_enabled_channels(message: Message) -> bool:
