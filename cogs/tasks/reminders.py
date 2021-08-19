@@ -59,11 +59,6 @@ class ReminderTask(Cog):
                     dm = await user.create_dm()
                     if not await dm.send(embed=embed):
                         log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
-                        
-            # if not channel or not await channel.send(user.mention, embed=embed):
-            #     dm = await user.create_dm()
-            #     if not await dm.send(embed=embed):
-            #         log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
 
             # Mark the reminder as sent so it doesn't loop again.
             remind_me.update(dict(id=reminder["id"], sent=True), ["id"])
