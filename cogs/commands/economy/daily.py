@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class DailyCog(Cog):
-    """ Vouch command cog. """
+    """ Daily command cog. """
 
     def __init__(self, bot: Bot):
         self.bot = bot
