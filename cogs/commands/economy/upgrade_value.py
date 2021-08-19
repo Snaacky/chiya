@@ -68,7 +68,10 @@ class UpgradeValueCog(Cog):
         cost = 3
 
         # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
-        inflated_cost = stats["value_upgrade"] * cost + amount * cost
+        inflated_cost = 0
+        # We +1 in the range because we're calculating the cost starting from the next upgrade.
+        for i in range(stats["value_upgrade"] + 1, stats["value_upgrade"] + amount + 1):
+            inflated_cost += i * cost
 
         # Condition: Must have more buffer than the cost of the transaction.
         buffer_check = bool(stats["buffer"] >= inflated_cost)
@@ -94,7 +97,8 @@ class UpgradeValueCog(Cog):
                 color="red"
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
-            if not buffer_check:
+            # Only display this message when the total number of upgrades are below 100.
+            if not buffer_check and availability_check:
                 embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(inflated_cost)} buffer.", inline=False)
             if not color_check:
                 embed.add_field(name="Condition:", value="You must have purchased at least one color pack.", inline=False)
@@ -107,7 +111,8 @@ class UpgradeValueCog(Cog):
             return
 
         # Update the JSON object.
-        stats["value_upgrade"] += inflated_cost
+        stats["value_upgrade"] += amount
+        stats["buffer"] -= inflated_cost
 
         # Get the formatted buffer string.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
