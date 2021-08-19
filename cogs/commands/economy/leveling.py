@@ -161,7 +161,7 @@ class LevelingCog(Cog):
             "hue_upgrade": [],
             "saturation_upgrade": 0,
             "value_upgrade": 0,
-            "daily_timestamp:": 0,
+            "daily_timestamp": 0,
             "achievements": []
         }
         # Dump the string into a JSON object and return it.
@@ -182,7 +182,7 @@ class LevelingCog(Cog):
             "hue_upgrade": [],
             "saturation_upgrade": 0,
             "value_upgrade": 0,
-            "daily_timestamp:": 0,
+            "daily_timestamp": 0,
             "achievements": []
         }
         # Iterate through the keys and values of the stats template.
