@@ -104,7 +104,7 @@ class MuteCog(Cog):
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
+            embed.set_image(url="https://i.imgur.com/840Q48l.gif")
             await dm_channel.send(embed=embed)
             return True
         except discord.HTTPException:
