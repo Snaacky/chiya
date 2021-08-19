@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timezone
 
 import dataset
+import discord
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
@@ -51,10 +52,18 @@ class ReminderTask(Cog):
             )
 
             # Attempt to send the reminder in the channel that it was created in. If fail, send it to their DM.
-            if not channel or not await channel.send(user.mention, embed=embed):
-                dm = await user.create_dm()
-                if not await dm.send(embed=embed):
-                    log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
+            if channel:
+                try:
+                    await channel.send(user.mention, embed=embed)
+                except discord.HTTPException:
+                    dm = await user.create_dm()
+                    if not await dm.send(embed=embed):
+                        log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
+                        
+            # if not channel or not await channel.send(user.mention, embed=embed):
+            #     dm = await user.create_dm()
+            #     if not await dm.send(embed=embed):
+            #         log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
 
             # Mark the reminder as sent so it doesn't loop again.
             remind_me.update(dict(id=reminder["id"], sent=True), ["id"])
