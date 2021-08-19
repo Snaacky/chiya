@@ -51,7 +51,7 @@ class ReminderTask(Cog):
             )
 
             # Attempt to send the reminder in the channel that it was created in. If fail, send it to their DM.
-            if not await channel.send(user.mention, embed=embed):
+            if not channel or not await channel.send(user.mention, embed=embed):
                 dm = await user.create_dm()
                 if not await dm.send(embed=embed):
                     log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
