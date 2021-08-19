@@ -23,7 +23,7 @@ class Reminder(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(ban_members=True, send_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
