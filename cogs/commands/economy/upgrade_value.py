@@ -74,16 +74,13 @@ class UpgradeValueCog(Cog):
             inflated_cost += i * cost
 
         # Condition: Must have more buffer than the cost of the transaction.
-        buffer_check = bool(stats["buffer"] >= inflated_cost)
+        buffer_check = stats["buffer"] >= inflated_cost
 
         # Condition: Must have purchased at least 1 color pack.
-        if len(stats["hue_upgrade"]) == 0:
-            color_check = False
-        else:
-            color_check = True
+        color_check = len(stats["hue_upgrade"]) > 0
 
         # Condition: The total number of upgrades must not exceed 100.
-        availability_check = True if amount + stats["value_upgrade"] <= 100 else False
+        availability_check = amount + stats["value_upgrade"] <= 100
 
         # Condition: Must already own a custom role.
         custom_role_check = stats["has_custom_role"]

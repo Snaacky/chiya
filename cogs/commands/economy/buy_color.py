@@ -106,13 +106,10 @@ class BuyColorCog(Cog):
         cost = 128
 
         # Condition: Buffer must be above 128 MB.
-        buffer_check = bool(stats["buffer"] >= cost)
+        buffer_check = stats["buffer"] >= cost
 
         # Condition: Must have purchased at least 1 color pack.
-        if len(stats["hue_upgrade"]) == 0:
-            color_check = False
-        else:
-            color_check = True
+        color_check = len(stats["hue_upgrade"]) > 0
 
         # Condition: Must already own a custom role.
         custom_role_check = stats["has_custom_role"]
