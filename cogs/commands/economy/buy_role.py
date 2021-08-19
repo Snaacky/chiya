@@ -68,12 +68,12 @@ class BuyRoleCog(Cog):
         stats = await leveling_cog.verify_integrity(stats)
 
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
-        cost = 5120
+        cost = 10240
 
         # Declare the allowed user classes for the custom role purchase.
         allowed_classes = ["Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"]
 
-        # Condition: Buffer must be above 5 GB.
+        # Condition: Buffer must be above 10 GB.
         buffer_check = bool(stats["buffer"] >= cost)
 
         # Condition: User class must be "Elite" or higher.

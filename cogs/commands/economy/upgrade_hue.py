@@ -66,15 +66,15 @@ class UpgradeHueCog(Cog):
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
 
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
-        cost = 2048
+        cost = 3072
 
         # Condition: The input color pack choice must match at least one of the items in the allowed colors.
-        color_check = True if any(pack == color for color in colors) else False
+        color_check = any(pack == color for color in colors)
 
         # Condition: Must not already own the color pack yet.
-        owned_check = True if any(pack == color for color in stats["hue_upgrade"]) else False
+        owned_check = any(pack == color for color in stats["hue_upgrade"])
 
-        # Condition: Buffer must be above 1 GB.
+        # Condition: Buffer must be above 3 GB.
         buffer_check = bool(stats["buffer"] >= cost)
 
         # Condition: Must already own a custom role.
