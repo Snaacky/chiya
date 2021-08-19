@@ -1,6 +1,5 @@
 import json
 import logging
-import random
 
 import dataset
 import discord.utils
@@ -162,9 +161,32 @@ class LevelingCog(Cog):
             "hue_upgrade": [],
             "saturation_upgrade": 0,
             "value_upgrade": 0,
+            "daily_timestamp:": 0,
             "achievements": []
         }
         # Dump the string into a JSON object and return it.
+        stats_json = json.dumps(stats)
+        return stats_json
+
+    @staticmethod
+    async def verify_integrity(stats):
+        stats_template = {
+            "user_class": "Member",
+            "message_count": 0,
+            "buffer": 0,
+            "freeleech_token": 0,
+            "has_custom_role": False,
+            "custom_role_id": 0,
+            "hue_upgrade": [],
+            "saturation_upgrade": 0,
+            "value_upgrade": 0,
+            "daily_timestamp:": 0,
+            "achievements": []
+        }
+        for key, value in stats_template.items():
+            if key not in stats:
+                stats[key] = value
+
         stats_json = json.dumps(stats)
         return stats_json
 
@@ -205,48 +227,6 @@ class LevelingCog(Cog):
 
         # Finally, return the formatted string.
         return buffer_string
-
-    @staticmethod
-    async def generate_hsv(hue_upgrade: list, saturation_upgrade: int, value_upgrade: int) -> tuple:
-        """ Generates a random HSV tuple affected by the purchased upgrades. """
-        # Declare a list of possible color packs.
-        colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
-
-        # Create a dictionary that maps the color pack name with the range of roll values, unpacked into a list with the * operator.
-        color_map = dict(
-            # Red-like colors span from 331-360 and 1-30 degrees on the HSV scale.
-            red=[*range(331, 361), *range(1, 31)],
-            # Yellow-like colors span from 31-90 degrees on the HSV scale.
-            yellow=[*range(31, 91)],
-            # Green-like colors span from 91-150 degrees on the HSV scale.
-            green=[*range(91, 151)],
-            # Cyan-like colors span from 151-210 degrees on the HSV scale.
-            cyan=[*range(151, 211)],
-            # Blue-like colors span from 211-270 degrees on the HSV scale.
-            blue=[*range(211, 271)],
-            # Magenta-like colors span from 271-330 degrees on the HSV scale.
-            magenta=[*range(271, 331)]
-        )
-
-        # Declare an empty list to append the roll values later.
-        hue = list()
-
-        # Iterate through the input parameter that is a list of purchased color packs.
-        for pack in hue_upgrade:
-            # If one of the options matches one of the strings in "colors", append to the list of roll values range from the dictionary.
-            if pack in colors:
-                hue += color_map[pack]
-
-        """
-        Hue, saturation, and value is divided by 360, 100, 100 accordingly because it is using the fourth coordinate group described in
-        https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
-        This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
-        """
-        # Finally, return random HSV tuple, affected by the purchased upgrades.
-        return \
-            random.choice(hue) / 360, \
-            random.randint(0, saturation_upgrade + 1) / 100, \
-            random.randint(0, value_upgrade + 1) / 100
 
 
 def setup(bot: Bot) -> None:

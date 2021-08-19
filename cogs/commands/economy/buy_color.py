@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 
 import dataset
 import discord.utils
@@ -19,6 +20,48 @@ class BuyColorCog(Cog):
 
     def __init__(self, bot: Bot):
         self.bot = bot
+
+    @staticmethod
+    async def generate_hsv(hue_upgrade: list, saturation_upgrade: int, value_upgrade: int) -> tuple:
+        """ Generates a random HSV tuple affected by the purchased upgrades. """
+        # Declare a list of possible color packs.
+        colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
+
+        # Create a dictionary that maps the color pack name with the range of roll values, unpacked into a list with the * operator.
+        color_map = dict(
+            # Red-like colors span from 331-360 and 1-30 degrees on the HSV scale.
+            red=[*range(331, 361), *range(1, 31)],
+            # Yellow-like colors span from 31-90 degrees on the HSV scale.
+            yellow=[*range(31, 91)],
+            # Green-like colors span from 91-150 degrees on the HSV scale.
+            green=[*range(91, 151)],
+            # Cyan-like colors span from 151-210 degrees on the HSV scale.
+            cyan=[*range(151, 211)],
+            # Blue-like colors span from 211-270 degrees on the HSV scale.
+            blue=[*range(211, 271)],
+            # Magenta-like colors span from 271-330 degrees on the HSV scale.
+            magenta=[*range(271, 331)]
+        )
+
+        # Declare an empty list to append the roll values later.
+        hue = list()
+
+        # Iterate through the input parameter that is a list of purchased color packs.
+        for pack in hue_upgrade:
+            # If one of the options matches one of the strings in "colors", append to the list of roll values range from the dictionary.
+            if pack in colors:
+                hue += color_map[pack]
+
+        """
+        Hue, saturation, and value is divided by 360, 100, 100 accordingly because it is using the fourth coordinate group described in
+        https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
+        This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
+        """
+        # Finally, return random HSV tuple, affected by the purchased upgrades.
+        return \
+            random.choice(hue) / 360, \
+            random.randint(0, saturation_upgrade + 1) / 100, \
+            random.randint(0, value_upgrade + 1) / 100
 
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
@@ -91,7 +134,7 @@ class BuyColorCog(Cog):
             return
 
         # Generates a HSV color from the purchased color packs, saturation and value upgrade.
-        hue, saturation, value = await leveling_cog.generate_hsv(stats["hue_upgrade"], stats["saturation_upgrade"], stats["value_upgrade"])
+        hue, saturation, value = await self.generate_hsv(stats["hue_upgrade"], stats["saturation_upgrade"], stats["value_upgrade"])
         color = discord.Color.from_hsv(hue, saturation, value)
 
         # Get the role from user's custom role ID to edit the color.
