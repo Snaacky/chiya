@@ -113,9 +113,9 @@ class DailyCog(Cog):
 
         # A random amount of buffer based on rarity.
         rarity = dict(
-            common=[*range(100, 201)],
-            uncommon=[*range(250, 401)],
-            rare=[*range(500, 651)],
+            common=[*range(150, 251)],
+            uncommon=[*range(300, 401)],
+            rare=[*range(550, 651)],
             epic=[*range(800, 951)],
             legendary=[*range(1200, 1501)]
         )
