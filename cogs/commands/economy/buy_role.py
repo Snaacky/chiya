@@ -71,7 +71,7 @@ class BuyRoleCog(Cog):
         cost = 10240
 
         # Declare the allowed user classes for the custom role purchase.
-        allowed_classes = ["Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"]
+        allowed_classes = ["Power User", "Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"]
 
         # Condition: Buffer must be above 10 GB.
         buffer_check = stats["buffer"] >= cost
@@ -93,7 +93,7 @@ class BuyRoleCog(Cog):
             if not buffer_check:
                 embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.", inline=False)
             if not user_class_check:
-                embed.add_field(name="Condition:", value="User class must be 'Elite' or higher.", inline=False)
+                embed.add_field(name="Condition:", value="User class must be 'Power User' or higher.", inline=False)
             if custom_role_check:
                 embed.add_field(name="Condition:", value="You must not own a custom role yet.", inline=False)
             await ctx.send(embed=embed)
@@ -151,7 +151,7 @@ class BuyRoleCog(Cog):
         # Create the embed to let the user know that the transaction was a success.
         embed = embeds.make_embed(
             title=f"Role purchased: {custom_role.name}",
-            description="Successfully purchased a custom role for 5 GB buffer.",
+            description="Successfully purchased a custom role for 10 GB buffer.",
             color="green"
         )
         embed.add_field(name="New buffer:", value=buffer_string)
