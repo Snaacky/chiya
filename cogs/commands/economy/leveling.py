@@ -44,11 +44,49 @@ class LevelingCog(Cog):
         # Increment the message count.
         stats["message_count"] += 1
 
+        # Calculate buffer gain only in allowed channels.
         channel_enabled = await self.is_in_enabled_channels(message=message)
         if channel_enabled:
             # Calculate the amount of buffer to be gained as well as a potential user class promotion/demotion. Returns a JSON object.
-            stats_json = await self.calculate_buffer(message, stats)
-            # Update the user stats in the database.
+            stats = await self.calculate_buffer(message, stats)
+            # Dump the modified JSON into the db.
+            stats_json = json.dumps(stats)
+            achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+
+        # Commit the changes to the database and close it.
+        db.commit()
+        db.close()
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, message_before, message_after):
+        """ Change the earned buffer on message edit. """
+        # If the author is a bot, skip them.
+        if message_before.author.bot:
+            return
+
+        # Connect to the database and get the achievement table.
+        db = dataset.connect(database.get_db())
+        achievements = db["achievements"]
+        user = achievements.find_one(user_id=message_before.author.id)
+
+        # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
+        if not user:
+            stats_json = await self.create_user()
+            achievements.insert(dict(user_id=message_before.author.id, stats=stats_json))
+            user = achievements.find_one(user_id=message_before.author.id)
+
+        # Load the JSON object in the database into a dictionary to manipulate.
+        stats = json.loads(user["stats"])
+
+        # Calculate buffer gain only in allowed channels.
+        channel_enabled = await self.is_in_enabled_channels(message=message_before)
+        if channel_enabled:
+            # Remove the buffer gained from the message pre-edit.
+            stats_old = await self.calculate_buffer_remove(message_before, stats)
+            # Calculate the buffer gained from the newly edited message.
+            stats_new = await self.calculate_buffer(message_after, stats_old)
+            # Dump the modified JSON into the db.
+            stats_json = json.dumps(stats_new)
             achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
 
         # Commit the changes to the database and close it.
@@ -79,11 +117,13 @@ class LevelingCog(Cog):
         # Decrement the message count.
         stats["message_count"] -= 1
 
+        # Calculate buffer gain only in allowed channels.
         channel_enabled = await self.is_in_enabled_channels(message=message)
         if channel_enabled:
             # Revert the amount of buffer gained. Returns a JSON object.
-            stats_json = await self.calculate_buffer_remove(message, stats)
-            # Update the user stats in the database.
+            stats = await self.calculate_buffer_remove(message, stats)
+            # Dump the modified JSON into the db.
+            stats_json = json.dumps(stats)
             achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
 
         # Commit the changes to the database and close it.
@@ -224,9 +264,8 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = 0
             stats["next_user_class_message"] = 0
 
-        # Dump the manipulated dictionary into a JSON object and return it.
-        stats_json = json.dumps(stats)
-        return stats_json
+        # Return the dictionary.
+        return stats
 
     @staticmethod
     async def calculate_buffer_remove(message: Message, stats):
@@ -264,9 +303,8 @@ class LevelingCog(Cog):
         else:
             stats["buffer"] -= 40
 
-        # Dump the manipulated dictionary into a JSON object and return it.
-        stats_json = json.dumps(stats)
-        return stats_json
+        # Return the dictionary.
+        return stats
 
     @staticmethod
     async def create_user():
