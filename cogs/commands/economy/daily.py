@@ -32,13 +32,13 @@ class DailyCog(Cog):
         """ Receives some buffer once every 20 hours. """
         await ctx.defer()
 
-        # Get the LevelingCog for utilities functions.
-        leveling_cog = self.bot.get_cog("LevelingCog")
-
         # Warn if the command is called outside of #bots channel.
         if not ctx.channel.id == settings.get_value("channel_bots"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
+
+        # Get the LevelingCog for utilities functions.
+        leveling_cog = self.bot.get_cog("LevelingCog")
 
         # Connect to the database and get the achievement table.
         db = dataset.connect(database.get_db())
