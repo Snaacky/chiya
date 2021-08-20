@@ -46,8 +46,43 @@ class LevelingCog(Cog):
 
         channel_enabled = await self.is_in_enabled_channels(message=message)
         if channel_enabled:
-            # Calculate their buffer to be gained as well as a potential user class promotion/demotion. Returns a JSON object.
+            # Calculate the amount of buffer to be gained as well as a potential user class promotion/demotion. Returns a JSON object.
             stats_json = await self.calculate_buffer(message, stats)
+            # Update the user stats in the database.
+            achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+
+        # Commit the changes to the database and close it.
+        db.commit()
+        db.close()
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: Message):
+        """ Remove the earned buffer on message delete. """
+        # If the author is a bot, skip them.
+        if message.author.bot:
+            return
+
+        # Connect to the database and get the achievement table.
+        db = dataset.connect(database.get_db())
+        achievements = db["achievements"]
+        user = achievements.find_one(user_id=message.author.id)
+
+        # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
+        if not user:
+            stats_json = await self.create_user()
+            achievements.insert(dict(user_id=message.author.id, stats=stats_json))
+            user = achievements.find_one(user_id=message.author.id)
+
+        # Load the JSON object in the database into a dictionary to manipulate.
+        stats = json.loads(user["stats"])
+
+        # Decrement the message count.
+        stats["message_count"] -= 1
+
+        channel_enabled = await self.is_in_enabled_channels(message=message)
+        if channel_enabled:
+            # Revert the amount of buffer gained. Returns a JSON object.
+            stats_json = await self.calculate_buffer_remove(message, stats)
             # Update the user stats in the database.
             achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
 
@@ -78,7 +113,7 @@ class LevelingCog(Cog):
 
     @staticmethod
     async def calculate_buffer(message: Message, stats):
-        """ Calculate the amount of buffers gained from messages and promote/demote conditionally. """
+        """ Calculate the amount of buffer gained from messages and promote/demote conditionally. """
 
         # Get the number of words in a message.
         length = len(message.content.split())
@@ -188,6 +223,46 @@ class LevelingCog(Cog):
             stats["user_class"] = "Legend"
             stats["next_user_class_buffer"] = 0
             stats["next_user_class_message"] = 0
+
+        # Dump the manipulated dictionary into a JSON object and return it.
+        stats_json = json.dumps(stats)
+        return stats_json
+
+    @staticmethod
+    async def calculate_buffer_remove(message: Message, stats):
+        """ Remove the amount of buffer gained on message delete. Works exactly the same as calculate_buffer() but reversed. """
+
+        # Get the number of words in a message.
+        length = len(message.content.split())
+
+        # Calculate the multiplier based on message length.
+        if length in range(0, 3):
+            multiplier = 0.33
+        elif length in range(3, 5):
+            multiplier = 0.67
+        elif length in range(5, 8):
+            multiplier = 0.9
+        elif length in range(8, 11):
+            multiplier = 1
+        elif length in range(11, 16):
+            multiplier = 1.1
+        else:
+            multiplier = 1.2
+
+        # Calculate the baseline buffer.
+        buffer = length * multiplier
+
+        # 20% more buffer to be removed per message if the author is a server booster.
+        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
+        is_booster = role_server_booster in message.author.roles
+        if is_booster:
+            buffer = buffer + buffer * 0.2
+
+        # Set a maximum amount of buffer that will be removed.
+        if buffer <= 40:
+            stats["buffer"] -= buffer
+        else:
+            stats["buffer"] -= 40
 
         # Dump the manipulated dictionary into a JSON object and return it.
         stats_json = json.dumps(stats)
