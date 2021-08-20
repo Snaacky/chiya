@@ -126,7 +126,7 @@ class LevelingCog(Cog):
         # Promotes to "Power User" if buffer is above 25 GB, but demotes to it if below 50 GB. At least 2,500 messages are required.
         elif stats["buffer"] < 51200 and stats["message_count"] >= 2500:
             stats["user_class"] = "Power User"
-        # Promotes to "Elite" if buffer is above 50 GB, but demotes to it if below 100 GB. At least 5,500 messages are required.
+        # Promotes to "Elite" if buffer is above 50 GB, but demotes to it if below 100 GB. At least 5,000 messages are required.
         elif stats["buffer"] < 102400 and stats["message_count"] >= 5000:
             stats["user_class"] = "Elite"
         # Promotes to "Torrent Master" if buffer is above 100 GB, but demotes to it if below 250 GB. At least 10,000 messages are required.
