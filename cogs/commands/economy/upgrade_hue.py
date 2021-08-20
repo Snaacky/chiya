@@ -75,7 +75,7 @@ class UpgradeHueCog(Cog):
         owned_check = any(pack == color for color in stats["hue_upgrade"])
 
         # Condition: Buffer must be above 3 GB.
-        buffer_check = bool(stats["buffer"] >= cost)
+        buffer_check = stats["buffer"] >= cost
 
         # Condition: Must already own a custom role.
         custom_role_check = stats["has_custom_role"]

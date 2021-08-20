@@ -74,10 +74,10 @@ class BuyRoleCog(Cog):
         allowed_classes = ["Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"]
 
         # Condition: Buffer must be above 10 GB.
-        buffer_check = bool(stats["buffer"] >= cost)
+        buffer_check = stats["buffer"] >= cost
 
         # Condition: User class must be "Elite" or higher.
-        user_class_check = bool(any(stats["user_class"] == allowed_class for allowed_class in allowed_classes))
+        user_class_check = any(stats["user_class"] == allowed_class for allowed_class in allowed_classes)
 
         # Condition: Must not already own a custom role.
         custom_role_check = stats["has_custom_role"]
