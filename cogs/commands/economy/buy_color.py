@@ -103,7 +103,7 @@ class BuyColorCog(Cog):
         stats = await leveling_cog.verify_integrity(stats)
 
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
-        cost = 128
+        cost = 64
 
         # Condition: Buffer must be above 128 MB.
         buffer_check = stats["buffer"] >= cost
