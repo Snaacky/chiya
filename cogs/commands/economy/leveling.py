@@ -107,7 +107,7 @@ class LevelingCog(Cog):
 
         # If the message author is a server booster, give them 20% more buffer per message.
         role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
-        is_booster = True if role_server_booster in message.author.roles else False
+        is_booster = role_server_booster in message.author.roles
         if is_booster:
             buffer = buffer + buffer * 0.2
 
@@ -117,30 +117,77 @@ class LevelingCog(Cog):
         else:
             stats["buffer"] += 40
 
+        # Declare the buffer needed for each user class as a dict for reusability and save headaches on future balance changes.
+        user_class = dict(
+            member=0,
+            user=10240,
+            power_user=25600,
+            elite=51200,
+            torrent_master=102400,
+            power_tm=256000,
+            elite_tm=512000,
+            legend=1048576
+        )
+
+        # Declare the message count needed for each user class as a dict for reusability and save headaches on future balance changes.
+        message_count = dict(
+            member=0,
+            user=1000,
+            power_user=2500,
+            elite=5000,
+            torrent_master=10000,
+            power_tm=22500,
+            elite_tm=45000,
+            legend=80000
+        )
+
         # Demoted to "Member" if buffer is smaller than 10 GB.
-        if stats["buffer"] < 10240:
+        if stats["buffer"] < user_class["user"]:
             stats["user_class"] = "Member"
+            stats["next_user_class_buffer"] = user_class["user"]
+            stats["next_user_class_message"] = message_count["user"]
+
         # Promotes to "User" if buffer is above 10 GB, but demotes to it if below 25 GB. At least 1000 messages are required.
-        elif stats["buffer"] < 25600 and stats["message_count"] >= 1000:
+        elif stats["buffer"] < user_class["power_user"] and stats["message_count"] >= message_count["user"]:
             stats["user_class"] = "User"
+            stats["next_user_class_buffer"] = user_class["power_user"]
+            stats["next_user_class_message"] = message_count["power_user"]
+
         # Promotes to "Power User" if buffer is above 25 GB, but demotes to it if below 50 GB. At least 2,500 messages are required.
-        elif stats["buffer"] < 51200 and stats["message_count"] >= 2500:
+        elif stats["buffer"] < user_class["elite"] and stats["message_count"] >= message_count["power_user"]:
             stats["user_class"] = "Power User"
+            stats["next_user_class_buffer"] = user_class["elite"]
+            stats["next_user_class_message"] = message_count["elite"]
+
         # Promotes to "Elite" if buffer is above 50 GB, but demotes to it if below 100 GB. At least 5,000 messages are required.
-        elif stats["buffer"] < 102400 and stats["message_count"] >= 5000:
+        elif stats["buffer"] < user_class["torrent_master"] and stats["message_count"] >= message_count["elite"]:
             stats["user_class"] = "Elite"
+            stats["next_user_class_buffer"] = user_class["torrent_master"]
+            stats["next_user_class_message"] = message_count["torrent_master"]
+
         # Promotes to "Torrent Master" if buffer is above 100 GB, but demotes to it if below 250 GB. At least 10,000 messages are required.
-        elif stats["buffer"] < 256000 and stats["message_count"] >= 10000:
+        elif stats["buffer"] < user_class["power_tm"] and stats["message_count"] >= message_count["torrent_master"]:
             stats["user_class"] = "Torrent Master"
+            stats["next_user_class_buffer"] = user_class["power_tm"]
+            stats["next_user_class_message"] = message_count["power_tm"]
+
         # Promotes to "Power TM" if buffer is above 250 GB, but demotes to it if below 500 GB. At least 22,500 messages are required.
-        elif stats["buffer"] < 512000 and stats["message_count"] >= 22500:
+        elif stats["buffer"] < user_class["elite_tm"] and stats["message_count"] >= message_count["power_tm"]:
             stats["user_class"] = "Power TM"
+            stats["next_user_class_buffer"] = user_class["elite_tm"]
+            stats["next_user_class_message"] = message_count["elite_tm"]
+
         # Promotes to "Elite TM" if buffer is above 500 GB, but demotes to it if below 1 TB. At least 45,000 messages are required.
-        elif stats["buffer"] < 1048576 and stats["message_count"] >= 45000:
+        elif stats["buffer"] < user_class["legend"] and stats["message_count"] >= message_count["elite_tm"]:
             stats["user_class"] = "Elite TM"
+            stats["next_user_class_buffer"] = user_class["legend"]
+            stats["next_user_class_message"] = message_count["legend"]
+
         # Promotes to "Legend" if buffer is above 1 TB. At least 80,000 messages are required.
-        elif stats["buffer"] >= 1048576 and stats["message_count"] >= 80000:
+        elif stats["buffer"] >= user_class["legend"] and stats["message_count"] >= message_count["legend"]:
             stats["user_class"] = "Legend"
+            stats["next_user_class_buffer"] = 0
+            stats["next_user_class_message"] = 0
 
         # Dump the manipulated dictionary into a JSON object and return it.
         stats_json = json.dumps(stats)
@@ -153,9 +200,12 @@ class LevelingCog(Cog):
         # Initialize the user's entry in the database.
         stats = {
             "user_class": "Member",
+            "next_user_class_buffer": 0,
             "message_count": 0,
+            "next_user_class_message": 0,
             "buffer": 0,
             "freeleech_token": 0,
+            "vouch": 0,
             "has_custom_role": False,
             "custom_role_id": 0,
             "hue_upgrade": [],
@@ -174,9 +224,12 @@ class LevelingCog(Cog):
         # The stats template, copied from create_user().
         stats_template = {
             "user_class": "Member",
+            "next_user_class_buffer": 0,
             "message_count": 0,
+            "next_user_class_message": 0,
             "buffer": 0,
             "freeleech_token": 0,
+            "vouch": 0,
             "has_custom_role": False,
             "custom_role_id": 0,
             "hue_upgrade": [],
