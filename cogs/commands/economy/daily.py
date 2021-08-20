@@ -102,7 +102,6 @@ class DailyCog(Cog):
 
             # Create the embed and notify the user the amount of time until the next daily claim.
             embed = embeds.make_embed(
-                ctx=ctx,
                 title="Transaction failed",
                 description="You can only claim your daily buffer reward once every 20 hours.",
                 color="red"
@@ -126,7 +125,6 @@ class DailyCog(Cog):
 
         # Create the embed with a matching color on rarity rolled, and update tge
         embed = embeds.make_embed(
-            ctx=ctx,
             title="Daily buffer claimed",
         )
         # 50% chance to roll the common tier. Embed color is "soft_green".

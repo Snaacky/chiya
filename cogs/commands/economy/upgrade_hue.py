@@ -83,7 +83,6 @@ class UpgradeHueCog(Cog):
         # If any of the conditions were not met, return an error embed.
         if not color_check or owned_check or not buffer_check or not custom_role_check:
             embed = embeds.make_embed(
-                ctx=ctx,
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
                 color="red"
@@ -113,7 +112,6 @@ class UpgradeHueCog(Cog):
 
         # Create an embed upon successful transaction.
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"Color unlocked: {str(pack)}",
             description=f"You can now roll {pack}-like colors.",
             color="green"

@@ -117,7 +117,6 @@ class BuyColorCog(Cog):
         # If any of the conditions were not met, return an error embed.
         if not buffer_check or not color_check or not custom_role_check:
             embed = embeds.make_embed(
-                ctx=ctx,
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
                 color="red"
@@ -149,7 +148,6 @@ class BuyColorCog(Cog):
 
         # Create an embed with the rolled color upon successful transaction.
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"You rolled: {color}",
             color=color
         )

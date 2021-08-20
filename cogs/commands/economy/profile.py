@@ -96,7 +96,7 @@ class ProfileCog(Cog):
             color=color,
         )
 
-        # Display the user's minified pfp and their name.
+        # Display the user's minified pfp and their name without the discriminator.
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Using zero width space so that the "name" parameter won't be rendered.

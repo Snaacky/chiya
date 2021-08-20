@@ -85,7 +85,6 @@ class BuyRoleCog(Cog):
         # If any of the conditions were not met, return an error embed.
         if not buffer_check or not user_class_check or custom_role_check:
             embed = embeds.make_embed(
-                ctx=ctx,
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",
                 color="red"
@@ -151,7 +150,6 @@ class BuyRoleCog(Cog):
 
         # Create the embed to let the user know that the transaction was a success.
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"Role purchased: {custom_role.name}",
             description="Successfully purchased a custom role for 5 GB buffer.",
             color="green"

@@ -88,7 +88,6 @@ class UpgradeValueCog(Cog):
         # If any of the conditions were not met, return an error embed.
         if not buffer_check or not color_check or not availability_check or not custom_role_check:
             embed = embeds.make_embed(
-                ctx=ctx,
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
                 color="red"
@@ -116,7 +115,6 @@ class UpgradeValueCog(Cog):
 
         # Create an embed upon successful transaction.
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"Upgrade purchased: brightness",
             description=f"You reached brightness level {stats['value_upgrade']}!",
             color="green"

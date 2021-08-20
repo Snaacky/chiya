@@ -68,7 +68,7 @@ class UpgradeSaturationCog(Cog):
         # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
         inflated_cost = 0
         # We +1 in the range because we're calculating the cost starting from the next upgrade.
-        for i in range(stats["value_upgrade"] + 1, stats["value_upgrade"] + amount + 1):
+        for i in range(stats["saturation_upgrade"] + 1, stats["saturation_upgrade"] + amount + 1):
             inflated_cost += i * cost
 
         # Condition: Must have more buffer than the cost of the transaction.
@@ -86,7 +86,6 @@ class UpgradeSaturationCog(Cog):
         # If any of the conditions were not met, return an error embed.
         if not buffer_check or not color_check or not availability_check or not custom_role_check:
             embed = embeds.make_embed(
-                ctx=ctx,
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
                 color="red"
@@ -114,7 +113,6 @@ class UpgradeSaturationCog(Cog):
 
         # Create an embed upon successful transaction.
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"Upgrade purchased: saturation",
             description=f"You reached saturation level {stats['saturation_upgrade']}!",
             color="green"
