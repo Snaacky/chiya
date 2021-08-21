@@ -1,11 +1,13 @@
 import logging
+from os import stat
 
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
+from discord.ext.commands.core import check
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
-
+from discord.message import Message
 from cogs.commands import settings
 from utils import embeds
 from utils.record import record_usage
@@ -57,12 +59,15 @@ class PurgeCog(Cog):
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(settings.get_value(
+                    "role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value(
+                    "role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
     async def remove_messages(self, ctx: SlashContext, amount: int, reason: str = None):
+
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
         await ctx.defer()
 
@@ -85,7 +90,14 @@ class PurgeCog(Cog):
         if amount == 1:
             message = message[:-1]
 
-        await ctx.channel.purge(limit=amount + 1)
+        # Prevents the bot from deleting the invoking message
+        def check_message(msg):
+            if msg.id == ctx.command_id:
+                return False
+
+            return True
+
+        await ctx.channel.purge(limit=amount + 1, check=check_message)
 
         embed = embeds.make_embed(
             ctx=ctx,
