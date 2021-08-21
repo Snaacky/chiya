@@ -94,6 +94,7 @@ class ProfileCog(Cog):
         # Create the embed.
         embed = embeds.make_embed(
             color=color,
+            thumbnail_url=ctx.author.avatar_url
         )
 
         # Display the user's minified pfp and their name without the discriminator.
