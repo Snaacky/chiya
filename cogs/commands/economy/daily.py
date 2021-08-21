@@ -115,9 +115,9 @@ class DailyCog(Cog):
         rarity = dict(
             common=[*range(150, 251)],
             uncommon=[*range(300, 401)],
-            rare=[*range(550, 651)],
-            epic=[*range(800, 951)],
-            legendary=[*range(1200, 1501)]
+            rare=[*range(451, 601)],
+            epic=[*range(651, 801)],
+            legendary=[*range(851, 1025)]
         )
 
         # Roll a random value from 0-100.
