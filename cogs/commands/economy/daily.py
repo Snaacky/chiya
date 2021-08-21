@@ -127,27 +127,27 @@ class DailyCog(Cog):
         embed = embeds.make_embed(
             title="Daily buffer claimed",
         )
-        # 50% chance to roll the common tier. Embed color is "soft_green".
-        if rng in range(0, 51):
+        # 60% chance to roll the common tier. Embed color is "soft_green".
+        if rng in range(0, 61):
             value = random.choice(rarity["common"])
             embed.description = f"You received {value} MB buffer!"
             embed.colour = 0x68c290
         # 25% chance to roll the uncommon tier. Embed color is "green".
-        elif rng in range(51, 76):
+        elif rng in range(61, 86):
             value = random.choice(rarity["uncommon"])
             embed.description = f"Nice, you received {value} MB buffer!"
             embed.colour = 0x2ecc71
-        # 15% chance to roll the rare tier. Embed color is "blue".
-        elif rng in range(76, 91):
+        # 10% chance to roll the rare tier. Embed color is "blue".
+        elif rng in range(86, 96):
             value = random.choice(rarity["rare"])
             embed.description = f"Amazing! You received {value} MB buffer!"
             embed.colour = 0x3498db
-        # 8% chance to roll the epic tier. Embed color is "purple".
-        elif rng in range(91, 99):
+        # 4% chance to roll the epic tier. Embed color is "purple".
+        elif rng in range(96, 100):
             value = random.choice(rarity["epic"])
             embed.description = f"What a fascinating discovery! You received {value} MB buffer!"
             embed.colour = 0x9b59b6
-        # 2% chance to roll the legendary tier. Embed color is "gold".
+        # 1% chance to roll the legendary tier. Embed color is "gold".
         else:
             value = random.choice(rarity["legendary"])
             embed.description = f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
