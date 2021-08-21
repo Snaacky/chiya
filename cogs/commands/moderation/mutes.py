@@ -222,7 +222,7 @@ class MuteCog(Cog):
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # Iterates only through members that is still in the server.
-                if isinstance(member, discord.Member):
+                if isinstance(message.author, discord.Member):
                     # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                     if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                         mod_list.add(message.author)
