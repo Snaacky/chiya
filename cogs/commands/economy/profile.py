@@ -109,9 +109,9 @@ class ProfileCog(Cog):
             inline=False
         )
 
-        # Display the amount of messages required until next promotion.
+        # Display the amount of "uploads" required until next promotion.
         embed.add_field(
-            name="Messages required for promotion:",
+            name="Uploads required for promotion:",
             value=f"{stats['message_count']} / {stats['next_user_class_message']}",
             inline=False
         )
