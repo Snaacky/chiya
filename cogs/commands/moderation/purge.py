@@ -1,5 +1,4 @@
 import logging
-from os import stat
 
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -57,15 +56,12 @@ class PurgeCog(Cog):
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value(
-                    "role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value(
-                    "role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
     async def remove_messages(self, ctx: SlashContext, amount: int, reason: str = None):
-
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
         await ctx.defer()
 
@@ -88,11 +84,10 @@ class PurgeCog(Cog):
         if amount == 1:
             message = message[:-1]
 
-        # Prevents the bot from deleting the invoking message
+        # Prevents the bot from deleting the invoking message.
         def check_message(msg):
             if msg.id == ctx.command_id:
                 return False
-
             return True
 
         await ctx.channel.purge(limit=amount + 1, check=check_message)
