@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
 
 from cogs.commands import settings
 from utils import embeds, database
@@ -26,8 +27,16 @@ class ProfileCog(Cog):
         name="profile",
         description="View your profile",
         guild_ids=[settings.get_value("guild_id")],
+        options=[
+            create_option(
+                name="user",
+                description="The profile of the specified user",
+                option_type=6,
+                required=False
+            )
+        ]
     )
-    async def daily(self, ctx: SlashContext):
+    async def daily(self, ctx: SlashContext, user: discord.User = None):
         """ View personal profile with detailed stats. """
         await ctx.defer()
 
@@ -35,6 +44,13 @@ class ProfileCog(Cog):
         if not ctx.channel.id == settings.get_value("channel_bots"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
+
+        # The user is either the author or the specified user in the parameter.
+        user = user or ctx.author
+
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -44,16 +60,16 @@ class ProfileCog(Cog):
         achievements = db["achievements"]
 
         # Attempt to find the user who issued the command.
-        user = achievements.find_one(user_id=ctx.author.id)
+        user_entry = achievements.find_one(user_id=user.id)
 
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
-        if not user:
+        if not user_entry:
             stats_json = await leveling_cog.create_user()
-            achievements.insert(dict(user_id=ctx.author.id, stats=stats_json))
-            user = achievements.find_one(user_id=ctx.author.id)
+            achievements.insert(dict(user_id=user.id, stats=stats_json))
+            user_entry = achievements.find_one(user_id=user.id)
 
         # Loads the JSON object in the database into a dictionary to manipulate.
-        stats = json.loads(user["stats"])
+        stats = json.loads(user_entry["stats"])
 
         # Check the integrity of the stats dictionary and add any potential missing keys.
         stats = await leveling_cog.verify_integrity(stats)
@@ -94,11 +110,11 @@ class ProfileCog(Cog):
         # Create the embed.
         embed = embeds.make_embed(
             color=color,
-            thumbnail_url=ctx.author.avatar_url
+            thumbnail_url=user.avatar_url,
         )
 
         # Display the user's minified pfp and their name without the discriminator.
-        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+        embed.set_author(name=user.name, icon_url=user.avatar_url)
 
         # Using zero width space so that the "name" parameter won't be rendered.
         embed.add_field(name="​", value=value, inline=False)
