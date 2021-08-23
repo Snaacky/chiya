@@ -367,6 +367,10 @@ class LevelingCog(Cog):
         # Get all categories from the guild.
         categories = message.guild.categories
 
+        # Ignore #shitposts channel.
+        if message.channel.id == settings.get_value("channel_shitposts"):
+            return False
+
         # Return true if the message was sent any channel under the community category.
         if any(message.channel.category.id == settings.get_value("category_community") for category in categories):
             return True
@@ -376,7 +380,7 @@ class LevelingCog(Cog):
             return True
 
         # TODO: Remove this on production. This is solely for testing convenience purpose.
-        if message.channel.id == settings.get_value("channel_bots"):
+        if message.channel.id == settings.get_value("channel_bot_testing"):
             return True
 
         # Return false otherwise.
