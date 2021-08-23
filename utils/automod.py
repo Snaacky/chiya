@@ -46,59 +46,43 @@ async def check_message(message: discord.Message) -> bool:
             return True
     
     db.close()
-    # nothing matched :(
+    # nothing matched
     return False
 
 def check_regex(message: str, regex: str) -> bool:
-    """ Regex checking. """
-    
     if re.search(regex, message):
         return True
-    
     return False
 
-
 def check_exact(message: str, term: str) -> bool:
-    """ Exact checking. """
     regex = r"\b" +term+ r"\b"
     if re.search(regex, message, re.IGNORECASE):
         return True
-   
     return False
 
 
 def check_substring(message: str, term: str) -> bool:
-    """ Substring checking. """
     if re.search(term, message, re.IGNORECASE):
-        return   True
-    
+        return True
     return False
 
-
 def check_fuzzy(message: str, term: str, threshold: int) -> bool:
-    """ Fuzzy checking """
     if(fuzz.partial_ratio(message, term) >= threshold):
         return True
-
     return False
 
 async def is_in_enabled_channels(message: discord.Message) -> bool:
         """ Check if the sent message is from one of the enabled channels or not. """
-
         # Get all categories from the guild.
         categories = message.guild.categories
-
         # Return true if the message was sent any channel under the community category.
         if any(message.channel.category.id == settings.get_value("category_community") for category in categories):
             return True
-        
         # Return true if the message was sent any channel under the bots category.
         if any(message.channel.category.id == settings.get_value("category_bots") for category in categories):
             return True
-
         # Return true if the message was sent any channel under the voice category.
         if any(message.channel.category.id == settings.get_value("category_voice") for category in categories):
             return True
-
         return False
 
