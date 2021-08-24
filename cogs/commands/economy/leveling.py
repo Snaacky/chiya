@@ -8,9 +8,68 @@ from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 
 from cogs.commands import settings
-from utils import database
+from utils import database, embeds
 
 log = logging.getLogger(__name__)
+
+""" 
+Declare all the dictionaries as global variable to improve efficiency and better reusability instead of declaring it every time
+a message is sent. Declaring a dictionary using literal syntax {} instead of dict() is significantly more efficient.
+See: http://katrin-affolter.ch/Python/Python_dictionaries
+"""
+
+user_class = {
+    "member": "Member",
+    "user": "User",
+    "power_user": "Power User",
+    "elite": "Elite",
+    "torrent_master": "Torrent Master",
+    "power_tm": "Power TM",
+    "elite_tm": "Elite TM",
+    "legend": "Legend"
+}
+
+buffer_requirement = {
+    "member": 0,
+    "user": 10240,
+    "power_user": 25600,
+    "elite": 51200,
+    "torrent_master": 102400,
+    "power_tm": 256000,
+    "elite_tm": 512000,
+    "legend": 1048576
+}
+
+message_requirement = {
+    "member": 0,
+    "user": 1000,
+    "power_user": 2500,
+    "elite": 5000,
+    "torrent_master": 10000,
+    "power_tm": 22500,
+    "elite_tm": 45000,
+    "legend": 80000
+}
+
+# The user stats template.
+stats_template = {
+    "user_class": "Member",
+    "previous_user_class": "None",
+    "next_user_class": "User",
+    "buffer": 0,
+    "next_user_class_buffer": 0,
+    "message_count": 0,
+    "next_user_class_message": 0,
+    "freeleech_token": 0,
+    "vouch": 0,
+    "has_custom_role": False,
+    "custom_role_id": 0,
+    "hue_upgrade": [],
+    "saturation_upgrade": 0,
+    "value_upgrade": 0,
+    "daily_timestamp": 0,
+    "achievements": []
+}
 
 
 class LevelingCog(Cog):
@@ -40,6 +99,9 @@ class LevelingCog(Cog):
 
         # Load the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
+
+        # Check the integrity of the stats dictionary and add any potential missing keys.
+        stats = await self.verify_integrity(stats)
 
         # Increment the message count.
         stats["message_count"] += 1
@@ -192,77 +254,98 @@ class LevelingCog(Cog):
         else:
             stats["buffer"] += 40
 
-        # Declare the buffer needed for each user class as a dict for reusability and save headaches on future balance changes.
-        user_class = dict(
-            member=0,
-            user=10240,
-            power_user=25600,
-            elite=51200,
-            torrent_master=102400,
-            power_tm=256000,
-            elite_tm=512000,
-            legend=1048576
-        )
+        # "Member" if buffer is between 0-10 GB and message count is >= 0.
+        if buffer_requirement["member"] <= stats["buffer"] < buffer_requirement["user"] \
+                and stats["message_count"] >= message_requirement["member"]:
+            stats["user_class"] = user_class["member"]
+            stats["next_user_class_buffer"] = buffer_requirement["user"]
+            stats["next_user_class_message"] = message_requirement["user"]
 
-        # Declare the message count needed for each user class as a dict for reusability and save headaches on future balance changes.
-        message_count = dict(
-            member=0,
-            user=1000,
-            power_user=2500,
-            elite=5000,
-            torrent_master=10000,
-            power_tm=22500,
-            elite_tm=45000,
-            legend=80000
-        )
+        # "User" if buffer is between 10-25 GB and message count is >= 1000.
+        elif buffer_requirement["user"] <= stats["buffer"] < buffer_requirement["power_user"] \
+                and stats["message_count"] >= message_requirement["user"]:
+            stats["user_class"] = user_class["user"]
+            stats["next_user_class_buffer"] = buffer_requirement["power_user"]
+            stats["next_user_class_message"] = message_requirement["power_user"]
 
-        # Demoted to "Member" if buffer is smaller than 10 GB.
-        if stats["buffer"] < user_class["user"]:
-            stats["user_class"] = "Member"
-            stats["next_user_class_buffer"] = user_class["user"]
-            stats["next_user_class_message"] = message_count["user"]
+        # "Power User" if buffer is between 25-50 GB and message count is >= 2500.
+        elif buffer_requirement["power_user"] <= stats["buffer"] < buffer_requirement["elite"] \
+                and stats["message_count"] >= message_requirement["power_user"]:
+            stats["user_class"] = user_class["power_user"]
+            stats["next_user_class_buffer"] = buffer_requirement["elite"]
+            stats["next_user_class_message"] = message_requirement["elite"]
 
-        # Promotes to "User" if buffer is above 10 GB, but demotes to it if below 25 GB. At least 1000 messages are required.
-        elif stats["buffer"] < user_class["power_user"] and stats["message_count"] >= message_count["user"]:
-            stats["user_class"] = "User"
-            stats["next_user_class_buffer"] = user_class["power_user"]
-            stats["next_user_class_message"] = message_count["power_user"]
+        # "Elite" if buffer is between 50-100 GB and message count is >= 5000.
+        elif buffer_requirement["elite"] <= stats["buffer"] < buffer_requirement["torrent_master"] \
+                and stats["message_count"] >= message_requirement["elite"]:
+            stats["user_class"] = user_class["elite"]
+            stats["next_user_class_buffer"] = buffer_requirement["torrent_master"]
+            stats["next_user_class_message"] = message_requirement["torrent_master"]
 
-        # Promotes to "Power User" if buffer is above 25 GB, but demotes to it if below 50 GB. At least 2,500 messages are required.
-        elif stats["buffer"] < user_class["elite"] and stats["message_count"] >= message_count["power_user"]:
-            stats["user_class"] = "Power User"
-            stats["next_user_class_buffer"] = user_class["elite"]
-            stats["next_user_class_message"] = message_count["elite"]
+        # "Torrent Master" if buffer is between 100-250 GB and message count is >= 10000.
+        elif buffer_requirement["torrent_master"] < stats["buffer"] < buffer_requirement["power_tm"] \
+                and stats["message_count"] >= message_requirement["torrent_master"]:
+            stats["user_class"] = user_class["torrent_master"]
+            stats["next_user_class_buffer"] = buffer_requirement["power_tm"]
+            stats["next_user_class_message"] = message_requirement["power_tm"]
 
-        # Promotes to "Elite" if buffer is above 50 GB, but demotes to it if below 100 GB. At least 5,000 messages are required.
-        elif stats["buffer"] < user_class["torrent_master"] and stats["message_count"] >= message_count["elite"]:
-            stats["user_class"] = "Elite"
-            stats["next_user_class_buffer"] = user_class["torrent_master"]
-            stats["next_user_class_message"] = message_count["torrent_master"]
+        # "Power TM" if buffer is between 250-500 GB and message count is >= 22500.
+        elif buffer_requirement["power_tm"] <= stats["buffer"] < buffer_requirement["elite_tm"] \
+                and stats["message_count"] >= message_requirement["power_tm"]:
+            stats["user_class"] = user_class["power_tm"]
+            stats["next_user_class_buffer"] = buffer_requirement["elite_tm"]
+            stats["next_user_class_message"] = message_requirement["elite_tm"]
 
-        # Promotes to "Torrent Master" if buffer is above 100 GB, but demotes to it if below 250 GB. At least 10,000 messages are required.
-        elif stats["buffer"] < user_class["power_tm"] and stats["message_count"] >= message_count["torrent_master"]:
-            stats["user_class"] = "Torrent Master"
-            stats["next_user_class_buffer"] = user_class["power_tm"]
-            stats["next_user_class_message"] = message_count["power_tm"]
+        # "Elite TM" if buffer is between 500-1024 GB and message count is >= 45000.
+        elif buffer_requirement["elite_tm"] <= stats["buffer"] < buffer_requirement["legend"] \
+                and stats["message_count"] >= message_requirement["elite_tm"]:
+            stats["user_class"] = user_class["elite_tm"]
+            stats["next_user_class_buffer"] = buffer_requirement["legend"]
+            stats["next_user_class_message"] = message_requirement["legend"]
 
-        # Promotes to "Power TM" if buffer is above 250 GB, but demotes to it if below 500 GB. At least 22,500 messages are required.
-        elif stats["buffer"] < user_class["elite_tm"] and stats["message_count"] >= message_count["power_tm"]:
-            stats["user_class"] = "Power TM"
-            stats["next_user_class_buffer"] = user_class["elite_tm"]
-            stats["next_user_class_message"] = message_count["elite_tm"]
-
-        # Promotes to "Elite TM" if buffer is above 500 GB, but demotes to it if below 1 TB. At least 45,000 messages are required.
-        elif stats["buffer"] < user_class["legend"] and stats["message_count"] >= message_count["elite_tm"]:
-            stats["user_class"] = "Elite TM"
-            stats["next_user_class_buffer"] = user_class["legend"]
-            stats["next_user_class_message"] = message_count["legend"]
-
-        # Promotes to "Legend" if buffer is above 1 TB. At least 80,000 messages are required.
-        elif stats["buffer"] >= user_class["legend"] and stats["message_count"] >= message_count["legend"]:
-            stats["user_class"] = "Legend"
+        # "Legend" if buffer is > 1024 GB and message count is >= 80000.
+        elif stats["buffer"] >= buffer_requirement["legend"] \
+                and stats["message_count"] >= message_requirement["legend"]:
+            stats["user_class"] = user_class["legend"]
             stats["next_user_class_buffer"] = 0
             stats["next_user_class_message"] = 0
+
+        # Make an embed to be sent on user promotion and let them know that they were rewarded a FL token.
+        promote_embed = embeds.make_embed(
+            title="Promoted!",
+            description=f"{message.author.mention} has been promoted to {stats['user_class']}!",
+            thumbnail_url=message.author.avatar_url,
+            color="green"
+        )
+        promote_embed.add_field(name="​", value="**Reward:** 1x FL Token")
+
+        # Make an embed to be sent on user demotion.
+        demote_embed = embeds.make_embed(
+            title="Demoted!",
+            description=f"{message.author.mention} has been demoted to {stats['user_class']}!",
+            thumbnail_url=message.author.avatar_url,
+            color="red"
+        )
+
+        # We reverse the dictionary (ordered since Python 3.6) and check from the highest user class down by enumerating it with
+        # an index value matching the individual item in the dictionary.
+        for index, key in enumerate(reversed(buffer_requirement)):
+            # If the user's buffer and message count is larger than the required buffer and message count (starting from "Legend").
+            if stats["buffer"] >= buffer_requirement[key] and stats["message_count"] >= message_requirement[key]:
+                # If the user's current user class matches the next user class they were about to be promoted to, it means that they just
+                # got promoted and update their to be promoted/demoted user classes accordingly with a check to prevent out of bound index.
+                if stats["user_class"] == stats["next_user_class"]:
+                    stats["next_user_class"] = user_class[list(reversed(user_class.keys()))[index - 1]] if index > 0 else "None"
+                    stats["previous_user_class"] = user_class[list(reversed(user_class.keys()))[index + 1]] if index + 1 < len(buffer_requirement) else "None"
+                    # Send the promote embed.
+                    await message.channel.send(embed=promote_embed)
+                # If the user's current user class matches the previous user class that they could be demoted to, it means that they just
+                # got demoted and update their to be promoted/demoted user classes accordingly with a check to prevent out of bound index.
+                if stats["user_class"] == stats["previous_user_class"]:
+                    stats["next_user_class"] = user_class[list(reversed(user_class.keys()))[index - 1]] if index > 0 else "None"
+                    stats["previous_user_class"] = user_class[list(reversed(user_class.keys()))[index + 1]] if index + 1 < len(buffer_requirement) else "None"
+                    # Send the demote embed.
+                    await message.channel.send(embed=demote_embed)
 
         # Return the dictionary.
         return stats
@@ -309,48 +392,14 @@ class LevelingCog(Cog):
     @staticmethod
     async def create_user():
         """ Initialize the JSON object for user stats if it doesn't exist yet. """
-
-        # Initialize the user's entry in the database.
-        stats = {
-            "user_class": "Member",
-            "next_user_class_buffer": 0,
-            "message_count": 0,
-            "next_user_class_message": 0,
-            "buffer": 0,
-            "freeleech_token": 0,
-            "vouch": 0,
-            "has_custom_role": False,
-            "custom_role_id": 0,
-            "hue_upgrade": [],
-            "saturation_upgrade": 0,
-            "value_upgrade": 0,
-            "daily_timestamp": 0,
-            "achievements": []
-        }
         # Dump the string into a JSON object and return it.
-        stats_json = json.dumps(stats)
+        stats_json = json.dumps(stats_template)
         return stats_json
 
     @staticmethod
     async def verify_integrity(stats):
         """ Verify the JSON object to make sure that it doesn't have missing keys. """
-        # The stats template, copied from create_user().
-        stats_template = {
-            "user_class": "Member",
-            "next_user_class_buffer": 0,
-            "message_count": 0,
-            "next_user_class_message": 0,
-            "buffer": 0,
-            "freeleech_token": 0,
-            "vouch": 0,
-            "has_custom_role": False,
-            "custom_role_id": 0,
-            "hue_upgrade": [],
-            "saturation_upgrade": 0,
-            "value_upgrade": 0,
-            "daily_timestamp": 0,
-            "achievements": []
-        }
+
         # Iterate through the keys and values of the stats template.
         for key, value in stats_template.items():
             # If a key doesn't exist in the dictionary from parameter yet, add it.
