@@ -28,23 +28,23 @@ class BuyColorCog(Cog):
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
 
         # Create a dictionary that maps the color pack name with the range of roll values, unpacked into a list with the * operator.
-        color_map = dict(
+        color_map = {
             # Red-like colors span from 331-360 and 1-30 degrees on the HSV scale.
-            red=[*range(331, 361), *range(1, 31)],
+            "red": [*range(331, 361), *range(1, 31)],
             # Yellow-like colors span from 31-90 degrees on the HSV scale.
-            yellow=[*range(31, 91)],
+            "yellow": [*range(31, 91)],
             # Green-like colors span from 91-150 degrees on the HSV scale.
-            green=[*range(91, 151)],
+            "green": [*range(91, 151)],
             # Cyan-like colors span from 151-210 degrees on the HSV scale.
-            cyan=[*range(151, 211)],
+            "cyan": [*range(151, 211)],
             # Blue-like colors span from 211-270 degrees on the HSV scale.
-            blue=[*range(211, 271)],
+            "blue": [*range(211, 271)],
             # Magenta-like colors span from 271-330 degrees on the HSV scale.
-            magenta=[*range(271, 331)]
-        )
+            "magenta": [*range(271, 331)]
+        }
 
         # Declare an empty list to append the roll values later.
-        hue = list()
+        hue = []
 
         # Iterate through the input parameter that is a list of purchased color packs.
         for pack in hue_upgrade:
