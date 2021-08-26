@@ -30,7 +30,7 @@ class UpgradeSaturationCog(Cog):
         options=[
             create_option(
                 name="amount",
-                description="Number of upgrades to purchase. ",
+                description="Number of upgrades to purchase",
                 option_type=4,
                 required=True
             ),
