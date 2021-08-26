@@ -158,7 +158,7 @@ class AutomodCog(commands.Cog):
                 db['censor'].insert(dict(
                     censor_term=censor_term,
                     censor_type=x['name'],
-                    censor_threshold=censor_threshold
+                    censor_threshold=censor_threshold,
                 ))
                 
                 db.commit()
@@ -210,7 +210,112 @@ class AutomodCog(commands.Cog):
 
         embed = embeds.make_embed(ctx=ctx, description=f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was deleted.", color='red')
         await ctx.send(embed=embed)
-            
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
+        name = "exclude_user",
+        description="Excludes a user from an automod listing.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            ),
+            create_option(
+                name="excluded_user",
+                description="The member that will be excluded.",
+                option_type=6,
+                required=True
+            ),
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def exclude_user_from_automod(self, ctx: SlashContext, id: int, excluded_user: discord.User):
+        await ctx.defer()
+        user_id = excluded_user.id
+        
+        db = dataset.connect(database.get_db())
+
+        table = db["censor"]
+
+        censor = table.find_one(id=id)
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="Could not find a censor with that ID!")
+            return
+        
+        excluded_users = list()
+        if censor['excluded_users']:
+            excluded_users = censor['excluded_users']
+        
+        excluded_users.append(user_id)
+        censor['excluded_users'] = excluded_users
+        table.update(censor, ['id'])
+
+        embed = embeds.make_embed(ctx=ctx, title="User Excluded", description=f"User {excluded_user.mention} was excluded from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}`.", color="green")
+        await ctx.send(embed=embed)
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
+        name = "exclude_role",
+        description="Excludes a role from an automod listing.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            ),
+            create_option(
+                name="excluded_role",
+                description="The role that will be excluded.",
+                option_type=8,
+                required=True
+            ),
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def exclude_role_from_automod(self, ctx: SlashContext, id: int, excluded_role: discord.Role):
+        await ctx.defer()
+        role_id = excluded_role.id
+        
+        db = dataset.connect(database.get_db())
+
+        table = db["censor"]
+
+        censor = table.find_one(id=id)
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="Could not find a censor with that ID!")
+            return
+        
+        excluded_roles = list()
+        if censor['excluded_roles']:
+            excluded_roles = censor['excluded_roles']
+        
+        excluded_roles.append(role_id)
+        censor['excluded_roles'] = excluded_roles
+        table.update(censor, ['id'])
+
+        embed = embeds.make_embed(ctx=ctx, title="Role Excluded", description=f"Role {excluded_role.mention} was excluded from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}`.", color="green")
+        await ctx.send(embed=embed)
+    
+       
 def setup(bot) -> None:
     bot.add_cog(AutomodCog(bot))
     log.info("Cog loaded: AutomodCog")

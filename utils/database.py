@@ -74,6 +74,8 @@ def setup_db():
     censor.create_column("censor_term", db.types.text)
     censor.create_column("censor_type", db.types.text)
     censor.create_column("censor_threshold", db.types.integer)
+    censor.create_column("excluded_users", db.types.json)
+    censor.create_column("excluded_roles", db.types.json)
     # Create settings table and columns to store key:value pairs.
     settings = db.create_table("settings")
     settings.create_column("name", db.types.text)
