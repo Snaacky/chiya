@@ -254,66 +254,10 @@ class LevelingCog(Cog):
         else:
             stats["buffer"] += 40
 
-        # "Member" if buffer is between 0-10 GB and message count is >= 0.
-        if buffer_requirement["member"] <= stats["buffer"] < buffer_requirement["user"] \
-                and stats["message_count"] >= message_requirement["member"]:
-            stats["user_class"] = user_class["member"]
-            stats["next_user_class_buffer"] = buffer_requirement["user"]
-            stats["next_user_class_message"] = message_requirement["user"]
-
-        # "User" if buffer is between 10-25 GB and message count is >= 1000.
-        elif buffer_requirement["user"] <= stats["buffer"] < buffer_requirement["power_user"] \
-                and stats["message_count"] >= message_requirement["user"]:
-            stats["user_class"] = user_class["user"]
-            stats["next_user_class_buffer"] = buffer_requirement["power_user"]
-            stats["next_user_class_message"] = message_requirement["power_user"]
-
-        # "Power User" if buffer is between 25-50 GB and message count is >= 2500.
-        elif buffer_requirement["power_user"] <= stats["buffer"] < buffer_requirement["elite"] \
-                and stats["message_count"] >= message_requirement["power_user"]:
-            stats["user_class"] = user_class["power_user"]
-            stats["next_user_class_buffer"] = buffer_requirement["elite"]
-            stats["next_user_class_message"] = message_requirement["elite"]
-
-        # "Elite" if buffer is between 50-100 GB and message count is >= 5000.
-        elif buffer_requirement["elite"] <= stats["buffer"] < buffer_requirement["torrent_master"] \
-                and stats["message_count"] >= message_requirement["elite"]:
-            stats["user_class"] = user_class["elite"]
-            stats["next_user_class_buffer"] = buffer_requirement["torrent_master"]
-            stats["next_user_class_message"] = message_requirement["torrent_master"]
-
-        # "Torrent Master" if buffer is between 100-250 GB and message count is >= 10000.
-        elif buffer_requirement["torrent_master"] < stats["buffer"] < buffer_requirement["power_tm"] \
-                and stats["message_count"] >= message_requirement["torrent_master"]:
-            stats["user_class"] = user_class["torrent_master"]
-            stats["next_user_class_buffer"] = buffer_requirement["power_tm"]
-            stats["next_user_class_message"] = message_requirement["power_tm"]
-
-        # "Power TM" if buffer is between 250-500 GB and message count is >= 22500.
-        elif buffer_requirement["power_tm"] <= stats["buffer"] < buffer_requirement["elite_tm"] \
-                and stats["message_count"] >= message_requirement["power_tm"]:
-            stats["user_class"] = user_class["power_tm"]
-            stats["next_user_class_buffer"] = buffer_requirement["elite_tm"]
-            stats["next_user_class_message"] = message_requirement["elite_tm"]
-
-        # "Elite TM" if buffer is between 500-1024 GB and message count is >= 45000.
-        elif buffer_requirement["elite_tm"] <= stats["buffer"] < buffer_requirement["legend"] \
-                and stats["message_count"] >= message_requirement["elite_tm"]:
-            stats["user_class"] = user_class["elite_tm"]
-            stats["next_user_class_buffer"] = buffer_requirement["legend"]
-            stats["next_user_class_message"] = message_requirement["legend"]
-
-        # "Legend" if buffer is > 1024 GB and message count is >= 80000.
-        elif stats["buffer"] >= buffer_requirement["legend"] \
-                and stats["message_count"] >= message_requirement["legend"]:
-            stats["user_class"] = user_class["legend"]
-            stats["next_user_class_buffer"] = 0
-            stats["next_user_class_message"] = 0
-
         # Make an embed to be sent on user promotion and let them know that they were rewarded a FL token.
         promote_embed = embeds.make_embed(
             title="Promoted!",
-            description=f"{message.author.mention} has been promoted to {stats['user_class']}!",
+            description=f"{message.author.mention} has been promoted to {stats['next_user_class']}!",
             thumbnail_url=message.author.avatar_url,
             color="green"
         )
@@ -322,30 +266,118 @@ class LevelingCog(Cog):
         # Make an embed to be sent on user demotion.
         demote_embed = embeds.make_embed(
             title="Demoted!",
-            description=f"{message.author.mention} has been demoted to {stats['user_class']}!",
+            description=f"{message.author.mention} has been demoted to {stats['previous_user_class']}!",
             thumbnail_url=message.author.avatar_url,
             color="red"
         )
 
-        # We reverse the dictionary (ordered since Python 3.6) and check from the highest user class down by enumerating it with
-        # an index value matching the individual item in the dictionary.
-        for index, key in enumerate(reversed(buffer_requirement)):
-            # If the user's buffer and message count is larger than the required buffer and message count (starting from "Legend").
-            if stats["buffer"] >= buffer_requirement[key] and stats["message_count"] >= message_requirement[key]:
-                # If the user's current user class matches the next user class they were about to be promoted to, it means that they just
-                # got promoted and update their to be promoted/demoted user classes accordingly with a check to prevent out of bound index.
-                if stats["user_class"] == stats["next_user_class"]:
-                    stats["next_user_class"] = user_class[list(reversed(user_class.keys()))[index - 1]] if index > 0 else "None"
-                    stats["previous_user_class"] = user_class[list(reversed(user_class.keys()))[index + 1]] if index + 1 < len(buffer_requirement) else "None"
-                    # Send the promote embed.
-                    await message.channel.send(embed=promote_embed)
-                # If the user's current user class matches the previous user class that they could be demoted to, it means that they just
-                # got demoted and update their to be promoted/demoted user classes accordingly with a check to prevent out of bound index.
-                if stats["user_class"] == stats["previous_user_class"]:
-                    stats["next_user_class"] = user_class[list(reversed(user_class.keys()))[index - 1]] if index > 0 else "None"
-                    stats["previous_user_class"] = user_class[list(reversed(user_class.keys()))[index + 1]] if index + 1 < len(buffer_requirement) else "None"
-                    # Send the demote embed.
-                    await message.channel.send(embed=demote_embed)
+        """ 
+        On every message, attempt to compare their current user class with their previous and next user class to be promoted 
+        or demoted to. If their current user class equals to the previous user class, it means that they just got demoted,
+        and vice versa when promoted. Their previous, current, and next user class will be updated regardlessly. Note that for 
+        "Member" class, we don't check for promotion because this is the lowest possible user class. The same applies to the 
+        "Legend" class where demotion is not checked because it is the highest possible user class.
+        """
+
+        # "Member" if buffer is between 0-10 GB and message count is >= 0.
+        if buffer_requirement["member"] <= stats["buffer"] < buffer_requirement["user"] \
+                and stats["message_count"] >= message_requirement["member"]:
+            stats["user_class"] = user_class["member"]
+            stats["next_user_class_buffer"] = buffer_requirement["user"]
+            stats["next_user_class_message"] = message_requirement["user"]
+            if stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = "None"
+            stats["next_user_class"] = user_class["user"]
+
+        # "User" if buffer is between 10-25 GB and message count is >= 1000.
+        elif buffer_requirement["user"] <= stats["buffer"] < buffer_requirement["power_user"] \
+                and stats["message_count"] >= message_requirement["user"]:
+            stats["user_class"] = user_class["user"]
+            stats["next_user_class_buffer"] = buffer_requirement["power_user"]
+            stats["next_user_class_message"] = message_requirement["power_user"]
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            elif stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = user_class["member"]
+            stats["next_user_class"] = user_class["power_user"]
+
+        # "Power User" if buffer is between 25-50 GB and message count is >= 2500.
+        elif buffer_requirement["power_user"] <= stats["buffer"] < buffer_requirement["elite"] \
+                and stats["message_count"] >= message_requirement["power_user"]:
+            stats["user_class"] = user_class["power_user"]
+            stats["next_user_class_buffer"] = buffer_requirement["elite"]
+            stats["next_user_class_message"] = message_requirement["elite"]
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            elif stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = user_class["user"]
+            stats["next_user_class"] = user_class["elite"]
+
+        # "Elite" if buffer is between 50-100 GB and message count is >= 5000.
+        elif buffer_requirement["elite"] <= stats["buffer"] < buffer_requirement["torrent_master"] \
+                and stats["message_count"] >= message_requirement["elite"]:
+            stats["user_class"] = user_class["elite"]
+            stats["next_user_class_buffer"] = buffer_requirement["torrent_master"]
+            stats["next_user_class_message"] = message_requirement["torrent_master"]
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            elif stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = user_class["power_user"]
+            stats["next_user_class"] = user_class["torrent_master"]
+
+        # "Torrent Master" if buffer is between 100-250 GB and message count is >= 10000.
+        elif buffer_requirement["torrent_master"] < stats["buffer"] < buffer_requirement["power_tm"] \
+                and stats["message_count"] >= message_requirement["torrent_master"]:
+            stats["user_class"] = user_class["torrent_master"]
+            stats["next_user_class_buffer"] = buffer_requirement["power_tm"]
+            stats["next_user_class_message"] = message_requirement["power_tm"]
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            elif stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = user_class["elite"]
+            stats["next_user_class"] = user_class["power_tm"]
+
+        # "Power TM" if buffer is between 250-500 GB and message count is >= 22500.
+        elif buffer_requirement["power_tm"] <= stats["buffer"] < buffer_requirement["elite_tm"] \
+                and stats["message_count"] >= message_requirement["power_tm"]:
+            stats["user_class"] = user_class["power_tm"]
+            stats["next_user_class_buffer"] = buffer_requirement["elite_tm"]
+            stats["next_user_class_message"] = message_requirement["elite_tm"]
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            elif stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = user_class["torrent_master"]
+            stats["next_user_class"] = user_class["elite_tm"]
+
+        # "Elite TM" if buffer is between 500-1024 GB and message count is >= 45000.
+        elif buffer_requirement["elite_tm"] <= stats["buffer"] < buffer_requirement["legend"] \
+                and stats["message_count"] >= message_requirement["elite_tm"]:
+            stats["user_class"] = user_class["elite_tm"]
+            stats["next_user_class_buffer"] = buffer_requirement["legend"]
+            stats["next_user_class_message"] = message_requirement["legend"]
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            elif stats["user_class"] == stats["previous_user_class"]:
+                await message.channel.send(embed=demote_embed)
+            stats["previous_user_class"] = user_class["power_tm"]
+            stats["next_user_class"] = user_class["legend"]
+
+        # "Legend" if buffer is > 1024 GB and message count is >= 80000.
+        elif stats["buffer"] >= buffer_requirement["legend"] \
+                and stats["message_count"] >= message_requirement["legend"]:
+            stats["user_class"] = user_class["legend"]
+            stats["next_user_class_buffer"] = 0
+            stats["next_user_class_message"] = 0
+            if stats["user_class"] == stats["next_user_class"]:
+                await message.channel.send(embed=promote_embed)
+            stats["previous_user_class"] = user_class["elite_tm"]
+            stats["next_user_class"] = "None"
 
         # Return the dictionary.
         return stats
