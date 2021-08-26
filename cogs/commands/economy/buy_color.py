@@ -136,8 +136,15 @@ class BuyColorCog(Cog):
         hue, saturation, value = await self.generate_hsv(stats["hue_upgrade"], stats["saturation_upgrade"], stats["value_upgrade"])
         color = discord.Color.from_hsv(hue, saturation, value)
 
-        # Get the role from user's custom role ID to edit the color.
         role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
+
+        # A check to make sure that the role actually exists since it's modifiable using the developer console.
+        if not role:
+            await embeds.error_message(ctx=ctx, description="This role does not exist.")
+            db.close()
+            return
+
+        # Get the role from user's custom role ID to edit the color.
         await role.edit(color=color)
 
         # Update the JSON object accordingly.
