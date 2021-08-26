@@ -6,6 +6,7 @@ from typing import List
 import dataset
 from discord_slash.context import ComponentContext
 from sqlalchemy.sql.expression import desc
+import json
 
 import config
 from utils import database
@@ -16,7 +17,7 @@ from discord.ext.commands.core import group
 from utils import embeds
 from utils.record import record_usage
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.utils.manage_commands import create_choice, create_option, create_permission
 
 from discord_slash.model import SlashCommandPermissionType
 from utils.pagination import LinePaginator
@@ -41,7 +42,29 @@ class AutomodCog(commands.Cog):
             create_option(
                 name="censor_type",
                 option_type = 3,
-                description="The censor type. Can be regex, links, fuzzy, substring or exact.",
+                description="The censor type.",
+                choices=[
+                    create_choice(
+                        name="Exact",
+                        value="exact"
+                    ),
+                    create_choice(
+                        name="Substring",
+                        value="substring"
+                    ),
+                    create_choice(
+                        name="Regex",
+                        value="regex"
+                    ),
+                    create_choice(
+                        name="Links",
+                        value="links"
+                    ),
+                    create_choice(
+                        name="Fuzzy",
+                        value="fuzzy"
+                    )
+                ],
                 required=False
             )
         ],
@@ -70,7 +93,9 @@ class AutomodCog(commands.Cog):
             censor_term = censor['censor_term']
             if censor['censor_type'] == 'fuzzy':
                 censor_term = f"{censor['censor_term']} ({censor['censor_threshold']}%)"
-            censored_term = f"**ID: {censor['id']} ** | **{censor['censor_type']}**\n```{censor_term}```"
+            
+            enabled_emoji = "<:yes:778724405333196851>" if censor['enabled'] else "<:no:778724416230129705>"
+            censored_term = f"**ID: {censor['id']} ** | **{censor['censor_type']}** | {enabled_emoji} \n```{censor_term}```"
             censored_terms.append(censored_term)
         
         embed = embeds.make_embed(ctx=ctx, title = "Censored Terms", thumbnail_url=config.defcon_disabled, color="gold")
@@ -89,8 +114,30 @@ class AutomodCog(commands.Cog):
             create_option(
                 name="censor_type",
                 option_type = 3,
-                description="The censor type. Can be regex, links, fuzzy, substring or exact.",
-                required=True
+                description="The censor type",
+                required=True,
+                choices=[
+                    create_choice(
+                        name="Exact",
+                        value="exact"
+                    ),
+                    create_choice(
+                        name="Substring",
+                        value="substring"
+                    ),
+                    create_choice(
+                        name="Regex",
+                        value="regex"
+                    ),
+                    create_choice(
+                        name="Links",
+                        value="links"
+                    ),
+                    create_choice(
+                        name="Fuzzy",
+                        value="fuzzy"
+                    ),
+                ]
             ),
             create_option(
                 name="censor_term",
@@ -116,67 +163,38 @@ class AutomodCog(commands.Cog):
     async def add_censor(self, ctx: SlashContext, censor_type: str, censor_term: str, censor_threshold: int = 0):
         await ctx.defer()
 
-        censor_types = [
-            {
-                "name": "substring",
-                "aliases": ['substr', 'sub', 's']
-            },
-            {
-                "name": "regex",
-                "aliases": ['r']
-            },
-            {
-                "name": "exact",
-                "aliases": ['e']
-            },
-            {
-                "name": "links",
-                "aliases": ['link', 'l']
-            },
-            {
-                "name": "fuzzy",
-                "aliases": ['fuz', 'f']
-            }
-        ]
          # sanitizing input
-        censor_type = censor_type.lower()
-        censor_type = censor_type.strip()
         censor_term = censor_term.strip()
         if not censor_threshold:
             censor_threshold = 65 # default set, since this seems to work fine
-        for x in censor_types:
-            if (censor_type == x['name'] or censor_type in x['aliases']):
-                # adding to the DB and messaging user that action was successful
-
-                if (x['name'] == 'fuzzy'):
-                        # in case user enters a threshold value > 100.
-                        if (censor_threshold>100):
-                            await embeds.error_message(description="Fuzziness threshold must be less than 100!", ctx=ctx)
-                            return
-
-                db = dataset.connect(database.get_db())
-                db['censor'].insert(dict(
-                    censor_term=censor_term,
-                    censor_type=x['name'],
-                    censor_threshold=censor_threshold,
-                ))
-                
-                db.commit()
-                db.close()
-
-                embed = embeds.make_embed(ctx=ctx, description=f"Censor term `{censor_term}` of type `{x['name']}` was added.", color="green")
-                await ctx.send(embed=embed)
+        
+        if (censor_type == 'fuzzy'):
+            # in case user enters a threshold value > 100.
+            if (censor_threshold>100):
+                await embeds.error_message(description="Fuzziness threshold must be less than 100!", ctx=ctx)
                 return
 
+        db = dataset.connect(database.get_db())
+        db['censor'].insert(dict(
+            censor_term=censor_term,
+            censor_type=censor_type,
+            censor_threshold=censor_threshold,
+            enabled=True,
+            excluded_users = json.dumps(list()),
+            excluded_roles = json.dumps(list())
+        ))
+        
+        db.commit()
+        db.close()
 
-        # User did not specify censor type properly, so throw an error.
-        await embeds.error_message(description="Valid censor types are: `substring`, `regex`, `exact`, `links` and `fuzzy`.", ctx=ctx)
+        embed = embeds.make_embed(ctx=ctx, description=f"Censor term `{censor_term}` of type `{censor_type}` was added.", color="green")
+        await ctx.send(embed=embed)
     
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
-        name = "remove",
-        description="Removes a term from the censor list.",
+        name = "disable",
+        description="Disables a term from the censor list.",
         guild_ids=[config.guild_id],
         options = [
             create_option(
@@ -194,7 +212,89 @@ class AutomodCog(commands.Cog):
             ]
         }
     )    
-    async def remove_censor(self, ctx: SlashContext, id: int):
+    async def disable_censor(self, ctx: SlashContext, id: int):
+        await ctx.defer()
+        
+        db = dataset.connect(database.get_db())
+        censor = db['censor'].find_one(id=id)
+        
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="The censor with that ID does not exist!")
+            return
+        
+        censor['enabled'] = False
+        db['censor'].update(censor, ["id"])
+        
+        db.commit()
+        db.close()
+
+        embed = embeds.make_embed(ctx=ctx, description=f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was disabled.", color='red')
+        await ctx.send(embed=embed)
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
+        name = "enable",
+        description="Enables a term from the censor list.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            )
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )    
+    async def enable_censor(self, ctx: SlashContext, id: int):
+        await ctx.defer()
+        
+        db = dataset.connect(database.get_db())
+        censor = db['censor'].find_one(id=id)
+        
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="The censor with that ID does not exist!")
+            return
+        
+        censor['enabled'] = True
+        db['censor'].update(censor, ["id"])
+        
+        db.commit()
+        db.close()
+
+        embed = embeds.make_embed(ctx=ctx, description=f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was enabled.", color='green')
+        await ctx.send(embed=embed)
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
+        name = "delete",
+        description="Deletes a term from the censor list.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            )
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )    
+    async def delete_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
         
         db = dataset.connect(database.get_db())
@@ -205,6 +305,7 @@ class AutomodCog(commands.Cog):
             return
         
         db['censor'].delete(id=id)
+        
         db.commit()
         db.close()
 
@@ -254,10 +355,10 @@ class AutomodCog(commands.Cog):
         
         excluded_users = list()
         if censor['excluded_users']:
-            excluded_users = censor['excluded_users']
-        
+            excluded_users = json.loads(censor['excluded_users'])
+            
         excluded_users.append(user_id)
-        censor['excluded_users'] = excluded_users
+        censor['excluded_users'] = json.dumps(excluded_users)
         table.update(censor, ['id'])
 
         embed = embeds.make_embed(ctx=ctx, title="User Excluded", description=f"User {excluded_user.mention} was excluded from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}`.", color="green")
@@ -306,16 +407,67 @@ class AutomodCog(commands.Cog):
         
         excluded_roles = list()
         if censor['excluded_roles']:
-            excluded_roles = censor['excluded_roles']
-        
+            excluded_roles = json.loads(censor['excluded_roles'])
+            
         excluded_roles.append(role_id)
-        censor['excluded_roles'] = excluded_roles
+        censor['excluded_roles'] = json.dumps(excluded_roles)
         table.update(censor, ['id'])
 
         embed = embeds.make_embed(ctx=ctx, title="Role Excluded", description=f"Role {excluded_role.mention} was excluded from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}`.", color="green")
         await ctx.send(embed=embed)
     
-       
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
+        name = "details",
+        description="Displays the advanced details for an automod listing.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            ),
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def automod_details(self, ctx: SlashContext, id: int):
+        await ctx.defer()
+
+        db = dataset.connect(database.get_db())
+        table = db['censor']
+        censor = table.find_one(id=id)
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="Could not find a censor with that ID!")
+            return
+        
+        embed = embeds.make_embed(ctx=ctx, title="Automod Listing details")
+        enabled_emoji = "<:yes:778724405333196851>" if censor['enabled'] else "<:no:778724416230129705>"
+        embed.description = f"**ID:** {censor['id']} | **Censor Term:** `{censor['censor_term']}` | {enabled_emoji} "
+        
+        excluded_users=json.loads(censor['excluded_users'])
+        if excluded_users:
+            excluded_users = ""
+            for user_id in json.loads(censor['excluded_users']):
+                excluded_users += (f'<@{user_id}> ')
+            embed.add_field(name="Excluded Users:", value=excluded_users, inline=False)
+        
+        excluded_roles=json.loads(censor['excluded_roles'])
+        if excluded_roles:
+            excluded_roles = ""
+            for role_id in json.loads(censor['excluded_roles']):
+                excluded_roles += (f'<@&{role_id}> ')
+            embed.add_field(name="Excluded Roles:", value=excluded_roles, inline=False)
+        
+        await ctx.send(embed=embed)
+
 def setup(bot) -> None:
     bot.add_cog(AutomodCog(bot))
     log.info("Cog loaded: AutomodCog")

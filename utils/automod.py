@@ -1,6 +1,8 @@
 import discord
 import re
 import dataset
+import json
+
 from utils import database
 from fuzzywuzzy import fuzz
 from cogs.commands import settings
@@ -18,7 +20,9 @@ async def check_message(message: discord.Message) -> bool:
     # querying everything from the database
     regex_censors = db['censor'].find(censor_type="regex")
     for censor in regex_censors:
-        if is_user_excluded(message, censor['excluded_users'], censor['excluded_roles']):
+        if not censor['enabled']:
+            continue
+        if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # regex checking
         if check_regex(message.content, censor['censor_term']):
@@ -26,7 +30,9 @@ async def check_message(message: discord.Message) -> bool:
     
     exact_censors = db['censor'].find(censor_type="exact")
     for censor in exact_censors:
-        if is_user_excluded(message, censor['excluded_users'], censor['excluded_roles']):
+        if not censor['enabled']:
+            continue
+        if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # regex checking the "exact" censor terms
         if check_exact(message.content, censor['censor_term']):
@@ -34,7 +40,9 @@ async def check_message(message: discord.Message) -> bool:
     
     substring_censors = db['censor'].find(censor_type="substring")
     for censor in substring_censors:
-        if is_user_excluded(message, censor['excluded_users'], censor['excluded_roles']):
+        if not censor['enabled']:
+            continue
+        if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # regex checking for substrings of the censor terms
         if check_substring(message.content, censor['censor_term']):
@@ -42,7 +50,9 @@ async def check_message(message: discord.Message) -> bool:
         
     url_censors = db['censor'].find(censor_type="links")
     for censor in url_censors:
-        if is_user_excluded(message, censor['excluded_users'], censor['excluded_roles']):
+        if not censor['enabled']:
+            continue
+        if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # regex checking for a URL matching ones read from the DB
         if check_substring(message.content, censor['censor_term']):
@@ -50,7 +60,9 @@ async def check_message(message: discord.Message) -> bool:
     
     fuzzy_censors = db['censor'].find(censor_type="fuzzy")
     for censor in fuzzy_censors:
-        if is_user_excluded(message, censor['excluded_users'], censor['excluded_roles']):
+        if not censor['enabled']:
+            continue
+        if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # Doing a fuzzy matching with the word, with the specified threshold
         if check_fuzzy(message.content, censor['censor_term'], censor['censor_threshold']):
@@ -62,10 +74,10 @@ async def check_message(message: discord.Message) -> bool:
 
 def is_user_excluded(message: discord.Message, excluded_users: list, excluded_roles: list) -> bool:
     # Checking if the user is excluded from automod for that particular term
-    author_id = str(message.author.id)
+    author_id = message.author.id
     for role in message.author.roles:
         if excluded_roles:
-            if str(role.id) in excluded_roles:
+            if role.id in excluded_roles:
                 return True
 
     if excluded_users:
