@@ -84,11 +84,11 @@ class DailyCog(Cog):
 
             # String that will store the duration in a more digestible format.
             duration_string = ""
-            duration = dict(
-                hours=hours,
-                minutes=minutes,
-                seconds=seconds
-            )
+            duration = {
+                "hours": hours,
+                "minutes": minutes,
+                "seconds": seconds
+            }
 
             for time_unit in duration:
                 # If the time value is 0, skip it.
@@ -112,13 +112,13 @@ class DailyCog(Cog):
             return
 
         # A random amount of buffer based on rarity.
-        rarity = dict(
-            common=[*range(100, 201)],
-            uncommon=[*range(250, 351)],
-            rare=[*range(400, 551)],
-            epic=[*range(601, 751)],
-            legendary=[*range(800, 1025)]
-        )
+        rarity = {
+            "common": [*range(100, 201)],
+            "uncommon": [*range(250, 351)],
+            "rare": [*range(400, 551)],
+            "epic": [*range(601, 751)],
+            "legendary": [*range(800, 1025)]
+        }
 
         # Roll a random value from 0-100.
         rng = random.randint(0, 101)
