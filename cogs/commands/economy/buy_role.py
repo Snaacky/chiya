@@ -109,7 +109,7 @@ class BuyRoleCog(Cog):
         role_count = len(ctx.guild.roles)
 
         # Number of mod roles (including the separator that follows the category). Declared to avoid magic number usage.
-        mod_role_count = 14
+        mod_role_count = 13
 
         # Declare the positions of the role as a dictionary.
         positions = dict()
@@ -139,7 +139,7 @@ class BuyRoleCog(Cog):
 
         # Inverse the key pair value of the dictionary before using it to edit the position of all roles in the guild.
         positions = dict((value, key) for key, value in positions.items())
-        await ctx.guild.edit_role_positions(positions=positions, reason="Custom role purchase.")
+        await ctx.guild.edit_role_positions(positions=positions, reason="Custom role purchased.")
 
         # Update the JSON object accordingly.
         stats["buffer"] -= cost
