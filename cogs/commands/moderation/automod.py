@@ -35,8 +35,8 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
-        name = "list",
-        description="Lists all the currently censored terms.",
+        name = "search",
+        description="Searches and/or lists all the currently censored terms.",
         guild_ids=[config.guild_id],
         options = [
             create_option(
