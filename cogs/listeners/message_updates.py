@@ -3,8 +3,6 @@ import logging
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
 
-import config
-from utils import embeds
 from utils import automod
 
 log = logging.getLogger(__name__)
@@ -124,24 +122,25 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
-        
+
         # Temporary auto-ban solution for scam bots.
-        scam_links = ["stearncommunytiy.ru", "stearncormuntity.ru", "discord-drop.info"]
+        scam_links = ["stearncommunytiy.ru",
+                      "stearncormuntity.ru", "discord-drop.info"]
         for link in scam_links:
             if link in message.clean_content:
                 await message.guild.ban(
-                    user=message.author, 
+                    user=message.author,
                     reason=f"Scam link: {link}",
                     delete_message_days=1
                 )
-        
+
         if (await automod.check_message(message)):
             await message.delete()
             return
 
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
-    
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """Event Listener which is called when a reaction is added.
