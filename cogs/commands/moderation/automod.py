@@ -367,6 +367,62 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
+        name = "unexclude_user",
+        description="Removes the exclusion of a user from an automod listing.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            ),
+            create_option(
+                name="unexcluded_user",
+                description="The member whose exclusion will be removed.",
+                option_type=6,
+                required=True
+            ),
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def unexclude_user_from_automod(self, ctx: SlashContext, id: int, unexcluded_user: discord.User):
+        await ctx.defer()
+        user_id = unexcluded_user.id
+        
+        db = dataset.connect(database.get_db())
+
+        table = db["censor"]
+
+        censor = table.find_one(id=id)
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="Could not find a censor with that ID!")
+            return
+        
+        excluded_users = list()
+        if censor['excluded_users']:
+            excluded_users = json.loads(censor['excluded_users'])
+        
+        if not user_id in excluded_users:
+            await embeds.error_message(ctx=ctx, description=f"The user {unexcluded_user.mention} isn't excluded!")
+            return
+            
+        excluded_users.remove(user_id)
+        censor['excluded_users'] = json.dumps(excluded_users)
+        table.update(censor, ['id'])
+
+        embed = embeds.make_embed(ctx=ctx, title="User Exclusion Removed.", description=f"User {unexcluded_user.mention}'s exclusion from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}` was removed.", color="red")
+        await ctx.send(embed=embed)
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
         name = "exclude_role",
         description="Excludes a role from an automod listing.",
         guild_ids=[config.guild_id],
@@ -414,6 +470,62 @@ class AutomodCog(commands.Cog):
         table.update(censor, ['id'])
 
         embed = embeds.make_embed(ctx=ctx, title="Role Excluded", description=f"Role {excluded_role.mention} was excluded from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}`.", color="green")
+        await ctx.send(embed=embed)
+    
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_subcommand(
+        base="automod",
+        name = "unexclude_role",
+        description="Removes the exclusion of a role from an automod listing.",
+        guild_ids=[config.guild_id],
+        options = [
+            create_option(
+                name="id",
+                option_type = 4,
+                description="ID of the censored term.",
+                required=True
+            ),
+            create_option(
+                name="unexcluded_role",
+                description="The role whose exclusion will be removed.",
+                option_type=8,
+                required=True
+            ),
+        ],
+        base_default_permission=False,
+        base_permissions={
+            config.guild_id: [
+                create_permission(config.role_staff, SlashCommandPermissionType.ROLE, True),
+                create_permission(config.role_trial_mod, SlashCommandPermissionType.ROLE, True)
+            ]
+        }
+    )
+    async def unexclude_role_from_automod(self, ctx: SlashContext, id: int, unexcluded_role: discord.Role):
+        await ctx.defer()
+        role_id = unexcluded_role.id
+        
+        db = dataset.connect(database.get_db())
+
+        table = db["censor"]
+
+        censor = table.find_one(id=id)
+        if not censor:
+            await embeds.error_message(ctx=ctx, description="Could not find a censor with that ID!")
+            return
+        
+        excluded_roles = list()
+        if censor['excluded_roles']:
+            excluded_roles = json.loads(censor['excluded_roles'])
+        
+        if not role_id in excluded_roles:
+            await embeds.error_message(ctx=ctx, description=f"The role {unexcluded_role.mention} isn't excluded!")
+            return
+            
+        excluded_roles.remove(role_id)
+        censor['excluded_roles'] = json.dumps(excluded_roles)
+        table.update(censor, ['id'])
+
+        embed = embeds.make_embed(ctx=ctx, title="Role Exclusion Removed", description=f"Role {unexcluded_role.mention}'s exclusion was removed from automod for the term `{censor['censor_term']}` of type `{censor['censor_type']}`.", color="red")
         await ctx.send(embed=embed)
     
     @commands.before_invoke(record_usage)
