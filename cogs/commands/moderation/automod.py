@@ -40,6 +40,12 @@ class AutomodCog(commands.Cog):
         guild_ids=[config.guild_id],
         options = [
             create_option(
+                name="search_term",
+                option_type=3,
+                description="Term to search for (supports wildcards)",
+                required=False
+            ),
+            create_option(
                 name="censor_type",
                 option_type = 3,
                 description="The censor type.",
@@ -76,18 +82,29 @@ class AutomodCog(commands.Cog):
             ]
         }
     )
-    async def list_censors(self, ctx: SlashContext, censor_type: str = None):
+    async def list_censors(self, ctx: SlashContext, search_term: str = None, censor_type: str = None):
         await ctx.defer()
         
         censored_terms = []
         db = dataset.connect(database.get_db())
         censors = None
-        if not censor_type:
-            censors = db['censor'].all()
-        else:
+        if search_term:
+            if censor_type:
+                censors = db['censor'].find(
+                    censor_term={'ilike': search_term},
+                    censor_type=censor_type
+                )
+            else:
+                censors = db['censor'].find(
+                    censor_term={'ilike': search_term},
+                )
+
+        elif censor_type:
             censors = db['censor'].find(
                 censor_type = censor_type
             )
+        else:
+            censors = db['censor'].all()
         
         for censor in censors:
             censor_term = censor['censor_term']
