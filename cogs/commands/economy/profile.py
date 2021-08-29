@@ -36,7 +36,7 @@ class ProfileCog(Cog):
             )
         ]
     )
-    async def daily(self, ctx: SlashContext, user: discord.User = None):
+    async def profile(self, ctx: SlashContext, user: discord.User = None):
         """ View personal profile with detailed stats. """
         await ctx.defer()
 
@@ -91,6 +91,11 @@ class ProfileCog(Cog):
         # Get the role from user's custom role ID to get its color if they have one. Otherwise, default it to "green".
         if stats["has_custom_role"]:
             role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
+            # If the role somehow doesn't exist and breaks the embed, notify them and return.
+            if not role:
+                await embeds.error_message(ctx=ctx, description="Invalid role ID! Please contact a staff member.")
+                db.close()
+                return
             color = role.color
             custom_role = role.mention
         else:
