@@ -227,10 +227,10 @@ class LevelingCog(Cog):
         elif length in range(3, 5):
             multiplier = 0.67
         # Slightly punish short messages.
-        elif length in range(5, 8):
+        elif length in range(5, 7):
             multiplier = 0.9
         # Normal multiplier to average messages.
-        elif length in range(8, 11):
+        elif length in range(7, 11):
             multiplier = 1
         # Slightly encourages longer messages.
         elif length in range(11, 16):
