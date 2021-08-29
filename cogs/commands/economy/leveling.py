@@ -221,13 +221,13 @@ class LevelingCog(Cog):
         length = len(message.content.split())
 
         # Heavily punishes emote spams, links, gifs, etc.
-        if length in range(0, 3):
+        if length in range(0, 2):
             multiplier = 0.33
         # Discourage very short messages.
-        elif length in range(3, 5):
+        elif length in range(2, 4):
             multiplier = 0.67
         # Slightly punish short messages.
-        elif length in range(5, 7):
+        elif length in range(4, 7):
             multiplier = 0.9
         # Normal multiplier to average messages.
         elif length in range(7, 11):
