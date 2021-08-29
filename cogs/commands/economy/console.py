@@ -256,7 +256,6 @@ class Console(Cog):
             return
 
         # Set the hue upgrade value of a user by using a Regex to capture only valid options.
-
         if set_hue_upgrade:
             match_list = re.findall("(red|green|yellow|blue|magenta|cyan)", set_hue_upgrade)
             # If there is at least one item in the match list, set the value.
