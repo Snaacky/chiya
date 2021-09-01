@@ -136,6 +136,8 @@ class AdministrationCog(Cog):
                 # Maybe the case where there's no output?
                 self._last_result = ret
                 output = f'```py\n{value}{ret}\n```'
+                if len(output) > 512:
+                        output = self.upload_to_privatebin(value)
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.send(embed=embed)
 
