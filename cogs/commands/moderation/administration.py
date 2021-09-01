@@ -9,6 +9,7 @@ from contextlib import redirect_stdout
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot, Context
+import privatebinapi
 
 from cogs.commands import settings
 from utils import embeds
@@ -33,6 +34,12 @@ class AdministrationCog(Cog):
 
         # remove `foo`
         return content.strip('` \n')
+    
+    def upload_to_privatebin(self, payload: str) -> str:
+        try:
+            return privatebinapi.send("https://bin.piracy.moe", text=payload, expiration='never', burn_after_reading=True)["full_url"]
+        except:
+            return "Error uploading to privatebin. Is privatebin up?"
 
     @commands.before_invoke(record_usage)
     @commands.group(aliases=["u", "ul"])
@@ -88,6 +95,9 @@ class AdministrationCog(Cog):
         except Exception as e:
             # In case there's an error, add it to the embed, send and stop.
             errors = f'```py\n{e.__class__.__name__}: {e}\n```'
+            if len(errors) > 512:
+                errors = self.upload_to_privatebin(f"{e.__class__.__name__}: {e}")
+
             embed.add_field(name="Errors:", value=errors, inline=False)
             await ctx.send(embed=embed)
             return errors
@@ -100,6 +110,9 @@ class AdministrationCog(Cog):
             # In case there's an error, add it to the embed, send and stop.
             value = stdout.getvalue()
             errors = f'```py\n{value}{traceback.format_exc()}\n```'
+            if len(errors) > 512:
+                errors = self.upload_to_privatebin(f"{value}{traceback.format_exc()}")
+
             embed.add_field(name="Errors:", value=errors, inline=False)
             await ctx.send(embed=embed)
 
@@ -114,6 +127,8 @@ class AdministrationCog(Cog):
                 if value:
                     # Output.
                     output = f'```py\n{value}\n```'
+                    if len(output) > 512:
+                        output = self.upload_to_privatebin(value)
                     embed.add_field(
                         name="Output:", value=output, inline=False)
                     await ctx.send(embed=embed)
