@@ -24,8 +24,8 @@ class HelpCog(Cog):
         description="Detailed information about the economy",
         guild_ids=[settings.get_value("guild_id")],
     )
-    async def daily(self, ctx: SlashContext):
-        """ Help command to view the list of commands with detailed information. """
+    async def help(self, ctx: SlashContext):
+        """ Help command to view the detailed information about the economy system. """
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
@@ -89,6 +89,60 @@ class HelpCog(Cog):
                       "something hidden in plain sight, or awarded for making a meaningful contribution and recognized by the staff team. " \
                       "However, don't spoil them and ruin the fun!"
         embed.add_field(name="​", value=f"✨ **Achievement:** {achievement}", inline=False)
+
+        await ctx.send(embed=embed)
+
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_slash(
+        name="commands",
+        description="Detailed information about the economy",
+        guild_ids=[settings.get_value("guild_id")],
+    )
+    async def commands(self, ctx: SlashContext):
+        """ Help command to view a list of user commands. """
+        await ctx.defer()
+
+        # Warn if the command is called outside of #bots channel.
+        if not ctx.channel.id == settings.get_value("channel_bots"):
+            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+            return
+
+        embed = embeds.make_embed(title="Economy commands", color="green")
+        embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
+
+        daily = "Receive a random amount of buffer (5 rarities) once every 20 hours."
+        embed.add_field(name="​", value=f"✨ **/daily:** {daily}", inline=False)
+
+        buy_role = "Purchase a colorless custom role with a determined name for your user profile. Costs 10 GB buffer.\n" \
+                   "**role_name**: The name to be assigned to the role.\n" \
+                   "**freeleech**: Enable freeleech for this item once for 3 freeleech tokens."
+        embed.add_field(name="​", value=f"✨ **/buy role:** {buy_role}", inline=False)
+
+        buy_color = "Rolls a random color for your custom role, affected by your purchased upgrades (color packs, " \
+                    "brightness, and saturation). Costs 64 MB buffer per roll.\n" \
+                    "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
+        embed.add_field(name="​", value=f"✨ **/buy color:** {buy_color}", inline=False)
+
+        buy_nickname = "Purchase a nickname for 256 MB buffer.\n" \
+                       "**nickname**: The new nickname to be changed to.\n" \
+                       "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
+        embed.add_field(name="​", value=f"✨ **/buy nickname:** {buy_nickname}", inline=False)
+
+        upgrade_hue = "Increases the range of colors that can be rolled with /buy color. Costs 3 GB per color pack.\n" \
+                      "**pack**: One or more of the following options: red, yellow, green, cyan, blue, magenta.\n" \
+                      "**freeleech**: Enable freeleech for this item, costing 1 freeleech token."
+        embed.add_field(name="​", value=f"✨ **/upgrade hue:** {upgrade_hue}", inline=False)
+
+        upgrade_saturation = "Allows more saturated colors to be rolled with /buy color. Costs +3 MB buffer per level.\n" \
+                             "**amount**: The number of levels to be purchased.\n" \
+                             "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
+        embed.add_field(name="​", value=f"✨ **/upgrade saturation:** {upgrade_saturation}", inline=False)
+
+        upgrade_value = "Allows brighter colors to be rolled with /buy color. Costs +3 MB buffer per level.\n" \
+                        "**amount**: The number of levels to be purchased.\n" \
+                        "**freeleech**: Enable freeleech for this item once for 2 freeleech tokens."
+        embed.add_field(name="​", value=f"✨ **/upgrade value:** {upgrade_value}", inline=False)
 
         await ctx.send(embed=embed)
 
