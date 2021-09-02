@@ -77,8 +77,8 @@ class HelpCog(Cog):
                 "person will also receive a small amount of buffer as a reward. A 'Helpful' role will be awarded after receiving 50 vouches."
         embed.add_field(name="​", value=f"✨ **Vouch:** {vouch}", inline=False)
 
-        freeleech_token = "Earned on every unique user class promotion and special occasions such as holidays or anniversaries. This " \
-                          "token will allow you to purchase anything except a custom role at no cost!"
+        freeleech_token = "Earned on every unique user class promotion and special occasions such as holidays or anniversaries. Those " \
+                          "tokens will allow you to purchase anything from the store at no cost!"
         embed.add_field(name="​", value=f"✨ **Freeleech token:** {freeleech_token}", inline=False)
 
         custom_role = "Your custom role, which can be bought from the store if your user class is Power User or above, and can be " \
