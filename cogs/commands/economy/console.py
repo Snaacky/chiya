@@ -87,6 +87,12 @@ class Console(Cog):
                 required=False
             ),
             create_option(
+                name="set_daily_upgrade",
+                description="Set the daily upgrade value of a user",
+                option_type=4,
+                required=False
+            ),
+            create_option(
                 name="set_hue_upgrade",
                 description="Set the hue upgrade value of a user",
                 option_type=3,
@@ -131,6 +137,7 @@ class Console(Cog):
             set_vouch: int = None,
             has_custom_role: bool = None,
             custom_role_id: str = None,
+            set_daily_upgrade: str = None,
             set_hue_upgrade: str = None,
             set_saturation_upgrade: int = None,
             set_brightness_upgrade: int = None,
@@ -252,6 +259,16 @@ class Console(Cog):
             # ...but is one of the roles from "Staff" or higher.
             if any(custom_role_id == staff_role for staff_role in staff_roles):
                 await embeds.error_message(ctx=ctx, description="This role ID value is not assignable.")
+            db.close()
+            return
+
+        if set_daily_upgrade is not None and set_daily_upgrade in range(0, 101):
+            stats["daily_upgrade"] = set_daily_upgrade
+            embed.description = f"{user.mention}'s daily upgrade value has been set to {set_daily_upgrade}!"
+            await ctx.send(embed=embed)
+            # Else if the input parameter exists but is < 0, return.
+        elif set_daily_upgrade is not None:
+            await embeds.error_message(ctx=ctx, description="Daily upgrade value must be between 0 and 100.")
             db.close()
             return
 

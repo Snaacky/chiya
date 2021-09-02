@@ -111,17 +111,8 @@ class DailyCog(Cog):
             db.close()
             return
 
-        # A random amount of buffer based on rarity.
-        rarity = {
-            "common": [*range(100, 201)],
-            "uncommon": [*range(250, 351)],
-            "rare": [*range(400, 551)],
-            "epic": [*range(601, 751)],
-            "legendary": [*range(800, 1025)]
-        }
-
         # Roll a random value from 0-100.
-        rng = random.randint(0, 101)
+        rng = random.randint(0, 100)
 
         # Create the embed with a matching color on rarity rolled, and update tge
         embed = embeds.make_embed(
@@ -129,29 +120,43 @@ class DailyCog(Cog):
         )
         # 60% chance to roll the common tier. Embed color is "soft_green".
         if rng in range(0, 61):
-            value = random.choice(rarity["common"])
+            value = random.randint(100, 200)
             embed.description = f"You received {value} MB buffer!"
             embed.colour = 0x68c290
         # 25% chance to roll the uncommon tier. Embed color is "green".
         elif rng in range(61, 86):
-            value = random.choice(rarity["uncommon"])
+            value = random.randint(250, 350)
             embed.description = f"Nice, you received {value} MB buffer!"
             embed.colour = 0x2ecc71
         # 10% chance to roll the rare tier. Embed color is "blue".
         elif rng in range(86, 96):
-            value = random.choice(rarity["rare"])
+            value = random.randint(400, 550)
             embed.description = f"Amazing! You received {value} MB buffer!"
             embed.colour = 0x3498db
         # 4% chance to roll the epic tier. Embed color is "purple".
         elif rng in range(96, 100):
-            value = random.choice(rarity["epic"])
+            value = random.randint(600, 750)
             embed.description = f"What a fascinating discovery! You received {value} MB buffer!"
             embed.colour = 0x9b59b6
         # 1% chance to roll the legendary tier. Embed color is "gold".
         else:
-            value = random.choice(rarity["legendary"])
+            value = random.randint(800, 1024)
             embed.description = f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
             embed.colour = 0xf1c40f
+
+        # Roll a random float value to determine if /daily is going to be doubled or not.
+        double_daily = random.uniform(0, 100)
+
+        # Check if the rolled float value falls within the double range based on daily_upgrade amount and update the value if it does.
+        if 0 <= double_daily <= stats["daily_upgrade"] * 0.3:
+            value = value * 2
+            # Some fluff in the congratulation string.
+            words = ["brave", "bold", "strong", "wise", "ambitious", "blind", "devil", "naive", "poor", "wanderer", "fool", "betrayer"]
+            embed.add_field(
+                name="​",
+                value=f"**Fortune favors the {random.choice(words)}**: You received 2x buffer for a total of {value} MB!",
+                inline=False
+            )
 
         # Update the new timestamp and total buffer after the successful daily claim.
         stats["daily_timestamp"] = current_time
@@ -159,7 +164,7 @@ class DailyCog(Cog):
 
         # Get the formatted buffer string.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-        embed.add_field(name="Total buffer:", value=buffer_string)
+        embed.add_field(name="Total buffer:", value=buffer_string, inline=False)
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db.

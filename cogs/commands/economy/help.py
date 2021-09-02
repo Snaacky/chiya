@@ -116,18 +116,24 @@ class HelpCog(Cog):
 
         buy_role = "Purchase a colorless custom role with a determined name for your user profile. Costs 10 GB buffer.\n" \
                    "**role_name**: The name to be assigned to the role.\n" \
-                   "**freeleech**: Enable freeleech for this item once for 3 freeleech tokens."
+                   "**freeleech**: Enable freeleech for this item once, costing 3 freeleech tokens."
         embed.add_field(name="​", value=f"✨ **/buy role:** {buy_role}", inline=False)
 
         buy_color = "Rolls a random color for your custom role, affected by your purchased upgrades (color packs, " \
                     "brightness, and saturation). Costs 64 MB buffer per roll.\n" \
-                    "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
+                    "**freeleech**: Enable freeleech for this item once, costing 1 freeleech token."
         embed.add_field(name="​", value=f"✨ **/buy color:** {buy_color}", inline=False)
 
         buy_nickname = "Purchase a nickname for 256 MB buffer.\n" \
                        "**nickname**: The new nickname to be changed to.\n" \
                        "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
         embed.add_field(name="​", value=f"✨ **/buy nickname:** {buy_nickname}", inline=False)
+
+        upgrade_daily = "Increases the chance to receive double the amount of buffer from /daily. Each level gives +0.3%, " \
+                        "capped out at +30%. Costs +3 MB buffer per level.\n" \
+                        "**amount**: The number of levels to be purchased.\n" \
+                        "**freeleech**: Enable freeleech for this item once, costing 1 freeleech token."
+        embed.add_field(name="​", value=f"✨ **/upgrade daily:** {upgrade_daily}", inline=False)
 
         upgrade_hue = "Increases the range of colors that can be rolled with /buy color. Costs 3 GB per color pack.\n" \
                       "**pack**: One or more of the following options: red, yellow, green, cyan, blue, magenta.\n" \
@@ -136,12 +142,12 @@ class HelpCog(Cog):
 
         upgrade_saturation = "Allows more saturated colors to be rolled with /buy color. Costs +3 MB buffer per level.\n" \
                              "**amount**: The number of levels to be purchased.\n" \
-                             "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
+                             "**freeleech**: Enable freeleech for this item once, costing 1 freeleech token."
         embed.add_field(name="​", value=f"✨ **/upgrade saturation:** {upgrade_saturation}", inline=False)
 
         upgrade_value = "Allows brighter colors to be rolled with /buy color. Costs +3 MB buffer per level.\n" \
                         "**amount**: The number of levels to be purchased.\n" \
-                        "**freeleech**: Enable freeleech for this item once for 2 freeleech tokens."
+                        "**freeleech**: Enable freeleech for this item once, costing 2 freeleech tokens."
         embed.add_field(name="​", value=f"✨ **/upgrade value:** {upgrade_value}", inline=False)
 
         await ctx.send(embed=embed)

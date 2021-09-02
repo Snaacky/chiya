@@ -104,6 +104,7 @@ class ProfileCog(Cog):
 
         # Declare the value parameter for the embed. Doing it this way allows the name and value displayed on a single line.
         value = f"**User class:** {stats['user_class']}\n\n" \
+                f"**Double daily**: Level {stats['daily_upgrade']} (+{stats['daily_upgrade'] * 0.3}%)\n" \
                 f"**Saturation:** Level {stats['saturation_upgrade']}\n" \
                 f"**Brightness:** Level {stats['value_upgrade']}\n" \
                 f"**Purchased color packs:** {color_packs}\n" \

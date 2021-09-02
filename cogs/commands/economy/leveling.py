@@ -64,6 +64,7 @@ stats_template = {
     "vouch": 0,
     "has_custom_role": False,
     "custom_role_id": 0,
+    "daily_upgrade": 0,
     "hue_upgrade": [],
     "saturation_upgrade": 0,
     "value_upgrade": 0,
