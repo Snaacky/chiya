@@ -112,6 +112,7 @@ def check_substring(message: str, term: str) -> bool:
 
 def check_fuzzy(message: str, term: str, threshold: int) -> bool:
     # partial ratio was found to be most suitable for this use-case
+    # https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/
     if(fuzz.partial_ratio(message, term) >= threshold):
         return True
     return False
