@@ -23,6 +23,7 @@ async def check_message(message: discord.Message) -> bool:
         if not censor['enabled']:
             continue
         # Checking for exclusions for the particular term
+        # json.loads() is used because the JSON List is stored as a string in the DB
         if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # regex checking
