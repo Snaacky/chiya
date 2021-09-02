@@ -29,7 +29,7 @@ class HelpCog(Cog):
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
+        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
@@ -104,7 +104,7 @@ class HelpCog(Cog):
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
+        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
