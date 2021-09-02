@@ -2,7 +2,6 @@ import logging
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
-
 from utils import automod
 
 log = logging.getLogger(__name__)
@@ -136,6 +135,7 @@ class MessageUpdates(commands.Cog):
 
         if (await automod.check_message(message)):
             await message.delete()
+            # if there is an offending term in a command, don't even process it
             return
 
         # If message does not follow with the above code, treat it as a potential command.
