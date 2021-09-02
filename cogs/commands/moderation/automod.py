@@ -1,23 +1,19 @@
+import json
 import logging
 from typing import List
 
-import dataset
-from sqlalchemy.sql.expression import desc
-import json
-
 import config
-from utils import database
-
-from discord.ext import commands
+import dataset
 import discord
-from utils import embeds
-from utils.record import record_usage
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_choice, create_option, create_permission
-
+from discord.ext import commands
+from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import (create_choice, create_option,
+                                                 create_permission)
+from sqlalchemy.sql.expression import desc
+from utils import database, embeds
 from utils.pagination import LinePaginator
-
+from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -86,9 +82,12 @@ class AutomodCog(commands.Cog):
         censored_terms = []
         db = dataset.connect(database.get_db())
         censors = None
+        # in the case there is a search_term specified
         if search_term:
             if censor_type:
                 censors = db['censor'].find(
+                    # 'ilike' is a case-insensitive search filter of table (wildcards supported)
+                    # https://dataset.readthedocs.io/en/latest/queries.html#advanced-filters
                     censor_term={'ilike': search_term},
                     censor_type=censor_type
                 )
@@ -97,18 +96,22 @@ class AutomodCog(commands.Cog):
                     censor_term={'ilike': search_term},
                 )
 
+        # if there is just censor type specified
         elif censor_type:
             censors = db['censor'].find(
                 censor_type=censor_type
             )
+        # if nothing is specified, list everything
         else:
             censors = db['censor'].all()
 
         for censor in censors:
             censor_term = censor['censor_term']
+            # If the censor is 'fuzzy' type, display the treshold value.
             if censor['censor_type'] == 'fuzzy':
                 censor_term = f"{censor['censor_term']} ({censor['censor_threshold']}%)"
 
+            # Displaying whether the censor is activated or not
             enabled_emoji = "<:yes:778724405333196851>" if censor[
                 'enabled'] else "<:no:778724416230129705>"
             censored_term = f"**ID: {censor['id']} ** | **{censor['censor_type']}** | {enabled_emoji} \n```{censor_term}```"
@@ -117,6 +120,7 @@ class AutomodCog(commands.Cog):
         embed = embeds.make_embed(
             ctx=ctx, title="Censored Terms", thumbnail_url=config.defcon_disabled, color="gold")
 
+        # paginating
         await LinePaginator.paginate(censored_terms, ctx=ctx, embed=embed, max_lines=5, max_size=2000, time_to_delete=30)
 
         db.close()
@@ -199,6 +203,7 @@ class AutomodCog(commands.Cog):
             censor_type=censor_type,
             censor_threshold=censor_threshold,
             enabled=True,
+            # Dataset seems to store json values as a string, default NULL value is problematic
             excluded_users=json.dumps(list()),
             excluded_roles=json.dumps(list())
         ))
@@ -384,8 +389,10 @@ class AutomodCog(commands.Cog):
             await embeds.error_message(ctx=ctx, description="Could not find a censor with that ID!")
             return
 
+        # initializing, in the case the List in the DB is empty
         excluded_users = list()
         if censor['excluded_users']:
+            # The JSON List is stored as a string in the DB, so converting that to a List first
             excluded_users = json.loads(censor['excluded_users'])
 
         excluded_users.append(user_id)
@@ -441,6 +448,7 @@ class AutomodCog(commands.Cog):
 
         excluded_users = list()
         if censor['excluded_users']:
+            # The JSON List is stored as a string in the DB, so converting that to a List first
             excluded_users = json.loads(censor['excluded_users'])
 
         if not user_id in excluded_users:
@@ -609,6 +617,7 @@ class AutomodCog(commands.Cog):
         embed.description = f"**ID:** {censor['id']} | **Censor Term:** `{censor['censor_term']}` | {enabled_emoji} "
 
         excluded_users = json.loads(censor['excluded_users'])
+        # only display excluded users if there are any exclusions
         if excluded_users:
             excluded_users = ""
             for user_id in json.loads(censor['excluded_users']):
@@ -617,6 +626,7 @@ class AutomodCog(commands.Cog):
                             value=excluded_users, inline=False)
 
         excluded_roles = json.loads(censor['excluded_roles'])
+        # only display excluded roles if there are exclusions
         if excluded_roles:
             excluded_roles = ""
             for role_id in json.loads(censor['excluded_roles']):
