@@ -30,18 +30,24 @@ class UpgradeHueCog(Cog):
         options=[
             create_option(
                 name="pack",
-                description="Red, yellow, green, cyan, blue, magenta",
+                description="Red, yellow, green, cyan, blue, magenta.",
                 option_type=3,
                 required=True
             ),
+            create_option(
+                name="freeleech",
+                description="Enable freeleech for this item, costing 2 freeleech tokens per level.",
+                option_type=5,
+                required=False
+            ),
         ],
     )
-    async def upgrade_hue(self, ctx: SlashContext, pack: str):
+    async def upgrade_hue(self, ctx: SlashContext, pack: str, freeleech: bool = False):
         """ Purchase a color pack to increase the amount of possible colors that can be rolled. """
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
+        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
@@ -72,6 +78,7 @@ class UpgradeHueCog(Cog):
 
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
         cost = 3072
+        fl_token = 2
 
         # Condition: The input color pack choice must match at least one of the items in the allowed colors.
         color_check = any(pack == color for color in colors)
@@ -82,11 +89,14 @@ class UpgradeHueCog(Cog):
         # Condition: Buffer must be above 3 GB.
         buffer_check = stats["buffer"] >= cost
 
+        # Condition: Must have at least 1 freeleech token.
+        fl_token_check = stats["freeleech_token"] >= fl_token
+
         # Condition: Must already own a custom role.
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if not color_check or owned_check or not buffer_check or not custom_role_check:
+        if not color_check or owned_check or not buffer_check or not fl_token_check or not custom_role_check:
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -101,6 +111,8 @@ class UpgradeHueCog(Cog):
                 embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.", inline=False)
             if not custom_role_check:
                 embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
+            if freeleech and not fl_token_check:
+                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
             await ctx.send(embed=embed)
             db.close()
             return
@@ -109,19 +121,23 @@ class UpgradeHueCog(Cog):
         if any(pack == color for color in colors):
             stats["hue_upgrade"].append(pack)
 
-        # Update the JSON object accordingly.
-        stats["buffer"] -= cost
-
-        # Get the formatted buffer string.
-        buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-
         # Create an embed upon successful transaction.
         embed = embeds.make_embed(
             title=f"Color unlocked: {str(pack)}",
             description=f"You can now roll {pack}-like colors.",
             color="green"
         )
-        embed.add_field(name="New buffer:", value=buffer_string)
+
+        # Update the JSON object accordingly.
+        if freeleech:
+            stats["freeleech_token"] -= fl_token
+            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+        else:
+            stats["buffer"] -= cost
+            # Get the formatted buffer string.
+            buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
+            embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
+
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db and close it.

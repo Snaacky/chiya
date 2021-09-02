@@ -30,13 +30,19 @@ class UpgradeDailyCog(Cog):
         options=[
             create_option(
                 name="amount",
-                description="Number of upgrades to purchase",
+                description="Number of upgrades to purchase.",
                 option_type=4,
                 required=True
             ),
+            create_option(
+                name="freeleech",
+                description="Enable freeleech for this item, costing 1 freeleech token per level.",
+                option_type=5,
+                required=False
+            ),
         ],
     )
-    async def upgrade_daily(self, ctx: SlashContext, amount: int):
+    async def upgrade_daily(self, ctx: SlashContext, amount: int, freeleech: bool = False):
         """ Increases the chance to receive 2x buffer from /daily. """
         await ctx.defer()
 
@@ -69,6 +75,7 @@ class UpgradeDailyCog(Cog):
 
         # Baseline cost of the transaction. Declared separately to give less headaches on future balance changes.
         cost = 3
+        fl_token = 1
 
         # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
         inflated_cost = 0
@@ -79,11 +86,14 @@ class UpgradeDailyCog(Cog):
         # Condition: Must have more buffer than the cost of the transaction.
         buffer_check = stats["buffer"] >= inflated_cost
 
+        # Condition: Must have at least 1 freeleech token.
+        fl_token_check = stats["freeleech_token"] >= fl_token
+
         # Condition: The total number of upgrades must not exceed 100.
         availability_check = amount + stats["daily_upgrade"] <= 100
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not availability_check:
+        if not buffer_check or not fl_token_check or not availability_check:
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -95,16 +105,14 @@ class UpgradeDailyCog(Cog):
                 embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(inflated_cost)} buffer.", inline=False)
             if not availability_check:
                 embed.add_field(name="Condition:", value=f" You can only purchase this upgrade {100 - stats['daily_upgrade']} more times!", inline=False)
+            if freeleech and not fl_token_check:
+                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
             await ctx.send(embed=embed)
             db.close()
             return
 
-        # Update the JSON object.
+        # Update the new stat first so that the embed will contain the up to date value.
         stats["daily_upgrade"] += amount
-        stats["buffer"] -= inflated_cost
-
-        # Get the formatted buffer string.
-        buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
 
         # Create an embed upon successful transaction and notice the user if the buffer was doubled.
         embed = embeds.make_embed(
@@ -113,7 +121,17 @@ class UpgradeDailyCog(Cog):
             color="green"
         )
         embed.add_field(name="Chance to receive 2x buffer:", value=f"{round(stats['daily_upgrade'] * 0.3, 2)}%", inline=False)
-        embed.add_field(name="New buffer:", value=buffer_string, inline=False)
+
+        # Update the JSON object accordingly.
+        if freeleech:
+            stats["freeleech_token"] -= fl_token * amount
+            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+        else:
+            stats["buffer"] -= inflated_cost
+            # Get the formatted buffer string.
+            buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
+            embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
+
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db and close it.

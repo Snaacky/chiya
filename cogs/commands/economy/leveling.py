@@ -60,6 +60,7 @@ stats_template = {
     "next_user_class_buffer": 0,
     "message_count": 0,
     "next_user_class_message": 0,
+    "unique_promotion": 0,
     "freeleech_token": 0,
     "vouch": 0,
     "has_custom_role": False,
@@ -262,7 +263,6 @@ class LevelingCog(Cog):
             thumbnail_url=message.author.avatar_url,
             color="green"
         )
-        promote_embed.add_field(name="​", value="**Reward:** 1x FL Token")
 
         # Make an embed to be sent on user demotion.
         demote_embed = embeds.make_embed(
@@ -277,7 +277,14 @@ class LevelingCog(Cog):
         or demoted to. If their current user class equals to the previous user class, it means that they just got demoted,
         and vice versa when promoted. Their previous, current, and next user class will be updated regardlessly. Note that for 
         "Member" class, we don't check for promotion because this is the lowest possible user class. The same applies to the 
-        "Legend" class where demotion is not checked because it is the highest possible user class.
+        "Legend" class where demotion is not checked because it is the highest possible user class. "None" is a hidden user class
+        that is made to not interact with anything and handle out of bound user classes for convenience.
+        
+        If the user is promoted to a new user class for the first time, give them a freeleech token. Unique promotion is kept track
+        using an int ranging from 0-7 (8 user classes means that there will be 7 promotions). When it happens, add a reward field into
+        the embed.
+        
+        Finally, assign the user class role to the member.
         """
 
         # "Member" if buffer is between 0-10 GB and message count is >= 0.
@@ -290,6 +297,8 @@ class LevelingCog(Cog):
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = "None"
             stats["next_user_class"] = user_class["user"]
+            role_member = discord.utils.get(message.guild.roles, id=settings.get_value("role_member"))
+            await message.author.add_roles(role_member)
 
         # "User" if buffer is between 10-25 GB and message count is >= 1000.
         elif buffer_requirement["user"] <= stats["buffer"] < buffer_requirement["power_user"] \
@@ -298,11 +307,17 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = buffer_requirement["power_user"]
             stats["next_user_class_message"] = message_requirement["power_user"]
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 0:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 1
+                    promote_embed.add_field(name="​", value="**Unique reward**: 1x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = user_class["member"]
             stats["next_user_class"] = user_class["power_user"]
+            role_user = discord.utils.get(message.guild.roles, id=settings.get_value("role_user"))
+            await message.author.add_roles(role_user)
 
         # "Power User" if buffer is between 25-50 GB and message count is >= 2500.
         elif buffer_requirement["power_user"] <= stats["buffer"] < buffer_requirement["elite"] \
@@ -311,11 +326,17 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = buffer_requirement["elite"]
             stats["next_user_class_message"] = message_requirement["elite"]
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 1:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 1
+                    promote_embed.add_field(name="​", value="**Unique reward**: 1x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = user_class["user"]
             stats["next_user_class"] = user_class["elite"]
+            role_power_user = discord.utils.get(message.guild.roles, id=settings.get_value("role_power_user"))
+            await message.author.add_roles(role_power_user)
 
         # "Elite" if buffer is between 50-100 GB and message count is >= 5000.
         elif buffer_requirement["elite"] <= stats["buffer"] < buffer_requirement["torrent_master"] \
@@ -324,11 +345,17 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = buffer_requirement["torrent_master"]
             stats["next_user_class_message"] = message_requirement["torrent_master"]
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 2:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 2
+                    promote_embed.add_field(name="​", value="**Unique reward**: 2x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = user_class["power_user"]
             stats["next_user_class"] = user_class["torrent_master"]
+            role_elite = discord.utils.get(message.guild.roles, id=settings.get_value("role_elite"))
+            await message.author.add_roles(role_elite)
 
         # "Torrent Master" if buffer is between 100-250 GB and message count is >= 10000.
         elif buffer_requirement["torrent_master"] < stats["buffer"] < buffer_requirement["power_tm"] \
@@ -337,11 +364,17 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = buffer_requirement["power_tm"]
             stats["next_user_class_message"] = message_requirement["power_tm"]
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 3:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 2
+                    promote_embed.add_field(name="​", value="**Unique reward**: 2x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = user_class["elite"]
             stats["next_user_class"] = user_class["power_tm"]
+            role_torrent_master = discord.utils.get(message.guild.roles, id=settings.get_value("role_torrent_master"))
+            await message.author.add_roles(role_torrent_master)
 
         # "Power TM" if buffer is between 250-500 GB and message count is >= 22500.
         elif buffer_requirement["power_tm"] <= stats["buffer"] < buffer_requirement["elite_tm"] \
@@ -350,11 +383,17 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = buffer_requirement["elite_tm"]
             stats["next_user_class_message"] = message_requirement["elite_tm"]
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 4:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 3
+                    promote_embed.add_field(name="​", value="**Unique reward**: 3x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = user_class["torrent_master"]
             stats["next_user_class"] = user_class["elite_tm"]
+            role_power_tm = discord.utils.get(message.guild.roles, id=settings.get_value("role_power_tm"))
+            await message.author.add_roles(role_power_tm)
 
         # "Elite TM" if buffer is between 500-1024 GB and message count is >= 45000.
         elif buffer_requirement["elite_tm"] <= stats["buffer"] < buffer_requirement["legend"] \
@@ -363,11 +402,17 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = buffer_requirement["legend"]
             stats["next_user_class_message"] = message_requirement["legend"]
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 5:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 3
+                    promote_embed.add_field(name="​", value="**Unique reward**: 3x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await message.channel.send(embed=demote_embed)
             stats["previous_user_class"] = user_class["power_tm"]
             stats["next_user_class"] = user_class["legend"]
+            role_elite_tm = discord.utils.get(message.guild.roles, id=settings.get_value("role_elite_tm"))
+            await message.author.add_roles(role_elite_tm)
 
         # "Legend" if buffer is > 1024 GB and message count is >= 80000.
         elif stats["buffer"] >= buffer_requirement["legend"] \
@@ -376,9 +421,15 @@ class LevelingCog(Cog):
             stats["next_user_class_buffer"] = 0
             stats["next_user_class_message"] = 0
             if stats["user_class"] == stats["next_user_class"]:
+                if stats["unique_promotion"] == 6:
+                    stats["unique_promotion"] += 1
+                    stats["freeleech_token"] += 5
+                    promote_embed.add_field(name="​", value="**Unique reward**: 5x Freeleech Token")
                 await message.channel.send(embed=promote_embed)
             stats["previous_user_class"] = user_class["elite_tm"]
             stats["next_user_class"] = "None"
+            role_legend = discord.utils.get(message.guild.roles, id=settings.get_value("role_legend"))
+            await message.author.add_roles(role_legend)
 
         # Return the dictionary.
         return stats

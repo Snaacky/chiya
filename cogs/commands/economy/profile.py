@@ -41,7 +41,7 @@ class ProfileCog(Cog):
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
+        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
@@ -104,12 +104,12 @@ class ProfileCog(Cog):
 
         # Declare the value parameter for the embed. Doing it this way allows the name and value displayed on a single line.
         value = f"**User class:** {stats['user_class']}\n\n" \
-                f"**Double daily**: Level {stats['daily_upgrade']} (+{stats['daily_upgrade'] * 0.3}%)\n" \
+                f"**Double daily:** Level {stats['daily_upgrade']} (+{stats['daily_upgrade'] * 0.3}%)\n" \
                 f"**Saturation:** Level {stats['saturation_upgrade']}\n" \
                 f"**Brightness:** Level {stats['value_upgrade']}\n" \
                 f"**Purchased color packs:** {color_packs}\n" \
                 f"**Vouches received:** {stats['vouch']}\n" \
-                f"**Freeleech token:** {stats['freeleech_token']}\n\n" \
+                f"**Freeleech tokens:** {stats['freeleech_token']}\n\n" \
                 f"**Custom role:** {custom_role}\n\n" \
                 f"**Buffer:** {buffer_string}"
 

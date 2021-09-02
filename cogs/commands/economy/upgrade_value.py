@@ -30,20 +30,26 @@ class UpgradeValueCog(Cog):
         options=[
             create_option(
                 name="amount",
-                description="Number of upgrades to purchase. ",
+                description="Number of upgrades to purchase.",
                 option_type=4,
                 required=True
             ),
+            create_option(
+                name="freeleech",
+                description="Enable freeleech for this item, costing 1 freeleech token per level.",
+                option_type=5,
+                required=False
+            ),
         ],
     )
-    async def upgrade_value(self, ctx: SlashContext, amount: int):
+    async def upgrade_value(self, ctx: SlashContext, amount: int, freeleech: bool = False):
         """
         Allows brighter colors to be rolled. HSB (brightness) == HSV (value), but we're using the former one
         in wording to make it easier to understand for the end users. """
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
+        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
@@ -71,6 +77,7 @@ class UpgradeValueCog(Cog):
 
         # Baseline cost of the transaction. Declared separately to give less headaches on future balance changes.
         cost = 3
+        fl_token = 1
 
         # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
         inflated_cost = 0
@@ -80,6 +87,9 @@ class UpgradeValueCog(Cog):
 
         # Condition: Must have more buffer than the cost of the transaction.
         buffer_check = stats["buffer"] >= inflated_cost
+
+        # Condition: Must have at least 1 freeleech token.
+        fl_token_check = stats["freeleech_token"] >= fl_token
 
         # Condition: Must have purchased at least 1 color pack.
         color_check = len(stats["hue_upgrade"]) > 0
@@ -91,7 +101,7 @@ class UpgradeValueCog(Cog):
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not color_check or not availability_check or not custom_role_check:
+        if not buffer_check or not fl_token_check or not color_check or not availability_check or not custom_role_check:
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -107,16 +117,14 @@ class UpgradeValueCog(Cog):
                 embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
             if not availability_check:
                 embed.add_field(name="Condition:", value=f" You can only purchase this upgrade {100 - stats['value_upgrade']} more times!", inline=False)
+            if freeleech and not fl_token_check:
+                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
             await ctx.send(embed=embed)
             db.close()
             return
 
-        # Update the JSON object.
+        # Update the new stat first so that the embed will contain the up to date value.
         stats["value_upgrade"] += amount
-        stats["buffer"] -= inflated_cost
-
-        # Get the formatted buffer string.
-        buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
 
         # Create an embed upon successful transaction.
         embed = embeds.make_embed(
@@ -124,7 +132,17 @@ class UpgradeValueCog(Cog):
             description=f"You reached brightness level {stats['value_upgrade']}!",
             color="green"
         )
-        embed.add_field(name="New buffer:", value=buffer_string)
+
+        # Update the JSON object accordingly.
+        if freeleech:
+            stats["freeleech_token"] -= fl_token * amount
+            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+        else:
+            stats["buffer"] -= inflated_cost
+            # Get the formatted buffer string.
+            buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
+            embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
+
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db and close it.

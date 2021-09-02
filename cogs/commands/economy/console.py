@@ -63,6 +63,12 @@ class Console(Cog):
                 required=False
             ),
             create_option(
+                name="set_unique_promotion",
+                description="Set the number of unique promotions of a user",
+                option_type=4,
+                required=False
+            ),
+            create_option(
                 name="set_freeleech_token",
                 description="Set the FL token value of a user",
                 option_type=4,
@@ -133,6 +139,7 @@ class Console(Cog):
             remove_buffer: int = None,
             add_buffer: int = None,
             set_message_count: int = None,
+            set_unique_promotion: int = None,
             set_freeleech_token: int = None,
             set_vouch: int = None,
             has_custom_role: bool = None,
@@ -213,6 +220,17 @@ class Console(Cog):
             db.close()
             return
 
+        # Set the number of unique promotions of a user. Must be from 0-7.
+        if set_unique_promotion is not None and set_unique_promotion in range(0, 8):
+            stats["unique_promotion"] = set_unique_promotion
+            embed.description = f"{user.mention}'s unique promotion count has been set to {set_unique_promotion}!"
+            await ctx.send(embed=embed)
+        # Else if the input parameter exists but is not between 0-7, return.
+        elif set_unique_promotion is not None:
+            await embeds.error_message(ctx=ctx, description="Unique promotion count must be between 0 to 7.")
+            db.close()
+            return
+
         # Set the FL token of a user. Must be >= 0.
         if set_freeleech_token is not None and set_freeleech_token >= 0:
             stats["freeleech_token"] = set_freeleech_token
@@ -262,11 +280,12 @@ class Console(Cog):
             db.close()
             return
 
+        # Set the daily upgrade value of a user. Must be between 0-100.
         if set_daily_upgrade is not None and set_daily_upgrade in range(0, 101):
             stats["daily_upgrade"] = set_daily_upgrade
             embed.description = f"{user.mention}'s daily upgrade value has been set to {set_daily_upgrade}!"
             await ctx.send(embed=embed)
-            # Else if the input parameter exists but is < 0, return.
+            # Else if the input parameter exists but is not between 0-100, return.
         elif set_daily_upgrade is not None:
             await embeds.error_message(ctx=ctx, description="Daily upgrade value must be between 0 and 100.")
             db.close()
@@ -296,29 +315,29 @@ class Console(Cog):
                 db.close()
                 return
 
-        # Set the saturation upgrade of a user. Must be >= 0.
+        # Set the saturation upgrade value of a user. Must be between 0-100.
         if set_saturation_upgrade is not None and set_saturation_upgrade in range(0, 101):
             stats["saturation_upgrade"] = set_saturation_upgrade
             embed.description = f"{user.mention}'s saturation upgrade value has been set to {set_saturation_upgrade}!"
             await ctx.send(embed=embed)
-        # Else if the input parameter exists but is < 0, return.
+        # Else if the input parameter exists but is not between 0-100, return.
         elif set_saturation_upgrade is not None:
             await embeds.error_message(ctx=ctx, description="Saturation upgrade value must be between 0 and 100.")
             db.close()
             return
 
-        # Set the brightness upgrade of a user. Must be >= 0.
+        # Set the brightness upgrade value of a user. Must be between 0-100.
         if set_brightness_upgrade is not None and set_brightness_upgrade in range(0, 101):
             stats["value_upgrade"] = set_brightness_upgrade
             embed.description = f"{user.mention}'s brightness upgrade value has been set to {set_brightness_upgrade}!"
             await ctx.send(embed=embed)
-        # Else if the input parameter exists but is < 0, return.
+        # Else if the input parameter exists but is not between 0-100, return.
         elif set_brightness_upgrade is not None:
             await embeds.error_message(ctx=ctx, description="Brightness upgrade value must be between 0 and 100.")
             db.close()
             return
 
-        # Set the daily timestamp upgrade of a user (Unix format). Must be >= 0.
+        # Set the daily timestamp of a user (Unix format). Must be >= 0.
         if set_daily_timestamp is not None and set_daily_timestamp >= 0:
             stats["daily_timestamp"] = set_daily_timestamp
             time = datetime.datetime.fromtimestamp(set_daily_timestamp)

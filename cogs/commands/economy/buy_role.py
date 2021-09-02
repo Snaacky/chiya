@@ -34,14 +34,20 @@ class BuyRoleCog(Cog):
                 option_type=3,
                 required=True
             ),
+            create_option(
+                name="freeleech",
+                description="Enable freeleech for this item, costing 5 freeleech tokens.",
+                option_type=5,
+                required=False
+            ),
         ],
     )
-    async def buy_role(self, ctx: SlashContext, name: str):
+    async def buy_role(self, ctx: SlashContext, name: str, freeleech: bool = False):
         """ Purchase a role and assign it to themselves. """
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
+        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
@@ -69,12 +75,16 @@ class BuyRoleCog(Cog):
 
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
         cost = 10240
+        fl_token = 5
 
         # Declare the allowed user classes for the custom role purchase.
         allowed_classes = ["Power User", "Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"]
 
         # Condition: Buffer must be above 10 GB.
         buffer_check = stats["buffer"] >= cost
+
+        # Condition: Must have at least 5 freeleech tokens.
+        fl_token_check = stats["freeleech_token"] >= fl_token
 
         # Condition: User class must be "Elite" or higher.
         user_class_check = any(stats["user_class"] == allowed_class for allowed_class in allowed_classes)
@@ -83,7 +93,7 @@ class BuyRoleCog(Cog):
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not user_class_check or custom_role_check:
+        if not buffer_check or not fl_token_check or not user_class_check or custom_role_check:
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -96,6 +106,8 @@ class BuyRoleCog(Cog):
                 embed.add_field(name="Condition:", value="User class must be 'Power User' or higher.", inline=False)
             if custom_role_check:
                 embed.add_field(name="Condition:", value="You must not own a custom role yet.", inline=False)
+            if freeleech and not fl_token_check:
+                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
             await ctx.send(embed=embed)
             db.close()
             return
@@ -141,20 +153,26 @@ class BuyRoleCog(Cog):
         positions = dict((value, key) for key, value in positions.items())
         await ctx.guild.edit_role_positions(positions=positions, reason="Custom role purchased.")
 
-        # Update the JSON object accordingly.
-        stats["buffer"] -= cost
-        stats["has_custom_role"] = True
-
-        # Get the formatted buffer string.
-        buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-
         # Create the embed to let the user know that the transaction was a success.
         embed = embeds.make_embed(
             title=f"Role purchased: {custom_role.name}",
-            description="Successfully purchased a custom role for 10 GB buffer.",
             color="green"
         )
-        embed.add_field(name="New buffer:", value=buffer_string)
+
+        # Update the JSON object accordingly.
+        if freeleech:
+            stats["freeleech_token"] -= fl_token
+            embed.description = f"Successfully purchased a custom role for {fl_token} freeleech tokens."
+            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+        else:
+            stats["buffer"] -= cost
+            embed.description = f"Successfully purchased a custom role for {cost} MB buffer."
+            # Get the formatted buffer string.
+            buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
+            embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
+
+        stats["has_custom_role"] = True
+
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db and close it.
