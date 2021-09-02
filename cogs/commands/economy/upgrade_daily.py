@@ -120,7 +120,7 @@ class UpgradeDailyCog(Cog):
             description=f"You reached daily level {stats['daily_upgrade']}!",
             color="green"
         )
-        embed.add_field(name="Chance to receive 2x buffer:", value=f"{round(stats['daily_upgrade'] * 0.3, 2)}%", inline=False)
+        embed.add_field(name="Chance to receive 2x buffer:", value=f"{round(stats['daily_upgrade'] * 0.35, 2)}%", inline=False)
 
         # Update the JSON object accordingly.
         if freeleech:

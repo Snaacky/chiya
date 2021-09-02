@@ -148,7 +148,7 @@ class DailyCog(Cog):
         double_daily = random.uniform(0, 100)
 
         # Check if the rolled float value falls within the double range based on daily_upgrade amount and update the value if it does.
-        if 0 <= double_daily <= stats["daily_upgrade"] * 0.3:
+        if 0 <= double_daily <= stats["daily_upgrade"] * 0.35:
             value = value * 2
             # Some fluff in the congratulation string.
             words = ["brave", "bold", "strong", "wise", "ambitious", "blind", "devil", "naive", "poor", "wanderer", "fool", "betrayer"]

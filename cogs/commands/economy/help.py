@@ -129,8 +129,8 @@ class HelpCog(Cog):
                        "**freeleech**: Enable freeleech for this item once for 1 freeleech token."
         embed.add_field(name="​", value=f"✨ **/buy nickname:** {buy_nickname}", inline=False)
 
-        upgrade_daily = "Increases the chance to receive double the amount of buffer from /daily. Each level gives +0.3%, " \
-                        "capped out at +30%. Costs +3 MB buffer per level.\n" \
+        upgrade_daily = "Increases the chance to receive double the amount of buffer from /daily. Each level gives +0.35%, " \
+                        "capped out at +35%. Costs +3 MB buffer per level.\n" \
                         "**amount**: The number of levels to be purchased.\n" \
                         "**freeleech**: Enable freeleech for this item once, costing 1 freeleech token per level."
         embed.add_field(name="​", value=f"✨ **/upgrade daily:** {upgrade_daily}", inline=False)
