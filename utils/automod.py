@@ -1,26 +1,28 @@
-import discord
-import re
-import dataset
 import json
+import re
+
+import dataset
+import discord
+from cogs.commands import settings
+from fuzzywuzzy import fuzz
 
 from utils import database
-from fuzzywuzzy import fuzz
-from cogs.commands import settings
 
 
 async def check_message(message: discord.Message) -> bool:
-    """ Checks Messages by calling various other methods. """
+    """ Checks Messages for censors """
 
     # Ignore the message if it's not from the automod-enabled channels/categories
     if not await is_in_enabled_channels(message):
         return False
 
     db = dataset.connect(database.get_db())
-    # querying everything from the database
+    # querying each individual category from the database.
     regex_censors = db['censor'].find(censor_type="regex")
     for censor in regex_censors:
         if not censor['enabled']:
             continue
+        # Checking for exclusions for the particular term
         if is_user_excluded(message, json.loads(censor['excluded_users']), json.loads(censor['excluded_roles'])):
             continue
         # regex checking
@@ -94,6 +96,7 @@ def check_regex(message: str, regex: str) -> bool:
 
 
 def check_exact(message: str, term: str) -> bool:
+    # exact and f-string wouldn't work on the same string, so concatenating.
     regex = r"\b" + term + r"\b"
     if re.search(regex, message, re.IGNORECASE):
         return True
@@ -107,6 +110,7 @@ def check_substring(message: str, term: str) -> bool:
 
 
 def check_fuzzy(message: str, term: str, threshold: int) -> bool:
+    # partial ratio was found to be most suitable for this use-case
     if(fuzz.partial_ratio(message, term) >= threshold):
         return True
     return False
