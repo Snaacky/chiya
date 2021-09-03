@@ -91,7 +91,7 @@ class BuyNicknameCog(Cog):
         user_class_check = any(stats["user_class"] == allowed_class for allowed_class in allowed_classes)
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not fl_token_check or not user_class_check:
+        if not buffer_check or (freeleech and not fl_token_check) or not user_class_check:
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",

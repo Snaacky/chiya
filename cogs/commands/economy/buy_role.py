@@ -94,7 +94,7 @@ class BuyRoleCog(Cog):
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not fl_token_check or not user_class_check or custom_role_check:
+        if not buffer_check or (freeleech and not fl_token_check) or not user_class_check or custom_role_check:
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",

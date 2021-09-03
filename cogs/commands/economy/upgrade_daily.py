@@ -94,7 +94,7 @@ class UpgradeDailyCog(Cog):
         availability_check = amount + stats["daily_upgrade"] <= 100
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not fl_token_check or not availability_check:
+        if not buffer_check or (freeleech and not fl_token_check) or not availability_check:
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
