@@ -442,13 +442,13 @@ class LevelingCog(Cog):
         length = len(message.content.split())
 
         # Calculate the multiplier based on message length.
-        if length in range(0, 3):
+        if length in range(0, 2):
             multiplier = 0.33
-        elif length in range(3, 5):
+        elif length in range(2, 4):
             multiplier = 0.67
-        elif length in range(5, 8):
+        elif length in range(4, 6):
             multiplier = 0.9
-        elif length in range(8, 11):
+        elif length in range(6, 11):
             multiplier = 1
         elif length in range(11, 16):
             multiplier = 1.1
