@@ -16,6 +16,7 @@ from cogs.commands import settings
 from utils import database
 from utils import embeds
 from utils.record import record_usage
+from utils.pagination import LinePaginator
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -142,144 +143,45 @@ class NotesCog(Cog):
             results = mod_logs.find(user_id=user.id)
 
         # Creating a list to store actions for the paginator.
-        actions = []
-        page_no = 0
-        # Number of results per page.
-        per_page = 4
-        # Creating a temporary list to store the per_page number of actions.
-        page = []
+        actions = list()
+        for action in results:
+            """ Creating a List to paginate through"""
+            action_emoji = dict(
+            mute="🤐",
+            unmute="🗣",
+            warn="⚠",
+            kick="👢",
+            ban="🔨",
+            unban="⚒",
+            restrict="🚫",
+            unrestrict="✅",
+            note="🗒️"
+            )
+        
+            action_type = action["type"]
+            # Capitalising the first letter of the action type.
+            action_type = action_type[0].upper() + action_type[1:]
+            # Adding fluff emoji to action_type.
+            action_type = f"{action_emoji[action['type']]} {action_type}"
+            
+            actions.append(f"""
+            **{action_type} | ID: {action['id']}**
+            **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+            **Moderator:** <@!{action['mod_id']}>
+            **Reason:** {action['reason']}""")
 
-        for entry in results:
-            # Appending dict of action to the particular page.
-            page.append(dict(
-                id=entry["id"],
-                user_id=entry["user_id"],
-                mod_id=entry["mod_id"],
-                reason=entry["reason"],
-                type=entry["type"],
-                timestamp=entry["timestamp"]
-            ).copy())
-
-            if (page_no + 1) % per_page == 0 and page_no != 0:
-                # Appending the current page to the main actions list and resetting the page.
-                actions.append(page.copy())
-                page = []
-
-            # Incrementing the counter variable.
-            page_no += 1
-
-        if not (page_no + 1) % per_page == 0 and len(page) != 0:
-            # For the situations when some pages were left behind.
-            actions.append(page.copy())
-
+        
         if not actions:
             # Nothing was found, so returning an appropriate error.
             await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
             return
-
-        page_no = 0
-
-        # Close the connection.
+            
         db.close()
 
-        def get_page(action_list, user, page_no: int) -> Embed:
-            embed = embeds.make_embed(title="Mod Actions", description=f"Page {page_no + 1} of {len(action_list)}")
-            embed.set_author(name=user, icon_url=user.avatar_url)
-            action_emoji = dict(
-                mute="🤐",
-                unmute="🗣",
-                warn="⚠",
-                kick="👢",
-                ban="🔨",
-                unban="⚒",
-                restrict="🚫",
-                unrestrict="✅",
-                note="🗒️"
-            )
-            for action in action_list[page_no]:
-                action_type = action["type"]
-                # Capitalising the first letter of the action type.
-                action_type = action_type[0].upper() + action_type[1:]
-                # Adding fluff emoji to action_type.
-                action_type = f"{action_emoji[action['type']]} {action_type}"
-                # Appending the other data about the action.
-                value = f"""
-                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
-                **Moderator:** <@!{action['mod_id']}>
-                **Reason:** {action['reason']}
-                """
-                embed.add_field(name=f"{action_type} | ID: {action['id']}", value=value, inline=False)
+        embed = embeds.make_embed(ctx=ctx, title="Mod Actions")
 
-            return embed
-
-        # Sending the first page. We'll edit this during pagination.
-        msg = await ctx.send(embed=get_page(action_list=actions, user=user, page_no=page_no))
-
-        first_emoji = "\u23EE"  # [:track_previous:]
-        left_emoji = "\u2B05"  # [:arrow_left:]
-        right_emoji = "\u27A1"  # [:arrow_right:]
-        last_emoji = "\u23ED"  # [:track_next:]
-        delete_emoji = "⛔"  # [:trashcan:]
-        save_emoji = "💾"  # [:floppy_disk:]
-
-        bot = ctx.bot
-        timeout = 30
-
-        pagination_emoji = (first_emoji, left_emoji, right_emoji,
-                            last_emoji, delete_emoji, save_emoji)
-
-        for x in pagination_emoji:
-            await msg.add_reaction(x)
-
-        def check(reaction: discord.Reaction, user: discord.User) -> bool:
-            if reaction.emoji in pagination_emoji and user == ctx.author:
-                return True
-            return False
-
-        while True:
-            try:
-                reaction, user = await bot.wait_for("reaction_add", timeout=timeout, check=check)
-            except asyncio.TimeoutError:
-                await msg.delete()
-                break
-
-            if str(reaction.emoji) == delete_emoji:
-                await msg.delete()
-                break
-
-            if str(reaction.emoji) == save_emoji:
-                await msg.clear_reactions()
-                break
-
-            if reaction.emoji == first_emoji:
-                await msg.remove_reaction(reaction.emoji, user)
-                page_no = 0
-
-            if reaction.emoji == last_emoji:
-                await msg.remove_reaction(reaction.emoji, user)
-                page_no = len(actions) - 1
-
-            if reaction.emoji == left_emoji:
-                await msg.remove_reaction(reaction.emoji, user)
-
-                if page_no <= 0:
-                    page_no = len(actions) - 1
-                else:
-                    page_no -= 1
-
-            if reaction.emoji == right_emoji:
-                await msg.remove_reaction(reaction.emoji, user)
-
-                if page_no >= len(actions) - 1:
-                    page_no = 0
-                else:
-                    page_no += 1
-
-            embed = get_page(action_list=actions, user=user, page_no=page_no)
-
-            if embed is not None:
-                await msg.edit(embed=embed)
-
+        await LinePaginator.paginate(actions, ctx=ctx, embed=embed, max_lines=4, max_size=2000, linesep="", timeout=30)
+        
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
