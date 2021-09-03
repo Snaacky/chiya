@@ -10,7 +10,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.utils.manage_commands import create_choice, create_option, create_permission
 
 from cogs.commands import settings
 from utils import database
@@ -99,8 +99,19 @@ class NotesCog(Cog):
             ),
             create_option(
                 name="action",
-                description="Filter specific actions (ban, unban, mute, unmute, warn, kick)",
+                description="Filter specific actions.",
                 option_type=3,
+                choices=[
+                    create_choice(value="ban", name="Ban"),
+                    create_choice(value="unban", name="Unban"),
+                    create_choice(value="mute", name="Mute"),
+                    create_choice(value="unmute", name="Unmute"),
+                    create_choice(value="kick", name="Kick"),
+                    create_choice(value="restrict", name="Restrict"),
+                    create_choice(value="unrestrict", name="Unrestrict"),
+                    create_choice(value="warn", name="Warn"),
+                    create_choice(value="note", name="Note")
+                ],
                 required=False
             ),
         ],
@@ -125,21 +136,8 @@ class NotesCog(Cog):
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
-        options = ["ban", "unban", "mute", "unmute", "restrict", "unrestrict", "warn", "kick", "note"]
         if action:
-            # Attempt to check for the plural form of the options and strip it.
-            if action[-1] == "s":
-                action = action[:-1]
-            if any(action == option for option in options):
-                results = mod_logs.find(user_id=user.id, type=action.lower())
-            else:
-                await embeds.error_message(
-                    ctx=ctx,
-                    description=f"\"{action}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
-                )
-                # Close the connection.
-                db.close()
-                return
+            results = mod_logs.find(user_id=user.id, type=action)
         else:
             results = mod_logs.find(user_id=user.id)
 
