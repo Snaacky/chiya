@@ -125,11 +125,11 @@ class UpgradeSaturationCog(Cog):
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
         if freeleech:
-            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['saturation_upgrade'] + amount} of " \
-                                        f"saturation upgrade for {fl_token * amount} freeleech token? (yes/no/y/n)"
+            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['saturation_upgrade'] + amount} of saturation " \
+                                        f"upgrade for {fl_token * amount} freeleech {'tokens' if amount > 1 else 'token'}? (yes/no/y/n)"
         else:
-            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['saturation_upgrade'] + amount} of " \
-                                        f"saturation upgrade for {inflated_cost} MB? (yes/no/y/n)"
+            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['saturation_upgrade'] + amount} of saturation " \
+                                        f"upgrade for {inflated_cost} MB? (yes/no/y/n)"
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
@@ -156,16 +156,18 @@ class UpgradeSaturationCog(Cog):
         # Create an embed upon successful transaction.
         embed = embeds.make_embed(
             title=f"Upgrade purchased: saturation",
-            description=f"You reached saturation level {stats['saturation_upgrade']}!",
             color="green"
         )
 
-        # Update the JSON object accordingly.
+        # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token * amount
+            embed.description = f"Successfully reached saturation level {stats['saturation_upgrade']} for {fl_token * amount} " \
+                                f"freeleech {'tokens' if fl_token > 1 else 'token'}."
             embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
         else:
             stats["buffer"] -= inflated_cost
+            embed.description = f"Successfully reached saturation level {stats['saturation_upgrade']} for {inflated_cost} MB."
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")

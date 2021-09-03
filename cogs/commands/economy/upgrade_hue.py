@@ -121,7 +121,8 @@ class UpgradeHueCog(Cog):
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
         if freeleech:
-            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {fl_token} freeleech tokens? (yes/no/y/n)"
+            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {fl_token} " \
+                                        f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
         else:
             confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {cost} MB? (yes/no/y/n)"
         await ctx.send(embed=confirm_embed)
@@ -155,7 +156,7 @@ class UpgradeHueCog(Cog):
             color="green"
         )
 
-        # Update the JSON object accordingly.
+        # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token
             embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
