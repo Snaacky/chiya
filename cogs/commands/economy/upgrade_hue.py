@@ -121,16 +121,16 @@ class UpgradeHueCog(Cog):
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
         if freeleech:
-            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {fl_token} freeleech tokens? (y/n)"
+            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {fl_token} freeleech tokens? (yes/no/y/n)"
         else:
-            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {cost} MB? (y/n)"
+            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {cost} MB? (yes/no/y/n)"
         await ctx.send(embed=confirm_embed)
 
-        # A function to check if the reply is yes/y/no/n and is the command's author in the current channel.
+        # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "y", "no", "n"]
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "no", "y", "n"]
 
-        # Wait for the user's reply (yes/y/no/n) and return if the response is "no" or "n" or no response was received after 60s.
+        # Wait for the user's reply (yes/no/y/n) and return if the response is "no", "n" or no response was received after 60s.
         try:
             msg = await self.bot.wait_for("message", timeout=60, check=check)
             if msg.content.lower() == "no" or msg.content.lower() == "n":

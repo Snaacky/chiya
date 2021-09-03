@@ -116,17 +116,17 @@ class UpgradeDailyCog(Cog):
         confirm_embed = embeds.make_embed(color="green")
         if freeleech:
             confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of " \
-                                        f"daily upgrade for {fl_token * amount} freeleech token? (y/n)"
+                                        f"daily upgrade for {fl_token * amount} freeleech token? (yes/no/y/n)"
         else:
             confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of " \
-                                        f"daily upgrade for {inflated_cost} MB? (y/n)"
+                                        f"daily upgrade for {inflated_cost} MB? (yes/no/y/n)"
         await ctx.send(embed=confirm_embed)
 
-        # A function to check if the reply is yes/y/no/n and is the command's author in the current channel.
+        # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "y", "no", "n"]
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "no", "y", "n"]
 
-        # Wait for the user's reply (yes/y/no/n) and return if the response is "no" or "n" or no response was received after 60s.
+        # Wait for the user's reply (yes/no/y/n) and return if the response is "no", "n" or no response was received after 60s.
         try:
             msg = await self.bot.wait_for("message", timeout=60, check=check)
             if msg.content.lower() == "no" or msg.content.lower() == "n":
