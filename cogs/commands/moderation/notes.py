@@ -5,18 +5,17 @@ import time
 
 import dataset
 import discord
+from cogs.commands import settings
 from discord.embeds import Embed
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
+from discord.ext.commands import Bot, Cog
+from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_choice, create_option, create_permission
-
-from cogs.commands import settings
-from utils import database
-from utils import embeds
-from utils.record import record_usage
+from discord_slash.utils.manage_commands import (create_choice, create_option,
+                                                 create_permission)
+from utils import database, embeds
 from utils.pagination import LinePaginator
+from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -51,8 +50,10 @@ class NotesCog(Cog):
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(settings.get_value(
+                    "role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value(
+                    "role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -119,8 +120,10 @@ class NotesCog(Cog):
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(settings.get_value(
+                    "role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value(
+                    "role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -142,46 +145,45 @@ class NotesCog(Cog):
         else:
             results = mod_logs.find(user_id=user.id)
 
-        # Creating a list to store actions for the paginator.
+        # Creating a List to store actions for the paginator.
         actions = list()
         for action in results:
-            """ Creating a List to paginate through"""
             action_emoji = dict(
-            mute="🤐",
-            unmute="🗣",
-            warn="⚠",
-            kick="👢",
-            ban="🔨",
-            unban="⚒",
-            restrict="🚫",
-            unrestrict="✅",
-            note="🗒️"
+                mute="🤐",
+                unmute="🗣",
+                warn="⚠",
+                kick="👢",
+                ban="🔨",
+                unban="⚒",
+                restrict="🚫",
+                unrestrict="✅",
+                note="🗒️"
             )
-        
+
             action_type = action["type"]
             # Capitalising the first letter of the action type.
             action_type = action_type[0].upper() + action_type[1:]
             # Adding fluff emoji to action_type.
             action_type = f"{action_emoji[action['type']]} {action_type}"
-            
+
             actions.append(f"""
             **{action_type} | ID: {action['id']}**
             **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
             **Moderator:** <@!{action['mod_id']}>
             **Reason:** {action['reason']}""")
 
-        
         if not actions:
             # Nothing was found, so returning an appropriate error.
             await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
             return
-            
+
         db.close()
 
         embed = embeds.make_embed(ctx=ctx, title="Mod Actions")
 
+        # paginating through the results
         await LinePaginator.paginate(actions, ctx=ctx, embed=embed, max_lines=4, max_size=2000, linesep="", timeout=30)
-        
+
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
@@ -205,8 +207,10 @@ class NotesCog(Cog):
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(settings.get_value(
+                    "role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value(
+                    "role_trial_mod"), SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
