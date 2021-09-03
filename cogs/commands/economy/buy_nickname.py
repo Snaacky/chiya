@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -107,14 +108,37 @@ class BuyNicknameCog(Cog):
             db.close()
             return
 
+        # Send a confirmation embed before proceeding the transaction.
+        confirm_embed = embeds.make_embed(color="green")
+        if freeleech:
+            confirm_embed.description = f"{ctx.author.mention}, set your nickname to '{nickname}' for {fl_token} freeleech token? (y/n)"
+        else:
+            confirm_embed.description = f"{ctx.author.mention}, set your nickname to '{nickname}' for {cost} MB? (y/n)"
+        await ctx.send(embed=confirm_embed)
+
+        # A function to check if the reply is yes/y/no/n and is the command's author in the current channel.
+        def check(message):
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "y", "no", "n"]
+
+        # Wait for the user's reply (yes/y/no/n) and return if the response is "no" or "n" or no response was received after 60s.
+        try:
+            msg = await self.bot.wait_for("message", timeout=60, check=check)
+            if msg.content.lower() == "no" or msg.content.lower() == "n":
+                embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has been cancelled.", color="red")
+                await ctx.send(embed=embed)
+                db.close()
+                return
+        except asyncio.TimeoutError:
+            embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has timed out.", color="red")
+            await ctx.send(embed=embed)
+            db.close()
+            return
+
         # Edit the author's nickname.
         await ctx.author.edit(nick=nickname)
 
         # Create the embed to let the user know that the transaction was a success.
-        embed = embeds.make_embed(
-            title=f"Nickname purchased: {nickname}",
-            color="green"
-        )
+        embed = embeds.make_embed(title=f"Nickname purchased: {nickname}", color="green")
 
         # Update the JSON object accordingly.
         if freeleech:

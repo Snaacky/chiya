@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -74,7 +75,7 @@ class UpgradeDailyCog(Cog):
         stats = await leveling_cog.verify_integrity(stats)
 
         # Baseline cost of the transaction. Declared separately to give less headaches on future balance changes.
-        cost = 3
+        cost = 5
         fl_token = 1
 
         # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
@@ -111,6 +112,34 @@ class UpgradeDailyCog(Cog):
             db.close()
             return
 
+        # Send a confirmation embed before proceeding the transaction.
+        confirm_embed = embeds.make_embed(color="green")
+        if freeleech:
+            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of " \
+                                        f"daily upgrade for {fl_token * amount} freeleech token? (y/n)"
+        else:
+            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of " \
+                                        f"daily upgrade for {inflated_cost} MB? (y/n)"
+        await ctx.send(embed=confirm_embed)
+
+        # A function to check if the reply is yes/y/no/n and is the command's author in the current channel.
+        def check(message):
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "y", "no", "n"]
+
+        # Wait for the user's reply (yes/y/no/n) and return if the response is "no" or "n" or no response was received after 60s.
+        try:
+            msg = await self.bot.wait_for("message", timeout=60, check=check)
+            if msg.content.lower() == "no" or msg.content.lower() == "n":
+                embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has been cancelled.", color="red")
+                await ctx.send(embed=embed)
+                db.close()
+                return
+        except asyncio.TimeoutError:
+            embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has timed out.", color="red")
+            await ctx.send(embed=embed)
+            db.close()
+            return
+
         # Update the new stat first so that the embed will contain the up to date value.
         stats["daily_upgrade"] += amount
 
@@ -120,7 +149,7 @@ class UpgradeDailyCog(Cog):
             description=f"You reached daily level {stats['daily_upgrade']}!",
             color="green"
         )
-        embed.add_field(name="Chance to receive 2x buffer:", value=f"{round(stats['daily_upgrade'] * 0.35, 2)}%", inline=False)
+        embed.add_field(name="​", value=f"**Chance to receive 2x buffer:** {round(stats['daily_upgrade'] * 0.35, 2)}%", inline=False)
 
         # Update the JSON object accordingly.
         if freeleech:

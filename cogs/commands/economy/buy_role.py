@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -108,6 +109,32 @@ class BuyRoleCog(Cog):
                 embed.add_field(name="Condition:", value="You must not own a custom role yet.", inline=False)
             if freeleech and not fl_token_check:
                 embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
+            await ctx.send(embed=embed)
+            db.close()
+            return
+
+        # Send a confirmation embed before proceeding the transaction.
+        confirm_embed = embeds.make_embed(color="green")
+        if freeleech:
+            confirm_embed.description = f"{ctx.author.mention}, purchase a custom role with the name '{name}' for {fl_token} freeleech tokens? (y/n)"
+        else:
+            confirm_embed.description = f"{ctx.author.mention}, purchase a custom role with the name '{name}' for {cost} MB? (y/n)"
+        await ctx.send(embed=confirm_embed)
+
+        # A function to check if the reply is yes/y/no/n and is the command's author in the current channel.
+        def check(message):
+            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "y", "no", "n"]
+
+        # Wait for the user's reply (yes/y/no/n) and return if the response is "no" or "n" or no response was received after 60s.
+        try:
+            msg = await self.bot.wait_for("message", timeout=60, check=check)
+            if msg.content.lower() == "no" or msg.content.lower() == "n":
+                embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has been cancelled.", color="red")
+                await ctx.send(embed=embed)
+                db.close()
+                return
+        except asyncio.TimeoutError:
+            embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has timed out.", color="red")
             await ctx.send(embed=embed)
             db.close()
             return
