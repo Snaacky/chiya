@@ -358,7 +358,6 @@ class Console(Cog):
         db.close()
 
     @commands.bot_has_permissions(send_messages=True)
-    @commands.has_permissions(administrator=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="system",
@@ -391,6 +390,13 @@ class Console(Cog):
                 required=False
             ),
         ],
+        base_default_permission=False,
+        base_permissions={
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True),
+            ]
+        }
     )
     async def global_console(
             self,
@@ -485,6 +491,88 @@ class Console(Cog):
             await embeds.error_message(ctx=ctx, description="Global buffer reduction value must be equal or greater than 0.")
             db.close()
             return
+
+        # Commit the changes to the database and close it.
+        db.commit()
+        db.close()
+
+    @commands.bot_has_permissions(send_messages=True)
+    @commands.before_invoke(record_usage)
+    @cog_ext.cog_slash(
+        name="refresh",
+        description="Reload the user profile stats.",
+        guild_ids=[settings.get_value("guild_id")],
+        options=[
+            create_option(
+                name="user",
+                description="The user's stats to be reloaded.",
+                option_type=6,
+                required=False
+            ),
+        ],
+        default_permission=False,
+        permissions={
+            settings.get_value("guild_id"): [
+                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
+                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True),
+            ]
+        }
+    )
+    async def refresh(self, ctx: SlashContext, user: discord.User = None):
+        """ A command to forcefully reload the user stats to add missing keys or remove deprecated keys."""
+        await ctx.defer()
+
+        # Connect to the database and get the achievement table.
+        db = dataset.connect(database.get_db())
+        achievements = db["achievements"]
+
+        # Get the LevelingCog for utilities functions.
+        leveling_cog = self.bot.get_cog("LevelingCog")
+
+        # If the user is not specified, default it to a global command.
+        if not user:
+            # Iterate through all the entries in the database and add the missing or remove the deprecated keys.
+            for entry in achievements:
+                entry_stats = json.loads(entry["stats"])
+                entry_stats = await leveling_cog.verify_integrity(entry_stats)
+                entry_stats_json = json.dumps(entry_stats)
+                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+
+            # Send an embed to notify when the task is done.
+            embed = embeds.make_embed(description="Successfully reloaded all user stats.", color="green")
+            await ctx.send(embed=embed)
+
+            # Commit the changes to the database and close it.
+            db.commit()
+            db.close()
+            return
+
+        # If we received an int instead of a discord.Member, the user is not in the server.
+        if isinstance(user, int):
+            user = await self.bot.fetch_user(user)
+
+        # Attempt to find the user who issued the command.
+        user_entry = achievements.find_one(user_id=user.id)
+
+        # Return if the user is not found in the database.
+        if not user_entry:
+            await embeds.error_message(ctx=ctx, description="Could not find the specified user.")
+            db.close()
+            return
+
+        # Loads the JSON object in the database into a dictionary to manipulate.
+        stats = json.loads(user_entry["stats"])
+
+        # Check the integrity of the stats dictionary and add missing keys or remove deprecated keys.
+        stats = await leveling_cog.verify_integrity(stats)
+
+        # Dump the modified JSON into the db.
+        stats_json = json.dumps(stats)
+        achievements.update(dict(id=user_entry["id"], stats=stats_json), ["id"])
+
+        # Send an embed to notify when the task is done.
+        embed = embeds.make_embed(description=f"Successfully reloaded {user.mention}'s stats.", color="green")
+        await ctx.send(embed=embed)
 
         # Commit the changes to the database and close it.
         db.commit()
