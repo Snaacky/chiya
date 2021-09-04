@@ -97,8 +97,8 @@ class UpgradeDailyCog(Cog):
         # Condition: Must have more buffer than the cost of the transaction.
         buffer_check = stats["buffer"] >= inflated_cost
 
-        # Condition: Must have at least 1 freeleech token.
-        fl_token_check = stats["freeleech_token"] >= fl_token
+        # Condition: Must have enough freeleech token (base token cost multiplied by amount).
+        fl_token_check = stats["freeleech_token"] >= fl_token * amount
 
         # Condition: The total number of upgrades must not exceed 100.
         availability_check = amount + stats["daily_upgrade"] <= 100
