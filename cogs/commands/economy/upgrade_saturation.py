@@ -52,6 +52,16 @@ class UpgradeSaturationCog(Cog):
             await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
             return
 
+        """ 
+        If the user enter an arbitrary large "amount" value, the inflated_cost calculation would take forever and create a blocking call
+        since the calculation is not asynchronous (see https://discordpy.readthedocs.io/en/stable/faq.html#what-does-blocking-mean),
+        effectively freezing up the bot and makes all other tasks fail to execute.
+        """
+        if amount > 100:
+            embed = embeds.make_embed(description="The amount of levels to be purchased cannot exceed 100.", color="red")
+            await ctx.send(embed=embed)
+            return
+
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
 
