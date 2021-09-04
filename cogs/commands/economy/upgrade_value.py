@@ -26,7 +26,7 @@ class UpgradeValueCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="brightness",
-        description="Allows brighter colors to be rolled",
+        description="Allows brighter colors to be rolled.",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(

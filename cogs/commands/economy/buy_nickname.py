@@ -26,7 +26,7 @@ class BuyNicknameCog(Cog):
     @cog_ext.cog_subcommand(
         base="buy",
         name="nickname",
-        description="Purchase a nickname",
+        description="Purchase a nickname.",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(

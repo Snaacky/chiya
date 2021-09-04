@@ -26,7 +26,7 @@ class UpgradeDailyCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="daily",
-        description="Increases the chance to receive 2x buffer from /daily",
+        description="Increases the chance to receive 2x buffer from /daily.",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(

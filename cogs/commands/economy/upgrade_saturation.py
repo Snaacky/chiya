@@ -26,7 +26,7 @@ class UpgradeSaturationCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="saturation",
-        description="Allows more saturated colors to be rolled",
+        description="Allows more saturated colors to be rolled.",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(

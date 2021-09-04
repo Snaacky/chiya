@@ -26,7 +26,7 @@ class UpgradeHueCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="hue",
-        description="Increase the amount of possible colors that you can roll",
+        description="Increase the amount of possible colors that you can roll.",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
