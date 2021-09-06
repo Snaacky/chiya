@@ -17,14 +17,16 @@ log = logging.getLogger(__name__)
 
 
 class BuyColorCog(Cog):
-    """ Buy color command cog. """
+    """Buy color command cog."""
 
     def __init__(self, bot: Bot):
         self.bot = bot
 
     @staticmethod
-    async def generate_hsv(hue_upgrade: list, saturation_upgrade: int, value_upgrade: int) -> tuple:
-        """ Generates a random HSV tuple affected by the purchased upgrades. """
+    async def generate_hsv(
+        hue_upgrade: list, saturation_upgrade: int, value_upgrade: int
+    ) -> tuple:
+        """Generates a random HSV tuple affected by the purchased upgrades."""
         # Declare a list of possible color packs.
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
 
@@ -41,7 +43,7 @@ class BuyColorCog(Cog):
             # Blue-like colors span from 211-270 degrees on the HSV scale.
             "blue": [*range(211, 271)],
             # Magenta-like colors span from 271-330 degrees on the HSV scale.
-            "magenta": [*range(271, 331)]
+            "magenta": [*range(271, 331)],
         }
 
         # Declare an empty list to append the roll values later.
@@ -59,10 +61,11 @@ class BuyColorCog(Cog):
         This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
         """
         # Finally, return random HSV tuple, affected by the purchased upgrades.
-        return \
-            random.choice(hue) / 360, \
-            random.randint(0, saturation_upgrade + 1) / 100, \
-            random.randint(0, value_upgrade + 1) / 100
+        return (
+            random.choice(hue) / 360,
+            random.randint(0, saturation_upgrade + 1) / 100,
+            random.randint(0, value_upgrade + 1) / 100,
+        )
 
     @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
@@ -76,17 +79,22 @@ class BuyColorCog(Cog):
                 name="freeleech",
                 description="Enable freeleech for this item, costing 1 freeleech token.",
                 option_type=5,
-                required=False
+                required=False,
             ),
         ],
     )
     async def buy_color(self, ctx: SlashContext, freeleech: bool = False):
-        """ Roll a random role color using buffer. """
+        """Roll a random role color using buffer."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
-            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
+        if ctx.channel.id not in {
+            settings.get_value("channel_bots"),
+            settings.get_value("channel_bot_testing"),
+        }:
+            await embeds.error_message(
+                ctx=ctx, description="This command can only be run in #bots channel."
+            )
             return
 
         # Get the LevelingCog for utilities functions.
@@ -128,27 +136,48 @@ class BuyColorCog(Cog):
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or (freeleech and not fl_token_check) or not color_check or not custom_role_check:
+        if (
+            not buffer_check
+            or (freeleech and not fl_token_check)
+            or not color_check
+            or not custom_role_check
+        ):
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
-                color="red"
+                color="red",
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
-                embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
+                    inline=False,
+                )
             if not color_check:
-                embed.add_field(name="Condition:", value="You must have purchased at least one color pack.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value="You must have purchased at least one color pack.",
+                    inline=False,
+                )
             if not custom_role_check:
-                embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
+                embed.add_field(
+                    name="Condition:", value="You must own a custom role.", inline=False
+                )
             if freeleech and not fl_token_check:
-                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value="You don't have enough freeleech token.",
+                    inline=False,
+                )
             await ctx.send(embed=embed)
             db.close()
             return
 
         # Generates a HSV color from the purchased color packs, saturation and value upgrade.
-        hue, saturation, value = await self.generate_hsv(stats["hue_upgrade"], stats["saturation_upgrade"], stats["value_upgrade"])
+        hue, saturation, value = await self.generate_hsv(
+            stats["hue_upgrade"], stats["saturation_upgrade"], stats["value_upgrade"]
+        )
         color = discord.Color.from_hsv(hue, saturation, value)
 
         role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
@@ -163,16 +192,16 @@ class BuyColorCog(Cog):
         await role.edit(color=color)
 
         # Create an embed with the rolled color upon successful transaction.
-        embed = embeds.make_embed(
-            title=f"You rolled: {color}",
-            color=color
-        )
+        embed = embeds.make_embed(title=f"You rolled: {color}", color=color)
 
         # Update the JSON object accordingly.
         if freeleech:
             stats["freeleech_token"] -= fl_token
             embed.description = f"You rolled color {color} for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
-            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+            embed.add_field(
+                name="​",
+                value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}",
+            )
         else:
             stats["buffer"] -= cost
             embed.description = f"You rolled color {color} for {cost} MB buffer."
@@ -192,6 +221,6 @@ class BuyColorCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the BuyColor cog. """
+    """Load the BuyColor cog."""
     bot.add_cog(BuyColorCog(bot))
     log.info("Commands loaded: buy_color")

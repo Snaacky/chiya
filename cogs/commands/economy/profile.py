@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class ProfileCog(Cog):
-    """ Profile command cog. """
+    """Profile command cog."""
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -32,17 +32,22 @@ class ProfileCog(Cog):
                 name="user",
                 description="The profile of the specified user",
                 option_type=6,
-                required=False
+                required=False,
             )
-        ]
+        ],
     )
     async def profile(self, ctx: SlashContext, user: discord.User = None):
-        """ View personal profile with detailed stats. """
+        """View personal profile with detailed stats."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
-            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
+        if ctx.channel.id not in {
+            settings.get_value("channel_bots"),
+            settings.get_value("channel_bot_testing"),
+        }:
+            await embeds.error_message(
+                ctx=ctx, description="This command can only be run in #bots channel."
+            )
             return
 
         # The user is either the author or the specified user in the parameter.
@@ -86,32 +91,39 @@ class ProfileCog(Cog):
 
         # Display the buffer into a more digestible format.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-        next_class_buffer_string = await leveling_cog.get_buffer_string(stats["next_user_class_buffer"])
+        next_class_buffer_string = await leveling_cog.get_buffer_string(
+            stats["next_user_class_buffer"]
+        )
 
         # Get the role from user's custom role ID to get its color if they have one. Otherwise, default it to "green".
         if stats["has_custom_role"]:
             role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
             # If the role somehow doesn't exist and breaks the embed, notify them and return.
             if not role:
-                await embeds.error_message(ctx=ctx, description="Invalid role ID! Please contact a staff member.")
+                await embeds.error_message(
+                    ctx=ctx,
+                    description="Invalid role ID! Please contact a staff member.",
+                )
                 db.close()
                 return
             color = role.color
             custom_role = role.mention
         else:
-            color = 0x2ecc71
+            color = 0x2ECC71
             custom_role = "None"
 
         # Declare the value parameter for the embed. Doing it this way allows the name and value displayed on a single line.
-        value = f"**User class:** {stats['user_class']}\n\n" \
-                f"**Double daily:** Level {stats['daily_upgrade']} (+{round(stats['daily_upgrade'] * 0.35, 2)}%)\n" \
-                f"**Saturation:** Level {stats['saturation_upgrade']}\n" \
-                f"**Brightness:** Level {stats['value_upgrade']}\n" \
-                f"**Purchased color packs:** {color_packs}\n" \
-                f"**Vouches received:** {stats['vouch']}\n" \
-                f"**Freeleech tokens:** {stats['freeleech_token']}\n\n" \
-                f"**Custom role:** {custom_role}\n\n" \
-                f"**Buffer:** {buffer_string}"
+        value = (
+            f"**User class:** {stats['user_class']}\n\n"
+            f"**Double daily:** Level {stats['daily_upgrade']} (+{round(stats['daily_upgrade'] * 0.35, 2)}%)\n"
+            f"**Saturation:** Level {stats['saturation_upgrade']}\n"
+            f"**Brightness:** Level {stats['value_upgrade']}\n"
+            f"**Purchased color packs:** {color_packs}\n"
+            f"**Vouches received:** {stats['vouch']}\n"
+            f"**Freeleech tokens:** {stats['freeleech_token']}\n\n"
+            f"**Custom role:** {custom_role}\n\n"
+            f"**Buffer:** {buffer_string}"
+        )
 
         # Create the embed.
         embed = embeds.make_embed(
@@ -129,14 +141,14 @@ class ProfileCog(Cog):
         embed.add_field(
             name="Buffer required for promotion:",
             value=f"{buffer_string} / {next_class_buffer_string}",
-            inline=False
+            inline=False,
         )
 
         # Display the amount of "uploads" required until next promotion.
         embed.add_field(
             name="Uploads required for promotion:",
             value=f"{stats['message_count']} / {stats['next_user_class_message']}",
-            inline=False
+            inline=False,
         )
 
         # Send the embed and close the connection. No commit is needed because nothing is changed.
@@ -145,6 +157,6 @@ class ProfileCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Profile cog. """
+    """Load the Profile cog."""
     bot.add_cog(ProfileCog(bot))
     log.info("Commands loaded: profile")

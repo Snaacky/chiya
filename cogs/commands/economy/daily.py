@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class DailyCog(Cog):
-    """ Daily command cog. """
+    """Daily command cog."""
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -29,12 +29,17 @@ class DailyCog(Cog):
         guild_ids=[settings.get_value("guild_id")],
     )
     async def daily(self, ctx: SlashContext):
-        """ Receives some buffer once every 20 hours. """
+        """Receives some buffer once every 20 hours."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots"):
-            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
+        if ctx.channel.id not in {
+            settings.get_value("channel_bots"),
+            settings.get_value("channel_bot_testing"),
+        }:
+            await embeds.error_message(
+                ctx=ctx, description="This command can only be run in #bots channel."
+            )
             return
 
         # Get the LevelingCog for utilities functions.
@@ -84,11 +89,7 @@ class DailyCog(Cog):
 
             # String that will store the duration in a more digestible format.
             duration_string = ""
-            duration = {
-                "hours": hours,
-                "minutes": minutes,
-                "seconds": seconds
-            }
+            duration = {"hours": hours, "minutes": minutes, "seconds": seconds}
 
             for time_unit in duration:
                 # If the time value is 0, skip it.
@@ -104,7 +105,7 @@ class DailyCog(Cog):
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="You can only claim your daily buffer reward once every 20 hours.",
-                color="red"
+                color="red",
             )
             embed.add_field(name="Time remaining:", value=duration_string, inline=False)
             await ctx.send(embed=embed)
@@ -122,27 +123,31 @@ class DailyCog(Cog):
         if rng in range(0, 56):
             value = random.randint(150, 250)
             embed.description = f"You received {value} MB buffer!"
-            embed.colour = 0x68c290
+            embed.colour = 0x68C290
         # 30% chance to roll the uncommon tier. Embed color is "green".
         elif rng in range(56, 86):
             value = random.randint(300, 400)
             embed.description = f"Nice, you received {value} MB buffer!"
-            embed.colour = 0x2ecc71
+            embed.colour = 0x2ECC71
         # 10% chance to roll the rare tier. Embed color is "blue".
         elif rng in range(86, 96):
             value = random.randint(450, 600)
             embed.description = f"Amazing! You received {value} MB buffer!"
-            embed.colour = 0x3498db
+            embed.colour = 0x3498DB
         # 4% chance to roll the epic tier. Embed color is "purple".
         elif rng in range(96, 100):
             value = random.randint(650, 800)
-            embed.description = f"What a fascinating discovery! You received {value} MB buffer!"
-            embed.colour = 0x9b59b6
+            embed.description = (
+                f"What a fascinating discovery! You received {value} MB buffer!"
+            )
+            embed.colour = 0x9B59B6
         # 1% chance to roll the legendary tier. Embed color is "gold".
         else:
             value = random.randint(850, 1024)
-            embed.description = f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
-            embed.colour = 0xf1c40f
+            embed.description = (
+                f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
+            )
+            embed.colour = 0xF1C40F
 
         # Roll a random float value to determine if /daily is going to be doubled or not.
         double_daily = random.uniform(0, 100)
@@ -151,11 +156,24 @@ class DailyCog(Cog):
         if 0 <= double_daily <= stats["daily_upgrade"] * 0.35:
             value = value * 2
             # Some fluff in the congratulation string.
-            words = ["brave", "bold", "strong", "wise", "ambitious", "blind", "devil", "naive", "poor", "wanderer", "fool", "betrayer"]
+            words = [
+                "brave",
+                "bold",
+                "strong",
+                "wise",
+                "ambitious",
+                "blind",
+                "devil",
+                "naive",
+                "poor",
+                "wanderer",
+                "fool",
+                "betrayer",
+            ]
             embed.add_field(
                 name="​",
                 value=f"**Fortune favors the {random.choice(words)}**: You received 2x buffer for a total of {value} MB!",
-                inline=False
+                inline=False,
             )
 
         # Update the new timestamp and total buffer after the successful daily claim.
@@ -177,6 +195,6 @@ class DailyCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Daily cog. """
+    """Load the Daily cog."""
     bot.add_cog(DailyCog(bot))
     log.info("Commands loaded: daily")

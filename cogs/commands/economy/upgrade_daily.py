@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class UpgradeDailyCog(Cog):
-    """ Upgrade daily command cog. """
+    """Upgrade daily command cog."""
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -33,23 +33,30 @@ class UpgradeDailyCog(Cog):
                 name="amount",
                 description="Number of upgrades to purchase.",
                 option_type=4,
-                required=True
+                required=True,
             ),
             create_option(
                 name="freeleech",
                 description="Enable freeleech for this item, costing 1 freeleech token per level.",
                 option_type=5,
-                required=False
+                required=False,
             ),
         ],
     )
-    async def upgrade_daily(self, ctx: SlashContext, amount: int, freeleech: bool = False):
-        """ Increases the chance to receive 2x buffer from /daily. """
+    async def upgrade_daily(
+        self, ctx: SlashContext, amount: int, freeleech: bool = False
+    ):
+        """Increases the chance to receive 2x buffer from /daily."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
-            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
+        if ctx.channel.id not in {
+            settings.get_value("channel_bots"),
+            settings.get_value("channel_bot_testing"),
+        }:
+            await embeds.error_message(
+                ctx=ctx, description="This command can only be run in #bots channel."
+            )
             return
 
         """ 
@@ -58,7 +65,10 @@ class UpgradeDailyCog(Cog):
         effectively freezing up the bot and makes all other tasks fail to execute.
         """
         if amount > 100:
-            embed = embeds.make_embed(description="The amount of levels to be purchased cannot exceed 100.", color="red")
+            embed = embeds.make_embed(
+                description="The amount of levels to be purchased cannot exceed 100.",
+                color="red",
+            )
             await ctx.send(embed=embed)
             return
 
@@ -104,20 +114,36 @@ class UpgradeDailyCog(Cog):
         availability_check = amount + stats["daily_upgrade"] <= 100
 
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or (freeleech and not fl_token_check) or not availability_check:
+        if (
+            not buffer_check
+            or (freeleech and not fl_token_check)
+            or not availability_check
+        ):
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
-                color="red"
+                color="red",
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             # Only display this message when the total number of upgrades are below 100.
             if not buffer_check and availability_check:
-                embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(inflated_cost)} buffer.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value=f"You must have at least {await leveling_cog.get_buffer_string(inflated_cost)} buffer.",
+                    inline=False,
+                )
             if not availability_check:
-                embed.add_field(name="Condition:", value=f" You can only purchase this upgrade {100 - stats['daily_upgrade']} more times!", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value=f" You can only purchase this upgrade {100 - stats['daily_upgrade']} more times!",
+                    inline=False,
+                )
             if freeleech and not fl_token_check:
-                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value="You don't have enough freeleech token.",
+                    inline=False,
+                )
             await ctx.send(embed=embed)
             db.close()
             return
@@ -125,27 +151,41 @@ class UpgradeDailyCog(Cog):
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
         if freeleech:
-            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of daily upgrade " \
-                                        f"for {fl_token * amount} freeleech {'tokens' if amount > 1 else 'token'}? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of daily upgrade "
+                f"for {fl_token * amount} freeleech {'tokens' if amount > 1 else 'token'}? (yes/no/y/n)"
+            )
         else:
-            confirm_embed.description = f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of daily upgrade " \
-                                        f"for {inflated_cost} MB? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, reach the level {stats['daily_upgrade'] + amount} of daily upgrade "
+                f"for {inflated_cost} MB? (yes/no/y/n)"
+            )
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "no", "y", "n"]
+            return (
+                message.author == ctx.author
+                and message.channel == ctx.channel
+                and message.content.lower() in ["yes", "no", "y", "n"]
+            )
 
         # Wait for the user's reply (yes/no/y/n) and return if the response is "no", "n" or no response was received after 60s.
         try:
             msg = await self.bot.wait_for("message", timeout=60, check=check)
             if msg.content.lower() == "no" or msg.content.lower() == "n":
-                embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has been cancelled.", color="red")
+                embed = embeds.make_embed(
+                    description=f"{ctx.author.mention}, your transaction request has been cancelled.",
+                    color="red",
+                )
                 await ctx.send(embed=embed)
                 db.close()
                 return
         except asyncio.TimeoutError:
-            embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has timed out.", color="red")
+            embed = embeds.make_embed(
+                description=f"{ctx.author.mention}, your transaction request has timed out.",
+                color="red",
+            )
             await ctx.send(embed=embed)
             db.close()
             return
@@ -154,18 +194,24 @@ class UpgradeDailyCog(Cog):
         stats["daily_upgrade"] += amount
 
         # Create an embed upon successful transaction and notice the user if the buffer was doubled.
-        embed = embeds.make_embed(
-            title=f"Upgrade purchased: daily",
-            color="green"
+        embed = embeds.make_embed(title=f"Upgrade purchased: daily", color="green")
+        embed.add_field(
+            name="​",
+            value=f"**Chance to receive 2x buffer:** {round(stats['daily_upgrade'] * 0.35, 2)}%",
+            inline=False,
         )
-        embed.add_field(name="​", value=f"**Chance to receive 2x buffer:** {round(stats['daily_upgrade'] * 0.35, 2)}%", inline=False)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token * amount
-            embed.description = f"Successfully reached daily level {stats['daily_upgrade']} for {fl_token * amount} " \
-                                f"freeleech {'tokens' if fl_token > 1 else 'token'}."
-            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+            embed.description = (
+                f"Successfully reached daily level {stats['daily_upgrade']} for {fl_token * amount} "
+                f"freeleech {'tokens' if fl_token > 1 else 'token'}."
+            )
+            embed.add_field(
+                name="​",
+                value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}",
+            )
         else:
             stats["buffer"] -= inflated_cost
             embed.description = f"Successfully reached daily level {stats['daily_upgrade']} for {inflated_cost} MB."
@@ -185,6 +231,6 @@ class UpgradeDailyCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the UpgradeDaily cog. """
+    """Load the UpgradeDaily cog."""
     bot.add_cog(UpgradeDailyCog(bot))
     log.info("Commands loaded: upgrade_daily")

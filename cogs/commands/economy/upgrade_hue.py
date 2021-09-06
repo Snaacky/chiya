@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class UpgradeHueCog(Cog):
-    """ Upgrade hue command cog. """
+    """Upgrade hue command cog."""
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -33,23 +33,28 @@ class UpgradeHueCog(Cog):
                 name="pack",
                 description="Red, yellow, green, cyan, blue, magenta.",
                 option_type=3,
-                required=True
+                required=True,
             ),
             create_option(
                 name="freeleech",
                 description="Enable freeleech for this item, costing 2 freeleech tokens per level.",
                 option_type=5,
-                required=False
+                required=False,
             ),
         ],
     )
     async def upgrade_hue(self, ctx: SlashContext, pack: str, freeleech: bool = False):
-        """ Purchase a color pack to increase the amount of possible colors that can be rolled. """
+        """Purchase a color pack to increase the amount of possible colors that can be rolled."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel.
-        if not ctx.channel.id == settings.get_value("channel_bots") and not ctx.channel.id == settings.get_value("channel_bot_testing"):
-            await embeds.error_message(ctx=ctx, description="You can only run this command in #bots channel.")
+        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
+        if ctx.channel.id not in {
+            settings.get_value("channel_bots"),
+            settings.get_value("channel_bot_testing"),
+        }:
+            await embeds.error_message(
+                ctx=ctx, description="This command can only be run in #bots channel."
+            )
             return
 
         # Get the LevelingCog for utilities functions.
@@ -97,23 +102,46 @@ class UpgradeHueCog(Cog):
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if not color_check or owned_check or not buffer_check or (freeleech and not fl_token_check) or not custom_role_check:
+        if (
+            not color_check
+            or owned_check
+            or not buffer_check
+            or (freeleech and not fl_token_check)
+            or not custom_role_check
+        ):
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
-                color="red"
+                color="red",
             )
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not color_check:
-                embed.add_field(name="Condition:", value="Color pack must be one the following options: red, yellow, green, cyan, blue, magenta.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value="Color pack must be one the following options: red, yellow, green, cyan, blue, magenta.",
+                    inline=False,
+                )
             if owned_check:
-                embed.add_field(name="Condition:", value="You must not already owned the color pack yet.")
+                embed.add_field(
+                    name="Condition:",
+                    value="You must not already owned the color pack yet.",
+                )
             if not buffer_check:
-                embed.add_field(name="Condition:", value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
+                    inline=False,
+                )
             if not custom_role_check:
-                embed.add_field(name="Condition:", value="You must own a custom role.", inline=False)
+                embed.add_field(
+                    name="Condition:", value="You must own a custom role.", inline=False
+                )
             if freeleech and not fl_token_check:
-                embed.add_field(name="Condition:", value="You don't have enough freeleech token.", inline=False)
+                embed.add_field(
+                    name="Condition:",
+                    value="You don't have enough freeleech token.",
+                    inline=False,
+                )
             await ctx.send(embed=embed)
             db.close()
             return
@@ -121,26 +149,38 @@ class UpgradeHueCog(Cog):
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
         if freeleech:
-            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {fl_token} " \
-                                        f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, purchase the {pack} color pack for {fl_token} "
+                f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
+            )
         else:
             confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {cost} MB? (yes/no/y/n)"
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
         def check(message):
-            return message.author == ctx.author and message.channel == ctx.channel and message.content.lower() in ["yes", "no", "y", "n"]
+            return (
+                message.author == ctx.author
+                and message.channel == ctx.channel
+                and message.content.lower() in ["yes", "no", "y", "n"]
+            )
 
         # Wait for the user's reply (yes/no/y/n) and return if the response is "no", "n" or no response was received after 60s.
         try:
             msg = await self.bot.wait_for("message", timeout=60, check=check)
             if msg.content.lower() == "no" or msg.content.lower() == "n":
-                embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has been cancelled.", color="red")
+                embed = embeds.make_embed(
+                    description=f"{ctx.author.mention}, your transaction request has been cancelled.",
+                    color="red",
+                )
                 await ctx.send(embed=embed)
                 db.close()
                 return
         except asyncio.TimeoutError:
-            embed = embeds.make_embed(description=f"{ctx.author.mention}, your transaction request has timed out.", color="red")
+            embed = embeds.make_embed(
+                description=f"{ctx.author.mention}, your transaction request has timed out.",
+                color="red",
+            )
             await ctx.send(embed=embed)
             db.close()
             return
@@ -153,13 +193,16 @@ class UpgradeHueCog(Cog):
         embed = embeds.make_embed(
             title=f"Color unlocked: {str(pack)}",
             description=f"You can now roll {pack}-like colors.",
-            color="green"
+            color="green",
         )
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token
-            embed.add_field(name="​", value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}")
+            embed.add_field(
+                name="​",
+                value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}",
+            )
         else:
             stats["buffer"] -= cost
             # Get the formatted buffer string.
@@ -178,6 +221,6 @@ class UpgradeHueCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the UpgradeHue cog. """
+    """Load the UpgradeHue cog."""
     bot.add_cog(UpgradeHueCog(bot))
     log.info("Commands loaded: upgrade_hue")
