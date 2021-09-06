@@ -139,7 +139,7 @@ class BanCog(Cog):
             ),
             create_option(
                 name="duration",
-                description="The length of time the user will be muted for",
+                description="The length of time the user will be banned for",
                 option_type=3,
                 required=False
             ),
