@@ -26,7 +26,7 @@ user_class_role = {
     "torrent_master": settings.get_value("role_torrent_master"),
     "power_tm": settings.get_value("role_power_tm"),
     "elite_tm": settings.get_value("role_elite_tm"),
-    "legend": settings.get_value("role_legend")
+    "legend": settings.get_value("role_legend"),
 }
 
 user_class = {
@@ -37,7 +37,7 @@ user_class = {
     "torrent_master": "Torrent Master",
     "power_tm": "Power TM",
     "elite_tm": "Elite TM",
-    "legend": "Legend"
+    "legend": "Legend",
 }
 
 buffer_requirement = {
@@ -48,7 +48,7 @@ buffer_requirement = {
     "torrent_master": 102400,
     "power_tm": 256000,
     "elite_tm": 512000,
-    "legend": 1048576
+    "legend": 1048576,
 }
 
 message_requirement = {
@@ -59,7 +59,7 @@ message_requirement = {
     "torrent_master": 10000,
     "power_tm": 22500,
     "elite_tm": 45000,
-    "legend": 80000
+    "legend": 80000,
 }
 
 # The user stats template.
@@ -81,19 +81,19 @@ stats_template = {
     "saturation_upgrade": 0,
     "value_upgrade": 0,
     "daily_timestamp": 0,
-    "achievements": []
+    "achievements": [],
 }
 
 
 class LevelingCog(Cog):
-    """ Leveling cog. """
+    """Leveling cog."""
 
     def __init__(self, bot: Bot):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
-        """ The entry point for buffer calculation and promotion/demotion on every messages sent. """
+        """The entry point for buffer calculation and promotion/demotion on every messages sent."""
 
         # If the author is a bot, skip them.
         if message.author.bot:
@@ -131,7 +131,7 @@ class LevelingCog(Cog):
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before, message_after):
-        """ Change the earned buffer on message edit. """
+        """Change the earned buffer on message edit."""
         # If the author is a bot, skip them.
         if message_before.author.bot:
             return
@@ -144,7 +144,9 @@ class LevelingCog(Cog):
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
         if not user:
             stats_json = await self.create_user()
-            achievements.insert(dict(user_id=message_before.author.id, stats=stats_json))
+            achievements.insert(
+                dict(user_id=message_before.author.id, stats=stats_json)
+            )
             user = achievements.find_one(user_id=message_before.author.id)
 
         # Load the JSON object in the database into a dictionary to manipulate.
@@ -167,7 +169,7 @@ class LevelingCog(Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message: Message):
-        """ Remove the earned buffer on message delete. """
+        """Remove the earned buffer on message delete."""
         # If the author is a bot, skip them.
         if message.author.bot:
             return
@@ -204,7 +206,7 @@ class LevelingCog(Cog):
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member):
-        """ Automatically add the user's custom role back if possible. """
+        """Automatically add the user's custom role back if possible."""
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
 
@@ -217,14 +219,16 @@ class LevelingCog(Cog):
             stats = json.loads(user["stats"])
             # Check if such user has a custom role. If true, get it and add it back to them.
             if stats["has_custom_role"]:
-                role_custom = discord.utils.get(member.guild.roles, id=stats["custom_role_id"])
+                role_custom = discord.utils.get(
+                    member.guild.roles, id=stats["custom_role_id"]
+                )
                 await member.add_roles(role_custom)
 
         # Close the connection.
         db.close()
 
     async def calculate_buffer(self, message: Message, stats):
-        """ Calculate the amount of buffer gained from messages and promote/demote conditionally. """
+        """Calculate the amount of buffer gained from messages and promote/demote conditionally."""
 
         # Get the number of words in a message.
         length = len(message.content.split())
@@ -252,7 +256,9 @@ class LevelingCog(Cog):
         buffer = length * multiplier
 
         # If the message author is a server booster, give them 20% more buffer per message.
-        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
+        role_server_booster = discord.utils.get(
+            message.guild.roles, id=settings.get_value("role_server_booster")
+        )
         if role_server_booster in message.author.roles:
             buffer += buffer * 0.2
 
@@ -274,13 +280,15 @@ class LevelingCog(Cog):
         using an int ranging from 0-7 (8 user classes means that there will be 7 promotions). When it happens, add a reward field into
         the embed.
         
-        Finally, assign the respective user class role to the member if they don't have one yet, while attempting to remove any other 
-        user class roles that does not match their current user class.
+        Finally, assign the respective user class role to the member if they don't have one yet, while attempting to remove other 
+        user class roles only if it exists (otherwise it would cause a "too many connections" issue).
         """
 
         # "Member" if buffer is between 0-10 GB and message count is >= 0.
-        if buffer_requirement["member"] <= stats["buffer"] < buffer_requirement["user"] \
-                and stats["message_count"] >= message_requirement["member"]:
+        if (
+            buffer_requirement["member"] <= stats["buffer"] < buffer_requirement["user"]
+            and stats["message_count"] >= message_requirement["member"]
+        ):
             stats["user_class"] = user_class["member"]
             stats["next_user_class_buffer"] = buffer_requirement["user"]
             stats["next_user_class_message"] = message_requirement["user"]
@@ -288,17 +296,18 @@ class LevelingCog(Cog):
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = "None"
             stats["next_user_class"] = user_class["user"]
-            role_member = discord.utils.get(message.guild.roles, id=user_class_role["member"])
-            if role_member not in message.author.roles:
-                await message.author.add_roles(role_member)
             for key, value in user_class_role.items():
-                if value == user_class_role["member"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["member"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["member"]:
+                    await message.author.remove_roles(role)
 
         # "User" if buffer is between 10-25 GB and message count is >= 1000.
-        elif buffer_requirement["user"] <= stats["buffer"] < buffer_requirement["power_user"] \
-                and stats["message_count"] >= message_requirement["user"]:
+        elif (
+            buffer_requirement["user"] <= stats["buffer"] < buffer_requirement["power_user"]
+            and stats["message_count"] >= message_requirement["user"]
+        ):
             stats["user_class"] = user_class["user"]
             stats["next_user_class_buffer"] = buffer_requirement["power_user"]
             stats["next_user_class_message"] = message_requirement["power_user"]
@@ -313,17 +322,18 @@ class LevelingCog(Cog):
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = user_class["member"]
             stats["next_user_class"] = user_class["power_user"]
-            role_user = discord.utils.get(message.guild.roles, id=user_class_role["user"])
-            if role_user not in message.author.roles:
-                await message.author.add_roles(role_user)
             for key, value in user_class_role.items():
-                if value == user_class_role["user"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["user"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["user"]:
+                    await message.author.remove_roles(role)
 
         # "Power User" if buffer is between 25-50 GB and message count is >= 2500.
-        elif buffer_requirement["power_user"] <= stats["buffer"] < buffer_requirement["elite"] \
-                and stats["message_count"] >= message_requirement["power_user"]:
+        elif (
+            buffer_requirement["power_user"] <= stats["buffer"] < buffer_requirement["elite"]
+            and stats["message_count"] >= message_requirement["power_user"]
+        ):
             stats["user_class"] = user_class["power_user"]
             stats["next_user_class_buffer"] = buffer_requirement["elite"]
             stats["next_user_class_message"] = message_requirement["elite"]
@@ -338,17 +348,18 @@ class LevelingCog(Cog):
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = user_class["user"]
             stats["next_user_class"] = user_class["elite"]
-            role_power_user = discord.utils.get(message.guild.roles, id=user_class_role["power_user"])
-            if role_power_user not in message.author.roles:
-                await message.author.add_roles(role_power_user)
             for key, value in user_class_role.items():
-                if value == user_class_role["power_user"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["power_user"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["power_user"]:
+                    await message.author.remove_roles(role)
 
         # "Elite" if buffer is between 50-100 GB and message count is >= 5000.
-        elif buffer_requirement["elite"] <= stats["buffer"] < buffer_requirement["torrent_master"] \
-                and stats["message_count"] >= message_requirement["elite"]:
+        elif (
+            buffer_requirement["elite"] <= stats["buffer"] < buffer_requirement["torrent_master"]
+            and stats["message_count"] >= message_requirement["elite"]
+        ):
             stats["user_class"] = user_class["elite"]
             stats["next_user_class_buffer"] = buffer_requirement["torrent_master"]
             stats["next_user_class_message"] = message_requirement["torrent_master"]
@@ -357,23 +368,26 @@ class LevelingCog(Cog):
                 if stats["unique_promotion"] == 2:
                     stats["unique_promotion"] += 1
                     stats["freeleech_token"] += 2
-                    promote_embed.add_field(name="​", value="**Unique reward**: 2x Freeleech Token")
+                    promote_embed.add_field(
+                        name="​", value="**Unique reward**: 2x Freeleech Token"
+                    )
                 await message.channel.send(embed=promote_embed)
             elif stats["user_class"] == stats["previous_user_class"]:
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = user_class["power_user"]
             stats["next_user_class"] = user_class["torrent_master"]
-            role_elite = discord.utils.get(message.guild.roles, id=user_class_role["elite"])
-            if role_elite not in message.author.roles:
-                await message.author.add_roles(role_elite)
             for key, value in user_class_role.items():
-                if value == user_class_role["elite"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["elite"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["elite"]:
+                    await message.author.remove_roles(role)
 
         # "Torrent Master" if buffer is between 100-250 GB and message count is >= 10000.
-        elif buffer_requirement["torrent_master"] < stats["buffer"] < buffer_requirement["power_tm"] \
-                and stats["message_count"] >= message_requirement["torrent_master"]:
+        elif (
+            buffer_requirement["torrent_master"] <= stats["buffer"] < buffer_requirement["power_tm"]
+            and stats["message_count"] >= message_requirement["torrent_master"]
+        ):
             stats["user_class"] = user_class["torrent_master"]
             stats["next_user_class_buffer"] = buffer_requirement["power_tm"]
             stats["next_user_class_message"] = message_requirement["power_tm"]
@@ -388,17 +402,18 @@ class LevelingCog(Cog):
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = user_class["elite"]
             stats["next_user_class"] = user_class["power_tm"]
-            role_torrent_master = discord.utils.get(message.guild.roles, id=user_class_role["torrent_master"])
-            if role_torrent_master not in message.author.roles:
-                await message.author.add_roles(role_torrent_master)
             for key, value in user_class_role.items():
-                if value == user_class_role["torrent_master"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["torrent_master"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["torrent_master"]:
+                    await message.author.remove_roles(role)
 
         # "Power TM" if buffer is between 250-500 GB and message count is >= 22500.
-        elif buffer_requirement["power_tm"] <= stats["buffer"] < buffer_requirement["elite_tm"] \
-                and stats["message_count"] >= message_requirement["power_tm"]:
+        elif (
+            buffer_requirement["power_tm"] <= stats["buffer"] < buffer_requirement["elite_tm"]
+            and stats["message_count"] >= message_requirement["power_tm"]
+        ):
             stats["user_class"] = user_class["power_tm"]
             stats["next_user_class_buffer"] = buffer_requirement["elite_tm"]
             stats["next_user_class_message"] = message_requirement["elite_tm"]
@@ -413,17 +428,18 @@ class LevelingCog(Cog):
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = user_class["torrent_master"]
             stats["next_user_class"] = user_class["elite_tm"]
-            role_power_tm = discord.utils.get(message.guild.roles, id=user_class_role["power_tm"])
-            if role_power_tm not in message.author.roles:
-                await message.author.add_roles(role_power_tm)
             for key, value in user_class_role.items():
-                if value == user_class_role["power_tm"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["power_tm"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["power_tm"]:
+                    await message.author.remove_roles(role)
 
         # "Elite TM" if buffer is between 500-1024 GB and message count is >= 45000.
-        elif buffer_requirement["elite_tm"] <= stats["buffer"] < buffer_requirement["legend"] \
-                and stats["message_count"] >= message_requirement["elite_tm"]:
+        elif (
+            buffer_requirement["elite_tm"] <= stats["buffer"] < buffer_requirement["legend"]
+            and stats["message_count"] >= message_requirement["elite_tm"]
+        ):
             stats["user_class"] = user_class["elite_tm"]
             stats["next_user_class_buffer"] = buffer_requirement["legend"]
             stats["next_user_class_message"] = message_requirement["legend"]
@@ -438,17 +454,18 @@ class LevelingCog(Cog):
                 await self.send_demote_embed(stats, message)
             stats["previous_user_class"] = user_class["power_tm"]
             stats["next_user_class"] = user_class["legend"]
-            role_elite_tm = discord.utils.get(message.guild.roles, id=user_class_role["elite_tm"])
-            if role_elite_tm not in message.author.roles:
-                await message.author.add_roles(role_elite_tm)
             for key, value in user_class_role.items():
-                if value == user_class_role["elite_tm"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["elite_tm"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["elite_tm"]:
+                    await message.author.remove_roles(role)
 
         # "Legend" if buffer is > 1024 GB and message count is >= 80000.
-        elif stats["buffer"] >= buffer_requirement["legend"] \
-                and stats["message_count"] >= message_requirement["legend"]:
+        elif (
+            stats["buffer"] >= buffer_requirement["legend"]
+            and stats["message_count"] >= message_requirement["legend"]
+        ):
             stats["user_class"] = user_class["legend"]
             stats["next_user_class_buffer"] = 0
             stats["next_user_class_message"] = 0
@@ -461,20 +478,19 @@ class LevelingCog(Cog):
                 await message.channel.send(embed=promote_embed)
             stats["previous_user_class"] = user_class["elite_tm"]
             stats["next_user_class"] = "None"
-            role_legend = discord.utils.get(message.guild.roles, id=user_class_role["legend"])
-            if role_legend not in message.author.roles:
-                await message.author.add_roles(role_legend)
             for key, value in user_class_role.items():
-                if value == user_class_role["legend"]:
-                    continue
-                await message.author.remove_roles(discord.utils.get(message.guild.roles, id=value))
+                role = discord.utils.get(message.guild.roles, id=value)
+                if role not in message.author.roles and role.id == user_class_role["legend"]:
+                    await message.author.add_roles(role)
+                elif role in message.author.roles and role.id != user_class_role["legend"]:
+                    await message.author.remove_roles(role)
 
         # Return the dictionary.
         return stats
 
     @staticmethod
     async def calculate_buffer_remove(message: Message, stats):
-        """ Remove the amount of buffer gained on message delete. Works exactly the same as calculate_buffer() but reversed. """
+        """Remove the amount of buffer gained on message delete. Works exactly the same as calculate_buffer() but reversed."""
 
         # Get the number of words in a message.
         length = len(message.content.split())
@@ -497,7 +513,9 @@ class LevelingCog(Cog):
         buffer = length * multiplier
 
         # 20% more buffer to be removed per message if the author is a server booster.
-        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
+        role_server_booster = discord.utils.get(
+            message.guild.roles, id=settings.get_value("role_server_booster")
+        )
         if role_server_booster in message.author.roles:
             buffer += buffer * 0.2
 
@@ -512,14 +530,14 @@ class LevelingCog(Cog):
 
     @staticmethod
     async def create_user():
-        """ Initialize the JSON object for user stats if it doesn't exist yet. """
+        """Initialize the JSON object for user stats if it doesn't exist yet."""
         # Dump the string into a JSON object and return it.
         stats_json = json.dumps(stats_template)
         return stats_json
 
     @staticmethod
     async def verify_integrity(stats):
-        """ Verify the JSON object to make sure that it doesn't have missing keys or contains keys that shouldn't exist. """
+        """Verify the JSON object to make sure that it doesn't have missing keys or contains keys that shouldn't exist."""
 
         # Iterate through the keys and values of the stats template.
         for key, value in stats_template.items():
@@ -538,7 +556,7 @@ class LevelingCog(Cog):
 
     @staticmethod
     async def is_in_enabled_channels(message: Message) -> bool:
-        """ Check if the sent message is from one of the enabled channels or not. """
+        """Check if the sent message is from one of the enabled channels or not."""
 
         # Get all categories from the guild.
         categories = message.guild.categories
@@ -548,7 +566,10 @@ class LevelingCog(Cog):
             return False
 
         # Return true if the message was sent any channel under the community category.
-        if any(message.channel.category.id == settings.get_value("category_community") for category in categories):
+        if any(
+            message.channel.category.id == settings.get_value("category_community")
+            for category in categories
+        ):
             return True
 
         # Return true if the message was sent in #mudae-lounge.
@@ -564,7 +585,7 @@ class LevelingCog(Cog):
 
     @staticmethod
     async def get_buffer_string(buffer) -> str:
-        """ Display the buffer in a beautified format of MB, GB, and TB. """
+        """Display the buffer in a beautified format of MB, GB, and TB."""
         # If buffer is larger than 1024 GB, display it in TB instead.
         if buffer >= 1024 ** 2:
             buffer_string = f"{round(buffer / (1024 ** 2), 2)} TB"
@@ -585,7 +606,7 @@ class LevelingCog(Cog):
             title="Promoted!",
             description=f"{message.author.mention} has been promoted to {stats['next_user_class']}!",
             thumbnail_url=message.author.avatar_url,
-            color="green"
+            color="green",
         )
         return promote_embed
 
@@ -596,12 +617,12 @@ class LevelingCog(Cog):
             title="Demoted!",
             description=f"{message.author.mention} has been demoted to {stats['previous_user_class']}!",
             thumbnail_url=message.author.avatar_url,
-            color="red"
+            color="red",
         )
         await message.channel.send(embed=demote_embed)
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Leveling cog. """
+    """Load the Leveling cog."""
     bot.add_cog(LevelingCog(bot))
     log.info("Commands loaded: leveling")
