@@ -14,23 +14,21 @@ log = logging.getLogger(__name__)
 
 
 def get_value(config: str):
-    # Get all of the settings from the table and load them into the dictionary.
+    # Open a connection to the database.
     db = dataset.connect(get_db())
-    data = db["settings"].all()
 
-    # Iterate through database entries and add them as a dictionary.
-    settings = {}
-    for setting in data:
-        settings[setting["name"]] = {"value": setting["value"], "censored": bool(setting["censored"])}
+    # Find a result that matches the name from the parameter.
+    settings = db["settings"]
+    entry = settings.find_one(name=config)
 
-    # If the entry's value consists of only numbers, return it as an int.
-    if settings[config]["value"].isdecimal():
+    # If the entry consists of just numbers, return the value as an int.
+    if entry["value"].isdecimal():
         db.close()
-        return int(settings[config]["value"])
+        return int(entry["value"])
 
-    # Otherwise, return the value normally (as a string by default).
+    # Otherwise, return it as a string.
     db.close()
-    return settings[config]["value"]
+    return entry["value"]
 
 
 class Settings(Cog):
