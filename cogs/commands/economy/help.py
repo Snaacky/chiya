@@ -28,11 +28,11 @@ class HelpCog(Cog):
         """Help command to view the detailed information about the economy system."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
-        if ctx.channel.id not in {
+        # Warn if the command is called outside of #bots channel. Using a tuple is more memory efficient.
+        if ctx.channel.id not in (
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
-        }:
+        ):
             await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )

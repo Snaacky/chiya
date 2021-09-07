@@ -51,11 +51,11 @@ class UpgradeValueCog(Cog):
         in wording to make it easier to understand for the end users."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
-        if ctx.channel.id not in {
+        # Warn if the command is called outside of #bots channel. Using a tuple is more memory efficient.
+        if ctx.channel.id not in (
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
-        }:
+        ):
             await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
@@ -189,13 +189,13 @@ class UpgradeValueCog(Cog):
             return (
                 message.author == ctx.author
                 and message.channel == ctx.channel
-                and message.content.lower() in ["yes", "no", "y", "n"]
+                and message.content.lower() in ("yes", "no", "y", "n")
             )
 
         # Wait for the user's reply (yes/no/y/n) and return if the response is "no", "n" or no response was received after 60s.
         try:
             msg = await self.bot.wait_for("message", timeout=60, check=check)
-            if msg.content.lower() == "no" or msg.content.lower() == "n":
+            if msg.content.lower() in ("no", "n"):
                 embed = embeds.make_embed(
                     description=f"{ctx.author.mention}, your transaction request has been cancelled.",
                     color="red",

@@ -32,11 +32,11 @@ class DailyCog(Cog):
         """Receives some buffer once every 20 hours."""
         await ctx.defer()
 
-        # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
-        if ctx.channel.id not in {
+        # Warn if the command is called outside of #bots channel. Using a tuple is more memory efficient.
+        if ctx.channel.id not in (
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
-        }:
+        ):
             await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
@@ -185,14 +185,14 @@ class DailyCog(Cog):
 
         # Get the formatted buffer string.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-        embed.add_field(name="​", value=f"**Total buffer:** {buffer_string}", inline=False)
+        embed.add_field(
+            name="​", value=f"**Total buffer:** {buffer_string}", inline=False
+        )
         await ctx.send(embed=embed)
 
-        # Dump the modified JSON into the db.
+        # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
         achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
-
-        # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
