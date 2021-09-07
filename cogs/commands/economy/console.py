@@ -57,25 +57,25 @@ class Console(Cog):
                 required=False,
             ),
             create_option(
-                name="set_message_count",
+                name="message_count",
                 description="Set the message count value of a user",
                 option_type=4,
                 required=False,
             ),
             create_option(
-                name="set_unique_promotion",
+                name="unique_promotion",
                 description="Set the number of unique promotions of a user",
                 option_type=4,
                 required=False,
             ),
             create_option(
-                name="set_freeleech_token",
+                name="freeleech_token",
                 description="Set the FL token value of a user",
                 option_type=4,
                 required=False,
             ),
             create_option(
-                name="set_vouch",
+                name="vouch",
                 description="Set the vouch value of a user",
                 option_type=4,
                 required=False,
@@ -93,31 +93,31 @@ class Console(Cog):
                 required=False,
             ),
             create_option(
-                name="set_daily_upgrade",
+                name="daily_upgrade",
                 description="Set the daily upgrade value of a user",
                 option_type=4,
                 required=False,
             ),
             create_option(
-                name="set_hue_upgrade",
+                name="hue_upgrade",
                 description="Set the hue upgrade value of a user",
                 option_type=3,
                 required=False,
             ),
             create_option(
-                name="set_saturation_upgrade",
+                name="saturation_upgrade",
                 description="Set the saturation upgrade value of a user",
                 option_type=4,
                 required=False,
             ),
             create_option(
-                name="set_brightness_upgrade",
+                name="brightness_upgrade",
                 description="Set the brightness upgrade value of a user",
                 option_type=4,
                 required=False,
             ),
             create_option(
-                name="set_daily_timestamp",
+                name="daily_timestamp",
                 description="Set the daily timestamp (Unix) value of a user",
                 option_type=4,
                 required=False,
@@ -146,17 +146,17 @@ class Console(Cog):
         set_buffer: int = None,
         remove_buffer: int = None,
         add_buffer: int = None,
-        set_message_count: int = None,
-        set_unique_promotion: int = None,
-        set_freeleech_token: int = None,
-        set_vouch: int = None,
+        message_count: int = None,
+        unique_promotion: int = None,
+        freeleech_token: int = None,
+        vouch: int = None,
         has_custom_role: bool = None,
         custom_role_id: str = None,
-        set_daily_upgrade: str = None,
-        set_hue_upgrade: str = None,
-        set_saturation_upgrade: int = None,
-        set_brightness_upgrade: int = None,
-        set_daily_timestamp: int = None,
+        daily_upgrade: str = None,
+        hue_upgrade: str = None,
+        saturation_upgrade: int = None,
+        brightness_upgrade: int = None,
+        daily_timestamp: int = None,
     ):
         """Single target cheat commands."""
         await ctx.defer()
@@ -236,14 +236,14 @@ class Console(Cog):
             return
 
         # Set the message count of a user. Must be >= 0.
-        if set_message_count is not None and set_message_count >= 0:
-            stats["message_count"] = set_message_count
+        if message_count is not None and message_count >= 0:
+            stats["message_count"] = message_count
             embed.description = (
-                f"{user.mention}'s upload value has been set to {set_message_count}!"
+                f"{user.mention}'s upload value has been set to {message_count}!"
             )
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
-        elif set_message_count is not None:
+        elif message_count is not None:
             await embeds.error_message(
                 ctx=ctx,
                 description="Message count value must be equal or greater than 0.",
@@ -252,12 +252,12 @@ class Console(Cog):
             return
 
         # Set the number of unique promotions of a user. Must be from 0-7.
-        if set_unique_promotion is not None and set_unique_promotion in range(0, 8):
-            stats["unique_promotion"] = set_unique_promotion
-            embed.description = f"{user.mention}'s unique promotion count has been set to {set_unique_promotion}!"
+        if unique_promotion is not None and unique_promotion in range(0, 8):
+            stats["unique_promotion"] = unique_promotion
+            embed.description = f"{user.mention}'s unique promotion count has been set to {unique_promotion}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is not between 0-7, return.
-        elif set_unique_promotion is not None:
+        elif unique_promotion is not None:
             await embeds.error_message(
                 ctx=ctx, description="Unique promotion count must be between 0 to 7."
             )
@@ -265,12 +265,12 @@ class Console(Cog):
             return
 
         # Set the FL token of a user. Must be >= 0.
-        if set_freeleech_token is not None and set_freeleech_token >= 0:
-            stats["freeleech_token"] = set_freeleech_token
-            embed.description = f"{user.mention}'s freeleech token value has been set to {set_freeleech_token}!"
+        if freeleech_token is not None and freeleech_token >= 0:
+            stats["freeleech_token"] = freeleech_token
+            embed.description = f"{user.mention}'s freeleech token value has been set to {freeleech_token}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
-        elif set_freeleech_token is not None:
+        elif freeleech_token is not None:
             await embeds.error_message(
                 ctx=ctx,
                 description="Freeleech token value must be equal or greater than 0.",
@@ -279,14 +279,12 @@ class Console(Cog):
             return
 
         # Set the vouch count of a user. Must be >= 0.
-        if set_vouch is not None and set_vouch >= 0:
-            stats["vouch"] = set_vouch
-            embed.description = (
-                f"{user.mention}'s vouch value has been set to {set_vouch}!"
-            )
+        if vouch is not None and vouch >= 0:
+            stats["vouch"] = vouch
+            embed.description = f"{user.mention}'s vouch value has been set to {vouch}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
-        elif set_vouch is not None:
+        elif vouch is not None:
             await embeds.error_message(
                 ctx=ctx, description="Vouch value must be equal or greater than 0."
             )
@@ -335,12 +333,14 @@ class Console(Cog):
             return
 
         # Set the daily upgrade value of a user. Must be between 0-100.
-        if set_daily_upgrade is not None and set_daily_upgrade in range(0, 101):
-            stats["daily_upgrade"] = set_daily_upgrade
-            embed.description = f"{user.mention}'s daily upgrade value has been set to {set_daily_upgrade}!"
+        if daily_upgrade is not None and daily_upgrade in range(0, 101):
+            stats["daily_upgrade"] = daily_upgrade
+            embed.description = (
+                f"{user.mention}'s daily upgrade value has been set to {daily_upgrade}!"
+            )
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is not between 0-100, return.
-        elif set_daily_upgrade is not None:
+        elif daily_upgrade is not None:
             await embeds.error_message(
                 ctx=ctx, description="Daily upgrade value must be between 0 and 100."
             )
@@ -348,10 +348,8 @@ class Console(Cog):
             return
 
         # Set the hue upgrade value of a user by using a Regex to capture only valid options.
-        if set_hue_upgrade:
-            match_list = re.findall(
-                "(red|green|yellow|blue|magenta|cyan)", set_hue_upgrade
-            )
+        if hue_upgrade:
+            match_list = re.findall("(red|green|yellow|blue|magenta|cyan)", hue_upgrade)
             # If there is at least one item in the match list, set the value.
             if match_list:
                 stats["hue_upgrade"] = match_list
@@ -360,7 +358,7 @@ class Console(Cog):
                 )
                 await ctx.send(embed=embed)
             # Attempt to check if the input value is "none". If it does, give the user an empty list to remove their upgrades.
-            elif set_hue_upgrade.lower() == "none":
+            elif hue_upgrade.lower() == "none":
                 stats["hue_upgrade"] = []
                 embed.description = (
                     f"{user.mention}'s hue upgrade value has been emptied!"
@@ -378,14 +376,12 @@ class Console(Cog):
                 return
 
         # Set the saturation upgrade value of a user. Must be between 0-100.
-        if set_saturation_upgrade is not None and set_saturation_upgrade in range(
-            0, 101
-        ):
-            stats["saturation_upgrade"] = set_saturation_upgrade
-            embed.description = f"{user.mention}'s saturation upgrade value has been set to {set_saturation_upgrade}!"
+        if saturation_upgrade is not None and saturation_upgrade in range(0, 101):
+            stats["saturation_upgrade"] = saturation_upgrade
+            embed.description = f"{user.mention}'s saturation upgrade value has been set to {saturation_upgrade}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is not between 0-100, return.
-        elif set_saturation_upgrade is not None:
+        elif saturation_upgrade is not None:
             await embeds.error_message(
                 ctx=ctx,
                 description="Saturation upgrade value must be between 0 and 100.",
@@ -394,14 +390,12 @@ class Console(Cog):
             return
 
         # Set the brightness upgrade value of a user. Must be between 0-100.
-        if set_brightness_upgrade is not None and set_brightness_upgrade in range(
-            0, 101
-        ):
-            stats["value_upgrade"] = set_brightness_upgrade
-            embed.description = f"{user.mention}'s brightness upgrade value has been set to {set_brightness_upgrade}!"
+        if brightness_upgrade is not None and brightness_upgrade in range(0, 101):
+            stats["value_upgrade"] = brightness_upgrade
+            embed.description = f"{user.mention}'s brightness upgrade value has been set to {brightness_upgrade}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is not between 0-100, return.
-        elif set_brightness_upgrade is not None:
+        elif brightness_upgrade is not None:
             await embeds.error_message(
                 ctx=ctx,
                 description="Brightness upgrade value must be between 0 and 100.",
@@ -410,15 +404,15 @@ class Console(Cog):
             return
 
         # Set the daily timestamp of a user (Unix format). Must be >= 0.
-        if set_daily_timestamp is not None and set_daily_timestamp >= 0:
-            stats["daily_timestamp"] = set_daily_timestamp
-            time = datetime.datetime.fromtimestamp(set_daily_timestamp)
+        if daily_timestamp is not None and daily_timestamp >= 0:
+            stats["daily_timestamp"] = daily_timestamp
+            time = datetime.datetime.fromtimestamp(daily_timestamp)
             embed.description = (
                 f"{user.mention}'s daily timestamp value has been set to {time}!"
             )
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
-        elif set_daily_timestamp is not None:
+        elif daily_timestamp is not None:
             await embeds.error_message(
                 ctx=ctx, description="Daily timestamp value must be greater than 0."
             )
