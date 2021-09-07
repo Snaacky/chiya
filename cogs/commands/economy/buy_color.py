@@ -1,6 +1,7 @@
 import json
 import logging
 import random
+from itertools import chain
 
 import dataset
 import discord.utils
@@ -33,17 +34,17 @@ class BuyColorCog(Cog):
         # Create a dictionary that maps the color pack name with the range of roll values, unpacked into a list with the * operator.
         color_map = {
             # Red-like colors span from 331-360 and 1-30 degrees on the HSV scale.
-            "red": [*range(331, 361), *range(1, 31)],
+            "red": chain(range(331, 361), range(1, 31)),
             # Yellow-like colors span from 31-90 degrees on the HSV scale.
-            "yellow": [*range(31, 91)],
+            "yellow": range(31, 91),
             # Green-like colors span from 91-150 degrees on the HSV scale.
-            "green": [*range(91, 151)],
+            "green": range(91, 151),
             # Cyan-like colors span from 151-210 degrees on the HSV scale.
-            "cyan": [*range(151, 211)],
+            "cyan": range(151, 211),
             # Blue-like colors span from 211-270 degrees on the HSV scale.
-            "blue": [*range(211, 271)],
+            "blue": range(211, 271),
             # Magenta-like colors span from 271-330 degrees on the HSV scale.
-            "magenta": [*range(271, 331)],
+            "magenta": range(271, 331),
         }
 
         # Declare an empty list to append the roll values later.
@@ -63,8 +64,8 @@ class BuyColorCog(Cog):
         # Finally, return random HSV tuple, affected by the purchased upgrades.
         return (
             random.choice(hue) / 360,
-            random.randint(0, saturation_upgrade + 1) / 100,
-            random.randint(0, value_upgrade + 1) / 100,
+            random.randint(0, saturation_upgrade) / 100,
+            random.randint(0, value_upgrade) / 100,
         )
 
     @commands.bot_has_permissions(send_messages=True)
@@ -217,8 +218,6 @@ class BuyColorCog(Cog):
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
         achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
-
-        # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
