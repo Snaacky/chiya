@@ -217,12 +217,21 @@ class LevelingCog(Cog):
         # If the user is found, load the JSON object in the database into a dictionary.
         if user:
             stats = json.loads(user["stats"])
-            # Check if such user has a custom role. If true, get it and add it back to them.
+            # Get their custom role.
             if stats["has_custom_role"]:
                 role_custom = discord.utils.get(
                     member.guild.roles, id=stats["custom_role_id"]
                 )
-                await member.add_roles(role_custom)
+                # If the role is found, add it back to the user. Otherwise, reset their custom role stats.
+                if role_custom:
+                    await member.add_roles(role_custom)
+                else:
+                    stats["has_custom_role"] = False
+                    stats["custom_role_id"] = 0
+                    # Dump the modified JSON into the db.
+                    stats_json = json.dumps(stats)
+                    achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+                    db.commit()
 
         # Close the connection.
         db.close()
