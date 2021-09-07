@@ -132,7 +132,7 @@ class ProfileCog(Cog):
         )
 
         # Display the user's minified pfp and their name without the discriminator.
-        embed.set_author(name=user.name, icon_url=user.avatar_url)
+        embed.set_author(name=f"{user.name}'s profile", icon_url=user.avatar_url)
 
         # Using zero width space so that the "name" parameter won't be rendered.
         embed.add_field(name="​", value=value, inline=False)

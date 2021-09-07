@@ -147,6 +147,8 @@ class BuyColorCog(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red",
             )
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
                 embed.add_field(
@@ -193,6 +195,7 @@ class BuyColorCog(Cog):
 
         # Create an embed with the rolled color upon successful transaction.
         embed = embeds.make_embed(title=f"You rolled: {color}", color=color)
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly.
         if freeleech:

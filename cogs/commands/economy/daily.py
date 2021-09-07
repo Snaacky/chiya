@@ -107,6 +107,7 @@ class DailyCog(Cog):
                 description="You can only claim your daily buffer reward once every 20 hours.",
                 color="red",
             )
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             embed.add_field(name="Time remaining:", value=duration_string, inline=False)
             await ctx.send(embed=embed)
             db.close()
@@ -119,6 +120,8 @@ class DailyCog(Cog):
         embed = embeds.make_embed(
             title="Daily buffer claimed",
         )
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
         # 55% chance to roll the common tier. Embed color is "soft_green".
         if rng in range(0, 56):
             value = random.randint(150, 250)
@@ -182,7 +185,7 @@ class DailyCog(Cog):
 
         # Get the formatted buffer string.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-        embed.add_field(name="Total buffer:", value=buffer_string, inline=False)
+        embed.add_field(name="​", value=f"**Total buffer:** {buffer_string}", inline=False)
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db.

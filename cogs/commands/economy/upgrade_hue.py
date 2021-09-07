@@ -114,6 +114,8 @@ class UpgradeHueCog(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red",
             )
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not color_check:
                 embed.add_field(
@@ -195,6 +197,7 @@ class UpgradeHueCog(Cog):
             description=f"You can now roll {pack}-like colors.",
             color="green",
         )
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:

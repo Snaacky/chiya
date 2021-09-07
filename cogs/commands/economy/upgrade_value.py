@@ -71,6 +71,7 @@ class UpgradeValueCog(Cog):
                 description="The amount of levels to be purchased cannot exceed 100.",
                 color="red",
             )
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
             return
 
@@ -134,8 +135,9 @@ class UpgradeValueCog(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red",
             )
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
             # Dynamically add the reason(s) why the transaction was unsuccessful.
-            # Only display this message when the total number of upgrades are below 100.
             if not buffer_check and availability_check:
                 embed.add_field(
                     name="Condition:",
@@ -219,6 +221,7 @@ class UpgradeValueCog(Cog):
             description=f"You reached brightness level {stats['value_upgrade']}!",
             color="green",
         )
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:

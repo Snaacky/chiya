@@ -118,6 +118,8 @@ class BuyNicknameCog(Cog):
                 description="One or more of the following conditions were not met:",
                 color="red",
             )
+            embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
+
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
                 embed.add_field(
@@ -187,6 +189,7 @@ class BuyNicknameCog(Cog):
         embed = embeds.make_embed(
             title=f"Nickname purchased: {nickname}", color="green"
         )
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
