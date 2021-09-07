@@ -236,7 +236,7 @@ class UpgradeValueCog(Cog):
             )
         else:
             stats["buffer"] -= inflated_cost
-            embed.description = f"Successfully reached brightness level {stats['brightness_upgrade']} for {inflated_cost} MB."
+            embed.description = f"Successfully reached brightness level {stats['value_upgrade']} for {inflated_cost} MB."
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
@@ -246,8 +246,6 @@ class UpgradeValueCog(Cog):
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
         achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
-
-        # Commit the changes to the database and close it.
         db.commit()
         db.close()
 
