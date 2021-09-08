@@ -26,18 +26,18 @@ class UpgradeHueCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="hue",
-        description="Increase the amount of possible colors that you can roll.",
+        description="Increase the amount of possible colors that you can roll",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="pack",
-                description="Red, yellow, green, cyan, blue, magenta.",
+                description="Red, yellow, green, cyan, blue, magenta",
                 option_type=3,
                 required=True,
             ),
             create_option(
                 name="freeleech",
-                description="Enable freeleech for this item, costing 2 freeleech tokens per level.",
+                description="Enable freeleech for this item, costing 2 freeleech tokens per level",
                 option_type=5,
                 required=False,
             ),

@@ -26,18 +26,18 @@ class BuyNicknameCog(Cog):
     @cog_ext.cog_subcommand(
         base="buy",
         name="nickname",
-        description="Purchase a nickname.",
+        description="Purchase a nickname",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="nickname",
-                description="The name to be changed to.",
+                description="The name to be changed to",
                 option_type=3,
                 required=True,
             ),
             create_option(
                 name="freeleech",
-                description="Enable freeleech for this item, costing 1 freeleech token.",
+                description="Enable freeleech for this item, costing 1 freeleech token",
                 option_type=5,
                 required=False,
             ),

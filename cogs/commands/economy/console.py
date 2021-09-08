@@ -606,12 +606,12 @@ class Console(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="refresh",
-        description="Reload the user profile stats.",
+        description="Reload the user profile stats",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="user",
-                description="The user's stats to be reloaded.",
+                description="The user's stats to be reloaded",
                 option_type=6,
                 required=False,
             ),

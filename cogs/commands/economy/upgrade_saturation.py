@@ -26,18 +26,18 @@ class UpgradeSaturationCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="saturation",
-        description="Allows more saturated colors to be rolled.",
+        description="Allows more saturated colors to be rolled",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="amount",
-                description="Number of upgrades to purchase.",
+                description="Number of upgrades to purchase",
                 option_type=4,
                 required=True,
             ),
             create_option(
                 name="freeleech",
-                description="Enable freeleech for this item, costing 1 freeleech token per level.",
+                description="Enable freeleech for this item, costing 1 freeleech token per level",
                 option_type=5,
                 required=False,
             ),

@@ -26,18 +26,18 @@ class BuyRoleCog(Cog):
     @cog_ext.cog_subcommand(
         base="buy",
         name="role",
-        description="Purchase a role with a specified name.",
+        description="Purchase a role with a specified name",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="name",
-                description="The name of the role.",
+                description="The name of the role",
                 option_type=3,
                 required=True,
             ),
             create_option(
                 name="freeleech",
-                description="Enable freeleech for this item, costing 5 freeleech tokens.",
+                description="Enable freeleech for this item, costing 5 freeleech tokens",
                 option_type=5,
                 required=False,
             ),

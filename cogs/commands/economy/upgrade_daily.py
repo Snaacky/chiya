@@ -26,18 +26,18 @@ class UpgradeDailyCog(Cog):
     @cog_ext.cog_subcommand(
         base="upgrade",
         name="daily",
-        description="Increases the chance to receive 2x buffer from /daily.",
+        description="Increases the chance to receive 2x buffer from /daily",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="amount",
-                description="Number of upgrades to purchase.",
+                description="Number of upgrades to purchase",
                 option_type=4,
                 required=True,
             ),
             create_option(
                 name="freeleech",
-                description="Enable freeleech for this item, costing 1 freeleech token per level.",
+                description="Enable freeleech for this item, costing 1 freeleech token per level",
                 option_type=5,
                 required=False,
             ),

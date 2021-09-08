@@ -73,12 +73,12 @@ class BuyColorCog(Cog):
     @cog_ext.cog_subcommand(
         base="buy",
         name="color",
-        description="Roll for a random role color.",
+        description="Roll for a random role color",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
                 name="freeleech",
-                description="Enable freeleech for this item, costing 1 freeleech token.",
+                description="Enable freeleech for this item, costing 1 freeleech token",
                 option_type=5,
                 required=False,
             ),
