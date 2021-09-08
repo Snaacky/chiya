@@ -85,7 +85,13 @@ class PurgeCog(Cog):
         if amount == 1:
             message = message[:-1]
 
-        await ctx.channel.purge(limit=amount + 1)
+        # Prevents the bot from deleting the invoking message.
+        def check_message(msg):
+            if msg.id == ctx.command_id:
+                return False
+            return True
+
+        await ctx.channel.purge(limit=amount + 1, check=check_message)
 
         embed = embeds.make_embed(
             ctx=ctx,
