@@ -35,11 +35,12 @@ class AdministrationCog(Cog):
         # remove `foo`
         return content.strip('` \n')
     
-    def upload_to_privatebin(self, payload: str) -> str:
-        try:
-            return privatebinapi.send("https://bin.piracy.moe", text=payload, expiration='never', burn_after_reading=True)["full_url"]
-        except:
-            return "Error uploading to privatebin. Is privatebin up?"
+    def upload_to_privatebin(self, text_to_be_uploaded: str) -> str:
+        uploaded_info = privatebinapi.send("https://bin.piracy.moe", text=text_to_be_uploaded, expiration='never')
+        if uploaded_info:
+            return uploaded_info['full_url']
+        # returning a zero width whitespace character
+        return "​"
 
     @commands.before_invoke(record_usage)
     @commands.group(aliases=["u", "ul"])
