@@ -68,7 +68,6 @@ class BuyColorCog(Cog):
             random.randint(0, value_upgrade) / 100,
         )
 
-    @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="buy",

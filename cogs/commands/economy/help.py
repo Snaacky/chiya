@@ -17,7 +17,6 @@ class HelpCog(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="help",
@@ -123,7 +122,6 @@ class HelpCog(Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.bot_has_permissions(send_messages=True)
     @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="commands",
