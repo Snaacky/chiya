@@ -114,7 +114,7 @@ class LevelingCog(Cog):
         stats = json.loads(user["stats"])
 
         # Calculate buffer gain and increment the message count in allowed channels.
-        channel_enabled = await self.is_in_enabled_channels(message=message)
+        channel_enabled = await self.is_in_enabled_channels(message)
         if channel_enabled:
             stats["message_count"] += 1
             stats = await self.calculate_buffer(message, stats)
@@ -149,7 +149,7 @@ class LevelingCog(Cog):
         stats = json.loads(user["stats"])
 
         # Recalculate buffer gain only in allowed channels.
-        channel_enabled = await self.is_in_enabled_channels(message=before)
+        channel_enabled = await self.is_in_enabled_channels(before)
         if channel_enabled:
             # Remove the buffer gained from the message pre-edit.
             stats_old = await self.calculate_buffer_remove(before, stats)
@@ -186,7 +186,7 @@ class LevelingCog(Cog):
         stats = json.loads(user["stats"])
 
         # Revert the buffer gain and message count in allowed channels.
-        channel_enabled = await self.is_in_enabled_channels(message=message)
+        channel_enabled = await self.is_in_enabled_channels(message)
         if channel_enabled:
             stats["message_count"] -= 1
             stats = await self.calculate_buffer_remove(message, stats)
