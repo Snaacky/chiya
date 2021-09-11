@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 
 import dataset
 import discord
