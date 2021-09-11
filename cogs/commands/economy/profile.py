@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 import dataset
 import discord
@@ -136,17 +137,29 @@ class ProfileCog(Cog):
         # Using zero width space so that the "name" parameter won't be rendered.
         embed.add_field(name="​", value=value, inline=False)
 
+        # Display the buffer percentage until the next user class. Default the percentage to 0 if the divisor is 0.
+        buffer_percentage = (
+            round(stats["buffer"] / stats["next_user_class_buffer"] * 100, 2)
+            if stats["next_user_class_buffer"] != 0
+            else 0
+        )
         # Display the amount of buffer required until next promotion.
         embed.add_field(
             name="Buffer required for promotion:",
-            value=f"{buffer_string} / {next_class_buffer_string}",
+            value=f"{buffer_string} / {next_class_buffer_string} ({buffer_percentage}%)",
             inline=False,
         )
 
-        # Display the amount of "uploads" required until next promotion.
+        # Display the message percentage until the next user class. Default the percentage to 0 if the divisor is 0.
+        message_percentage = (
+            round(stats["message_count"] / stats["next_user_class_message"] * 100, 2)
+            if stats["next_user_class_message"] != 0
+            else 0
+        )
+        # Display the amount of "uploads" required until next promotion. Default the percentage to 0 if the divisor is 0.
         embed.add_field(
             name="Uploads required for promotion:",
-            value=f"{stats['message_count']} / {stats['next_user_class_message']}",
+            value=f"{stats['message_count']} / {stats['next_user_class_message']} ({message_percentage}%)",
             inline=False,
         )
 
