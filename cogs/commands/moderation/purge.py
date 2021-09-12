@@ -74,9 +74,6 @@ class PurgeCog(Cog):
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
-        # Default the reason string to N/A if the parameter was not used.
-        if not reason: reason = "No reason provided."
-
         # Limit the command at 100 messages maximum to avoid abuse.
         amount = 100 if amount > 100 else amount
 
@@ -86,12 +83,15 @@ class PurgeCog(Cog):
         # Generate the return embed.
         embed = embeds.make_embed(
             ctx=ctx,
-            title=f"Removed messages",
-            description=f"{ctx.author.mention} removed the previous {amount} {'messages' if amount == 1 else 'message'}.",
+            title=f"Purged messages",
+            description=f"{ctx.author.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color="soft_red"
         )
-        embed.add_field(name="Reason:", value=reason, inline=False)
+
+        # Only add the field to the embed if the reason was set.
+        if reason:
+            embed.add_field(name="Reason:", value=reason, inline=False)
 
         # Send the embed (and also end the defer).
         await ctx.send(embed=embed)
