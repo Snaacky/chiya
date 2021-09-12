@@ -23,8 +23,7 @@ class PurgeCog(Cog):
     @staticmethod
     async def can_purge_messages(ctx: SlashContext):
         # Implement override for the owner.
-        if ctx.author_id == ctx.guild.owner.id:
-            return True
+        if ctx.author_id == ctx.guild.owner.id: return True
 
         # Prevent mods from removing message in moderation categories
         if ctx.channel.category_id in [settings.get_value("category_moderation"), settings.get_value("category_development"), settings.get_value("category_logs"), settings.get_value("category_tickets")]:
@@ -64,40 +63,38 @@ class PurgeCog(Cog):
     )
     async def remove_messages(self, ctx: SlashContext, amount: int, reason: str = None):
         """ Scans the number of messages and removes all that match specified members, if none given, remove all. """
+        # Defer the response because Discord API can sometimes be too slow.
         await ctx.defer()
 
-        # Check to see if the bot is allowed to purge
-        if not await self.can_purge_messages(ctx):
-            return
+        # Check to see if the bot is allowed to purge the messages.
+        if not await self.can_purge_messages(ctx): return
 
-        # Handle cases where the reason is not provided.
-        if not reason:
-            reason = "No reason provided."
-        elif len(reason) > 512:
+        # Limit the reason parameter to 512 characters.
+        if reason and len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return
 
+        # Default the reason string to N/A if the parameter was not used.
+        if not reason: reason = "No reason provided."
+
         # Limit the command at 100 messages maximum to avoid abuse.
-        if amount > 100:
-            amount = 100
+        amount = 100 if amount > 100 else amount
 
-        message = "messages"
-        if amount == 1:
-            message = message[:-1]
+        # Purge the amount of messages before the command invoke.
+        await ctx.channel.purge(limit=amount, before=ctx.created_at, bulk=True)
 
-        # Prevents the bot from deleting the invoking message.
-        await ctx.channel.purge(limit=amount + 1, check=lambda msg: not(msg.id == ctx.command_id))
-
+        # Generate the return embed.
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Removed messages",
-            description=f"{ctx.author.mention} removed the previous {amount} {message}.",
+            description=f"{ctx.author.mention} removed the previous {amount} {'messages' if amount == 1 else 'message'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color="soft_red"
         )
         embed.add_field(name="Reason:", value=reason, inline=False)
-        # Do not use ctx.send(). See: https://discord-py-slash-command.readthedocs.io/en/latest/faq.html#what-is-the-difference-between-ctx-send-and-ctx-channel-send
-        await ctx.channel.send(embed=embed)
+
+        # Send the embed (and also end the defer).
+        await ctx.send(embed=embed)
 
 
 def setup(bot: Bot) -> None:
