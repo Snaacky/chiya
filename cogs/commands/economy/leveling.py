@@ -18,6 +18,139 @@ a message is sent. Declaring a dictionary using literal syntax {} instead of dic
 See: http://katrin-affolter.ch/Python/Python_dictionaries
 """
 
+user_class = {
+    "member": {
+        "user_class": "Member",
+        "previous_user_class": (),
+        "next_user_class": (
+            "User",
+            "Power User",
+            "Elite",
+            "Torrent Master",
+            "Power TM",
+            "Elite TM",
+            "Legend",
+        ),
+        "role": settings.get_value("role_member"),
+        "buffer_requirement": 0,
+        "message_requirement": 0,
+        "next_buffer_requirement": 10240,
+        "next_message_requirement": 1000,
+        "token_reward": 0,
+    },
+    "user": {
+        "user_class": "User",
+        "previous_user_class": ("Member",),
+        "next_user_class": (
+            "Power User",
+            "Elite",
+            "Torrent Master",
+            "Power TM",
+            "Elite TM",
+            "Legend",
+        ),
+        "role": settings.get_value("role_user"),
+        "buffer_requirement": 10240,
+        "message_requirement": 1000,
+        "next_buffer_requirement": 25600,
+        "next_message_requirement": 2500,
+        "token_reward": 1,
+    },
+    "power_user": {
+        "user_class": "Power User",
+        "previous_user_class": ("Member", "User"),
+        "next_user_class": (
+            "Elite",
+            "Torrent Master",
+            "Power TM",
+            "Elite TM",
+            "Legend",
+        ),
+        "role": settings.get_value("role_power_user"),
+        "buffer_requirement": 25600,
+        "message_requirement": 2500,
+        "next_buffer_requirement": 51200,
+        "next_message_requirement": 5000,
+        "token_reward": 1,
+    },
+    "elite": {
+        "user_class": "Elite",
+        "previous_user_class": ("Member", "User", "Power User"),
+        "next_user_class": ("Torrent Master", "Power TM", "Elite TM", "Legend"),
+        "role": settings.get_value("role_elite"),
+        "buffer_requirement": 51200,
+        "message_requirement": 5000,
+        "next_buffer_requirement": 102400,
+        "next_message_requirement": 10000,
+        "token_reward": 2,
+    },
+    "torrent_master": {
+        "user_class": "Torrent Master",
+        "previous_user_class": ("Member", "User", "Power User", "Elite"),
+        "next_user_class": ("Power TM", "Elite TM", "Legend"),
+        "role": settings.get_value("role_torrent_master"),
+        "buffer_requirement": 102400,
+        "message_requirement": 10000,
+        "next_buffer_requirement": 256000,
+        "next_message_requirement": 22500,
+        "token_reward": 2,
+    },
+    "power_tm": {
+        "user_class": "Power TM",
+        "previous_user_class": (
+            "Member",
+            "User",
+            "Power User",
+            "Elite",
+            "Torrent Master",
+        ),
+        "next_user_class": ("Elite TM", "Legend"),
+        "role": settings.get_value("role_power_tm"),
+        "buffer_requirement": 256000,
+        "message_requirement": 22500,
+        "next_buffer_requirement": 512000,
+        "next_message_requirement": 45000,
+        "token_reward": 3,
+    },
+    "elite_tm": {
+        "user_class": "Elite TM",
+        "previous_user_class": (
+            "Member",
+            "User",
+            "Power User",
+            "Elite",
+            "Torrent Master",
+            "Power TM",
+        ),
+        "next_user_class": ("Legend",),
+        "role": settings.get_value("role_elite_tm"),
+        "buffer_requirement": 512000,
+        "message_requirement": 45000,
+        "next_buffer_requirement": 1048576,
+        "next_message_requirement": 80000,
+        "token_reward": 3,
+    },
+    "legend": {
+        "user_class": "Legend",
+        "previous_user_class": (
+            "Member",
+            "User",
+            "Power User",
+            "Elite",
+            "Torrent Master",
+            "Power TM",
+            "Elite TM",
+        ),
+        "next_user_class": (),
+        "role": settings.get_value("role_legend"),
+        "buffer_requirement": 1048576,
+        "message_requirement": 80000,
+        "next_buffer_requirement": 0,
+        "next_message_requirement": 0,
+        "token_reward": 5,
+    },
+}
+
 user_class_role = {
     "member": settings.get_value("role_member"),
     "user": settings.get_value("role_user"),
@@ -29,49 +162,24 @@ user_class_role = {
     "legend": settings.get_value("role_legend"),
 }
 
-user_class = {
-    "member": "Member",
-    "user": "User",
-    "power_user": "Power User",
-    "elite": "Elite",
-    "torrent_master": "Torrent Master",
-    "power_tm": "Power TM",
-    "elite_tm": "Elite TM",
-    "legend": "Legend",
-}
-
-buffer_req = {
-    "member": 0,
-    "user": 10240,
-    "power_user": 25600,
-    "elite": 51200,
-    "torrent_master": 102400,
-    "power_tm": 256000,
-    "elite_tm": 512000,
-    "legend": 1048576,
-}
-
-message_req = {
-    "member": 0,
-    "user": 1000,
-    "power_user": 2500,
-    "elite": 5000,
-    "torrent_master": 10000,
-    "power_tm": 22500,
-    "elite_tm": 45000,
-    "legend": 80000,
-}
-
 # The user stats template.
 stats_template = {
     "user_class": "Member",
-    "previous_user_class": "None",
-    "next_user_class": "User",
+    "previous_user_class": (),
+    "next_user_class": (
+        "User",
+        "Power User",
+        "Elite",
+        "Torrent Master",
+        "Power TM",
+        "Elite TM",
+        "Legend",
+    ),
     "buffer": 0,
     "next_user_class_buffer": 0,
     "message_count": 0,
     "next_user_class_message": 0,
-    "unique_promotion": 0,
+    "unique_promotion": [],
     "freeleech_token": 0,
     "vouch": 0,
     "has_custom_role": False,
@@ -271,280 +379,69 @@ class LevelingCog(Cog):
         else:
             stats["buffer"] += 40
 
-        """ 
-        On every message, attempt to compare their current user class with their previous and next user class to be promoted 
-        or demoted to. If their current user class equals to the previous user class, it means that they just got demoted,
-        and vice versa when promoted. Their previous, current, and next user class will be updated regardlessly. Note that for 
-        "Member" class, we don't check for promotion because this is the lowest possible user class. The same applies to the 
-        "Legend" class where demotion is not checked because it is the highest possible user class. "None" is a hidden user class
-        that is made to not interact with anything and handle out of bound user classes for convenience.
-        
-        If the user is promoted to a new user class for the first time, give them a freeleech token. Unique promotion is kept track
-        using an int ranging from 0-7 (8 user classes means that there will be 7 promotions). When it happens, add a reward field into
-        the embed.
-        
-        Finally, assign the respective user class role to the member if they don't have one yet, while attempting to remove other 
-        user class roles only if it exists (otherwise it would cause a "too many connections" issue).
-        """
+        # Update the user class, buffer and message requirement according to their user class.
+        for key, value in user_class.items():
+            if (
+                stats["buffer"] >= value["buffer_requirement"]
+                and stats["message_count"] >= value["message_requirement"]
+            ):
+                stats["user_class"] = value["user_class"]
+                stats["next_user_class_buffer"] = value["next_buffer_requirement"]
+                stats["next_user_class_message"] = value["next_message_requirement"]
+                # Set a variable to temporarily save the previous and next user classes value of the user meant to be updated.
+                previous_user_class = value["previous_user_class"]
+                next_user_class = value["next_user_class"]
 
-        # "Member" if buffer is between 0-10 GB and message count is >= 0.
-        if (
-            buffer_req["member"] <= stats["buffer"] < buffer_req["user"]
-            and stats["message_count"] >= message_req["member"]
-        ):
-            stats["user_class"] = user_class["member"]
-            stats["next_user_class_buffer"] = buffer_req["user"]
-            stats["next_user_class_message"] = message_req["user"]
-            if stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = "None"
-            stats["next_user_class"] = user_class["user"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["member"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles
-                    and role.id != user_class_role["member"]
-                ):
-                    await message.author.remove_roles(role)
+        # If the current user class matches one of the classes in their next user classes, it means that they just got promoted.
+        if stats["user_class"] in stats["next_user_class"]:
+            # Prepare the promote embed.
+            embed = embeds.make_embed(
+                title="Promoted!",
+                description=f"{message.author.mention} has been promoted to {stats['user_class']}!",
+                thumbnail_url=message.author.avatar_url,
+                color="green",
+            )
+            # Check to see if the promotion is the first time.
+            if stats["user_class"] not in stats["unique_promotion"]:
+                # Append to the unique_promotion array to mark this unique promotion event as happened.
+                stats["unique_promotion"].append(stats["user_class"])
+                # Loop through the user_class dict to get the respective amount of FL token to be received.
+                for key, value in user_class.items():
+                    if stats["user_class"] == value["user_class"]:
+                        stats["freeleech_token"] += value["token_reward"]
+                        # Add an embed field to let the user know that they received a reward.
+                        embed.add_field(
+                            name="​",
+                            value=f"**Unique reward:**: "
+                            f"{value['token_reward']}x Freeleech {'Tokens' if value['token_reward'] > 1 else 'Token'}",
+                        )
+            # Finally, send the embed.
+            await message.channel.send(embed=embed)
 
-        # "User" if buffer is between 10-25 GB and message count is >= 1000.
-        elif (
-            buffer_req["user"] <= stats["buffer"] < buffer_req["power_user"]
-            and stats["message_count"] >= message_req["user"]
-        ):
-            stats["user_class"] = user_class["user"]
-            stats["next_user_class_buffer"] = buffer_req["power_user"]
-            stats["next_user_class_message"] = message_req["power_user"]
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 0:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 1
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 1x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            elif stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = user_class["member"]
-            stats["next_user_class"] = user_class["power_user"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["user"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles and role.id != user_class_role["user"]
-                ):
-                    await message.author.remove_roles(role)
+        # If the current user class matches one of the classes in their previous user classes, it means that they just got demoted.
+        if stats["user_class"] in stats["previous_user_class"]:
+            # Prepare the demote embed.
+            embed = embeds.make_embed(
+                title="Demoted!",
+                description=f"{message.author.mention} has been demoted to {stats['user_class']}!",
+                thumbnail_url=message.author.avatar_url,
+                color="red",
+            )
+            # Send the embed.
+            await message.channel.send(embed=embed)
 
-        # "Power User" if buffer is between 25-50 GB and message count is >= 2500.
-        elif (
-            buffer_req["power_user"] <= stats["buffer"] < buffer_req["elite"]
-            and stats["message_count"] >= message_req["power_user"]
-        ):
-            stats["user_class"] = user_class["power_user"]
-            stats["next_user_class_buffer"] = buffer_req["elite"]
-            stats["next_user_class_message"] = message_req["elite"]
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 1:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 1
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 1x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            elif stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = user_class["user"]
-            stats["next_user_class"] = user_class["elite"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["power_user"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles
-                    and role.id != user_class_role["power_user"]
-                ):
-                    await message.author.remove_roles(role)
+        # Update the user's previous and next user classes value after the promotion/demotion check is finished. If this is done above,
+        # the stats will be updated before the checks and fail to work the user class overlaps doesn't happen for it to compare.
+        stats["previous_user_class"] = previous_user_class
+        stats["next_user_class"] = next_user_class
 
-        # "Elite" if buffer is between 50-100 GB and message count is >= 5000.
-        elif (
-            buffer_req["elite"] <= stats["buffer"] < buffer_req["torrent_master"]
-            and stats["message_count"] >= message_req["elite"]
-        ):
-            stats["user_class"] = user_class["elite"]
-            stats["next_user_class_buffer"] = buffer_req["torrent_master"]
-            stats["next_user_class_message"] = message_req["torrent_master"]
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 2:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 2
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 2x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            elif stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = user_class["power_user"]
-            stats["next_user_class"] = user_class["torrent_master"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["elite"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles and role.id != user_class_role["elite"]
-                ):
-                    await message.author.remove_roles(role)
-
-        # "Torrent Master" if buffer is between 100-250 GB and message count is >= 10000.
-        elif (
-            buffer_req["torrent_master"] <= stats["buffer"] < buffer_req["power_tm"]
-            and stats["message_count"] >= message_req["torrent_master"]
-        ):
-            stats["user_class"] = user_class["torrent_master"]
-            stats["next_user_class_buffer"] = buffer_req["power_tm"]
-            stats["next_user_class_message"] = message_req["power_tm"]
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 3:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 2
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 2x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            elif stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = user_class["elite"]
-            stats["next_user_class"] = user_class["power_tm"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["torrent_master"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles
-                    and role.id != user_class_role["torrent_master"]
-                ):
-                    await message.author.remove_roles(role)
-
-        # "Power TM" if buffer is between 250-500 GB and message count is >= 22500.
-        elif (
-            buffer_req["power_tm"] <= stats["buffer"] < buffer_req["elite_tm"]
-            and stats["message_count"] >= message_req["power_tm"]
-        ):
-            stats["user_class"] = user_class["power_tm"]
-            stats["next_user_class_buffer"] = buffer_req["elite_tm"]
-            stats["next_user_class_message"] = message_req["elite_tm"]
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 4:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 3
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 3x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            elif stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = user_class["torrent_master"]
-            stats["next_user_class"] = user_class["elite_tm"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["power_tm"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles
-                    and role.id != user_class_role["power_tm"]
-                ):
-                    await message.author.remove_roles(role)
-
-        # "Elite TM" if buffer is between 500-1024 GB and message count is >= 45000.
-        elif (
-            buffer_req["elite_tm"] <= stats["buffer"] < buffer_req["legend"]
-            and stats["message_count"] >= message_req["elite_tm"]
-        ):
-            stats["user_class"] = user_class["elite_tm"]
-            stats["next_user_class_buffer"] = buffer_req["legend"]
-            stats["next_user_class_message"] = message_req["legend"]
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 5:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 3
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 3x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            elif stats["user_class"] == stats["previous_user_class"]:
-                await self.send_demote_embed(stats, message)
-            stats["previous_user_class"] = user_class["power_tm"]
-            stats["next_user_class"] = user_class["legend"]
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["elite_tm"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles
-                    and role.id != user_class_role["elite_tm"]
-                ):
-                    await message.author.remove_roles(role)
-
-        # "Legend" if buffer is > 1024 GB and message count is >= 80000.
-        elif (
-            stats["buffer"] >= buffer_req["legend"]
-            and stats["message_count"] >= message_req["legend"]
-        ):
-            stats["user_class"] = user_class["legend"]
-            stats["next_user_class_buffer"] = 0
-            stats["next_user_class_message"] = 0
-            if stats["user_class"] == stats["next_user_class"]:
-                promote_embed = await self.create_promote_embed(stats, message)
-                if stats["unique_promotion"] == 6:
-                    stats["unique_promotion"] += 1
-                    stats["freeleech_token"] += 5
-                    promote_embed.add_field(
-                        name="​", value="**Unique reward**: 5x Freeleech Token"
-                    )
-                await message.channel.send(embed=promote_embed)
-            stats["previous_user_class"] = user_class["elite_tm"]
-            stats["next_user_class"] = "None"
-            for key, value in user_class_role.items():
-                role = discord.utils.get(message.guild.roles, id=value)
-                if (
-                    role not in message.author.roles
-                    and role.id == user_class_role["legend"]
-                ):
-                    await message.author.add_roles(role)
-                elif (
-                    role in message.author.roles
-                    and role.id != user_class_role["legend"]
-                ):
-                    await message.author.remove_roles(role)
+        # Assign the respective class role if the user don't have one yet, while attempting to remove other class roles if exist.
+        for key, value in user_class_role.items():
+            role = discord.utils.get(message.guild.roles, id=value)
+            if role in message.author.roles and role.name != stats["user_class"]:
+                await message.author.remove_roles(role)
+            elif role not in message.author.roles and role.name == stats["user_class"]:
+                await message.author.add_roles(role)
 
         # Return the dictionary.
         return stats
@@ -598,7 +495,9 @@ class LevelingCog(Cog):
 
     @staticmethod
     async def verify_integrity(stats):
-        """Verify the JSON object to make sure that it doesn't have missing keys or contains keys that shouldn't exist."""
+        """Verify the JSON object to make sure that it doesn't have missing keys or contains keys that shouldn't exist. If major data
+         structure or type are changed in the stats JSON, write some single-use code here and applies to the entire database with
+        /refresh command. MAKE SURE TO SAVE A COPY OF THE DATABASE FIRST BEFORE DOING SO."""
 
         # Iterate through the keys and values of the stats template.
         for key, value in stats_template.items():
@@ -656,28 +555,6 @@ class LevelingCog(Cog):
 
         # Return the formatted string.
         return buffer_string
-
-    @staticmethod
-    async def create_promote_embed(stats, message):
-        # Make an embed to be sent on user promotion and let them know that they were rewarded a FL token.
-        promote_embed = embeds.make_embed(
-            title="Promoted!",
-            description=f"{message.author.mention} has been promoted to {stats['next_user_class']}!",
-            thumbnail_url=message.author.avatar_url,
-            color="green",
-        )
-        return promote_embed
-
-    @staticmethod
-    async def send_demote_embed(stats, message):
-        # Make an embed to be sent on user demotion.
-        demote_embed = embeds.make_embed(
-            title="Demoted!",
-            description=f"{message.author.mention} has been demoted to {stats['previous_user_class']}!",
-            thumbnail_url=message.author.avatar_url,
-            color="red",
-        )
-        await message.channel.send(embed=demote_embed)
 
 
 def setup(bot: Bot) -> None:
