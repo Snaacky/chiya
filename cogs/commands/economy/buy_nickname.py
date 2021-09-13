@@ -77,9 +77,6 @@ class BuyNicknameCog(Cog):
         # Load the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
 
-        # Check the integrity of the stats dictionary and add any potential missing keys.
-        stats = await leveling_cog.verify_integrity(stats)
-
         # Cost of the transaction. Declared separately to give less headaches on future balance changes.
         cost = 256
         fl_token = 1

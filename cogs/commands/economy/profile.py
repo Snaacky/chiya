@@ -75,9 +75,6 @@ class ProfileCog(Cog):
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user_entry["stats"])
 
-        # Check the integrity of the stats dictionary and add any potential missing keys.
-        stats = await leveling_cog.verify_integrity(stats)
-
         # Append the purchased colors into the string if the user has one.
         color_packs = ""
         if len(stats["hue_upgrade"]) > 0:

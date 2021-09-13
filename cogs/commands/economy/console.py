@@ -126,12 +126,7 @@ class Console(Cog):
         base_permissions={
             settings.get_value("guild_id"): [
                 create_permission(
-                    settings.get_value("role_staff"),
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    settings.get_value("role_trial_mod"),
+                    settings.get_value("role_developer"),
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
@@ -462,12 +457,7 @@ class Console(Cog):
         base_permissions={
             settings.get_value("guild_id"): [
                 create_permission(
-                    settings.get_value("role_staff"),
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    settings.get_value("role_trial_mod"),
+                    settings.get_value("role_developer"),
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
@@ -617,12 +607,7 @@ class Console(Cog):
         permissions={
             settings.get_value("guild_id"): [
                 create_permission(
-                    settings.get_value("role_staff"),
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    settings.get_value("role_trial_mod"),
+                    settings.get_value("role_developer"),
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
@@ -679,9 +664,6 @@ class Console(Cog):
 
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user_entry["stats"])
-
-        # Check the integrity of the stats dictionary and add missing keys or remove deprecated keys.
-        stats = await leveling_cog.verify_integrity(stats)
 
         # Dump the modified JSON into the db.
         stats_json = json.dumps(stats)
