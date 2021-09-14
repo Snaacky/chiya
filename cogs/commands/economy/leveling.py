@@ -338,7 +338,8 @@ class LevelingCog(Cog):
         # Close the connection.
         db.close()
 
-    async def calculate_buffer(self, message: Message, stats):
+    @staticmethod
+    async def calculate_buffer(message: Message, stats):
         """Calculate the amount of buffer gained from messages and promote/demote conditionally."""
 
         # Get the number of words in a message.
