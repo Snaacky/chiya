@@ -104,7 +104,7 @@ class DailyCog(Cog):
                 color="red",
             )
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.add_field(name="Time remaining:", value=duration_string, inline=False)
+            embed.add_field(name="​", value=f"**Time remaining:** {duration_string}", inline=False)
             await ctx.send(embed=embed)
             db.close()
             return

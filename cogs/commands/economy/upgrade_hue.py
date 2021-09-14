@@ -115,29 +115,31 @@ class UpgradeHueCog(Cog):
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not color_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="Color pack must be one the following options: red, yellow, green, cyan, blue, magenta.",
+                    name="​",
+                    value="**Condition:** Color pack must be one the following options: red, yellow, green, cyan, blue, magenta.",
                     inline=False,
                 )
             if owned_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="You must not already owned the color pack yet.",
+                    name="​",
+                    value="**Condition:** You must not already owned the color pack yet.",
                 )
             if not buffer_check:
                 embed.add_field(
-                    name="Condition:",
-                    value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
+                    name="​",
+                    value=f"**Condition:** You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
                     inline=False,
                 )
             if not custom_role_check:
                 embed.add_field(
-                    name="Condition:", value="You must own a custom role.", inline=False
+                    name="​",
+                    value="**Condition:** You must own a custom role.",
+                    inline=False,
                 )
             if freeleech and not fl_token_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="You don't have enough freeleech token.",
+                    name="​",
+                    value="**Condition:** You don't have enough freeleech token.",
                     inline=False,
                 )
             await ctx.send(embed=embed)

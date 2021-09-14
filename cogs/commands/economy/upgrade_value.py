@@ -136,30 +136,32 @@ class UpgradeValueCog(Cog):
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check and availability_check:
                 embed.add_field(
-                    name="Condition:",
-                    value=f"You must have at least {await leveling_cog.get_buffer_string(inflated_cost)} buffer.",
+                    name="​",
+                    value=f"**Condition:** You must have at least {await leveling_cog.get_buffer_string(inflated_cost)} buffer.",
                     inline=False,
                 )
             if not color_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="You must have purchased at least one color pack.",
+                    name="​",
+                    value="**Condition:** You must have purchased at least one color pack.",
                     inline=False,
                 )
             if not custom_role_check:
                 embed.add_field(
-                    name="Condition:", value="You must own a custom role.", inline=False
+                    name="​",
+                    value="**Condition:** You must own a custom role.",
+                    inline=False,
                 )
             if not availability_check:
                 embed.add_field(
-                    name="Condition:",
-                    value=f" You can only purchase this upgrade {100 - stats['value_upgrade']} more times!",
+                    name="​",
+                    value=f"**Condition:** You can only purchase this upgrade {100 - stats['value_upgrade']} more times!",
                     inline=False,
                 )
             if freeleech and not fl_token_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="You don't have enough freeleech token.",
+                    name="​",
+                    value="**Condition:** You don't have enough freeleech token.",
                     inline=False,
                 )
             await ctx.send(embed=embed)
