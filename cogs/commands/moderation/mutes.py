@@ -217,12 +217,12 @@ class MuteCog(Cog):
         async for message in mute_channel.history(oldest_first=True):
             # Ignore the bot replies.
             if not message.author.bot:
-                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
-                formatted_time = str(message.created_at).split(".")[-2]
+                # Pretty print the time tag into a more digestible format.
+                formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # Iterates only through members that is still in the server.
-                if isinstance(member, discord.Member):
+                if isinstance(message.author, discord.Member):
                     # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                     if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                         mod_list.add(message.author)
