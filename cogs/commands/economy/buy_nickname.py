@@ -95,6 +95,9 @@ class BuyNicknameCog(Cog):
         # Condition: Buffer must be above 256 MB.
         buffer_check = stats["buffer"] >= cost
 
+        # Nickname must be 32 or fewer in length.
+        name_length_check = len(nickname) <= 32
+
         # Condition: Must have at least 1 freeleech token.
         fl_token_check = stats["freeleech_token"] >= fl_token
 
@@ -106,6 +109,7 @@ class BuyNicknameCog(Cog):
         # If any of the conditions were not met, return an error embed.
         if (
             not buffer_check
+            or not name_length_check
             or (freeleech and not fl_token_check)
             or not user_class_check
         ):
@@ -119,20 +123,26 @@ class BuyNicknameCog(Cog):
             # Dynamically add the reason(s) why the transaction was unsuccessful.
             if not buffer_check:
                 embed.add_field(
-                    name="Condition:",
-                    value=f"You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
+                    name="​",
+                    value=f"**Condition:** You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
+                    inline=False,
+                )
+            if not name_length_check:
+                embed.add_field(
+                    name="​",
+                    value="**Condition:** Your nickname must contain 32 or fewer characters.",
                     inline=False,
                 )
             if not user_class_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="User class must be 'User' or higher.",
+                    name="​",
+                    value="**Condition:** User class must be 'User' or higher.",
                     inline=False,
                 )
             if freeleech and not fl_token_check:
                 embed.add_field(
-                    name="Condition:",
-                    value="You don't have enough freeleech token.",
+                    name="​",
+                    value="**Condition:** You don't have enough freeleech token.",
                     inline=False,
                 )
             await ctx.send(embed=embed)
