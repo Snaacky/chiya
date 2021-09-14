@@ -44,6 +44,15 @@ class TicketCog(Cog):
         """ Opens a new modmail ticket."""
         await ctx.defer(hidden=True)
 
+        # Embed field length cannot exceed 1024 characters. https://discord.com/developers/docs/resources/channel#embed-limits
+        if len(topic) > 1024:
+            embed = embeds.make_embed(
+                description="Your ticket topic exceeded 1024 characters. "
+                            "Please keep the topic concise and further elaborate it in the ticket instead."
+            )
+            await ctx.send(embed=embed, hidden=True)
+            return
+
         # Check if a duplicate ticket already exists for the member.
         category = discord.utils.get(ctx.guild.categories, id=settings.get_value("category_tickets"))
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.author.id}")
@@ -57,7 +66,7 @@ class TicketCog(Cog):
         # Create a channel in the tickets category specified in settings.
         channel = await ctx.guild.create_text_channel(f"ticket-{ctx.author.id}", category=category)
 
-        # Give both the staff and the user perms to access the channel. 
+        # Give both the staff and the user perms to access the channel.
         await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")), read_messages=True)
         await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")), read_messages=True)
         await channel.set_permissions(ctx.author, read_messages=True)
