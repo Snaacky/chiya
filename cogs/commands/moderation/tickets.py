@@ -50,8 +50,7 @@ class TicketCog(Cog):
                 description="Your ticket topic exceeded 1024 characters. "
                 "Please keep the topic concise and further elaborate it in the ticket instead."
             )
-            await ctx.send(embed=embed, hidden=True)
-            return
+            return await ctx.send(embed=embed, hidden=True)
 
         # Check if a duplicate ticket already exists for the member.
         category = discord.utils.get(
