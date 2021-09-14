@@ -62,10 +62,11 @@ class BuyColorCog(Cog):
         This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
         """
         # Finally, return random HSV tuple, affected by the purchased upgrades.
+        # Value defaults to 10 if the actual value is < 10 to prevent pure black colors being rolled and cause display issues.
         return (
             random.choice(hue) / 360,
             random.randint(0, saturation_upgrade) / 100,
-            random.randint(0, value_upgrade) / 100,
+            random.randint(0, value_upgrade) / 100 if value_upgrade > 10 else 10 / 100,
         )
 
     @commands.before_invoke(record_usage)
