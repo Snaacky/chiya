@@ -44,7 +44,8 @@ class TicketCog(Cog):
         """Opens a new modmail ticket."""
         await ctx.defer(hidden=True)
 
-        # Embed field length cannot exceed 1024 characters. https://discord.com/developers/docs/resources/channel#embed-limits
+        # Embed field length cannot exceed 1024 characters. 
+        # https://discord.com/developers/docs/resources/channel#embed-limits
         if len(topic) > 1024:
             embed = embeds.make_embed(
                 description="Your ticket topic exceeded 1024 characters. "
@@ -63,28 +64,28 @@ class TicketCog(Cog):
         # Throw an error and return if we found an already existing ticket.
         if ticket:
             await ctx.send(
-                f"You already have a ticket open! {ticket.mention}", hidden=True
+                f"You already have a ticket open! {ticket.mention}", 
+                hidden=True
             )
             logging.info(
                 f"{ctx.author} tried to create a new ticket but already had one open: {ticket}"
             )
             return
 
+        # Give both the staff and the user perms to access the channel. 
+        permissions = {
+            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")): discord.PermissionOverwrite(read_messages=False),
+            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")): discord.PermissionOverwrite(read_messages=True),
+            ctx.author: discord.PermissionOverwrite(read_messages=True)
+        }
+
         # Create a channel in the tickets category specified in settings.
         channel = await ctx.guild.create_text_channel(
-            f"ticket-{ctx.author.id}", category=category
+            name=f"ticket-{ctx.author.id}", 
+            category=category,
+            overwrites=permissions,
+            topic=topic
         )
-
-        # Give both the staff and the user perms to access the channel.
-        await channel.set_permissions(
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")),
-            read_messages=True,
-        )
-        await channel.set_permissions(
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")),
-            read_messages=True,
-        )
-        await channel.set_permissions(ctx.author, read_messages=True)
 
         # If the ticket creator is a VIP, ping the staff for fast response.
         if any(role.id == settings.get_value("role_vip") for role in ctx.author.roles):
@@ -176,25 +177,9 @@ class TicketCog(Cog):
             user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress"
         )
 
-        # If the ticket exists in the database.
-        if ticket:
-            # Get the ticket topic from database and ticket creator's ID from channel name.
-            ticket_topic = ticket["ticket_topic"]
-            ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
-        # If somehow the ticket doesn't exist in the database.
-        else:
-            # Attempts to get only the first embedded message by Chiya in the ticket channel.
-            async for message in ctx.channel.history(oldest_first=True):
-                # If the message author's ID is the same as Chiya.
-                if message.author.id == self.bot.user.id:
-                    # There should be only 1 embed in the message, so we get the first item.
-                    # The first field's value is guaranteed to be the ticket creator. We strip the non-digit chars and turn the rest into an int.
-                    ticket_creator_id = int(
-                        re.sub(r"\D+", "", message.embeds[0].fields[0].value)
-                    )
-                    # The second field's value is guaranteed to be the ticket topic.
-                    ticket_topic = message.embeds[0].fields[1].value
-                    break
+        # Get the ticket topic and ticket creator's ID from channel name.
+        ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
+        ticket_topic = ctx.channel.topic
 
         # Get the member object of the ticket creator.
         member = await self.bot.fetch_user(ticket_creator_id)
@@ -234,14 +219,15 @@ class TicketCog(Cog):
                 ):
                     mod_list.add(message.author)
 
-        # An empty mod_list (ticket with no conversation) will raise a HTTPException for using an empty field in embed.
-        # Using "\u200b" (zero width space) is also not an option because .mention cannot be called on it.
+        # An empty embed field will raise an HTTPException.
         if len(mod_list) == 0:
             mod_list.add(self.bot.user)
 
-        # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
+        # Gets the paste URL from the PrivateBin POST.
         url = privatebinapi.send(
-            "https://bin.piracy.moe", text=message_log, expiration="never"
+            "https://bin.piracy.moe", 
+            text=message_log, 
+            expiration="never"
         )["full_url"]
 
         # Create the embed in #ticket-log.
@@ -287,10 +273,10 @@ class TicketCog(Cog):
             await member.send(embed=embed)
         except discord.HTTPException:
             logging.info(
-                f"Attempted to send ticket closed DM to {member} but they are not accepting DMs."
+                f"Attempted to send ticket log DM to {member} but they are not accepting DMs."
             )
 
-        # If the ticket somehow does not exists in the database, we add it.
+        # Add the ticket to the database if it was never written.
         if not ticket:
             db["tickets"].insert(
                 dict(
@@ -303,7 +289,7 @@ class TicketCog(Cog):
                 )
             )
         else:
-            # Otherwise, update the ticket status from "in-progress" to "completed" and the PrivateBin URL field in the database.
+            # Otherwise, update the ticket status in the database.
             ticket["status"] = "completed"
             ticket["log_url"] = url
             table.update(ticket, ["id"])
