@@ -77,5 +77,5 @@ Chiya relies predominantly on the following projects:
 * [MariaDB](https://mariadb.org/)
 * [Docker](https://www.docker.com/)
 * [discord.py](https://github.com/Rapptz/discord.py)
-* [discord-py-slash-commands](https://github.com/discord-py-slash-commands/)
+* [discord-interactions](https://github.com/goverfl0w/discord-interactions)
 * [dataset](https://dataset.readthedocs.io)
