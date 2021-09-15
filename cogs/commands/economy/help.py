@@ -32,10 +32,9 @@ class HelpCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         embed = embeds.make_embed(title="Economy details", color="green")
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
@@ -137,10 +136,9 @@ class HelpCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         }:
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         embed = embeds.make_embed(title="Economy commands", color="green")
         embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)

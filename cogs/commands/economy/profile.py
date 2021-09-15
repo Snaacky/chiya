@@ -44,10 +44,9 @@ class ProfileCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         # The user is either the author or the specified user in the parameter.
         user = user or ctx.author
@@ -96,12 +95,11 @@ class ProfileCog(Cog):
             role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
             # If the role somehow doesn't exist and breaks the embed, notify them and return.
             if not role:
-                await embeds.error_message(
+                db.close()
+                return await embeds.error_message(
                     ctx=ctx,
                     description="Invalid role ID! Please contact a staff member.",
                 )
-                db.close()
-                return
             color = role.color
             custom_role = role.mention
         else:

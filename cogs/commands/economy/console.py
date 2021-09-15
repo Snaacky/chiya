@@ -168,11 +168,10 @@ class Console(Cog):
 
         # Return if the user is not found in the database.
         if not user_entry:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Could not find the specified user."
             )
-            db.close()
-            return
 
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user_entry["stats"])
@@ -187,11 +186,10 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif set_buffer is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Buffer value must be equal or greater than 0."
             )
-            db.close()
-            return
 
         # Remove an amount of buffer from the user. The amount to be reduced and the total amount must be >= 0.
         if (
@@ -206,12 +204,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but it or the total amount is < 0, return.
         elif remove_buffer is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="The amount of buffer to be removed or the total amount must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Add an amount of buffer to the user. Must be >= 0.
         if add_buffer is not None and add_buffer >= 0:
@@ -222,12 +219,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif add_buffer is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Buffer addition value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Set the message count of a user. Must be >= 0.
         if message_count is not None and message_count >= 0:
@@ -238,12 +234,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif message_count is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Message count value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Set the number of unique promotions of a user. Must be from 0-7.
         if unique_promotion is not None and unique_promotion in range(0, 8):
@@ -252,11 +247,10 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is not between 0-7, return.
         elif unique_promotion is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Unique promotion count must be between 0 to 7."
             )
-            db.close()
-            return
 
         # Set the FL token of a user. Must be >= 0.
         if freeleech_token is not None and freeleech_token >= 0:
@@ -265,12 +259,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif freeleech_token is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Freeleech token value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Set the vouch count of a user. Must be >= 0.
         if vouch is not None and vouch >= 0:
@@ -279,11 +272,10 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif vouch is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Vouch value must be equal or greater than 0."
             )
-            db.close()
-            return
 
         # Set the custom role boolean flag of a user.
         if has_custom_role is not None:
@@ -313,18 +305,17 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists...
         elif custom_role_id:
+            db.close()
             # ...but is not a digit.
             if not custom_role_id.isdigit():
-                await embeds.error_message(
+                return await embeds.error_message(
                     ctx=ctx, description="Role ID value must be a non-negative digit."
                 )
             # ...but is one of the roles from "Staff" or higher.
             if any(custom_role_id == staff_role for staff_role in staff_roles):
-                await embeds.error_message(
+                return await embeds.error_message(
                     ctx=ctx, description="This role ID value is not assignable."
                 )
-            db.close()
-            return
 
         # Set the daily upgrade value of a user. Must be between 0-100.
         if daily_upgrade is not None and daily_upgrade in range(0, 101):
@@ -335,11 +326,10 @@ class Console(Cog):
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is not between 0-100, return.
         elif daily_upgrade is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Daily upgrade value must be between 0 and 100."
             )
-            db.close()
-            return
 
         # Set the hue upgrade value of a user by using a Regex to capture only valid options.
         if hue_upgrade:
@@ -361,13 +351,12 @@ class Console(Cog):
             # Otherwise if the match list is empty, return.
             else:
                 color_options = ["red", "yellow", "green", "cyan", "blue", "magenta"]
-                await embeds.error_message(
+                db.close()
+                return embeds.error_message(
                     ctx=ctx,
                     description=f"Color must be one or more of the following options: {', '.join(option for option in color_options)}"
                     f", or set the input value to 'none' to remove the upgrades.",
                 )
-                db.close()
-                return
 
         # Set the saturation upgrade value of a user. Must be between 0-100.
         if saturation_upgrade is not None and saturation_upgrade in range(0, 101):
@@ -376,12 +365,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is not between 0-100, return.
         elif saturation_upgrade is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Saturation upgrade value must be between 0 and 100.",
             )
-            db.close()
-            return
 
         # Set the brightness upgrade value of a user. Must be between 0-100.
         if brightness_upgrade is not None and brightness_upgrade in range(0, 101):
@@ -390,12 +378,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is not between 0-100, return.
         elif brightness_upgrade is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Brightness upgrade value must be between 0 and 100.",
             )
-            db.close()
-            return
 
         # Set the daily timestamp of a user (Unix format). Must be >= 0.
         if daily_timestamp is not None and daily_timestamp >= 0:
@@ -407,11 +394,10 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif daily_timestamp is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Daily timestamp value must be greater than 0."
             )
-            db.close()
-            return
 
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
@@ -500,12 +486,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is < 0, return.
         elif add_buffer is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Global buffer addition value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Remove an amount of buffer to all users. Must be >= 0. This is to revert any whoopsies from global add buffer command.
         if remove_buffer is not None and remove_buffer >= 0:
@@ -527,12 +512,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif remove_buffer is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Global buffer addition value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Add an amount of FL token to all users. Must be >= 0.
         if add_freeleech_token is not None and add_freeleech_token >= 0:
@@ -550,12 +534,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is < 0, return.
         elif add_freeleech_token is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Global FL token addition value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Remove an amount of buffer to all users. Must be >= 0. This is to revert any whoopsies from global add buffer command.
         if remove_freeleech_token is not None and remove_freeleech_token >= 0:
@@ -579,12 +562,11 @@ class Console(Cog):
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif remove_freeleech_token is not None:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx,
                 description="Global buffer reduction value must be equal or greater than 0.",
             )
-            db.close()
-            return
 
         # Commit the changes to the database and close it.
         db.commit()
@@ -636,16 +618,15 @@ class Console(Cog):
                     dict(id=entry["id"], stats=entry_stats_json), ["id"]
                 )
 
+            # Commit the changes to the database and close it.
+            db.commit()
+            db.close()
+
             # Send an embed to notify when the task is done.
             embed = embeds.make_embed(
                 description="Successfully reloaded all user stats.", color="green"
             )
-            await ctx.send(embed=embed)
-
-            # Commit the changes to the database and close it.
-            db.commit()
-            db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
@@ -656,11 +637,10 @@ class Console(Cog):
 
         # Return if the user is not found in the database.
         if not user_entry:
-            await embeds.error_message(
+            db.close()
+            return await embeds.error_message(
                 ctx=ctx, description="Could not find the specified user."
             )
-            db.close()
-            return
 
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user_entry["stats"])

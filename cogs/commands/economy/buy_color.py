@@ -93,10 +93,9 @@ class BuyColorCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -172,9 +171,8 @@ class BuyColorCog(Cog):
                     value="**Condition:** You don't have enough freeleech token.",
                     inline=False,
                 )
-            await ctx.send(embed=embed)
             db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # Generates a HSV color from the purchased color packs, saturation and value upgrade.
         hue, saturation, value = await self.generate_hsv(
@@ -186,9 +184,8 @@ class BuyColorCog(Cog):
 
         # A check to make sure that the role actually exists since it's modifiable using the developer console.
         if not role:
-            await embeds.error_message(ctx=ctx, description="This role does not exist.")
             db.close()
-            return
+            return await embeds.error_message(ctx=ctx, description="This role does not exist.")
 
         # Get the role from user's custom role ID to edit the color.
         await role.edit(color=color)

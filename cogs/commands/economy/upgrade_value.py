@@ -55,10 +55,9 @@ class UpgradeValueCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         """ 
         If the user enter an arbitrary large "amount" value, the inflated_cost calculation would take forever and create a blocking call
@@ -71,8 +70,7 @@ class UpgradeValueCog(Cog):
                 color="red",
             )
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -164,9 +162,8 @@ class UpgradeValueCog(Cog):
                     value="**Condition:** You don't have enough freeleech token.",
                     inline=False,
                 )
-            await ctx.send(embed=embed)
             db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
@@ -198,17 +195,15 @@ class UpgradeValueCog(Cog):
                     description=f"{ctx.author.mention}, your transaction request has been cancelled.",
                     color="red",
                 )
-                await ctx.send(embed=embed)
                 db.close()
-                return
+                return await ctx.send(embed=embed)
         except asyncio.TimeoutError:
             embed = embeds.make_embed(
                 description=f"{ctx.author.mention}, your transaction request has timed out.",
                 color="red",
             )
-            await ctx.send(embed=embed)
             db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # Update the new stat first so that the embed will contain the up to date value.
         stats["value_upgrade"] += amount

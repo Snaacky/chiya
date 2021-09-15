@@ -51,10 +51,9 @@ class UpgradeHueCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -142,9 +141,8 @@ class UpgradeHueCog(Cog):
                     value="**Condition:** You don't have enough freeleech token.",
                     inline=False,
                 )
-            await ctx.send(embed=embed)
             db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # Send a confirmation embed before proceeding the transaction.
         confirm_embed = embeds.make_embed(color="green")
@@ -173,17 +171,15 @@ class UpgradeHueCog(Cog):
                     description=f"{ctx.author.mention}, your transaction request has been cancelled.",
                     color="red",
                 )
-                await ctx.send(embed=embed)
                 db.close()
-                return
+                return await ctx.send(embed=embed)
         except asyncio.TimeoutError:
             embed = embeds.make_embed(
                 description=f"{ctx.author.mention}, your transaction request has timed out.",
                 color="red",
             )
-            await ctx.send(embed=embed)
             db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # If the input color choice matches any of the items in the purchasable colors, update the JSON object.
         if any(pack == color for color in colors):

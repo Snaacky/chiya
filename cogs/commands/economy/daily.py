@@ -36,10 +36,9 @@ class DailyCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx, description="This command can only be run in #bots channel."
             )
-            return
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -104,10 +103,11 @@ class DailyCog(Cog):
                 color="red",
             )
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.add_field(name="​", value=f"**Time remaining:** {duration_string}", inline=False)
-            await ctx.send(embed=embed)
+            embed.add_field(
+                name="​", value=f"**Time remaining:** {duration_string}", inline=False
+            )
             db.close()
-            return
+            return await ctx.send(embed=embed)
 
         # Roll a random value from 0-100.
         rng = random.randint(0, 100)
