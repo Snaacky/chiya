@@ -43,7 +43,7 @@ class TicketCog(Cog):
         """Opens a new modmail ticket."""
         await ctx.defer(hidden=True)
 
-        # Embed field length cannot exceed 1024 characters. 
+        # Embed field length cannot exceed 1024 characters.
         # https://discord.com/developers/docs/resources/channel#embed-limits
         if len(topic) > 1024:
             embed = embeds.make_embed(
@@ -63,27 +63,30 @@ class TicketCog(Cog):
         # Throw an error and return if we found an already existing ticket.
         if ticket:
             await ctx.send(
-                f"You already have a ticket open! {ticket.mention}", 
-                hidden=True
+                f"You already have a ticket open! {ticket.mention}", hidden=True
             )
             logging.info(
                 f"{ctx.author} tried to create a new ticket but already had one open: {ticket}"
             )
             return
 
-        # Give both the staff and the user perms to access the channel. 
+        # Give both the staff and the user perms to access the channel.
         permissions = {
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")): discord.PermissionOverwrite(read_messages=False),
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")): discord.PermissionOverwrite(read_messages=True),
-            ctx.author: discord.PermissionOverwrite(read_messages=True)
+            discord.utils.get(
+                ctx.guild.roles, id=settings.get_value("role_trial_mod")
+            ): discord.PermissionOverwrite(read_messages=False),
+            discord.utils.get(
+                ctx.guild.roles, id=settings.get_value("role_staff")
+            ): discord.PermissionOverwrite(read_messages=True),
+            ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
 
         # Create a channel in the tickets category specified in settings.
         channel = await ctx.guild.create_text_channel(
-            name=f"ticket-{ctx.author.id}", 
+            name=f"ticket-{ctx.author.id}",
             category=category,
             overwrites=permissions,
-            topic=topic
+            topic=topic,
         )
 
         # If the ticket creator is a VIP, ping the staff for fast response.
@@ -224,9 +227,7 @@ class TicketCog(Cog):
 
         # Gets the paste URL from the PrivateBin POST.
         url = privatebinapi.send(
-            "https://bin.piracy.moe", 
-            text=message_log, 
-            expiration="never"
+            "https://bin.piracy.moe", text=message_log, expiration="never"
         )["full_url"]
 
         # Create the embed in #ticket-log.
