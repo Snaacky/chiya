@@ -9,25 +9,20 @@ log = logging.getLogger(__name__)
 
 class Database:
     def __init__(self) -> None:
-        self.HOST = os.getenv("MYSQL_HOST")
-        self.DB = os.getenv("MYSQL_DATABASE")
-        self.USER = os.getenv("MYSQL_USER")
-        self.PASSWORD = os.getenv("MYSQL_PASSWORD")
-
-    def url(self) -> str:
-        """ Returns the database URL as a string. """
-        return f"mysql://{self.USER}:{self.PASSWORD}@{self.HOST}/{self.DB}"
+        self.host = os.getenv("MYSQL_HOST")
+        self.db = os.getenv("MYSQL_DATABASE")
+        self.user = os.getenv("MYSQL_USER")
+        self.password = os.getenv("MYSQL_PASSWORD")
+        self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
 
     def get(self) -> dataset.Database:
         """ Returns the dataset database object. """
-        return dataset.connect(
-            url=f"mysql://{self.USER}:{self.PASSWORD}@{self.HOST}/{self.DB}"
-        )
+        return dataset.connect(url=self.url)
 
     def setup(self) -> None:
         """ Sets up the tables needed for Chiya. """
         # Create the database if it doesn't already exist.
-        engine = create_engine(self.url())
+        engine = create_engine(self.url)
         if not database_exists(engine.url):
             create_database(engine.url)
 
