@@ -78,6 +78,7 @@ class TicketCog(Cog):
             discord.utils.get(
                 ctx.guild.roles, id=settings.get_value("role_staff")
             ): discord.PermissionOverwrite(read_messages=True),
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
 
@@ -164,11 +165,10 @@ class TicketCog(Cog):
             not ctx.channel.category_id == settings.get_value("category_tickets")
             or "ticket" not in ctx.channel.name
         ):
-            await embeds.error_message(
+            return await embeds.error_message(
                 ctx=ctx,
                 description="You can only run this command in active ticket channels.",
             )
-            return
 
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
