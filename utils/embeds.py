@@ -1,7 +1,6 @@
 import datetime
 
 import discord
-from discord.ext.commands import Context
 from discord_slash import SlashContext
 
 
