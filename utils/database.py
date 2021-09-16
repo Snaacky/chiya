@@ -43,7 +43,7 @@ class Database:
             mod_logs.create_column("timestamp", db.types.bigint)
             mod_logs.create_column("reason", db.types.text)
             mod_logs.create_column("type", db.types.text)
-            log.info("Created mod_logs table")
+            log.info("Created missing table: mod_logs")
 
         # Create remind_me table and columns to store remind_me messages.
         if "remind_me" not in db:
@@ -53,7 +53,7 @@ class Database:
             remind_me.create_column("date_to_remind", db.types.bigint)
             remind_me.create_column("message", db.types.text)
             remind_me.create_column("sent", db.types.boolean, default=False)
-            log.info("Created remind_me table")
+            log.info("Created missing table: remind_me")
 
         # Create timed_mod_actions table and columns to store timed moderator actions.
         if "timed_mod_actions" not in db:
@@ -65,7 +65,7 @@ class Database:
             timed_mod_actions.create_column("end_time", db.types.bigint)
             timed_mod_actions.create_column("is_done", db.types.boolean, default=False)
             timed_mod_actions.create_column("reason", db.types.text)
-            log.info("Created timed_mod_actions table")
+            log.info("Created missing table: timed_mod_actions")
 
         # Create ticket table and columns to store the ticket status information.
         if "tickets" not in db:
@@ -76,7 +76,7 @@ class Database:
             tickets.create_column("timestamp", db.types.bigint)
             tickets.create_column("ticket_topic", db.types.text)
             tickets.create_column("log_url", db.types.text)
-            log.info("Created tickets table")
+            log.info("Created missing table: tickets")
 
         # Create settings table and columns to store key:value pairs.
         if "settings" not in db:
@@ -84,7 +84,7 @@ class Database:
             settings.create_column("name", db.types.text)
             settings.create_column("value", db.types.text)
             settings.create_column("censored", db.types.boolean)
-            log.info("Created settings table")
+            log.info("Created missing table: settings")
 
         # Commit the changes to the database and close the connection.
         db.commit()
