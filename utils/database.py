@@ -35,7 +35,6 @@ class Database:
         # Open a connection to the database.
         db = self.get()
 
-        # TODO: Add check to see if tables exists before creating.
         # Create mod_logs table and columns to store moderator actions.
         if "mod_logs" not in db:
             mod_logs = db.create_table("mod_logs")
