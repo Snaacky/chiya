@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 
-import dataset
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
@@ -28,7 +27,7 @@ class TimedModActionsTask(Cog):
         await self.bot.wait_until_ready()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Query the database for all temporary mod actions that haven't executed yet.
         results = db["timed_mod_actions"].find(

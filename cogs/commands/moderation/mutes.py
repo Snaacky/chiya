@@ -2,7 +2,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 import privatebinapi
 from discord.ext import commands
@@ -34,7 +33,7 @@ class MuteCog(Cog):
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the mute to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -66,7 +65,7 @@ class MuteCog(Cog):
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unmute to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -175,7 +174,7 @@ class MuteCog(Cog):
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         #  TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
         table = db["mod_logs"]

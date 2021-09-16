@@ -1,7 +1,6 @@
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -92,7 +91,7 @@ class WarnsCog(Cog):
             embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the warning to the mod_log database.
         db["mod_logs"].insert(dict(

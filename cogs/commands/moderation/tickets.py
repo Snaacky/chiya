@@ -1,8 +1,6 @@
 import logging
-import re
 import time
 
-import dataset
 import discord
 import privatebinapi
 from discord.ext import commands
@@ -102,7 +100,7 @@ class TicketCog(Cog):
         await channel.send(embed=embed)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Insert a pending ticket into the database.
         db["tickets"].insert(
@@ -169,7 +167,7 @@ class TicketCog(Cog):
             return
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Get the ticket in the database.
         table = db["tickets"]
