@@ -102,7 +102,7 @@ class RestrictCog(Cog):
                 description="If you believe this was a mistake, contact staff.",
                 color=0x8083b0
             )
-            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -125,7 +125,7 @@ class RestrictCog(Cog):
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
-            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/rvvnpV2.gif")

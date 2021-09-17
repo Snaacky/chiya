@@ -82,7 +82,7 @@ class WarnsCog(Cog):
                 description="If you believe this was a mistake, contact staff.",
                 color=0xf7dcad
             )
-            warn_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy/)", inline=True)
+            warn_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy)", inline=True)
             warn_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             warn_embed.add_field(name="Reason:", value=reason, inline=False)
             warn_embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
