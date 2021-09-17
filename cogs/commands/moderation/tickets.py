@@ -64,12 +64,8 @@ class TicketCog(Cog):
 
         # Give both the staff and the user perms to access the channel.
         permissions = {
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")): discord.PermissionOverwrite(
-                read_messages=False
-            ),
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")): discord.PermissionOverwrite(
-                read_messages=True
-            ),
+            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")): discord.PermissionOverwrite(read_messages=False),
+            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")): discord.PermissionOverwrite(read_messages=True),
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
