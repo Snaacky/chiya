@@ -2,7 +2,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -39,7 +38,7 @@ class RestrictCog(Cog):
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the restrict to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -70,7 +69,7 @@ class RestrictCog(Cog):
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unrestrict to the mod_log database.
         db["mod_logs"].insert(dict(

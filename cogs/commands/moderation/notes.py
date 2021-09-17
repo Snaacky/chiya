@@ -3,7 +3,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 from discord.embeds import Embed
 from discord.ext import commands
@@ -64,7 +63,7 @@ class NotesCog(Cog):
             user = await self.bot.fetch_user(user)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the note to the mod_logs database.
         note_id = db["mod_logs"].insert(dict(
@@ -121,7 +120,7 @@ class NotesCog(Cog):
             user = await self.bot.fetch_user(user)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         mod_logs = db["mod_logs"]
@@ -314,7 +313,7 @@ class NotesCog(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         table = db["mod_logs"]
 

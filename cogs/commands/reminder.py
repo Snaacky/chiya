@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import dataset
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
@@ -55,7 +54,7 @@ class Reminder(Cog):
             return
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_id = db["remind_me"].insert(dict(
             reminder_location=ctx.channel.id,
@@ -105,7 +104,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         reminder = remind_me.find_one(id=reminder_id)
@@ -149,7 +148,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         remind_me = db["remind_me"]
@@ -199,7 +198,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         table = db["remind_me"]
@@ -247,7 +246,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         result = remind_me.find(author_id=ctx.author.id, sent=False)
