@@ -53,31 +53,23 @@ class TicketCog(Cog):
             return await ctx.send(embed=embed, hidden=True)
 
         # Check if a duplicate ticket already exists for the member.
-        category = discord.utils.get(
-            ctx.guild.categories, id=settings.get_value("category_tickets")
-        )
-        ticket = discord.utils.get(
-            category.text_channels, name=f"ticket-{ctx.author.id}"
-        )
+        category = discord.utils.get(ctx.guild.categories, id=settings.get_value("category_tickets"))
+        ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.author.id}")
 
         # Throw an error and return if we found an already existing ticket.
         if ticket:
-            await ctx.send(
-                f"You already have a ticket open! {ticket.mention}", hidden=True
-            )
-            logging.info(
-                f"{ctx.author} tried to create a new ticket but already had one open: {ticket}"
-            )
+            await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
+            logging.info(f"{ctx.author} tried to create a new ticket but already had one open: {ticket}")
             return
 
         # Give both the staff and the user perms to access the channel.
         permissions = {
-            discord.utils.get(
-                ctx.guild.roles, id=settings.get_value("role_trial_mod")
-            ): discord.PermissionOverwrite(read_messages=False),
-            discord.utils.get(
-                ctx.guild.roles, id=settings.get_value("role_staff")
-            ): discord.PermissionOverwrite(read_messages=True),
+            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")): discord.PermissionOverwrite(
+                read_messages=False
+            ),
+            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")): discord.PermissionOverwrite(
+                read_messages=True
+            ),
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
@@ -161,10 +153,7 @@ class TicketCog(Cog):
         await ctx.defer()
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
-        if (
-            not ctx.channel.category_id == settings.get_value("category_tickets")
-            or "ticket" not in ctx.channel.name
-        ):
+        if not ctx.channel.category_id == settings.get_value("category_tickets") or "ticket" not in ctx.channel.name:
             return await embeds.error_message(
                 ctx=ctx,
                 description="You can only run this command in active ticket channels.",
@@ -175,9 +164,7 @@ class TicketCog(Cog):
 
         # Get the ticket in the database.
         table = db["tickets"]
-        ticket = table.find_one(
-            user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress"
-        )
+        ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
 
         # Get the ticket topic and ticket creator's ID from channel name.
         ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
@@ -187,22 +174,14 @@ class TicketCog(Cog):
         member = await self.bot.fetch_user(ticket_creator_id)
 
         # Initialize the PrivateBin message log string.
-        message_log = (
-            f"Ticket Creator: {member}\n"
-            f"User ID: {member.id}\n"
-            f"Ticket Topic: {ticket_topic}\n\n"
-        )
+        message_log = f"Ticket Creator: {member}\n" f"User ID: {member.id}\n" f"Ticket Topic: {ticket_topic}\n\n"
 
         # Initialize a list of moderator IDs as a set for no duplicates.
         mod_list = set()
 
         # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(
-            ctx.guild.roles, id=settings.get_value("role_staff")
-        )
-        role_trial_mod = discord.utils.get(
-            ctx.guild.roles, id=settings.get_value("role_trial_mod")
-        )
+        role_staff = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff"))
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod"))
 
         # Loop through all messages in the ticket from old to new.
         async for message in ctx.channel.history(oldest_first=True):
@@ -211,14 +190,9 @@ class TicketCog(Cog):
                 # Pretty print the time tag into a more digestible format.
                 formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 # Append the new messages to the current log as we loop.
-                message_log += (
-                    f"[{formatted_time}] {message.author}: {message.content}\n"
-                )
+                message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if (
-                    role_staff in message.author.roles
-                    or role_trial_mod in message.author.roles
-                ):
+                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                     mod_list.add(message.author)
 
         # An empty embed field will raise an HTTPException.
@@ -226,9 +200,7 @@ class TicketCog(Cog):
             mod_list.add(self.bot.user)
 
         # Gets the paste URL from the PrivateBin POST.
-        url = privatebinapi.send(
-            "https://bin.piracy.moe", text=message_log, expiration="never"
-        )["full_url"]
+        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
 
         # Create the embed in #ticket-log.
         embed = embeds.make_embed(
@@ -250,9 +222,7 @@ class TicketCog(Cog):
         embed.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
-        ticket_log = discord.utils.get(
-            ctx.guild.channels, id=settings.get_value("channel_ticket_log")
-        )
+        ticket_log = discord.utils.get(ctx.guild.channels, id=settings.get_value("channel_ticket_log"))
         await ticket_log.send(embed=embed)
 
         # DM the user that their ticket was closed.
@@ -272,9 +242,7 @@ class TicketCog(Cog):
             embed.set_image(url="https://i.imgur.com/21nJqGC.gif")
             await member.send(embed=embed)
         except discord.HTTPException:
-            logging.info(
-                f"Attempted to send ticket log DM to {member} but they are not accepting DMs."
-            )
+            logging.info(f"Attempted to send ticket log DM to {member} but they are not accepting DMs.")
 
         # Add the ticket to the database if it was never written.
         if not ticket:
