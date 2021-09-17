@@ -231,7 +231,7 @@ class TicketCog(Cog):
             )
             embed.add_field(
                 name="Server:",
-                value=f"[{ctx.guild}](https://discord.gg/piracy/)",
+                value=f"[{ctx.guild}](https://discord.gg/piracy)",
                 inline=False,
             )
             embed.add_field(name="Ticket Log:", value=url, inline=False)
