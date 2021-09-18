@@ -27,8 +27,7 @@ class PurgeCog(Cog):
 
         # Prevent mods from removing message in moderation categories
         if ctx.channel.category_id in [settings.get_value("category_moderation"), settings.get_value("category_development"), settings.get_value("category_logs"), settings.get_value("category_tickets")]:
-            await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
-            return False
+            return await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
 
         # Otherwise, the purge is fine to execute
         return True
@@ -71,8 +70,7 @@ class PurgeCog(Cog):
 
         # Limit the reason parameter to 512 characters.
         if reason and len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # Limit the command at 100 messages maximum to avoid abuse.
         amount = 100 if amount > 100 else amount

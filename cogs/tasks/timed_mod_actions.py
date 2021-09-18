@@ -64,9 +64,8 @@ class TimedModActionsTask(Cog):
                     embed.description = f"Unmuted {user.mention} because their mute time elapsed but they have since left the server."
 
                     # Archives the mute channel, sends the embed in the moderation channel, and ends the function.
-                    await channel.send(embed=embed)
                     await mutes.archive_mute_channel(user_id=user.id, guild=guild, reason="Mute time elapsed.")
-                    return
+                    return await channel.send(embed=embed)
 
                 # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
                 embed = embeds.make_embed(
@@ -128,8 +127,7 @@ class TimedModActionsTask(Cog):
                         color="soft_orange"
                     )
 
-                    await channel.send(embed=embed)
-                    return
+                    return await channel.send(embed=embed)
 
                 # Otherwise, create and send an embed to alert the moderator that the user was unrestricted.
                 embed = embeds.make_embed(

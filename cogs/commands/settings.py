@@ -76,9 +76,8 @@ class Settings(Cog):
         # Error if a setting already exists with that name.
         if result:
             embed = embeds.make_embed(description="A setting with that name already exists.", color="soft_red")
-            await ctx.send(embed=embed)
-            return
-
+            return await ctx.send(embed=embed)
+            
         # Add the setting to the database.
         table.insert(dict(
             name=name,
@@ -142,8 +141,7 @@ class Settings(Cog):
         # Error if a setting does not exist with that name.
         if not result:
             embed = embeds.make_embed(description="A setting with that name does not exist.", color="soft_red")
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # Update the value(s) in the database.
         result["value"] = value
@@ -190,8 +188,7 @@ class Settings(Cog):
         # Error if a setting does not exist with that name.
         if not result:
             embed = embeds.make_embed(description="A setting with that name does not exist.", color="soft_red")
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # Delete the setting from the database.
         table.delete(name=name)
@@ -228,8 +225,7 @@ class Settings(Cog):
         # Error if the list is empty because it means the table is empty.
         if not names:
             embed = embeds.make_embed(description="Unable to find any settings in the database.", color="soft_red")
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # Format the list entries into inline codeblocks for the embed.
         names = f", ".join(f'`{name}`' for name in names)
@@ -270,8 +266,7 @@ class Settings(Cog):
         # Error if a setting does not exist with that name.
         if not result:
             embed = embeds.make_embed(description="A setting with that name does not exist.", color="soft_red")
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # If the value is set to censored in the database, censor all but the first and last characters.
         if result.get("censored"):

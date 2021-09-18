@@ -89,8 +89,7 @@ class BanCog(Cog):
         # Checks to see if the user is already banned.
         guild = self.bot.get_guild(guild)
         try:
-            await guild.fetch_ban(user)
-            return True
+            return await guild.fetch_ban(user)
         except discord.HTTPException:
             return False
 
@@ -169,22 +168,21 @@ class BanCog(Cog):
         member = await self.is_user_in_guild(guild=ctx.guild.id, user=user)
         if member:
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-                await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-                return
+                return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
+                
 
         # Checks if the user is already banned and let's the mod know if they already were.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
         if banned:
-            await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+
 
         # If the duration is not specified, default it to a permanent ban.
         if not duration:
@@ -205,15 +203,14 @@ class BanCog(Cog):
 
             # Bans the user and returns the embed letting the moderator know they were successfully banned.
             await self.ban_member(ctx=ctx, user=user, reason=reason, delete_message_days=daystodelete)
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
+            
 
         # Get the duration string for embed and ban end time for the specified duration.
         duration_string, ban_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
         embed = embeds.make_embed(
@@ -272,16 +269,14 @@ class BanCog(Cog):
         # Checks if the user is already banned and let's the mod know if they are not.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
         if not banned:
-            await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # Creates and sends the embed that will be used to alert the moderator that the user was successfully banned.
         embed = embeds.make_embed(

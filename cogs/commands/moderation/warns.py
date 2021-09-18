@@ -57,12 +57,10 @@ class WarnsCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
 
         if len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,

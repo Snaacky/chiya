@@ -104,8 +104,7 @@ class MuteCog(Cog):
             embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/840Q48l.gif")
-            await dm_channel.send(embed=embed)
-            return True
+            return await dm_channel.send(embed=embed)
         except discord.HTTPException:
             return False
 
@@ -126,8 +125,7 @@ class MuteCog(Cog):
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
-            await channel.send(embed=embed)
-            return True
+            return await channel.send(embed=embed)
         except discord.HTTPException:
             return False
 
@@ -166,8 +164,8 @@ class MuteCog(Cog):
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            
 
         guild = guild or ctx.guild
         category = discord.utils.get(guild.categories, id=settings.get_value("category_tickets"))
@@ -321,26 +319,22 @@ class MuteCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is muted already.
         if await self.is_user_muted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # If the duration is not specified, default it to a permanent mute.
         if not duration:
@@ -362,15 +356,14 @@ class MuteCog(Cog):
 
             # Mutes the user and returns the embed letting the moderator know they were successfully muted.
             await self.mute_member(ctx=ctx, member=member, reason=reason)
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
+            
 
         # Get the duration string for embed and mute end time for the specified duration.
         duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
         embed = embeds.make_embed(
@@ -427,26 +420,22 @@ class MuteCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is not muted already.
         if not await self.is_user_muted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully unmuted.
         embed = embeds.make_embed(

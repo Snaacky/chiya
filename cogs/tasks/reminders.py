@@ -37,8 +37,7 @@ class ReminderTask(Cog):
 
         # If no results are found, simply terminate the db connection and return.
         if not result:
-            db.close()
-            return
+            return db.close()
 
         # Iterate over all the results found from the DB query if a result is found.
         for reminder in result:

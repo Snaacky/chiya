@@ -57,9 +57,8 @@ class TicketCog(Cog):
 
         # Throw an error and return if we found an already existing ticket.
         if ticket:
-            await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
             logging.info(f"{ctx.author} tried to create a new ticket but already had one open: {ticket}")
-            return
+            return await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
 
         # Give both the staff and the user perms to access the channel.
         permissions = {

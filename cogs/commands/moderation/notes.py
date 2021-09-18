@@ -137,8 +137,8 @@ class NotesCog(Cog):
                     description=f"\"{action}\" is not a valid mod action filter. \n\nValid filters: ban, unban, mute, unmute, restrict, unrestrict, warn, kick, note"
                 )
                 # Close the connection.
-                db.close()
-                return
+                return db.close()
+                
         else:
             results = mod_logs.find(user_id=user.id)
 
@@ -175,8 +175,7 @@ class NotesCog(Cog):
 
         if not actions:
             # Nothing was found, so returning an appropriate error.
-            await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
-            return
+            return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!") 
 
         page_no = 0
 
@@ -319,8 +318,7 @@ class NotesCog(Cog):
 
         mod_log = table.find_one(id=id)
         if not mod_log:
-            await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
-            return
+            return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
 
         user = await self.bot.fetch_user(mod_log["user_id"])
         embed = embeds.make_embed(
