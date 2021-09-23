@@ -42,9 +42,7 @@ class UpgradeValueCog(Cog):
             ),
         ],
     )
-    async def upgrade_value(
-        self, ctx: SlashContext, amount: int, freeleech: bool = False
-    ):
+    async def upgrade_value(self, ctx: SlashContext, amount: int, freeleech: bool = False):
         """
         Allows brighter colors to be rolled. HSB (brightness) == HSV (value), but we're using the former one
         in wording to make it easier to understand for the end users."""
@@ -55,9 +53,7 @@ class UpgradeValueCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         """ 
         If the user enter an arbitrary large "amount" value, the inflated_cost calculation would take forever and create a blocking call
@@ -229,7 +225,9 @@ class UpgradeValueCog(Cog):
             )
         else:
             stats["buffer"] -= inflated_cost
-            embed.description = f"Successfully reached brightness level {stats['value_upgrade']} for {inflated_cost} MB."
+            embed.description = (
+                f"Successfully reached brightness level {stats['value_upgrade']} for {inflated_cost} MB."
+            )
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")

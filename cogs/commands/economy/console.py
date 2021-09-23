@@ -169,9 +169,7 @@ class Console(Cog):
         # Return if the user is not found in the database.
         if not user_entry:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Could not find the specified user."
-            )
+            return await embeds.error_message(ctx=ctx, description="Could not find the specified user.")
 
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user_entry["stats"])
@@ -187,20 +185,12 @@ class Console(Cog):
         # Else if the input parameter exists but is < 0, return.
         elif set_buffer is not None:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Buffer value must be equal or greater than 0."
-            )
+            return await embeds.error_message(ctx=ctx, description="Buffer value must be equal or greater than 0.")
 
         # Remove an amount of buffer from the user. The amount to be reduced and the total amount must be >= 0.
-        if (
-            remove_buffer is not None
-            and remove_buffer >= 0
-            and stats["buffer"] - remove_buffer >= 0
-        ):
+        if remove_buffer is not None and remove_buffer >= 0 and stats["buffer"] - remove_buffer >= 0:
             stats["buffer"] -= remove_buffer
-            embed.description = (
-                f"{user.mention}'s buffer has been decreased by {remove_buffer}!"
-            )
+            embed.description = f"{user.mention}'s buffer has been decreased by {remove_buffer}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but it or the total amount is < 0, return.
         elif remove_buffer is not None:
@@ -213,9 +203,7 @@ class Console(Cog):
         # Add an amount of buffer to the user. Must be >= 0.
         if add_buffer is not None and add_buffer >= 0:
             stats["buffer"] += add_buffer
-            embed.description = (
-                f"{user.mention}'s buffer has been increased by {add_buffer}!"
-            )
+            embed.description = f"{user.mention}'s buffer has been increased by {add_buffer}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif add_buffer is not None:
@@ -228,9 +216,7 @@ class Console(Cog):
         # Set the message count of a user. Must be >= 0.
         if message_count is not None and message_count >= 0:
             stats["message_count"] = message_count
-            embed.description = (
-                f"{user.mention}'s upload value has been set to {message_count}!"
-            )
+            embed.description = f"{user.mention}'s upload value has been set to {message_count}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif message_count is not None:
@@ -248,9 +234,7 @@ class Console(Cog):
         # Else if the input parameter exists but is not between 0-7, return.
         elif unique_promotion is not None:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Unique promotion count must be between 0 to 7."
-            )
+            return await embeds.error_message(ctx=ctx, description="Unique promotion count must be between 0 to 7.")
 
         # Set the FL token of a user. Must be >= 0.
         if freeleech_token is not None and freeleech_token >= 0:
@@ -273,9 +257,7 @@ class Console(Cog):
         # Else if the input parameter exists but is < 0, return.
         elif vouch is not None:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Vouch value must be equal or greater than 0."
-            )
+            return await embeds.error_message(ctx=ctx, description="Vouch value must be equal or greater than 0.")
 
         # Set the custom role boolean flag of a user.
         if has_custom_role is not None:
@@ -308,28 +290,20 @@ class Console(Cog):
             db.close()
             # ...but is not a digit.
             if not custom_role_id.isdigit():
-                return await embeds.error_message(
-                    ctx=ctx, description="Role ID value must be a non-negative digit."
-                )
+                return await embeds.error_message(ctx=ctx, description="Role ID value must be a non-negative digit.")
             # ...but is one of the roles from "Staff" or higher.
             if any(custom_role_id == staff_role for staff_role in staff_roles):
-                return await embeds.error_message(
-                    ctx=ctx, description="This role ID value is not assignable."
-                )
+                return await embeds.error_message(ctx=ctx, description="This role ID value is not assignable.")
 
         # Set the daily upgrade value of a user. Must be between 0-100.
         if daily_upgrade is not None and daily_upgrade in range(0, 101):
             stats["daily_upgrade"] = daily_upgrade
-            embed.description = (
-                f"{user.mention}'s daily upgrade value has been set to {daily_upgrade}!"
-            )
+            embed.description = f"{user.mention}'s daily upgrade value has been set to {daily_upgrade}!"
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is not between 0-100, return.
         elif daily_upgrade is not None:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Daily upgrade value must be between 0 and 100."
-            )
+            return await embeds.error_message(ctx=ctx, description="Daily upgrade value must be between 0 and 100.")
 
         # Set the hue upgrade value of a user by using a Regex to capture only valid options.
         if hue_upgrade:
@@ -337,16 +311,12 @@ class Console(Cog):
             # If there is at least one item in the match list, set the value.
             if match_list:
                 stats["hue_upgrade"] = match_list
-                embed.description = (
-                    f"{user.mention}'s hue upgrade value has been set to {match_list}!"
-                )
+                embed.description = f"{user.mention}'s hue upgrade value has been set to {match_list}!"
                 await ctx.send(embed=embed)
             # Attempt to check if the input value is "none". If it does, give the user an empty list to remove their upgrades.
             elif hue_upgrade.lower() == "none":
                 stats["hue_upgrade"] = []
-                embed.description = (
-                    f"{user.mention}'s hue upgrade value has been emptied!"
-                )
+                embed.description = f"{user.mention}'s hue upgrade value has been emptied!"
                 await ctx.send(embed=embed)
             # Otherwise if the match list is empty, return.
             else:
@@ -388,16 +358,12 @@ class Console(Cog):
         if daily_timestamp is not None and daily_timestamp >= 0:
             stats["daily_timestamp"] = daily_timestamp
             time = datetime.datetime.fromtimestamp(daily_timestamp)
-            embed.description = (
-                f"{user.mention}'s daily timestamp value has been set to {time}!"
-            )
+            embed.description = f"{user.mention}'s daily timestamp value has been set to {time}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif daily_timestamp is not None:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Daily timestamp value must be greater than 0."
-            )
+            return await embeds.error_message(ctx=ctx, description="Daily timestamp value must be greater than 0.")
 
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
@@ -477,12 +443,8 @@ class Console(Cog):
                 entry_stats = json.loads(entry["stats"])
                 entry_stats["buffer"] += add_buffer
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(
-                    dict(id=entry["id"], stats=entry_stats_json), ["id"]
-                )
-            embed.description = (
-                f"{entry_counter} members buffer have been increased by {add_buffer}!"
-            )
+                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+            embed.description = f"{entry_counter} members buffer have been increased by {add_buffer}!"
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is < 0, return.
         elif add_buffer is not None:
@@ -500,14 +462,10 @@ class Console(Cog):
                 entry_counter += 1
                 entry_stats = json.loads(entry["stats"])
                 # If the total amount would go below 0, set it to 0 instead.
-                entry_stats["buffer"] -= (
-                    remove_buffer if entry_stats["buffer"] - remove_buffer >= 0 else 0
-                )
+                entry_stats["buffer"] -= remove_buffer if entry_stats["buffer"] - remove_buffer >= 0 else 0
                 # Dump the modified JSON into the db.
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(
-                    dict(id=entry["id"], stats=entry_stats_json), ["id"]
-                )
+                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
             embed.description = f"{entry_counter} members buffer have been decreased by {remove_buffer}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
@@ -527,9 +485,7 @@ class Console(Cog):
                 entry_stats = json.loads(entry["stats"])
                 entry_stats["freeleech_token"] += add_freeleech_token
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(
-                    dict(id=entry["id"], stats=entry_stats_json), ["id"]
-                )
+                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
             embed.description = f"{add_freeleech_token} freeleech token(s) were given to {entry_counter} members!"
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is < 0, return.
@@ -549,16 +505,14 @@ class Console(Cog):
                 entry_stats = json.loads(entry["stats"])
                 # If the total amount would go below 0, set it to 0 instead.
                 entry_stats["freeleech_token"] -= (
-                    remove_freeleech_token
-                    if entry_stats["freeleech_token"] - remove_freeleech_token < 0
-                    else 0
+                    remove_freeleech_token if entry_stats["freeleech_token"] - remove_freeleech_token < 0 else 0
                 )
                 # Dump the modified JSON into the db.
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(
-                    dict(id=entry["id"], stats=entry_stats_json), ["id"]
-                )
-            embed.description = f"{remove_freeleech_token} freeleech token(s) were removed from {entry_counter} members!"
+                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+            embed.description = (
+                f"{remove_freeleech_token} freeleech token(s) were removed from {entry_counter} members!"
+            )
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
         elif remove_freeleech_token is not None:
@@ -614,18 +568,14 @@ class Console(Cog):
                 entry_stats = json.loads(entry["stats"])
                 entry_stats = await leveling_cog.verify_integrity(entry_stats)
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(
-                    dict(id=entry["id"], stats=entry_stats_json), ["id"]
-                )
+                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
 
             # Commit the changes to the database and close it.
             db.commit()
             db.close()
 
             # Send an embed to notify when the task is done.
-            embed = embeds.make_embed(
-                description="Successfully reloaded all user stats.", color="green"
-            )
+            embed = embeds.make_embed(description="Successfully reloaded all user stats.", color="green")
             return await ctx.send(embed=embed)
 
         # If we received an int instead of a discord.Member, the user is not in the server.
@@ -638,9 +588,7 @@ class Console(Cog):
         # Return if the user is not found in the database.
         if not user_entry:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="Could not find the specified user."
-            )
+            return await embeds.error_message(ctx=ctx, description="Could not find the specified user.")
 
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user_entry["stats"])
@@ -650,9 +598,7 @@ class Console(Cog):
         achievements.update(dict(id=user_entry["id"], stats=stats_json), ["id"])
 
         # Send an embed to notify when the task is done.
-        embed = embeds.make_embed(
-            description=f"Successfully reloaded {user.mention}'s stats.", color="green"
-        )
+        embed = embeds.make_embed(description=f"Successfully reloaded {user.mention}'s stats.", color="green")
         await ctx.send(embed=embed)
 
         # Commit the changes to the database and close it.

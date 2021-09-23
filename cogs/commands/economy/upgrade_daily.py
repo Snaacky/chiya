@@ -42,9 +42,7 @@ class UpgradeDailyCog(Cog):
             ),
         ],
     )
-    async def upgrade_daily(
-        self, ctx: SlashContext, amount: int, freeleech: bool = False
-    ):
+    async def upgrade_daily(self, ctx: SlashContext, amount: int, freeleech: bool = False):
         """Increases the chance to receive 2x buffer from /daily."""
         await ctx.defer()
 
@@ -53,9 +51,7 @@ class UpgradeDailyCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         """ 
         If the user enter an arbitrary large "amount" value, the inflated_cost calculation would take forever and create a blocking call
@@ -109,11 +105,7 @@ class UpgradeDailyCog(Cog):
         availability_check = amount + stats["daily_upgrade"] <= 100
 
         # If any of the conditions were not met, return an error embed.
-        if (
-            not buffer_check
-            or (freeleech and not fl_token_check)
-            or not availability_check
-        ):
+        if not buffer_check or (freeleech and not fl_token_check) or not availability_check:
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",

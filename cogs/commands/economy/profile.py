@@ -90,7 +90,7 @@ class ProfileCog(Cog):
         role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
         color = role.color if role else "green"
         custom_role = role.mention if role else "None"
-            
+
         # Declare the value parameter for the embed. Doing it this way allows the name and value displayed on a single line.
         value = (
             f"**User class:** {stats['user_class']}\n\n"

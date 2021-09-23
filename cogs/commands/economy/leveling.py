@@ -321,9 +321,7 @@ class LevelingCog(Cog):
             stats = json.loads(user["stats"])
             # Get their custom role.
             if stats["has_custom_role"]:
-                role_custom = discord.utils.get(
-                    member.guild.roles, id=stats["custom_role_id"]
-                )
+                role_custom = discord.utils.get(member.guild.roles, id=stats["custom_role_id"])
                 # If the role is found, add it back to the user. Otherwise, reset their custom role stats.
                 if role_custom:
                     await member.add_roles(role_custom)
@@ -368,9 +366,7 @@ class LevelingCog(Cog):
         buffer = length * multiplier
 
         # If the message author is a server booster, give them 20% more buffer per message.
-        role_server_booster = discord.utils.get(
-            message.guild.roles, id=settings.get_value("role_server_booster")
-        )
+        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
         if role_server_booster in message.author.roles:
             buffer += buffer * 0.2
 
@@ -472,9 +468,7 @@ class LevelingCog(Cog):
         buffer = length * multiplier
 
         # 20% more buffer to be removed per message if the author is a server booster.
-        role_server_booster = discord.utils.get(
-            message.guild.roles, id=settings.get_value("role_server_booster")
-        )
+        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
         if role_server_booster in message.author.roles:
             buffer += buffer * 0.2
 
@@ -534,8 +528,7 @@ class LevelingCog(Cog):
             return True
         # Return True if the channel is under the "Community" category.
         elif any(
-            message.channel.category.id == settings.get_value("category_community")
-            for _ in message.guild.categories
+            message.channel.category.id == settings.get_value("category_community") for _ in message.guild.categories
         ):
             return True
         # Return False otherwise.

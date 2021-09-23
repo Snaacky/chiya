@@ -36,9 +36,7 @@ class DailyCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -103,9 +101,7 @@ class DailyCog(Cog):
                 color="red",
             )
             embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.add_field(
-                name="​", value=f"**Time remaining:** {duration_string}", inline=False
-            )
+            embed.add_field(name="​", value=f"**Time remaining:** {duration_string}", inline=False)
             db.close()
             return await ctx.send(embed=embed)
 
@@ -136,16 +132,12 @@ class DailyCog(Cog):
         # 4% chance to roll the epic tier. Embed color is "purple".
         elif rng in range(96, 100):
             value = random.randint(650, 800)
-            embed.description = (
-                f"What a fascinating discovery! You received {value} MB buffer!"
-            )
+            embed.description = f"What a fascinating discovery! You received {value} MB buffer!"
             embed.colour = 0x9B59B6
         # 1% chance to roll the legendary tier. Embed color is "gold".
         else:
             value = random.randint(850, 1024)
-            embed.description = (
-                f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
-            )
+            embed.description = f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
             embed.colour = 0xF1C40F
 
         # Roll a random float value to determine if /daily is going to be doubled or not.
@@ -181,9 +173,7 @@ class DailyCog(Cog):
 
         # Get the formatted buffer string.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-        embed.add_field(
-            name="​", value=f"**Total buffer:** {buffer_string}", inline=False
-        )
+        embed.add_field(name="​", value=f"**Total buffer:** {buffer_string}", inline=False)
         await ctx.send(embed=embed)
 
         # Dump the modified JSON into the db and close it.

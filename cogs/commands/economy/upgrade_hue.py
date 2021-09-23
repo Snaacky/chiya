@@ -51,9 +51,7 @@ class UpgradeHueCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -152,7 +150,9 @@ class UpgradeHueCog(Cog):
                 f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
             )
         else:
-            confirm_embed.description = f"{ctx.author.mention}, purchase the {pack} color pack for {cost} MB? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, purchase the {pack} color pack for {cost} MB? (yes/no/y/n)"
+            )
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.

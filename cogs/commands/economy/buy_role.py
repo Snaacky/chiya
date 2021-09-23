@@ -51,9 +51,7 @@ class BuyRoleCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -95,20 +93,13 @@ class BuyRoleCog(Cog):
         fl_token_check = stats["freeleech_token"] >= fl_token
 
         # Condition: User class must be "Elite" or higher.
-        user_class_check = any(
-            stats["user_class"] == allowed_class for allowed_class in allowed_classes
-        )
+        user_class_check = any(stats["user_class"] == allowed_class for allowed_class in allowed_classes)
 
         # Condition: Must not already own a custom role.
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if (
-            not buffer_check
-            or (freeleech and not fl_token_check)
-            or not user_class_check
-            or custom_role_check
-        ):
+        if not buffer_check or (freeleech and not fl_token_check) or not user_class_check or custom_role_check:
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -152,7 +143,9 @@ class BuyRoleCog(Cog):
                 f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
             )
         else:
-            confirm_embed.description = f"{ctx.author.mention}, purchase a custom role with the name '{name}' for {cost} MB? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, purchase a custom role with the name '{name}' for {cost} MB? (yes/no/y/n)"
+            )
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
@@ -182,9 +175,7 @@ class BuyRoleCog(Cog):
             return await ctx.send(embed=embed)
 
         # Create the role with the desired name, add it to the buyer, and update the JSON. Default is no permission and colorless.
-        custom_role = await ctx.guild.create_role(
-            name=name, reason="Custom role purchase."
-        )
+        custom_role = await ctx.guild.create_role(name=name, reason="Custom role purchase.")
         await ctx.author.add_roles(custom_role)
         stats["custom_role_id"] = custom_role.id
 
@@ -192,7 +183,7 @@ class BuyRoleCog(Cog):
         role_count = len(ctx.guild.roles)
 
         # Number of mod roles (including the separator that follows the category). Declared to avoid magic number usage.
-        mod_role_count = 13
+        mod_role_count = 15
 
         # Declare the positions of the role as a dictionary.
         positions = dict()
@@ -222,14 +213,10 @@ class BuyRoleCog(Cog):
 
         # Inverse the key pair value of the dictionary before using it to edit the position of all roles in the guild.
         positions = dict((value, key) for key, value in positions.items())
-        await ctx.guild.edit_role_positions(
-            positions=positions, reason="Custom role purchased."
-        )
+        await ctx.guild.edit_role_positions(positions=positions, reason="Custom role purchased.")
 
         # Create the embed to let the user know that the transaction was a success.
-        embed = embeds.make_embed(
-            title=f"Role purchased: {custom_role.name}", color="green"
-        )
+        embed = embeds.make_embed(title=f"Role purchased: {custom_role.name}", color="green")
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
@@ -242,9 +229,7 @@ class BuyRoleCog(Cog):
             )
         else:
             stats["buffer"] -= cost
-            embed.description = (
-                f"Successfully purchased a custom role for {cost} MB buffer."
-            )
+            embed.description = f"Successfully purchased a custom role for {cost} MB buffer."
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")

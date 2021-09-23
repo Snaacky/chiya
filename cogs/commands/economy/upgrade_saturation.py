@@ -42,9 +42,7 @@ class UpgradeSaturationCog(Cog):
             ),
         ],
     )
-    async def upgrade_saturation(
-        self, ctx: SlashContext, amount: int, freeleech: bool = False
-    ):
+    async def upgrade_saturation(self, ctx: SlashContext, amount: int, freeleech: bool = False):
         """Allows more saturated colors to be rolled."""
         await ctx.defer()
 
@@ -53,9 +51,7 @@ class UpgradeSaturationCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         """ 
         If the user enter an arbitrary large "amount" value, the inflated_cost calculation would take forever and create a blocking call
@@ -96,9 +92,7 @@ class UpgradeSaturationCog(Cog):
         # The actual cost for the purchase is 3 * x (x is from 1-100) - it gets more expensive after every upgrade.
         inflated_cost = 0
         # We +1 in the range because we're calculating the cost starting from the next upgrade.
-        for i in range(
-            stats["saturation_upgrade"] + 1, stats["saturation_upgrade"] + amount + 1
-        ):
+        for i in range(stats["saturation_upgrade"] + 1, stats["saturation_upgrade"] + amount + 1):
             inflated_cost += i * cost
 
         # Condition: Must have more buffer than the cost of the transaction.
@@ -225,7 +219,9 @@ class UpgradeSaturationCog(Cog):
             )
         else:
             stats["buffer"] -= inflated_cost
-            embed.description = f"Successfully reached saturation level {stats['saturation_upgrade']} for {inflated_cost} MB."
+            embed.description = (
+                f"Successfully reached saturation level {stats['saturation_upgrade']} for {inflated_cost} MB."
+            )
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
