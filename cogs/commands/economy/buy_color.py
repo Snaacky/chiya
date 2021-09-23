@@ -24,9 +24,7 @@ class BuyColorCog(Cog):
         self.bot = bot
 
     @staticmethod
-    async def generate_hsv(
-        hue_upgrade: list, saturation_upgrade: int, value_upgrade: int
-    ) -> tuple:
+    async def generate_hsv(hue_upgrade: list, saturation_upgrade: int, value_upgrade: int) -> tuple:
         """Generates a random HSV tuple affected by the purchased upgrades."""
         # Declare a list of possible color packs.
         colors = ["red", "yellow", "green", "cyan", "blue", "magenta"]
@@ -61,13 +59,19 @@ class BuyColorCog(Cog):
         https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
         This was not clarified in https://discordpy.readthedocs.io/en/latest/api.html?highlight=from_hsv#discord.Colour.from_hsv.
         """
+
+        # Defaults the rolled to colorless (#000000) if they haven't bought any saturation or brightness upgrades.
+        h = random.choice(hue) / 360
+        s = 0
+        v = 0
+
+        # Value rolls in the range 20 - 30 if the actual value is < 30 to prevent pure black colors being the default rolled color.
+        if saturation_upgrade > 0 or value_upgrade > 0:
+            s = random.randint(0, saturation_upgrade) / 100
+            v = (random.randint(0, value_upgrade) if value_upgrade >= 30 else random.randint(20, 30)) / 100
+
         # Finally, return random HSV tuple, affected by the purchased upgrades.
-        # Value defaults to 10 if the actual value is < 10 to prevent pure black colors being rolled and cause display issues.
-        return (
-            random.choice(hue) / 360,
-            random.randint(0, saturation_upgrade) / 100,
-            random.randint(0, value_upgrade) / 100 if value_upgrade > 10 else 10 / 100,
-        )
+        return h, s, v
 
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
@@ -93,9 +97,7 @@ class BuyColorCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -133,12 +135,7 @@ class BuyColorCog(Cog):
         custom_role_check = stats["has_custom_role"]
 
         # If any of the conditions were not met, return an error embed.
-        if (
-            not buffer_check
-            or (freeleech and not fl_token_check)
-            or not color_check
-            or not custom_role_check
-        ):
+        if not buffer_check or (freeleech and not fl_token_check) or not color_check or not custom_role_check:
             embed = embeds.make_embed(
                 title="Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -197,7 +194,9 @@ class BuyColorCog(Cog):
         # Update the JSON object accordingly.
         if freeleech:
             stats["freeleech_token"] -= fl_token
-            embed.description = f"You rolled color {color} for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+            embed.description = (
+                f"You rolled color {color} for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+            )
             embed.add_field(
                 name="​",
                 value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}",
