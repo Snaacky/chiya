@@ -76,16 +76,6 @@ class BuyNicknameCog(Cog):
         cost = 256
         fl_token = 1
 
-        # Declare the allowed user classes for the custom role purchase.
-        allowed_classes = [
-            "Power User",
-            "Elite",
-            "Torrent Master",
-            "Power TM",
-            "Elite TM",
-            "Legend",
-        ]
-
         # Condition: Buffer must be above 256 MB.
         buffer_check = stats["buffer"] >= cost
 
@@ -95,11 +85,8 @@ class BuyNicknameCog(Cog):
         # Condition: Must have at least 1 freeleech token.
         fl_token_check = stats["freeleech_token"] >= fl_token
 
-        # Condition: User class must be "User" or higher.
-        user_class_check = any(stats["user_class"] == allowed_class for allowed_class in allowed_classes)
-
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or not name_length_check or (freeleech and not fl_token_check) or not user_class_check:
+        if not buffer_check or not name_length_check or (freeleech and not fl_token_check):
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -118,12 +105,6 @@ class BuyNicknameCog(Cog):
                 embed.add_field(
                     name="​",
                     value="**Condition:** Your nickname must contain 32 or fewer characters.",
-                    inline=False,
-                )
-            if not user_class_check:
-                embed.add_field(
-                    name="​",
-                    value="**Condition:** User class must be 'User' or higher.",
                     inline=False,
                 )
             if freeleech and not fl_token_check:
