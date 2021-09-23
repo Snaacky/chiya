@@ -44,9 +44,7 @@ class ProfileCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # The user is either the author or the specified user in the parameter.
         user = user or ctx.author
@@ -86,26 +84,13 @@ class ProfileCog(Cog):
 
         # Display the buffer into a more digestible format.
         buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
-        next_class_buffer_string = await leveling_cog.get_buffer_string(
-            stats["next_user_class_buffer"]
-        )
+        next_class_buffer_string = await leveling_cog.get_buffer_string(stats["next_user_class_buffer"])
 
-        # Get the role from user's custom role ID to get its color if they have one. Otherwise, default it to "green".
-        if stats["has_custom_role"]:
-            role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
-            # If the role somehow doesn't exist and breaks the embed, notify them and return.
-            if not role:
-                db.close()
-                return await embeds.error_message(
-                    ctx=ctx,
-                    description="Invalid role ID! Please contact a staff member.",
-                )
-            color = role.color
-            custom_role = role.mention
-        else:
-            color = 0x2ECC71
-            custom_role = "None"
-
+        # Get the role from user's custom role ID to get its color if they have one. Otherwise, default the color to "green".
+        role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
+        color = role.color if role else "green"
+        custom_role = role.mention if role else "None"
+            
         # Declare the value parameter for the embed. Doing it this way allows the name and value displayed on a single line.
         value = (
             f"**User class:** {stats['user_class']}\n\n"
