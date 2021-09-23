@@ -42,9 +42,7 @@ class BuyNicknameCog(Cog):
             ),
         ],
     )
-    async def buy_nickname(
-        self, ctx: SlashContext, nickname: str, freeleech: bool = False
-    ):
+    async def buy_nickname(self, ctx: SlashContext, nickname: str, freeleech: bool = False):
         """Purchase and change the nickname."""
         await ctx.defer()
 
@@ -53,9 +51,7 @@ class BuyNicknameCog(Cog):
             settings.get_value("channel_bots"),
             settings.get_value("channel_bot_testing"),
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -82,7 +78,6 @@ class BuyNicknameCog(Cog):
 
         # Declare the allowed user classes for the custom role purchase.
         allowed_classes = [
-            "User",
             "Power User",
             "Elite",
             "Torrent Master",
@@ -101,17 +96,10 @@ class BuyNicknameCog(Cog):
         fl_token_check = stats["freeleech_token"] >= fl_token
 
         # Condition: User class must be "User" or higher.
-        user_class_check = any(
-            stats["user_class"] == allowed_class for allowed_class in allowed_classes
-        )
+        user_class_check = any(stats["user_class"] == allowed_class for allowed_class in allowed_classes)
 
         # If any of the conditions were not met, return an error embed.
-        if (
-            not buffer_check
-            or not name_length_check
-            or (freeleech and not fl_token_check)
-            or not user_class_check
-        ):
+        if not buffer_check or not name_length_check or (freeleech and not fl_token_check) or not user_class_check:
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -155,7 +143,9 @@ class BuyNicknameCog(Cog):
                 f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
             )
         else:
-            confirm_embed.description = f"{ctx.author.mention}, set your nickname to '{nickname}' for {cost} MB? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, set your nickname to '{nickname}' for {cost} MB? (yes/no/y/n)"
+            )
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
@@ -188,24 +178,22 @@ class BuyNicknameCog(Cog):
         await ctx.author.edit(nick=nickname)
 
         # Create the embed to let the user know that the transaction was a success.
-        embed = embeds.make_embed(
-            title=f"Nickname purchased: {nickname}", color="green"
-        )
+        embed = embeds.make_embed(title=f"Nickname purchased: {nickname}", color="green")
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token
-            embed.description = f"Successfully purchased a nickname for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+            embed.description = (
+                f"Successfully purchased a nickname for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+            )
             embed.add_field(
                 name="​",
                 value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}",
             )
         else:
             stats["buffer"] -= cost
-            embed.description = (
-                f"Successfully purchased a nickname for {cost} MB buffer."
-            )
+            embed.description = f"Successfully purchased a nickname for {cost} MB buffer."
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
