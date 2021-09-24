@@ -145,9 +145,7 @@ class NotesCog(Cog):
             ]
         },
     )
-    async def search_mod_actions(
-        self, ctx: SlashContext, user: discord.User, action: str = None
-    ):
+    async def search_mod_actions(self, ctx: SlashContext, user: discord.User, action: str = None):
         """Searches for mod actions on a user"""
         await ctx.defer()
 
@@ -159,26 +157,25 @@ class NotesCog(Cog):
         db = database.Database().get()
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
-        mod_logs = db["mod_logs"]
         if action:
-            results = mod_logs.find(user_id=user.id, type=action)
+            results = db["mod_logs"].find(user_id=user.id, type=action)
         else:
-            results = mod_logs.find(user_id=user.id)
+            results = db["mod_logs"].find(user_id=user.id)
 
         # Creating a List to store actions for the paginator.
         actions = []
         for action in results:
-            action_emoji = dict(
-                mute="🤐",
-                unmute="🗣",
-                warn="⚠",
-                kick="👢",
-                ban="🔨",
-                unban="⚒",
-                restrict="🚫",
-                unrestrict="✅",
-                note="🗒️",
-            )
+            action_emoji = {
+                "mute": "🤐",
+                "unmute": "🗣",
+                "warn": "⚠",
+                "kick": "👢",
+                "ban": "🔨",
+                "unban": "⚒",
+                "restrict": "🚫",
+                "unrestrict": "✅",
+                "note": "🗒️",
+            }
 
             action_type = action["type"]
             # Capitalising the first letter of the action type.
@@ -187,15 +184,13 @@ class NotesCog(Cog):
             action_type = f"{action_emoji[action['type']]} {action_type}"
 
             actions.append(
-                f"""
-            **{action_type} | ID: {action['id']}**
-            **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
-            **Moderator:** <@!{action['mod_id']}>
-            **Reason:** {action['reason']}"""
+                f"""**{action_type} | ID: {action['id']}**
+                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+                **Moderator:** <@!{action['mod_id']}>
+                **Reason:** {action['reason']}"""
             )
 
         if not actions:
-            # Nothing was found, so returning an appropriate error.
             await embeds.error_message(
                 ctx=ctx, description="No mod actions found for that user!"
             )
@@ -203,16 +198,14 @@ class NotesCog(Cog):
 
         db.close()
 
-        embed = embeds.make_embed(ctx=ctx, title="Mod Actions")
-
         # paginating through the results
         await LinePaginator.paginate(
             actions,
             ctx=ctx,
-            embed=embed,
+            embed=embeds.make_embed(ctx=ctx, title="Mod Actions"),
             max_lines=4,
             max_size=2000,
-            linesep="",
+            linesep="\n",
             timeout=30,
         )
 
