@@ -158,9 +158,9 @@ class NotesCog(Cog):
 
         # Querying DB for the list of actions matching the filter criteria (if mentioned).
         if action:
-            results = db["mod_logs"].find(user_id=user.id, type=action)
+            results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
         else:
-            results = db["mod_logs"].find(user_id=user.id)
+            results = db["mod_logs"].find(user_id=user.id, order_by="-id")
 
         # Creating a List to store actions for the paginator.
         actions = []
@@ -184,7 +184,8 @@ class NotesCog(Cog):
             action_type = f"{action_emoji[action['type']]} {action_type}"
 
             actions.append(
-                f"""**{action_type} | ID: {action['id']}**
+                f"""**{action_type}**
+                **ID:** {action['id']}
                 **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
                 **Moderator:** <@!{action['mod_id']}>
                 **Reason:** {action['reason']}"""
@@ -209,7 +210,7 @@ class NotesCog(Cog):
             max_lines=4,
             max_size=2000,
             linesep="\n",
-            timeout=30,
+            timeout=120,
         )
 
     @commands.bot_has_permissions(send_messages=True)
