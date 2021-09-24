@@ -4,6 +4,7 @@ import time
 
 import dataset
 import discord
+from discord.ext import commands
 from cogs.commands import settings
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
