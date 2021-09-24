@@ -1,5 +1,6 @@
 import json
 import logging
+import math
 import random
 from itertools import chain
 
@@ -68,8 +69,8 @@ class BuyColorCog(Cog):
         # S and V floored at 33 to prevent unreadable colors on dark theme. Each S and V upgrade extends the ceiling by 0.67.
         floor = 33
         if saturation_upgrade > 0 or value_upgrade > 0:
-            s = random.randint(floor, round((floor + saturation_upgrade * ((100 - floor) / 100)))) / 100
-            v = random.randint(floor, round((floor + value_upgrade * ((100 - floor) / 100)))) / 100
+            s = random.randint(floor, math.floor((floor + saturation_upgrade * ((100 - floor) / 100)))) / 100
+            v = random.randint(floor, math.floor((floor + value_upgrade * ((100 - floor) / 100)))) / 100
 
         # Finally, return random HSV tuple, affected by the purchased upgrades.
         return h, s, v
