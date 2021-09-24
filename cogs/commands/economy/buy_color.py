@@ -65,10 +65,11 @@ class BuyColorCog(Cog):
         s = 0
         v = 0
 
-        # Value rolls in the range 20 - 30 if the actual value is < 30 to prevent pure black colors being the default rolled color.
+        # S and V floored at 33 to prevent unreadable colors on dark theme. Each S and V upgrade extends the ceiling by 0.67.
+        floor = 30
         if saturation_upgrade > 0 or value_upgrade > 0:
-            s = random.randint(0, saturation_upgrade) / 100
-            v = (random.randint(0, value_upgrade) if value_upgrade >= 30 else random.randint(20, 30)) / 100
+            s = random.randint(floor, round((floor + saturation_upgrade * ((100 - floor) / 100)))) / 100
+            v = random.randint(floor, round((floor + value_upgrade * ((100 - floor) / 100)))) / 100
 
         # Finally, return random HSV tuple, affected by the purchased upgrades.
         return h, s, v
