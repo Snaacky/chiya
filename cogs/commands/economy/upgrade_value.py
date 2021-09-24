@@ -147,11 +147,18 @@ class UpgradeValueCog(Cog):
                     inline=False,
                 )
             if not availability_check:
-                embed.add_field(
-                    name="​",
-                    value=f"**Condition:** You can only purchase this upgrade {100 - stats['value_upgrade']} more times!",
-                    inline=False,
-                )
+                if stats["value_upgrade"] == 100:
+                    embed.add_field(
+                        name="​",
+                        value="Your brightness upgrade has reached level max!",
+                        inline=False,
+                    )
+                else:
+                    embed.add_field(
+                        name="​",
+                        value=f"**Condition:** You can only purchase this upgrade {100 - stats['value_upgrade']} more times!",
+                        inline=False,
+                    )
             if freeleech and not fl_token_check:
                 embed.add_field(
                     name="​",
