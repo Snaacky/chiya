@@ -66,7 +66,7 @@ class BuyColorCog(Cog):
         v = 0
 
         # S and V floored at 33 to prevent unreadable colors on dark theme. Each S and V upgrade extends the ceiling by 0.67.
-        floor = 30
+        floor = 33
         if saturation_upgrade > 0 or value_upgrade > 0:
             s = random.randint(floor, round((floor + saturation_upgrade * ((100 - floor) / 100)))) / 100
             v = random.randint(floor, round((floor + value_upgrade * ((100 - floor) / 100)))) / 100
