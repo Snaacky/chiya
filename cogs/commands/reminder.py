@@ -23,7 +23,7 @@ class Reminder(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(ban_members=True, send_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
@@ -187,9 +187,9 @@ class Reminder(Cog):
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
-                name="id",
+                name="reminder_id",
                 description="The ID of the reminder deleted",
-                option_type=3,
+                option_type=4,
                 required=True
             ),
         ]
@@ -206,15 +206,15 @@ class Reminder(Cog):
         reminder = table.find_one(id=reminder_id)
 
         if not reminder:
-            await embeds.error_message(ctx=ctx, description="Invalid ID")
+            await embeds.error_message(ctx=ctx, description="Invalid ID.")
             return
 
         if reminder["author_id"] != ctx.author.id:
-            await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
+            await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
             return
 
         if reminder["sent"]:
-            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
+            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
             return
 
         # All the checks should be done.

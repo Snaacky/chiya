@@ -23,15 +23,12 @@ class RestrictsHandler(commands.Cog):
         # Open a connection to the database.
         db = dataset.connect(database.get_db())
 
-        # Get the guild that the member belongs to.
-        guild = member.guild
-
         # Get the "Restricted" role.
-        role_restricted = discord.utils.get(guild.roles, id=settings.get_value("role_restricted"))
+        role_restricted = discord.utils.get(member.guild.roles, id=settings.get_value("role_restricted"))
 
         # Get the restrict entries with is_done = False from database and check if its ID matches the user who just joined.
         timed_restriction_entry = db["timed_mod_actions"].find_one(user_id=member.id, is_done=False)
-        if timed_restriction_entry and timed_restriction_entry["user_id"] == member.id:
+        if timed_restriction_entry:
             await member.add_roles(role_restricted)
 
         # Close the connection.
