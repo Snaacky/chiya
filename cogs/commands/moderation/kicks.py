@@ -1,7 +1,6 @@
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -93,7 +92,7 @@ class KickCog(Cog):
                 author=False,
                 color=0xe49bb3
             )
-            dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)
@@ -107,7 +106,7 @@ class KickCog(Cog):
         await ctx.guild.kick(user=member, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the kick to the mod_log database.
         db["mod_logs"].insert(dict(

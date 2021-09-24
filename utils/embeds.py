@@ -1,7 +1,6 @@
 import datetime
 
 import discord
-from discord.ext.commands import Context
 from discord_slash import SlashContext
 
 
@@ -30,7 +29,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
         blank=0x2f3136, quotes_grey=0x4f545c, soft_red=0xcd6d6d, soft_green=0x68c290, soft_orange=0xf9cb54,
         bright_green=0x01d277,
         # Reddit colors:
-        reddit=0xff5700, orange_red=0xFF450, upvote=0xFF8b60, neutral=0xC6C6C6,
+        reddit=0xff5700, orange_red=0xFF4500, upvote=0xFF8b60, neutral=0xC6C6C6,
         downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699
     )
 

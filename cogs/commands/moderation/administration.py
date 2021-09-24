@@ -144,7 +144,6 @@ class AdministrationCog(Cog):
         elif name_of_cog is None:
             # Reload all the cogs in the folder named cogs.
             # Skips over any cogs that start with '__' or do not end with .py.
-            cogs = []
             try:
                 for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
                     if "\\" in cog:  # Pathing on Windows.
@@ -295,7 +294,7 @@ class AdministrationCog(Cog):
 
         # API call to fetch all the emojis to cache, so that they work in future calls
         emotes_guild = await ctx.bot.fetch_guild(settings.get_value("emoji_guild_id"))
-        emojis = await emotes_guild.fetch_emojis()
+        await emotes_guild.fetch_emojis()
 
         await msg.add_reaction(":redsquare:805032092907601952")
         await msg.add_reaction(":orangesquare:805032107952308235")

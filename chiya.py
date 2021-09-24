@@ -52,7 +52,7 @@ async def on_message(message: discord.Message):
 
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
-    utils.database.setup_db()
+    utils.database.Database().setup()
 
     # Recursively loads in all the cogs in the folder named cogs.
     # Skips over any cogs that start with '__' or do not end with .py.
