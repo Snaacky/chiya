@@ -108,37 +108,39 @@ class DailyCog(Cog):
         # Roll a random value from 0-100.
         rng = random.randint(0, 100)
 
+        # 55% chance to roll the common tier.
+        if rng in range(0, 56):
+            value = random.randint(150, 250)
+            description = f"You received {value} MB buffer!"
+            color = "soft_green"
+        # 30% chance to roll the uncommon tier.
+        elif rng in range(56, 86):
+            value = random.randint(300, 400)
+            description = f"Nice, you received {value} MB buffer!"
+            color = "green"
+        # 10% chance to roll the rare tier.
+        elif rng in range(86, 96):
+            value = random.randint(450, 600)
+            description = f"Amazing! You received {value} MB buffer!"
+            color = "blue"
+        # 4% chance to roll the epic tier.
+        elif rng in range(96, 100):
+            value = random.randint(650, 800)
+            description = f"What a fascinating discovery! You received {value} MB buffer!"
+            color = "purple"
+        # 1% chance to roll the legendary tier.
+        else:
+            value = random.randint(850, 1024)
+            description = f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
+            color = "gold"
+
         # Create the embed with a matching color on rarity rolled, and update tge
         embed = embeds.make_embed(
             title="Daily buffer claimed",
+            description=description,
+            color=color,
         )
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
-
-        # 55% chance to roll the common tier. Embed color is "soft_green".
-        if rng in range(0, 56):
-            value = random.randint(150, 250)
-            embed.description = f"You received {value} MB buffer!"
-            embed.colour = 0x68C290
-        # 30% chance to roll the uncommon tier. Embed color is "green".
-        elif rng in range(56, 86):
-            value = random.randint(300, 400)
-            embed.description = f"Nice, you received {value} MB buffer!"
-            embed.colour = 0x2ECC71
-        # 10% chance to roll the rare tier. Embed color is "blue".
-        elif rng in range(86, 96):
-            value = random.randint(450, 600)
-            embed.description = f"Amazing! You received {value} MB buffer!"
-            embed.colour = 0x3498DB
-        # 4% chance to roll the epic tier. Embed color is "purple".
-        elif rng in range(96, 100):
-            value = random.randint(650, 800)
-            embed.description = f"What a fascinating discovery! You received {value} MB buffer!"
-            embed.colour = 0x9B59B6
-        # 1% chance to roll the legendary tier. Embed color is "gold".
-        else:
-            value = random.randint(850, 1024)
-            embed.description = f"Whoa?! This is truly exceptional! You received {value} MB buffer!"
-            embed.colour = 0xF1C40F
 
         # Roll a random float value to determine if /daily is going to be doubled or not.
         double_daily = random.uniform(0, 100)
