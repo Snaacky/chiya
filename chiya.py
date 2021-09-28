@@ -1,6 +1,5 @@
 import glob
 import logging
-import os
 
 import discord
 from discord.ext import commands
@@ -8,21 +7,27 @@ from discord_slash import SlashCommand
 
 import __init__
 import utils.database
+from utils.settings import settings
+
+log = logging.getLogger(__name__)
 
 bot = commands.Bot(
-    command_prefix=os.getenv("BOT_PREFIX"),
-    intents=discord.Intents(messages=True, guilds=True, members=True, bans=True, reactions=True),
-    case_insensitive=True
+    command_prefix=settings["bot"]["prefix"],
+    intents=discord.Intents(
+        messages=settings["bot"]["intents"]["messages"], 
+        guilds=settings["bot"]["intents"]["guilds"], 
+        members=settings["bot"]["intents"]["members"], 
+        bans=settings["bot"]["intents"]["bans"], 
+        reactions=settings["bot"]["intents"]["reactions"]
+    ),
+    case_insensitive=settings["bot"]["case_insensitive"]
 )
 
 slash = SlashCommand(
     bot, 
-    sync_commands=True, # False to avoid rate limiting, set to True to update commands and parameters.
-    sync_on_cog_reload=False
+    sync_commands=settings["bot"]["sync_commands"],
+    sync_on_cog_reload=settings["bot"]["sync_on_cog_reload"],
 )
-
-log = logging.getLogger(__name__)
-
 
 @bot.event
 async def on_ready():
@@ -63,4 +68,4 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("/", ".")[:-3])
 
     # Run the bot with the token as an environment variable.
-    bot.run(os.getenv("BOT_TOKEN"))
+    bot.run(settings["bot"]["token"])

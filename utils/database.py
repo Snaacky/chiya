@@ -5,16 +5,21 @@ import dataset
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
+from utils.settings import settings
+
 log = logging.getLogger(__name__)
 
 
 class Database:
     def __init__(self) -> None:
-        self.host = os.getenv("MYSQL_HOST")
-        self.db = os.getenv("MYSQL_DATABASE")
-        self.user = os.getenv("MYSQL_USER")
-        self.password = os.getenv("MYSQL_PASSWORD")
-        self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
+        if settings["database"]["type"].lower() == "mysql":
+            self.host = settings["database"]["host"]
+            self.db = settings["database"]["database"]
+            self.user = settings["database"]["user"]
+            self.password = settings["database"]["password"]
+            self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
+        else:
+            self.url = f"{os.path.join(os.getcwd(), settings['database']['database'])}.db"
 
     def get(self) -> dataset.Database:
         """ Returns the dataset database object. """

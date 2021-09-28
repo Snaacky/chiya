@@ -10,7 +10,7 @@ from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import utils.duration
-from cogs.commands import settings
+from utils.settings import settings
 from utils import database
 from utils import embeds
 from utils.moderation import can_action_member
@@ -122,7 +122,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="ban",
         description="Bans the user from the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=settings["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -151,9 +151,9 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            settings["guild_ids"][0]: [
+                create_permission(settings["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(settings["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -240,7 +240,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="unban",
         description="Unbans the user from the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=settings["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -257,9 +257,9 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            settings["guild_ids"][0]: [
+                create_permission(settings["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(settings["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

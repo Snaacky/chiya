@@ -7,7 +7,7 @@ import traceback
 from contextlib import redirect_stdout
 
 import discord
-from cogs.commands import settings
+from utils.settings import settings
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 from utils import embeds
@@ -288,12 +288,12 @@ class AdministrationCog(Cog):
     @commands.command(name="createcolorrolesembed", aliases=["ccre"])
     async def create_color_roles_embed(self, ctx: Context):
         embed = discord.Embed(
-            description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{settings.get_value('role_server_booster')}> to receive a custom colored role."
+            description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{settings['roles']['nitro_booster']}> to receive a custom colored role."
         )
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(settings.get_value("emoji_guild_id"))
+        emotes_guild = await ctx.bot.fetch_guild(settings["emoji_guild_ids"][0])
         await emotes_guild.fetch_emojis()
 
         await msg.add_reaction(":redsquare:805032092907601952")
@@ -318,13 +318,12 @@ class AdministrationCog(Cog):
         📽  <@&831999443220955136> - Receive group watch event pings.
         <:kakeraW:830594599001129000>  <@&832512304334766110> - Receive Mudae event and season pings.
         🧩  <@&832512320306675722> - Receive Rin event pings.
-        <:pickaxe:831765423455993888>  <@&832512327731118102> - Receive Minecraft server related pings.
         """
         embed = discord.Embed(description=role_assignment_text)
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(settings.get_value("emoji_guild_id"))
+        emotes_guild = await ctx.bot.fetch_guild(settings["emoji_guild_ids"][0])
         await emotes_guild.fetch_emojis()
 
         await msg.add_reaction("🎁")
@@ -332,7 +331,6 @@ class AdministrationCog(Cog):
         await msg.add_reaction("📽")
         await msg.add_reaction(":kakeraW:830594599001129000")
         await msg.add_reaction("🧩")
-        await msg.add_reaction(":pickaxe:831765423455993888")
         await ctx.message.delete()
 
 
