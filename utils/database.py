@@ -19,7 +19,7 @@ class Database:
             self.password = settings["database"]["password"]
             self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
         else:
-            self.url = f"{os.path.join(os.getcwd(), settings['database']['database'])}.db"
+            self.url = f"sqlite:///{os.path.join(os.getcwd(), settings['database']['database'])}.db"
 
     def get(self) -> dataset.Database:
         """ Returns the dataset database object. """
