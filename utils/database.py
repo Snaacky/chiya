@@ -80,6 +80,19 @@ class Database:
             settings.create_column("value", db.types.text)
             settings.create_column("censored", db.types.boolean)
             log.info("Created missing table: settings")
+        
+        if "message_logs" not in db:
+            message_logs = db.create_table("message_logs")
+            message_logs.create_column("message_id", db.types.bigint)
+            message_logs.create_column("author_id", db.types.bigint)
+            message_logs.create_column("channel_id", db.types.bigint)
+            message_logs.create_column("guild_id", db.types.bigint)
+            message_logs.create_column("created_at", db.types.float)
+            message_logs.create_column("content", db.types.text)
+            message_logs.create_column("attachments", db.types.text)
+            message_logs.create_column("is_edited", db.types.boolean)
+            log.info("Created missing table: message_logs")
+            
 
         # Commit the changes to the database and close the connection.
         db.commit()
