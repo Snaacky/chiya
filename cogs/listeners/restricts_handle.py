@@ -1,6 +1,5 @@
 import logging
 
-import dataset
 import discord
 from discord import Member, Message
 from discord.ext import commands
@@ -21,7 +20,7 @@ class RestrictsHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member: Member):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Get the "Restricted" role.
         role_restricted = discord.utils.get(member.guild.roles, id=settings.get_value("role_restricted"))
