@@ -7,26 +7,26 @@ from discord_slash import SlashCommand
 
 import __init__
 import utils.database
-from utils.settings import settings
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
 bot = commands.Bot(
-    command_prefix=settings["bot"]["prefix"],
+    command_prefix=config["bot"]["prefix"],
     intents=discord.Intents(
-        messages=settings["bot"]["intents"]["messages"], 
-        guilds=settings["bot"]["intents"]["guilds"], 
-        members=settings["bot"]["intents"]["members"], 
-        bans=settings["bot"]["intents"]["bans"], 
-        reactions=settings["bot"]["intents"]["reactions"]
+        messages=config["bot"]["intents"]["messages"], 
+        guilds=config["bot"]["intents"]["guilds"], 
+        members=config["bot"]["intents"]["members"], 
+        bans=config["bot"]["intents"]["bans"], 
+        reactions=config["bot"]["intents"]["reactions"]
     ),
-    case_insensitive=settings["bot"]["case_insensitive"]
+    case_insensitive=config["bot"]["case_insensitive"]
 )
 
 slash = SlashCommand(
     bot, 
-    sync_commands=settings["bot"]["sync_commands"],
-    sync_on_cog_reload=settings["bot"]["sync_on_cog_reload"],
+    sync_commands=config["bot"]["sync_commands"],
+    sync_on_cog_reload=config["bot"]["sync_on_cog_reload"],
 )
 
 @bot.event
@@ -68,4 +68,4 @@ if __name__ == '__main__':
             bot.load_extension(cog.replace("/", ".")[:-3])
 
     # Run the bot with the token as an environment variable.
-    bot.run(settings["bot"]["token"])
+    bot.run(config["bot"]["token"])

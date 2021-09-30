@@ -4,7 +4,7 @@ import discord
 from discord import Member, Message
 from discord.ext import commands
 
-from utils.settings import settings
+from utils.config import config
 from utils import database
 
 # Enabling logs
@@ -23,7 +23,7 @@ class RestrictsHandler(commands.Cog):
         db = database.Database().get()
 
         # Get the "Restricted" role.
-        role_restricted = discord.utils.get(member.guild.roles, id=settings["roles"]["restricted"])
+        role_restricted = discord.utils.get(member.guild.roles, id=config["roles"]["restricted"])
 
         # Get the restrict entries with is_done = False from database and check if its ID matches the user who just joined.
         timed_restriction_entry = db["timed_mod_actions"].find_one(user_id=member.id, is_done=False)
@@ -43,7 +43,7 @@ class RestrictsHandler(commands.Cog):
         guild = message.author.guild
 
         # Get the "Restricted" role.
-        role_restricted = discord.utils.get(guild.roles, id=settings["roles"]["restricted"])
+        role_restricted = discord.utils.get(guild.roles, id=config["roles"]["restricted"])
 
         # Automatically deletes fake Discord Nitro emotes.
         if role_restricted in message.author.roles:

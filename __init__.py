@@ -6,9 +6,9 @@ from pathlib import Path
 
 import coloredlogs
 
-from utils.settings import settings
+from utils.config import config
 
-log_level = settings["bot"]["log_level"]
+log_level = config["bot"]["log_level"]
 if not log_level:
     log_level = "NOTSET"
 

@@ -6,7 +6,7 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from utils.settings import settings
+from utils.config import config
 from utils import embeds
 from utils.record import record_usage
 
@@ -27,10 +27,10 @@ class PurgeCog(Cog):
 
         # Prevent mods from removing message in moderation categories
         if ctx.channel.category_id in [
-                settings["categories"]["moderation"], 
-                settings["categories"]["development"],
-                settings["categories"]["logs"],
-                settings["categories"]["tickets"]
+                config["categories"]["moderation"], 
+                config["categories"]["development"],
+                config["categories"]["logs"],
+                config["categories"]["tickets"]
             ]:
             await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
             return False
@@ -43,7 +43,7 @@ class PurgeCog(Cog):
     @cog_ext.cog_slash(
         name="purge",
         description="Purges the last X amount of messages",
-        guild_ids=settings["guild_ids"],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="amount",
@@ -60,9 +60,9 @@ class PurgeCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings["guild_ids"][0]: [
-                create_permission(settings["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(settings["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

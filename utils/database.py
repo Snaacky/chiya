@@ -5,21 +5,21 @@ import dataset
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
-from utils.settings import settings
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
 
 class Database:
     def __init__(self) -> None:
-        if settings["database"]["type"].lower() == "mysql":
-            self.host = settings["database"]["host"]
-            self.db = settings["database"]["database"]
-            self.user = settings["database"]["user"]
-            self.password = settings["database"]["password"]
+        if config["database"]["type"].lower() == "mysql":
+            self.host = config["database"]["host"]
+            self.db = config["database"]["database"]
+            self.user = config["database"]["user"]
+            self.password = config["database"]["password"]
             self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
         else:
-            self.url = f"sqlite:///{os.path.join(os.getcwd(), settings['database']['database'])}.db"
+            self.url = f"sqlite:///{os.path.join(os.getcwd(), config['database']['database'])}.db"
 
     def get(self) -> dataset.Database:
         """ Returns the dataset database object. """
@@ -77,14 +77,6 @@ class Database:
             tickets.create_column("ticket_topic", db.types.text)
             tickets.create_column("log_url", db.types.text)
             log.info("Created missing table: tickets")
-
-        # Create settings table and columns to store key:value pairs.
-        if "settings" not in db:
-            settings = db.create_table("settings")
-            settings.create_column("name", db.types.text)
-            settings.create_column("value", db.types.text)
-            settings.create_column("censored", db.types.boolean)
-            log.info("Created missing table: settings")
 
         # Commit the changes to the database and close the connection.
         db.commit()

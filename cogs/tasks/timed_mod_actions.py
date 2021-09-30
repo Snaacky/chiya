@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
-from utils.settings import settings
+from utils.config import config
 from utils import database, embeds
 
 log = logging.getLogger(__name__)
@@ -36,8 +36,8 @@ class TimedModActionsTask(Cog):
         )
 
         # Get the guild and mod channel to send the expiration notice into.
-        guild = self.bot.get_guild(settings["guild_ids"][0])
-        channel = guild.get_channel(settings["channels"]["moderation"])
+        guild = self.bot.get_guild(config["guild_ids"][0])
+        channel = guild.get_channel(config["channels"]["moderation"])
 
         for action in results:
             if action["action_type"] == "mute":
