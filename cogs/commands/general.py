@@ -1,13 +1,13 @@
 import logging
 
 import discord
+from cogs.commands import settings
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
-from discord_slash import cog_ext, SlashContext
+from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
-
-from cogs.commands import settings
+from discord_slash.utils.manage_commands import (create_option,
+                                                 create_permission)
 from utils import embeds
 from utils.record import record_usage
 
@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class General(Cog):
-    """ General Commands Cog """
+    """General Commands Cog"""
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -25,10 +25,10 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="pfp",
         description="Gets the members profile picture",
-        guild_ids=[settings.get_value("guild_id")]
+        guild_ids=[settings.get_value("guild_id")],
     )
     async def pfp(self, ctx: SlashContext, user: discord.User = None):
-        """ Returns the profile picture of the invoker or the mentioned user. """
+        """Returns the profile picture of the invoker or the mentioned user."""
         await ctx.defer()
 
         user = user or ctx.author
@@ -54,10 +54,18 @@ class General(Cog):
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(
+                    settings.get_value("role_staff"),
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
+                create_permission(
+                    settings.get_value("role_trial_mod"),
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
             ]
-        }
+        },
     )
     async def count(self, ctx: SlashContext):
         """Returns the current guild member count."""
@@ -74,19 +82,27 @@ class General(Cog):
                 name="message",
                 description="The ID for the target message",
                 option_type=3,
-                required=False
+                required=False,
             ),
         ],
         default_permission=False,
         permissions={
             settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+                create_permission(
+                    settings.get_value("role_staff"),
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
+                create_permission(
+                    settings.get_value("role_trial_mod"),
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
             ]
-        }
+        },
     )
     async def vote(self, ctx, message: discord.Message = None):
-        """ Add vote reactions to a message. """
+        """Add vote reactions to a message."""
         await ctx.defer()
 
         if message:
@@ -105,6 +121,6 @@ class General(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the General cog. """
+    """Load the General cog."""
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")
