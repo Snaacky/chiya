@@ -2,7 +2,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -33,7 +32,7 @@ class BanCog(Cog):
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=delete_message_days)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the ban to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -67,7 +66,7 @@ class BanCog(Cog):
             return
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unban to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -108,7 +107,7 @@ class BanCog(Cog):
                 description="You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy).",
                 color=0xc2bac0
             )
-            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -139,7 +138,7 @@ class BanCog(Cog):
             ),
             create_option(
                 name="duration",
-                description="The length of time the user will be muted for",
+                description="The length of time the user will be banned for",
                 option_type=3,
                 required=False
             ),

@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import dataset
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
@@ -23,7 +22,7 @@ class Reminder(Cog):
         self.bot = bot
 
     @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(ban_members=True, send_messages=True)
+    @commands.bot_has_permissions(send_messages=True)
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
@@ -55,7 +54,7 @@ class Reminder(Cog):
             return
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_id = db["remind_me"].insert(dict(
             reminder_location=ctx.channel.id,
@@ -105,7 +104,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         reminder = remind_me.find_one(id=reminder_id)
@@ -149,7 +148,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         remind_me = db["remind_me"]
@@ -187,9 +186,9 @@ class Reminder(Cog):
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
-                name="id",
+                name="reminder_id",
                 description="The ID of the reminder deleted",
-                option_type=3,
+                option_type=4,
                 required=True
             ),
         ]
@@ -199,22 +198,22 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         table = db["remind_me"]
         reminder = table.find_one(id=reminder_id)
 
         if not reminder:
-            await embeds.error_message(ctx=ctx, description="Invalid ID")
+            await embeds.error_message(ctx=ctx, description="Invalid ID.")
             return
 
         if reminder["author_id"] != ctx.author.id:
-            await embeds.error_message(ctx=ctx, description="This is not the reminder you are looking for")
+            await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
             return
 
         if reminder["sent"]:
-            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted")
+            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
             return
 
         # All the checks should be done.
@@ -247,7 +246,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         result = remind_me.find(author_id=ctx.author.id, sent=False)

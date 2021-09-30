@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 
 from handlers import boosts
-from utils import embeds
 
 log = logging.getLogger(__name__)
 

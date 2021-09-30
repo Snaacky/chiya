@@ -21,7 +21,7 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 
 **Step 1:** Download the `docker-compose.yml` to your local file system with `curl`, `wget`, etc. like so:
 ```
-$ wget https://github.com/ranimepiracy/Chiya/blob/master/docker-compose.yml
+$ wget https://raw.githubusercontent.com/ranimepiracy/chiya/master/docker-compose.yml
 ```
 
 **Step 2:** Create a `.env` file in the same folder as you saved your `docker-compose.yml` and fill out the following:
@@ -77,5 +77,5 @@ Chiya relies predominantly on the following projects:
 * [MariaDB](https://mariadb.org/)
 * [Docker](https://www.docker.com/)
 * [discord.py](https://github.com/Rapptz/discord.py)
-* [discord-py-slash-commands](https://github.com/discord-py-slash-commands/)
+* [discord-interactions](https://github.com/goverfl0w/discord-interactions)
 * [dataset](https://dataset.readthedocs.io)

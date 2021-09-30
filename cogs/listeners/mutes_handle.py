@@ -1,7 +1,6 @@
 import logging
 import time
 
-import dataset
 import discord
 from discord import Member
 from discord.ext import commands
@@ -22,7 +21,7 @@ class MutesHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         guild = member.guild
         mute_channel = discord.utils.get(guild.channels, name=f"mute-{member.id}")

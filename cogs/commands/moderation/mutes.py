@@ -2,7 +2,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 import privatebinapi
 from discord.ext import commands
@@ -34,7 +33,7 @@ class MuteCog(Cog):
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the mute to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -66,7 +65,7 @@ class MuteCog(Cog):
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unmute to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -99,12 +98,12 @@ class MuteCog(Cog):
                 description="If you believe this was a mistake, contact staff.",
                 color=0x8083b0
             )
-            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
-            embed.set_image(url="https://i.imgur.com/KE1jNl3.gif")
+            embed.set_image(url="https://i.imgur.com/840Q48l.gif")
             await dm_channel.send(embed=embed)
             return True
         except discord.HTTPException:
@@ -123,7 +122,7 @@ class MuteCog(Cog):
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
-            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
@@ -175,7 +174,7 @@ class MuteCog(Cog):
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         #  TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
         table = db["mod_logs"]
@@ -217,12 +216,12 @@ class MuteCog(Cog):
         async for message in mute_channel.history(oldest_first=True):
             # Ignore the bot replies.
             if not message.author.bot:
-                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
-                formatted_time = str(message.created_at).split(".")[-2]
+                # Pretty print the time tag into a more digestible format.
+                formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # Iterates only through members that is still in the server.
-                if isinstance(member, discord.Member):
+                if isinstance(message.author, discord.Member):
                     # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                     if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                         mod_list.add(message.author)

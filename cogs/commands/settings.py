@@ -1,6 +1,5 @@
 import logging
 
-import dataset
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -8,29 +7,26 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 
 from utils import database
 from utils import embeds
-from utils.database import get_db
 
 log = logging.getLogger(__name__)
 
 
 def get_value(config: str):
-    # Get all of the settings from the table and load them into the dictionary.
-    db = dataset.connect(get_db())
-    data = db["settings"].all()
+    # Open a connection to the database.
+    db = database.Database().get()
 
-    # Iterate through database entries and add them as a dictionary.
-    settings = {}
-    for setting in data:
-        settings[setting["name"]] = {"value": setting["value"], "censored": bool(setting["censored"])}
+    # Find a result that matches the name from the parameter.
+    settings = db["settings"]
+    entry = settings.find_one(name=config)
 
-    # If the entry's value consists of only numbers, return it as an int.
-    if settings[config]["value"].isdecimal():
+    # If the entry consists of just numbers, return the value as an int.
+    if entry["value"].isdecimal():
         db.close()
-        return int(settings[config]["value"])
+        return int(entry["value"])
 
-    # Otherwise, return the value normally (as a string by default).
+    # Otherwise, return it as a string.
     db.close()
-    return settings[config]["value"]
+    return entry["value"]
 
 
 class Settings(Cog):
@@ -73,7 +69,7 @@ class Settings(Cog):
     )
     async def add(self, ctx: SlashContext, name: str, value: str, censored: bool):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         table = db["settings"]
         result = table.find_one(name=name)
 
@@ -139,7 +135,7 @@ class Settings(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         table = db["settings"]
         result = table.find_one(name=name)
 
@@ -187,7 +183,7 @@ class Settings(Cog):
     )
     async def delete(self, ctx: SlashContext, name: str):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         table = db["settings"]
         result = table.find_one(name=name)
 
@@ -222,7 +218,7 @@ class Settings(Cog):
     )
     async def list(self, ctx: SlashContext):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         table = db["settings"]
         settings = table.all()
 
@@ -267,7 +263,7 @@ class Settings(Cog):
     )
     async def view(self, ctx: SlashContext, name: str):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         table = db["settings"]
         result = table.find_one(name=name)
 
