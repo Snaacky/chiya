@@ -27,38 +27,30 @@ $ wget https://raw.githubusercontent.com/ranimepiracy/chiya/master/docker-compos
 **Step 2:** Create a `.env` file in the same folder as you saved your `docker-compose.yml` and fill out the following:
 
 ```env
-# The Discord bot token from https://discordapp.com/developers/
-BOT_TOKEN=
+# The path on your file system to config.yml
+CONFIG=/your/path/to/chiya/config.yml
 
-# The prefix for the bot to use. 
-# Not all commands are ported to slash commands due to some limitations.
-BOT_PREFIX=
+# The folder where you plan to store your bot logs for data persistence
+LOGS_FOLDER=/your/path/to/chiya/logs/
 
-# The level at which logs should be outputted to console.
-# NOTSET, TRACE, DEBUG, INFO, WARN, ERROR, or CRITICAL
-LOG_LEVEL=
+# The folder where you plan to store your database files for data persistence
+DATABASE_FOLDER=/your/path/to/chiya/db/
 
-# The folder where you plan to store your database files (on the host OS)
-DATABASE_FOLDER=
-
-# The folder where you plan to store your bot logs (on the host OS)
-LOGS_FOLDER=
-
-# Set two unique secure passwords for your MySQL users
-MYSQL_PASSWORD=
-MYSQL_ROOT_PASSWORD=
-
-# Your Reddit bot information from https://www.reddit.com/prefs/apps/
-REDDIT_CLIENT_ID=
-REDDIT_CLIENT_SECRET=
-
-# Your Reddit bot user agent, see: https://github.com/reddit-archive/reddit/wiki/API#rules
-REDDIT_USER_AGENT=
+# The details for the database to authenticate with.
+# Only TYPE and DATABASE are required for SQLite, all of the following are required for MySQL.
+TYPE="mysql"
+HOST="127.0.0.1"
+DATABASE="chiya"
+USER="chiya"
+PASSWORD="your_secure_password"
+ROOT_PASSWORD="your_even_more_secure_password"
 ```
 
-**Step 3:** Pull the Docker image by executing `docker-compose pull` in the same folder as the `docker-compose.yml`
+**Step 3:** Create a `config.yml` file in the same folder as you saved your `.env` using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base. 
 
-**Step 4:** Start Chiya by executing `docker container start chiya_bot_1`
+**Step 4:** Pull the Docker image by executing `docker-compose pull` in the same folder as the `docker-compose.yml`
+
+**Step 5:** Start Chiya by executing `docker container start chiya_bot_1`
 
 ## Contributing
 
