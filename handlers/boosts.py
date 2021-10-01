@@ -2,8 +2,8 @@ import logging
 
 import discord
 
-from utils.config import config
 from utils import embeds
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ async def on_new_boost(before, after):
         await before.system_channel.send(embed=embed)
 
         # Send a embed in #nitro-logs that someone boosted with a link to a message near the boost.
-        nitro_logs = discord.utils.get(after.channels, id=config["channel"]["nitro_log"])
+        nitro_logs = discord.utils.get(after.channels, id=config["channels"]["nitro_log"])
         embed = embeds.make_embed(author=False, color="nitro_pink")
         embed.description = f"[A new boost was added to the server.](https://canary.discord.com/channels/{after.id}/{after.system_channel.id}/{after.system_channel.last_message_id})"
         await nitro_logs.send(embed=embed)
@@ -53,7 +53,7 @@ async def on_removed_boost(before, after):
     """
     if after.premium_subscription_count < before.premium_subscription_count:
         # Send an embed in #nitro-logs that someone removed a boost.
-        nitro_logs = discord.utils.get(after.channels, id=config["channel"]["nitro_log"])
+        nitro_logs = discord.utils.get(after.channels, id=config["channels"]["nitro_log"])
         embed = embeds.make_embed(author=False, color="nitro_pink")
         embed.description = f"A boost was removed from the server."
         await nitro_logs.send(embed=embed)
@@ -75,7 +75,7 @@ async def process_new_booster(before, after):
     """
     # Send an embed in #nitro-logs that someone removed a boost.
     if not before.premium_since and after.premium_since:
-        channel = discord.utils.get(after.guild.channels, id=config["channel"]["nitro_log"])
+        channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
         embed = embeds.make_embed(author=False, color="nitro_pink")
         embed.title = "New booster"
         embed.description = f"""{after.mention} boosted the server. We're now at {after.guild.premium_subscription_count} boosts."""
@@ -98,7 +98,7 @@ async def process_lost_booster(before, after):
     """
     # Send an embed in #nitro-logs that someone stopped boosting the server.
     if before.premium_since and not after.premium_since:
-        channel = discord.utils.get(after.guild.channels, id=config["channel"]["nitro_log"])
+        channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
         embed = embeds.make_embed(author=False, color="nitro_pink")
         embed.title = "Lost booster"
         embed.description = f"""{after.mention} no longer boosts the server. We're now at {after.guild.premium_subscription_count} boosts."""
