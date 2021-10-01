@@ -46,21 +46,12 @@ async def on_ready():
         )
     )
 
-@bot.event
-async def on_message(message: discord.Message):
-    """This event listener has been moved to message_updates.py
-
-    Unfortunately, this listener has to remain and do nothing, otherwise,
-    any message will be ran twice and cause issues. Lame, i know
-    """
-    # Do nothing
-
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
     utils.database.Database().setup()
 
     # Recursively loads in all the cogs in the folder named cogs.
-    # Skips over any cogs that start with '__' or do not end with .py.
+    # NOTE: Skips over any cogs that start with '__' or do not end with .py.
     for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
         if "\\" in cog:  # Fix pathing on Windows.
             bot.load_extension(cog.replace("\\", ".")[:-3])
