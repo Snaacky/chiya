@@ -19,10 +19,7 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 
 ## Install
 
-**Step 1:** Download the `docker-compose.yml` to your local file system with `curl`, `wget`, etc. like so:
-```
-$ wget https://raw.githubusercontent.com/ranimepiracy/chiya/master/docker-compose.yml
-```
+**Step 1:** Download the `docker-compose.yml` to your local file system.
 
 **Step 2:** Create a `.env` file in the same folder and fill out the following:
 
@@ -37,7 +34,7 @@ LOGS_FOLDER=/your/path/to/chiya/logs/
 DATABASE_FOLDER=/your/path/to/chiya/db/
 ```
 
-**Step 3:** Create a `config.yml` file in the same folder using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base and fill it out. 
+**Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out. 
 
 **Step 4:** Pull the Docker image by executing `docker-compose pull` in the same folder.
 
