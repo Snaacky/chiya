@@ -7,8 +7,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils.duration
-from utils.config import config
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
 

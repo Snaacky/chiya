@@ -9,9 +9,9 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from utils.config import config
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 # Enabling logs
@@ -217,7 +217,7 @@ class TicketCog(Cog):
         embed.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
-        ticket_log = discord.utils.get(ctx.guild.channels, id=config["channel"]["ticket_log"])
+        ticket_log = discord.utils.get(ctx.guild.channels, id=config["channels"]["ticket_log"])
         await ticket_log.send(embed=embed)
 
         # DM the user that their ticket was closed.

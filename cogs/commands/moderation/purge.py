@@ -6,8 +6,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from utils.config import config
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 # Enabling logs

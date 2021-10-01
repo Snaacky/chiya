@@ -7,10 +7,11 @@ import traceback
 from contextlib import redirect_stdout
 
 import discord
-from utils.config import config
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
+
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 # Enabling logs

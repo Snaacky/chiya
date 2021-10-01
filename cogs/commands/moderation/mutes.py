@@ -11,9 +11,9 @@ from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import utils.duration
-from utils.config import config
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.moderation import can_action_member
 from utils.record import record_usage
 
@@ -275,7 +275,7 @@ class MuteCog(Cog):
         embed.add_field(name="Mute Log: ", value=url, inline=False)
 
         # Send the embed to #mute-log.
-        mute_log = discord.utils.get(guild.channels, id=config["channel"]["mute_log"])
+        mute_log = discord.utils.get(guild.channels, id=config["channels"]["mute_log"])
         await mute_log.send(embed=embed)
 
         # Delete the mute channel.

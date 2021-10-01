@@ -4,8 +4,8 @@ import discord
 from discord import Member, Message
 from discord.ext import commands
 
-from utils.config import config
 from utils import database
+from utils.config import config
 
 # Enabling logs
 log = logging.getLogger(__name__)

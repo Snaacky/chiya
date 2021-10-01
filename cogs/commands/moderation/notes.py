@@ -4,7 +4,6 @@ import time
 
 import discord
 from discord.ext import commands
-from utils.config import config
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
@@ -13,7 +12,9 @@ from discord_slash.utils.manage_commands import (
     create_option,
     create_permission,
 )
+
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
 
