@@ -1,3 +1,6 @@
+# An explanation for all the variables can be found at:
+# https://github.com/ranimepiracy/chiya/wiki/Setting-up-config.yml
+
 guild_ids: [000000000000000000]
 emoji_guild_ids: [000000000000000000]
 bot:
