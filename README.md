@@ -24,7 +24,7 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 $ wget https://raw.githubusercontent.com/ranimepiracy/chiya/master/docker-compose.yml
 ```
 
-**Step 2:** Create a `.env` file in the same folder as you saved your `docker-compose.yml` and fill out the following:
+**Step 2:** Create a `.env` file in the same folder and fill out the following:
 
 ```env
 # The path on your file system to config.yml
@@ -46,7 +46,7 @@ PASSWORD="your_secure_password"
 ROOT_PASSWORD="your_even_more_secure_password"
 ```
 
-**Step 3:** Create a `config.yml` file in the same folder as you saved your `.env` using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base and fill it out. 
+**Step 3:** Create a `config.yml` file in the same folder using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base and fill it out. 
 
 **Step 4:** Pull the Docker image by executing `docker-compose pull` in the same folder.
 
