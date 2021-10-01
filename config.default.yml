@@ -1,0 +1,39 @@
+guild_ids: [000000000000000000]
+emoji_guild_ids: [000000000000000000]
+bot:
+  token: ""
+  prefix: "!"
+  log_level: "DEBUG"
+  intents:
+    messages: True
+    guilds: True
+    members: True
+    bans: True
+    reactions: True
+  case_insensitive: True
+  sync_commands: True
+  sync_on_cog_reload: False
+roles:
+  staff: 000000000000000000
+  trial_mod: 000000000000000000
+  muted: 000000000000000000
+  restricted: 000000000000000000
+  vip: 000000000000000000
+  nitro_booster: 000000000000000000
+categories:
+  tickets: 000000000000000000
+  moderation: 000000000000000000
+  logs: 000000000000000000
+  development: 000000000000000000
+channels:
+  moderation: 000000000000000000
+  mute_log: 000000000000000000
+  ticket_log: 000000000000000000
+  nitro_log: 000000000000000000
+reddit:
+  subreddit: ""
+  channel: 000000000000000000
+  poll_rate: 5
+  client_id: ""
+  client_secret: ""
+  user_agent: "Chiya:v1.0.0 (for /r/animepiracy)"
