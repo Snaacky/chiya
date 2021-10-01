@@ -47,7 +47,7 @@ Contributors are more than welcome to help make Chiya a better bot. Please follo
 1. Reach out on Discord and propose your idea beforehand.
 2. Clone the repository `git clone` and create a new branch `git checkout -b branch_name` for your work.
 3. Add a feature, fix a bug, or refactor some code.
-4. Open a Pull Request with a comprehensive description of changes.
+4. Open a Pull Request with a comprehensive list of changes.
 
 ## Built on
 
