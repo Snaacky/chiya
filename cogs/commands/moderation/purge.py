@@ -6,8 +6,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from cogs.commands import settings
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 # Enabling logs
@@ -26,7 +26,12 @@ class PurgeCog(Cog):
         if ctx.author_id == ctx.guild.owner.id: return True
 
         # Prevent mods from removing message in moderation categories
-        if ctx.channel.category_id in [settings.get_value("category_moderation"), settings.get_value("category_development"), settings.get_value("category_logs"), settings.get_value("category_tickets")]:
+        if ctx.channel.category_id in [
+                config["categories"]["moderation"], 
+                config["categories"]["development"],
+                config["categories"]["logs"],
+                config["categories"]["tickets"]
+            ]:
             await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
             return False
 
@@ -38,7 +43,7 @@ class PurgeCog(Cog):
     @cog_ext.cog_slash(
         name="purge",
         description="Purges the last X amount of messages",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="amount",
@@ -55,9 +60,9 @@ class PurgeCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

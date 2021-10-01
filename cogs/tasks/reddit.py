@@ -1,12 +1,11 @@
 import logging
-import os
 import time
 
 import asyncpraw
 import discord
 from discord.ext import tasks, commands
 
-from cogs.commands import settings
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
@@ -17,17 +16,17 @@ class RedditTask(commands.Cog):
         self.bot = bot
 
         # Attempt to get the environment variables, defaults to None if non-existent.
-        self.client_id = os.getenv("REDDIT_CLIENT_ID")
-        self.client_secret = os.getenv("REDDIT_CLIENT_SECRET")
-        self.user_agent = os.getenv("REDDIT_USER_AGENT")
+        self.client_id = config["reddit"]["client_id"]
+        self.client_secret = config["reddit"]["client_secret"]
+        self.user_agent = config["reddit"]["user_agent"]
 
         # Only define the object if all the env variable prerequisites exist.
         if not all([self.client_id, self.client_secret, self.user_agent]):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
             return
 
-        # Only start the task if the needed prerequisites exist in the settings database.
-        if not all([settings.get_value("subreddit"), settings.get_value("channel_reddit"), settings.get_value("poll_rate")]):
+        # Only start the task if the needed prerequisites exist in the config database.
+        if not all([config["reddit"]["subreddit"], config["reddit"]["channel"], config["reddit"]["poll_rate"]]):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
             return
 
@@ -45,14 +44,14 @@ class RedditTask(commands.Cog):
     def cog_unload(self):
         self.check_for_posts.cancel()
 
-    @tasks.loop(seconds=settings.get_value("poll_rate"))
+    @tasks.loop(seconds=config["reddit"]["poll_rate"])
     async def check_for_posts(self):
         """ Checking for new reddit posts """
         # Wait before starting or else new posts may not post to discord.
         await self.bot.wait_until_ready()
 
         try:
-            subreddit = await self.reddit.subreddit(settings.get_value("subreddit"))
+            subreddit = await self.reddit.subreddit(config["reddit"]["subreddit"])
             # Grabs 10 latest posts, we should never get more than 10 new submissions in < 10 seconds.
             async for submission in subreddit.new(limit=10):
                 # Skips over any posts already stored in cache.
@@ -94,7 +93,7 @@ class RedditTask(commands.Cog):
                     embed.title = embed.title + "..."
 
                 # Attempts to find the channel to send to and skips if unable to locate.
-                channel = self.bot.get_channel(settings.get_value("channel_reddit"))
+                channel = self.bot.get_channel(config["reddit"]["channel"])
                 if not channel:
                     log.warning(f"Unable to find channel to post: {submission.title} by /u/{submission.author.name}")
                     continue

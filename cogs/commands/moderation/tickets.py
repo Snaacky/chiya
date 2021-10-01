@@ -9,9 +9,9 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from cogs.commands import settings
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 # Enabling logs
@@ -28,7 +28,7 @@ class TicketCog(Cog):
     @cog_ext.cog_slash(
         name="ticket",
         description="Opens a new modmail ticket",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="topic",
@@ -52,7 +52,7 @@ class TicketCog(Cog):
             return await ctx.send(embed=embed, hidden=True)
 
         # Check if a duplicate ticket already exists for the member.
-        category = discord.utils.get(ctx.guild.categories, id=settings.get_value("category_tickets"))
+        category = discord.utils.get(ctx.guild.categories, id=config["category"]["tickets"])
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.author.id}")
 
         # Throw an error and return if we found an already existing ticket.
@@ -63,13 +63,13 @@ class TicketCog(Cog):
 
         # Give both the staff and the user perms to access the channel.
         permissions = {
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")): discord.PermissionOverwrite(read_messages=False),
-            discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")): discord.PermissionOverwrite(read_messages=True),
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]): discord.PermissionOverwrite(read_messages=False),
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
 
-        # Create a channel in the tickets category specified in settings.
+        # Create a channel in the tickets category specified in config.
         channel = await ctx.guild.create_text_channel(
             name=f"ticket-{ctx.author.id}",
             category=category,
@@ -78,8 +78,8 @@ class TicketCog(Cog):
         )
 
         # If the ticket creator is a VIP, ping the staff for fast response.
-        if any(role.id == settings.get_value("role_vip") for role in ctx.author.roles):
-            await channel.send(f"<@&{settings.get_value('role_staff')}>")
+        if any(role.id == config["roles"]["vip"] for role in ctx.author.roles):
+            await channel.send(f"<@&{config['roles']['staff']}>")
 
         # Create an embed at the top of the new ticket so the mod knows who opened it.
         embed = embeds.make_embed(
@@ -125,17 +125,17 @@ class TicketCog(Cog):
     @cog_ext.cog_slash(
         name="close",
         description="Closes a ticket when sent in the ticket channel",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
+            config["guild_ids"][0]: [
                 create_permission(
-                    settings.get_value("role_staff"),
+                    config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
                 create_permission(
-                    settings.get_value("role_trial_mod"),
+                    config["roles"]["trial_mod"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
@@ -148,7 +148,7 @@ class TicketCog(Cog):
         await ctx.defer()
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
-        if not ctx.channel.category_id == settings.get_value("category_tickets") or "ticket" not in ctx.channel.name:
+        if not ctx.channel.category_id == config["categories"]["ticket"] or "ticket" not in ctx.channel.name:
             return await embeds.error_message(
                 ctx=ctx,
                 description="You can only run this command in active ticket channels.",
@@ -175,8 +175,8 @@ class TicketCog(Cog):
         mod_list = set()
 
         # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff"))
-        role_trial_mod = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod"))
+        role_staff = discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"])
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"])
 
         # Loop through all messages in the ticket from old to new.
         async for message in ctx.channel.history(oldest_first=True):
@@ -217,7 +217,7 @@ class TicketCog(Cog):
         embed.add_field(name="Ticket Log: ", value=url, inline=False)
 
         # Send the embed to #ticket-log.
-        ticket_log = discord.utils.get(ctx.guild.channels, id=settings.get_value("channel_ticket_log"))
+        ticket_log = discord.utils.get(ctx.guild.channels, id=config["channels"]["ticket_log"])
         await ticket_log.send(embed=embed)
 
         # DM the user that their ticket was closed.

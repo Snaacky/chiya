@@ -4,7 +4,6 @@ import time
 
 import discord
 from discord.ext import commands
-from cogs.commands import settings
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
@@ -13,7 +12,9 @@ from discord_slash.utils.manage_commands import (
     create_option,
     create_permission,
 )
+
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
 
@@ -32,7 +33,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="addnote",
         description="Add a note to a user",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -49,14 +50,14 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
+            config["guild_ids"][0]: [
                 create_permission(
-                    settings.get_value("role_staff"),
+                    config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
                 create_permission(
-                    settings.get_value("role_trial_mod"),
+                    config["roles"]["trial_mod"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
@@ -103,7 +104,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="search",
         description="View users notes and mod actions history",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -131,14 +132,14 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
+            config["guild_ids"][0]: [
                 create_permission(
-                    settings.get_value("role_staff"),
+                    config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
                 create_permission(
-                    settings.get_value("role_trial_mod"),
+                    config["roles"]["trial_mod"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
@@ -218,7 +219,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="editlog",
         description="Edits an existing log or note for a user",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -235,14 +236,14 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
+            config["guild_ids"][0]: [
                 create_permission(
-                    settings.get_value("role_staff"),
+                    config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
                 create_permission(
-                    settings.get_value("role_trial_mod"),
+                    config["roles"]["trial_mod"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),

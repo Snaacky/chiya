@@ -7,8 +7,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from cogs.commands import settings
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="pfp",
         description="Gets the members profile picture",
-        guild_ids=[settings.get_value("guild_id")]
+        guild_ids=config["guild_ids"]
     )
     async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
@@ -50,12 +50,12 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="population",
         description="Gets the current server population count",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -68,7 +68,7 @@ class General(Cog):
     @cog_ext.cog_slash(
         name="vote",
         description="Adds the vote reactions to a message",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="message",
@@ -79,9 +79,9 @@ class General(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

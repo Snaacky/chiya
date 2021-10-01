@@ -11,9 +11,9 @@ from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import utils.duration
-from cogs.commands import settings
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.moderation import can_action_member
 from utils.record import record_usage
 
@@ -29,7 +29,7 @@ class MuteCog(Cog):
 
     @staticmethod
     async def mute_member(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
-        role = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_muted"))
+        role = discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"])
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
@@ -61,7 +61,7 @@ class MuteCog(Cog):
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Muted" role from member.
-        role = discord.utils.get(guild.roles, id=settings.get_value("role_muted"))
+        role = discord.utils.get(guild.roles, id=config["roles"]["muted"])
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
@@ -81,7 +81,7 @@ class MuteCog(Cog):
 
     @staticmethod
     async def is_user_muted(ctx: SlashContext, member: discord.Member) -> bool:
-        if discord.utils.get(ctx.guild.roles, id=settings.get_value("role_muted")) in member.roles:
+        if discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"]) in member.roles:
             return True
         return False
 
@@ -136,13 +136,13 @@ class MuteCog(Cog):
         if not duration:
             duration = "Indefinite"
 
-        # Create a channel in the category specified in settings.
-        category = discord.utils.get(ctx.guild.categories, id=settings.get_value("category_tickets"))
+        # Create a channel in the category specified in the config.
+        category = discord.utils.get(ctx.guild.categories, id=config["category"]["tickets"])
         channel = await ctx.guild.create_text_channel(f"mute-{member.id}", category=category)
 
         # Give both the staff and the user perms to access the channel. 
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]), read_messages=True)
+        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]), read_messages=True)
         await channel.set_permissions(member, read_messages=True)
 
         # Create embed at the start of the channel letting the user know how long they're muted for and why.
@@ -170,7 +170,7 @@ class MuteCog(Cog):
             return
 
         guild = guild or ctx.guild
-        category = discord.utils.get(guild.categories, id=settings.get_value("category_tickets"))
+        category = discord.utils.get(guild.categories, id=config["category"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
         # Open a connection to the database.
@@ -208,8 +208,8 @@ class MuteCog(Cog):
         mod_list.add(muter)
 
         # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(guild.roles, id=settings.get_value("role_staff"))
-        role_trial_mod = discord.utils.get(guild.roles, id=settings.get_value("role_trial_mod"))
+        role_staff = discord.utils.get(guild.roles, id=config["roles"]["staff"])
+        role_trial_mod = discord.utils.get(guild.roles, id=config["roles"]["trial_mod"])
 
         # TODO: Implement so it gets the channel when the moderator is the bot
         # Loop through all messages in the ticket from old to new.
@@ -275,7 +275,7 @@ class MuteCog(Cog):
         embed.add_field(name="Mute Log: ", value=url, inline=False)
 
         # Send the embed to #mute-log.
-        mute_log = discord.utils.get(guild.channels, id=settings.get_value("channel_mute_log"))
+        mute_log = discord.utils.get(guild.channels, id=config["channels"]["mute_log"])
         await mute_log.send(embed=embed)
 
         # Delete the mute channel.
@@ -286,7 +286,7 @@ class MuteCog(Cog):
     @cog_ext.cog_slash(
         name="mute",
         description="Mutes a member in the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="member",
@@ -309,9 +309,9 @@ class MuteCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -398,7 +398,7 @@ class MuteCog(Cog):
     @cog_ext.cog_slash(
         name="unmute",
         description="Unmutes a member in the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="member",
@@ -415,9 +415,9 @@ class MuteCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
