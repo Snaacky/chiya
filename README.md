@@ -24,13 +24,13 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 **Step 2:** Create a `.env` file in the same folder and fill out the following:
 
 ```env
-# The path on your file system to config.yml
+# The path on your host file system to config.yml
 CONFIG=/your/path/to/chiya/config.yml
 
-# The folder where you plan to store your bot logs for data persistence
+# The folder for storing logs on your host file system
 LOGS_FOLDER=/your/path/to/chiya/logs/
 
-# The folder where you plan to store your database files for data persistence
+# The folder for storing data on your host file system
 DATABASE_FOLDER=/your/path/to/chiya/db/
 ```
 
