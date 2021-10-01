@@ -46,7 +46,7 @@ PASSWORD="your_secure_password"
 ROOT_PASSWORD="your_even_more_secure_password"
 ```
 
-**Step 3:** Create a `config.yml` file in the same folder as you saved your `.env` using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base. 
+**Step 3:** Create a `config.yml` file in the same folder as you saved your `.env` using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base and fill it out. 
 
 **Step 4:** Pull the Docker image by executing `docker-compose pull` in the same folder as the `docker-compose.yml`
 
