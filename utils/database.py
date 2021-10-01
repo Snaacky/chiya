@@ -5,21 +5,28 @@ import dataset
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
-from utils.config import config
-
 log = logging.getLogger(__name__)
 
 
 class Database:
     def __init__(self) -> None:
-        if config["database"]["type"].lower() == "mysql":
-            self.host = config["database"]["host"]
-            self.db = config["database"]["database"]
-            self.user = config["database"]["user"]
-            self.password = config["database"]["password"]
-            self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
+        self.type = os.getenv("TYPE").lower()
+        self.host = os.getenv("HOST")
+        self.database = os.getenv("DATABASE")
+        self.user = os.getenv("USER")
+        self.password = os.getenv("PASSWORD")
+
+        if self.type == "mysql" and not all([self.type, self.database, self.host, self.user, self.password]):
+            log.error("One or more MySQL connection variables are missing, exiting...")
+            raise SystemExit
+        elif self.type == "sqlite" and not all([self.type, self.database]):
+            log.error("One or more SQLite connection variables are missing, exiting...")
+            raise SystemExit
+
+        if self.type == "mysql":
+            self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
         else:
-            self.url = f"sqlite:///{os.path.join(os.getcwd(), config['database']['database'])}.db"
+            self.url = f"sqlite:///{os.path.join(os.getcwd(), self.database)}.db"
 
     def get(self) -> dataset.Database:
         """ Returns the dataset database object. """
