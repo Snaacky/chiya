@@ -35,15 +35,6 @@ LOGS_FOLDER=/your/path/to/chiya/logs/
 
 # The folder where you plan to store your database files for data persistence
 DATABASE_FOLDER=/your/path/to/chiya/db/
-
-# The details for the database to authenticate with.
-# Only TYPE and DATABASE are required for SQLite, all of the following are required for MySQL.
-TYPE="mysql"
-HOST="127.0.0.1"
-DATABASE="chiya"
-USER="chiya"
-PASSWORD="your_secure_password"
-ROOT_PASSWORD="your_even_more_secure_password"
 ```
 
 **Step 3:** Create a `config.yml` file in the same folder using [config.default.yml](https://github.com/ranimepiracy/chiya/blob/settings-yaml-migration/config.default.yml) as the base and fill it out. 
