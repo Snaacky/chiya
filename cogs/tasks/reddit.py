@@ -14,21 +14,19 @@ class RedditTask(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+        self.bot_started_at = time.time()
+        self.cache = []
+        
         # Attempt to get the environment variables, defaults to None if non-existent.
         self.client_id = config["reddit"]["client_id"]
         self.client_secret = config["reddit"]["client_secret"]
         self.user_agent = config["reddit"]["user_agent"]
+        self.subreddit = config["reddit"]["subreddit"]
+        self.channel = config["reddit"]["channel"]
 
         # Only define the object if all the env variable prerequisites exist.
-        if not all([self.client_id, self.client_secret, self.user_agent]):
-            log.warning("Reddit functionality is disabled due to missing prerequisites")
-            return
-
-        # Only start the task if the needed prerequisites exist in the config database.
-        if not all([config["reddit"]["subreddit"], config["reddit"]["channel"], config["reddit"]["poll_rate"]]):
-            log.warning("Reddit functionality is disabled due to missing prerequisites")
-            return
+        if not all([self.client_id, self.client_secret, self.user_agent, self.subreddit, self.channel]):
+            return log.warning("Reddit functionality is disabled due to missing prerequisites")
 
         self.reddit = asyncpraw.Reddit(
             client_id=self.client_id,
@@ -37,14 +35,12 @@ class RedditTask(commands.Cog):
         )
 
         log.info("Starting reddit functionality background task")
-        self.cache = []
-        self.bot_started_at = time.time()
         self.check_for_posts.start() 
 
     def cog_unload(self):
         self.check_for_posts.cancel()
 
-    @tasks.loop(seconds=config["reddit"]["poll_rate"])
+    @tasks.loop(seconds=5)
     async def check_for_posts(self):
         """ Checking for new reddit posts """
         # Wait before starting or else new posts may not post to discord.
