@@ -8,10 +8,8 @@ services:
         - ${LOGS_FOLDER}:/app/logs/
     environment:
         - BOT_TOKEN=${BOT_TOKEN}
-        - BOT_PREFIX=${BOT_PREFIX}
         - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
         - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
-        - REDDIT_USER_AGENT=${REDDIT_USER_AGENT}
         - MYSQL_HOST=db
         - MYSQL_DATABASE=${MYSQL_DB}
         - MYSQL_USER=chiya
