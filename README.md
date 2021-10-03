@@ -24,14 +24,30 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 **Step 2:** Create a `.env` file in the same folder and fill out the following:
 
 ```env
+# The bot token for the Discord application
+# https://discordapp.com/developers/
+BOT_TOKEN=""
+
+# The client ID and secret for the Reddit application
+# https://www.reddit.com/prefs/apps/
+REDDIT_CLIENT_ID=""
+REDDIT_CLIENT_SECRET=""
+
+# The authentication settings for the database
+DATABASE_TYPE="" # Supports "mysql" or "sqlite"
+DATABASE_HOST=""
+DATABASE_USER=""
+DATABASE_PASSWORD=""
+DATABASE_ROOT_PASSWORD=""
+
 # The path on your host file system to config.yml
-CONFIG=/your/path/to/chiya/config.yml
+CONFIG=""
 
-# The folder for storing logs on your host file system
-LOGS_FOLDER=/your/path/to/chiya/logs/
+# The folder on your host file system for storing database data
+DATABASE_FOLDER=""
 
-# The folder for storing data on your host file system
-DATABASE_FOLDER=/your/path/to/chiya/db/
+# # The folder on your host file system for storing logs
+LOGS_FOLDER=""
 ```
 
 **Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out. 
