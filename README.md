@@ -34,8 +34,8 @@ REDDIT_CLIENT_ID=
 REDDIT_CLIENT_SECRET=
 
 # The authentication settings for the database
-DATABASE_TYPE= # Options: mysql or sqlite
 MYSQL_HOST=
+MYSQL_DB=
 MYSQL_USER=
 MYSQL_PASSWORD=
 MYSQL_ROOT_PASSWORD=
