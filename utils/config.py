@@ -1,13 +1,13 @@
 import logging
 import os
 
-import yaml
+from pyaml_env import parse_config
+
 
 log = logging.getLogger(__name__)
 
-if not os.getenv("CONFIG") or not os.path.isfile(os.getenv("CONFIG")):
+if not os.path.isfile(os.path.join(os.getcwd(), "config.yml")):
     log.error("Unable to load config.yml, exiting...")
     raise SystemExit
 
-with open(os.getenv("CONFIG"), "r") as f:
-    config = yaml.safe_load(f)
+config = parse_config(os.path.join(os.getcwd(), "config.yml"))
