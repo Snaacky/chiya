@@ -14,20 +14,19 @@ class Database:
     def __init__(self) -> None:
         self.type = config["database"]["type"].lower()
         self.host = config["database"]["host"]
-        self.database = config["database"]["database"]
         self.user = config["database"]["user"]
         self.password = config["database"]["password"]
 
-        if self.type == "mysql" and not all([self.type, self.database, self.host, self.user, self.password]):
+        if self.type == "mysql" and not all([self.type, self.host, self.user, self.password]):
             log.error("One or more MySQL connection variables are missing, exiting...")
             raise SystemExit
-        elif self.type == "sqlite" and not all([self.type, self.database]):
+        elif self.type == "sqlite" and not all([self.type]):
             log.error("One or more SQLite connection variables are missing, exiting...")
 
         if self.type == "mysql":
-            self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
+            self.url = f"mysql://{self.user}:{self.password}@{self.host}/chiya"
         else:
-            self.url = f"sqlite:///{os.path.join(os.getcwd(), self.database)}.db"
+            self.url = f"sqlite:///{os.path.join(os.getcwd(), 'chiya.db')}"
 
     def get(self) -> dataset.Database:
         """ Returns the dataset database object. """
