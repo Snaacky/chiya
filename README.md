@@ -26,35 +26,33 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 ```env
 # The bot token for the Discord application
 # https://discordapp.com/developers/
-BOT_TOKEN=""
+BOT_TOKEN=
 
 # The client ID and secret for the Reddit application
 # https://www.reddit.com/prefs/apps/
-REDDIT_CLIENT_ID=""
-REDDIT_CLIENT_SECRET=""
+REDDIT_CLIENT_ID=
+REDDIT_CLIENT_SECRET=
 
 # The authentication settings for the database
-DATABASE_TYPE="" # Supports "mysql" or "sqlite"
-DATABASE_HOST=""
-DATABASE_USER=""
-DATABASE_PASSWORD=""
-DATABASE_ROOT_PASSWORD=""
+DATABASE_TYPE= # Options: mysql or sqlite
+MYSQL_HOST=
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_ROOT_PASSWORD=
 
 # The path on your host file system to config.yml
-CONFIG=""
+CONFIG=
 
 # The folder on your host file system for storing database data
-DATABASE_FOLDER=""
+DATABASE_FOLDER=
 
-# # The folder on your host file system for storing logs
-LOGS_FOLDER=""
+# The folder on your host file system for storing logs
+LOGS_FOLDER=
 ```
 
 **Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out. 
 
-**Step 4:** Pull the Docker image by executing `docker-compose pull` in the same folder.
-
-**Step 5:** Start Chiya by executing `docker container start chiya_bot_1`
+**Step 4:** Pull the Docker image and start the containers by running `docker-compose up -d` in the same folder.
 
 ## Contributing
 
