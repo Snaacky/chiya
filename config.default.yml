@@ -40,7 +40,7 @@ reddit:
   client_secret: !ENV ${REDDIT_CLIENT_SECRET}
   user_agent: "Chiya:v1.0.0 (for /r/animepiracy)"
 database:
-  type: !ENV ${DATABASE_TYPE}
+  database: !ENV ${MYSQL_DATABASE}
   host: !ENV ${MYSQL_HOST}
   user: !ENV ${MYSQL_USER}
   password: !ENV ${MYSQL_PASSWORD}
