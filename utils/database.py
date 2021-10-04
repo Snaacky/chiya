@@ -1,5 +1,4 @@
 import logging
-import os
 
 import dataset
 from sqlalchemy import create_engine
@@ -24,7 +23,7 @@ class Database:
         self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
 
     def get(self) -> dataset.Database:
-        """ Returns the dataset database object. """
+        """Returns the dataset database object."""
         return dataset.connect(url=self.url)
 
     def setup(self) -> None:
