@@ -52,7 +52,7 @@ class TicketCog(Cog):
             return await ctx.send(embed=embed, hidden=True)
 
         # Check if a duplicate ticket already exists for the member.
-        category = discord.utils.get(ctx.guild.categories, id=config["category"]["tickets"])
+        category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.author.id}")
 
         # Throw an error and return if we found an already existing ticket.
@@ -148,7 +148,7 @@ class TicketCog(Cog):
         await ctx.defer()
 
         # Warns if the ticket close command is called outside of the current active ticket channel.
-        if not ctx.channel.category_id == config["categories"]["ticket"] or "ticket" not in ctx.channel.name:
+        if not ctx.channel.category_id == config["categories"]["tickets"] or "ticket" not in ctx.channel.name:
             return await embeds.error_message(
                 ctx=ctx,
                 description="You can only run this command in active ticket channels.",

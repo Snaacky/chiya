@@ -26,7 +26,8 @@ class RedditTask(commands.Cog):
 
         # Only define the object if all the env variable prerequisites exist.
         if not all([self.client_id, self.client_secret, self.user_agent, self.subreddit, self.channel]):
-            return log.warning("Reddit functionality is disabled due to missing prerequisites")
+            log.warning("Reddit functionality is disabled due to missing prerequisites")
+            return
 
         self.reddit = asyncpraw.Reddit(
             client_id=self.client_id,
