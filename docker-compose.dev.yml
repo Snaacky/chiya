@@ -11,7 +11,7 @@ services:
         - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
         - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
         - MYSQL_HOST=db
-        - MYSQL_DATABASE=${MYSQL_DB}
+        - MYSQL_DATABASE=${MYSQL_DATABASE}
         - MYSQL_USER=chiya
         - MYSQL_PASSWORD=${MYSQL_PASSWORD}
   db:
@@ -20,7 +20,7 @@ services:
     volumes:
         - ${DATABASE_FOLDER}:/var/lib/mysql
     environment:
-        MYSQL_DATABASE: ${MYSQL_DB}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
         MYSQL_USER: chiya
         MYSQL_PASSWORD: ${MYSQL_PASSWORD}
         MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
