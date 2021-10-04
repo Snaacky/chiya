@@ -137,7 +137,7 @@ class MuteCog(Cog):
             duration = "Indefinite"
 
         # Create a channel in the category specified in the config.
-        category = discord.utils.get(ctx.guild.categories, id=config["category"]["tickets"])
+        category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
         channel = await ctx.guild.create_text_channel(f"mute-{member.id}", category=category)
 
         # Give both the staff and the user perms to access the channel. 
@@ -170,7 +170,7 @@ class MuteCog(Cog):
             return
 
         guild = guild or ctx.guild
-        category = discord.utils.get(guild.categories, id=config["category"]["tickets"])
+        category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
         # Open a connection to the database.
