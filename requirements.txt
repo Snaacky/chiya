@@ -1,9 +1,4 @@
 # Info about this file: https://pip.pypa.io/en/latest/user_guide/#requirements-files
-
-# This file lists all the requirements needed to run this repository.
-
-# Run the command below to install the requirements.
-# pip3 install -r requirements.txt
 discord.py==1.7.3                   # https://discordpy.readthedocs.io/
 dataset==1.5.0                      # https://dataset.readthedocs.io/
 asyncpraw==7.4.0                    # https://asyncpraw.readthedocs.io/
@@ -13,4 +8,4 @@ PrivateBinAPI~=1.0.0                # https://pypi.org/project/PrivateBinAPI/
 discord-py-slash-command==2.3.2     # https://discord-py-slash-command.readthedocs.io/en/latest/
 mysqlclient==2.0.3                  # https://pypi.org/project/mysqlclient/2.0.3/
 SQLAlchemy-Utils==0.37.8            # https://sqlalchemy-utils.readthedocs.io/
-PyYAML~=5.4.1                       # https://pyyaml.org/wiki/PyYAMLDocumentation
+pyaml_env~=1.1.1                    # https://github.com/mkaranasou/pyaml_env

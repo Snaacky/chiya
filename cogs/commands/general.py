@@ -74,7 +74,7 @@ class General(Cog):
                 name="message",
                 description="The ID for the target message",
                 option_type=3,
-                required=False
+                required=True
             ),
         ],
         default_permission=False,

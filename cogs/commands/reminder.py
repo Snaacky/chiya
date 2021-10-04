@@ -86,13 +86,13 @@ class Reminder(Cog):
         guild_ids=config["guild_ids"],
         options=[
             create_option(
-                name="id",
+                name="reminder_id",
                 description="The ID of the reminder to be updated",
                 option_type=3,
                 required=True
             ),
             create_option(
-                name="message",
+                name="new_message",
                 description="The updated message for the reminder",
                 option_type=3,
                 required=True

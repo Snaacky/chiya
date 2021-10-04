@@ -4,7 +4,7 @@
 guild_ids: [000000000000000000]
 emoji_guild_ids: [000000000000000000]
 bot:
-  token: ""
+  token: !ENV ${BOT_TOKEN}
   prefix: "!"
   log_level: "DEBUG"
   intents:
@@ -15,7 +15,7 @@ bot:
     reactions: True
   case_insensitive: True
   sync_commands: True
-  sync_on_cog_reload: False
+  sync_on_cog_reload: True
 roles:
   staff: 000000000000000000
   trial_mod: 000000000000000000
@@ -34,9 +34,13 @@ channels:
   ticket_log: 000000000000000000
   nitro_log: 000000000000000000
 reddit:
-  subreddit: ""
+  subreddit: "animepiracy"
   channel: 000000000000000000
-  poll_rate: 5
-  client_id: ""
-  client_secret: ""
+  client_id: !ENV ${REDDIT_CLIENT_ID}
+  client_secret: !ENV ${REDDIT_CLIENT_SECRET}
   user_agent: "Chiya:v1.0.0 (for /r/animepiracy)"
+database:
+  database: !ENV ${MYSQL_DATABASE}
+  host: !ENV ${MYSQL_HOST}
+  user: !ENV ${MYSQL_USER}
+  password: !ENV ${MYSQL_PASSWORD}
