@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 
-import dataset
 import discord
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
@@ -30,7 +29,7 @@ class ReminderTask(Cog):
         current_time = datetime.now(tz=timezone.utc).timestamp()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders that are older than current time and have not been sent yet.
         remind_me = db["remind_me"]

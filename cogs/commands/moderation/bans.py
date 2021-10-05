@@ -2,7 +2,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -11,9 +10,9 @@ from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import utils.duration
-from cogs.commands import settings
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.moderation import can_action_member
 from utils.record import record_usage
 
@@ -33,7 +32,7 @@ class BanCog(Cog):
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=delete_message_days)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the ban to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -67,7 +66,7 @@ class BanCog(Cog):
             return
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unban to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -108,7 +107,7 @@ class BanCog(Cog):
                 description="You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy).",
                 color=0xc2bac0
             )
-            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -123,7 +122,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="ban",
         description="Bans the user from the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -152,9 +151,9 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -241,7 +240,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="unban",
         description="Unbans the user from the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -258,9 +257,9 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )

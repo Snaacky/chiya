@@ -2,7 +2,6 @@ import logging
 import time
 from typing import Union
 
-import dataset
 import discord
 from discord import User, Member, Guild
 from discord.ext import commands
@@ -20,7 +19,7 @@ class BansHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild: Guild, user: Union[User, Member]):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Get the ban entry of the user who just got banned.
         ban_entry = await guild.fetch_ban(user)

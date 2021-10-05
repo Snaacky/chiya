@@ -1,7 +1,6 @@
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -9,9 +8,9 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from cogs.commands import settings
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.moderation import can_action_member
 from utils.record import record_usage
 
@@ -30,7 +29,7 @@ class KickCog(Cog):
     @cog_ext.cog_slash(
         name="kick",
         description="Kicks the member from the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="member",
@@ -47,9 +46,9 @@ class KickCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -93,7 +92,7 @@ class KickCog(Cog):
                 author=False,
                 color=0xe49bb3
             )
-            dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)
@@ -107,7 +106,7 @@ class KickCog(Cog):
         await ctx.guild.kick(user=member, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the kick to the mod_log database.
         db["mod_logs"].insert(dict(

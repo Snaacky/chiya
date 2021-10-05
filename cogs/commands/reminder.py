@@ -1,15 +1,14 @@
 import logging
 from datetime import datetime
 
-import dataset
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils.duration
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
 
@@ -27,7 +26,7 @@ class Reminder(Cog):
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="duration",
@@ -55,7 +54,7 @@ class Reminder(Cog):
             return
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_id = db["remind_me"].insert(dict(
             reminder_location=ctx.channel.id,
@@ -84,16 +83,16 @@ class Reminder(Cog):
         base="reminder",
         name="edit",
         description="Edit an existing reminder",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
-                name="id",
+                name="reminder_id",
                 description="The ID of the reminder to be updated",
                 option_type=3,
                 required=True
             ),
             create_option(
-                name="message",
+                name="new_message",
                 description="The updated message for the reminder",
                 option_type=3,
                 required=True
@@ -105,7 +104,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         reminder = remind_me.find_one(id=reminder_id)
@@ -142,14 +141,14 @@ class Reminder(Cog):
         base="reminder",
         name="list",
         description="List your existing reminders",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
     )
     async def list_reminders(self, ctx: SlashContext):
         """ List your reminders. """
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         remind_me = db["remind_me"]
@@ -184,7 +183,7 @@ class Reminder(Cog):
         base="reminder",
         name="delete",
         description="Delete an existing reminder",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="reminder_id",
@@ -199,7 +198,7 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         table = db["remind_me"]
@@ -240,14 +239,14 @@ class Reminder(Cog):
         base="reminder",
         name="clear",
         description="Clears all of your existing reminders",
-        guild_ids=[settings.get_value("guild_id")]
+        guild_ids=config["guild_ids"]
     )
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         result = remind_me.find(author_id=ctx.author.id, sent=False)

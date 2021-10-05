@@ -1,12 +1,11 @@
 import logging
 from datetime import datetime, timezone
 
-import dataset
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +27,7 @@ class TimedModActionsTask(Cog):
         await self.bot.wait_until_ready()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Query the database for all temporary mod actions that haven't executed yet.
         results = db["timed_mod_actions"].find(
@@ -37,8 +36,8 @@ class TimedModActionsTask(Cog):
         )
 
         # Get the guild and mod channel to send the expiration notice into.
-        guild = self.bot.get_guild(settings.get_value("guild_id"))
-        channel = guild.get_channel(settings.get_value("channel_moderation"))
+        guild = self.bot.get_guild(config["guild_ids"][0])
+        channel = guild.get_channel(config["channels"]["moderation"])
 
         for action in results:
             if action["action_type"] == "mute":

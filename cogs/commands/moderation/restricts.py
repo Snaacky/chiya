@@ -2,7 +2,6 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
@@ -11,9 +10,9 @@ from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import utils.duration
-from cogs.commands import settings
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.moderation import can_action_member
 from utils.record import record_usage
 
@@ -29,17 +28,18 @@ class RestrictCog(Cog):
 
     @staticmethod
     async def is_user_restricted(ctx: SlashContext, member: discord.Member) -> bool:
-        if discord.utils.get(ctx.guild.roles, id=settings.get_value("role_restricted")) in member.roles:
+        
+        if discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]) in member.roles:
             return True
         return False
 
     @staticmethod
     async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
-        role = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_restricted"))
+        role = discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"])
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the restrict to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -66,11 +66,11 @@ class RestrictCog(Cog):
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Restricted" role from member.
-        role = discord.utils.get(guild.roles, id=settings.get_value("role_restricted"))
+        role = discord.utils.get(guild.roles, id=config["roles"]["restricted"])
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unrestrict to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -103,7 +103,7 @@ class RestrictCog(Cog):
                 description="If you believe this was a mistake, contact staff.",
                 color=0x8083b0
             )
-            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
@@ -126,7 +126,7 @@ class RestrictCog(Cog):
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
-            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/rvvnpV2.gif")
@@ -140,7 +140,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="restrict",
         description="Restricts message permissions from the member for the specified length of time",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="member",
@@ -163,9 +163,9 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
@@ -246,7 +246,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="unrestrict",
         description="Unrestricts the member",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="member",
@@ -263,9 +263,9 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
