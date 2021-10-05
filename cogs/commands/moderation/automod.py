@@ -1,15 +1,18 @@
 import json
 import logging
 
-import config
 import dataset
 import discord
 from discord.ext import commands
 from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import (create_choice, create_option,
-                                                 create_permission)
+from discord_slash.utils.manage_commands import (
+    create_choice,
+    create_option,
+    create_permission,
+)
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
 
@@ -26,7 +29,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="search",
         description="Searches and/or lists all the currently censored terms.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="search_term",
@@ -50,13 +53,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -128,7 +127,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="add",
         description="Adds a term to the censor list.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="censor_type",
@@ -158,13 +157,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -218,7 +213,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="disable",
         description="Disables a term from the censor list.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -229,13 +224,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -269,7 +260,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="enable",
         description="Enables a term from the censor list.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -280,13 +271,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -320,7 +307,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="delete",
         description="Deletes a term from the censor list.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -331,13 +318,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -370,7 +353,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="exclude_user",
         description="Excludes a user from an automod listing.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -387,13 +370,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -437,7 +416,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="unexclude_user",
         description="Removes the exclusion of a user from an automod listing.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -454,13 +433,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -510,7 +485,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="exclude_role",
         description="Excludes a role from an automod listing.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -527,13 +502,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -575,7 +546,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="unexclude_role",
         description="Removes the exclusion of a role from an automod listing.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -592,13 +563,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )
@@ -647,7 +614,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="details",
         description="Displays the advanced details for an automod listing.",
-        guild_ids=[config.guild_id],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="id",
@@ -658,13 +625,9 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config.guild_id: [
-                create_permission(
-                    config.role_staff, SlashCommandPermissionType.ROLE, True
-                ),
-                create_permission(
-                    config.role_trial_mod, SlashCommandPermissionType.ROLE, True
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         },
     )

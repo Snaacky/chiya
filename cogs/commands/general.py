@@ -1,7 +1,6 @@
 import logging
 
 import discord
-from cogs.commands import settings
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext

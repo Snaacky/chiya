@@ -1,9 +1,9 @@
 import json
 import re
 
+from utils.config    import config
 import dataset
 import discord
-from cogs.commands import settings
 from fuzzywuzzy import fuzz
 
 from utils import database
@@ -148,19 +148,19 @@ async def is_in_enabled_channels(message: discord.Message) -> bool:
     categories = message.guild.categories
     # Return true if the message was sent any channel under the community category.
     if any(
-        message.channel.category.id == settings.get_value("category_community")
+        message.channel.category.id == config["categories"]["community"]
         for category in categories
     ):
         return True
     # Return true if the message was sent any channel under the bots category.
     if any(
-        message.channel.category.id == settings.get_value("category_bots")
+        message.channel.category.id == config["categories"]["bots"]
         for category in categories
     ):
         return True
     # Return true if the message was sent any channel under the voice category.
     if any(
-        message.channel.category.id == settings.get_value("category_voice")
+        message.channel.category.id == config["categories"]["voice"]
         for category in categories
     ):
         return True
