@@ -30,7 +30,7 @@ class BuyNicknameCog(Cog):
         options=[
             create_option(
                 name="nickname",
-                description="The name to be changed to",
+                description="The nickname to be changed to",
                 option_type=3,
                 required=True,
             ),
@@ -159,14 +159,14 @@ class BuyNicknameCog(Cog):
         await ctx.author.edit(nick=nickname)
 
         # Create the embed to let the user know that the transaction was a success.
-        embed = embeds.make_embed(title=f"Nickname purchased: {nickname}", color="green")
+        embed = embeds.make_embed(title=f"Nickname changed: {nickname}", color="green")
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token
             embed.description = (
-                f"Successfully purchased a nickname for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+                f"Successfully changed your nickname for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
             )
             embed.add_field(
                 name="​",
@@ -174,7 +174,7 @@ class BuyNicknameCog(Cog):
             )
         else:
             stats["buffer"] -= cost
-            embed.description = f"Successfully purchased a nickname for {cost} MB buffer."
+            embed.description = f"Successfully changed your nickname for {cost} MB buffer."
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
