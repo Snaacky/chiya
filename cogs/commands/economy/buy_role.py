@@ -24,8 +24,9 @@ class BuyRoleCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="buy",
-        name="role",
-        description="Purchase a role with a specified name",
+        subcommand_group="role",
+        name="custom",
+        description="Purchase a custom role with a specified name",
         guild_ids=[settings.get_value("guild_id")],
         options=[
             create_option(
@@ -78,7 +79,6 @@ class BuyRoleCog(Cog):
 
         # Declare the allowed user classes for the custom role purchase.
         allowed_classes = [
-            "Power User",
             "Elite",
             "Torrent Master",
             "Power TM",
@@ -117,7 +117,7 @@ class BuyRoleCog(Cog):
             if not user_class_check:
                 embed.add_field(
                     name="​",
-                    value="**Condition:** User class must be 'Power User' or higher.",
+                    value="**Condition:** User class must be 'Elite' or higher.",
                     inline=False,
                 )
             if custom_role_check:
