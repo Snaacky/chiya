@@ -1,7 +1,6 @@
 import json
 import logging
 
-import dataset
 import discord
 from discord.ext import commands
 from discord_slash import SlashContext, cog_ext
@@ -27,6 +26,7 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
+        subcommand_group="term",
         name="search",
         description="Searches and/or lists all the currently censored terms.",
         guild_ids=config["guild_ids"],
@@ -65,7 +65,7 @@ class AutomodCog(commands.Cog):
         await ctx.defer()
 
         censored_terms = []
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         censors = None
         # in the case there is a search_term specified
         if search_term:
@@ -106,7 +106,6 @@ class AutomodCog(commands.Cog):
         embed = embeds.make_embed(
             ctx=ctx,
             title="Censored Terms",
-            thumbnail_url=config.defcon_disabled,
             color="gold",
         )
 
@@ -125,6 +124,7 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
+        subcommand_group="term",
         name="add",
         description="Adds a term to the censor list.",
         guild_ids=config["guild_ids"],
@@ -156,12 +156,7 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def add_censor(
         self,
@@ -185,7 +180,7 @@ class AutomodCog(commands.Cog):
                 )
                 return
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         db["censor"].insert(
             dict(
                 censor_term=censor_term,
@@ -211,6 +206,7 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
+        subcommand_group="term",
         name="disable",
         description="Disables a term from the censor list.",
         guild_ids=config["guild_ids"],
@@ -223,17 +219,12 @@ class AutomodCog(commands.Cog):
             )
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def disable_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         censor = db["censor"].find_one(id=id)
 
         if not censor:
@@ -258,6 +249,7 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
+        subcommand_group="term",
         name="enable",
         description="Enables a term from the censor list.",
         guild_ids=config["guild_ids"],
@@ -270,17 +262,12 @@ class AutomodCog(commands.Cog):
             )
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def enable_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         censor = db["censor"].find_one(id=id)
 
         if not censor:
@@ -305,6 +292,7 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
+        subcommand_group="term",
         name="delete",
         description="Deletes a term from the censor list.",
         guild_ids=config["guild_ids"],
@@ -317,17 +305,12 @@ class AutomodCog(commands.Cog):
             )
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def delete_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         censor = db["censor"].find_one(id=id)
 
         if not censor:
@@ -351,7 +334,8 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
-        name="exclude_user",
+        subcommand_group="user_exclusion",
+        name="add",
         description="Excludes a user from an automod listing.",
         guild_ids=config["guild_ids"],
         options=[
@@ -369,12 +353,7 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def exclude_user_from_automod(
         self, ctx: SlashContext, id: int, excluded_user: discord.User
@@ -382,7 +361,7 @@ class AutomodCog(commands.Cog):
         await ctx.defer()
         user_id = excluded_user.id
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         table = db["censor"]
 
@@ -414,7 +393,8 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
-        name="unexclude_user",
+        subcommand_group="user_exclusion",
+        name="remove",
         description="Removes the exclusion of a user from an automod listing.",
         guild_ids=config["guild_ids"],
         options=[
@@ -432,12 +412,7 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def unexclude_user_from_automod(
         self, ctx: SlashContext, id: int, unexcluded_user: discord.User
@@ -445,7 +420,7 @@ class AutomodCog(commands.Cog):
         await ctx.defer()
         user_id = unexcluded_user.id
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         table = db["censor"]
 
@@ -483,7 +458,8 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
-        name="exclude_role",
+        subcommand_group="role_exclusion",
+        name="add",
         description="Excludes a role from an automod listing.",
         guild_ids=config["guild_ids"],
         options=[
@@ -501,12 +477,7 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def exclude_role_from_automod(
         self, ctx: SlashContext, id: int, excluded_role: discord.Role
@@ -514,7 +485,7 @@ class AutomodCog(commands.Cog):
         await ctx.defer()
         role_id = excluded_role.id
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         table = db["censor"]
 
@@ -544,7 +515,8 @@ class AutomodCog(commands.Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="automod",
-        name="unexclude_role",
+        subcommand_group="role_exclusion",
+        name="remove",
         description="Removes the exclusion of a role from an automod listing.",
         guild_ids=config["guild_ids"],
         options=[
@@ -562,12 +534,7 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        
     )
     async def unexclude_role_from_automod(
         self, ctx: SlashContext, id: int, unexcluded_role: discord.Role
@@ -575,7 +542,7 @@ class AutomodCog(commands.Cog):
         await ctx.defer()
         role_id = unexcluded_role.id
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         table = db["censor"]
 
@@ -623,18 +590,13 @@ class AutomodCog(commands.Cog):
                 required=True,
             ),
         ],
-        base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
+        base_default_permission=True,
+        
     )
     async def automod_details(self, ctx: SlashContext, id: int):
         await ctx.defer()
 
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
         table = db["censor"]
         censor = table.find_one(id=id)
         if not censor:
