@@ -12,9 +12,8 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 """ 
-Declare all the dictionaries as global variable to improve efficiency and better reusability instead of declaring it every time
-a message is sent. Declaring a dictionary using literal syntax {} instead of dict() is significantly more efficient.
-See: http://katrin-affolter.ch/Python/Python_dictionaries
+Declare all the dictionaries as global variables to improve efficiency and reusability instead of declaring it every time
+a message is sent.
 """
 
 user_class = {
@@ -106,17 +105,6 @@ user_class = {
         "next_message_requirement": 0,
         "token_reward": 5,
     },
-}
-
-user_class_role = {
-    "member": config["roles"]["member"],
-    "user": config["roles"]["user"],
-    "power_user": config["roles"]["power_user"],
-    "elite": config["roles"]["elite"],
-    "torrent_master": config["roles"]["torrent_master"],
-    "power_tm": config["roles"]["power_tm"],
-    "elite_tm": config["roles"]["elite_tm"],
-    "legend": config["roles"]["legend"],
 }
 
 # The user stats template.
@@ -382,8 +370,8 @@ class LevelingCog(Cog):
         stats["next_user_class"] = next_user_class
 
         # Assign the respective class role if the user don't have one yet, while attempting to remove other class roles if exist.
-        for key, value in user_class_role.items():
-            role = discord.utils.get(message.guild.roles, id=value)
+        for key, value in user_class.items():
+            role = discord.utils.get(message.guild.roles, id=value["role"])
             if role in message.author.roles and role.name != stats["user_class"]:
                 await message.author.remove_roles(role)
             elif role not in message.author.roles and role.name == stats["user_class"]:
