@@ -7,8 +7,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils.duration
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
 
@@ -26,7 +26,7 @@ class Reminder(Cog):
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="duration",
@@ -83,16 +83,16 @@ class Reminder(Cog):
         base="reminder",
         name="edit",
         description="Edit an existing reminder",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
-                name="id",
+                name="reminder_id",
                 description="The ID of the reminder to be updated",
                 option_type=3,
                 required=True
             ),
             create_option(
-                name="message",
+                name="new_message",
                 description="The updated message for the reminder",
                 option_type=3,
                 required=True
@@ -141,7 +141,7 @@ class Reminder(Cog):
         base="reminder",
         name="list",
         description="List your existing reminders",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
     )
     async def list_reminders(self, ctx: SlashContext):
         """ List your reminders. """
@@ -183,7 +183,7 @@ class Reminder(Cog):
         base="reminder",
         name="delete",
         description="Delete an existing reminder",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="reminder_id",
@@ -239,7 +239,7 @@ class Reminder(Cog):
         base="reminder",
         name="clear",
         description="Clears all of your existing reminders",
-        guild_ids=[settings.get_value("guild_id")]
+        guild_ids=config["guild_ids"]
     )
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """

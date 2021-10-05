@@ -21,9 +21,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 WORKDIR /app
 COPY . /app
 
-# For persistant data and ability to access data outside container
-VOLUME [ "/app/chiya/logs/" ]
-VOLUME [ "/app/config.py" ]
-
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 CMD ["python", "chiya.py"]
