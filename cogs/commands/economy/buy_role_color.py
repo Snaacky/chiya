@@ -4,15 +4,14 @@ import math
 import random
 from itertools import chain
 
-import dataset
 import discord.utils
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
-from cogs.commands import settings
 from utils import embeds, database
+from utils.config import config
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
@@ -67,7 +66,7 @@ class BuyRoleColorCog(Cog):
         v = 0
 
         # S and V floored at 33 to prevent unreadable colors on dark theme. Each S and V upgrade extends the ceiling by 0.67.
-        floor = 30
+        floor = 33
         if saturation_upgrade > 0 or value_upgrade > 0:
             s = random.randint(floor, math.floor((floor + saturation_upgrade * ((100 - floor) / 100)))) / 100
             v = random.randint(floor, math.floor((floor + value_upgrade * ((100 - floor) / 100)))) / 100
@@ -81,7 +80,7 @@ class BuyRoleColorCog(Cog):
         subcommand_group="role",
         name="color",
         description="Roll for a random role color",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="freeleech",
@@ -97,26 +96,26 @@ class BuyRoleColorCog(Cog):
 
         # Warn if the command is called outside of #bots channel. Using a tuple is more memory efficient.
         if ctx.channel.id not in (
-            settings.get_value("channel_bots"),
-            settings.get_value("channel_bot_testing"),
+            config["channels"]["bots"],
+            config["channels"]["bot_testing"],
         ):
             return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
 
-        # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
+        # Connect to the database and get the economy table.
+        db = database.Database().get()
+        economy = db["economy"]
 
         # Attempt to find the user who issued the command.
-        user = achievements.find_one(user_id=ctx.author.id)
+        user = economy.find_one(user_id=ctx.author.id)
 
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
         if not user:
             stats_json = await leveling_cog.create_user()
-            achievements.insert(dict(user_id=ctx.author.id, stats=stats_json))
-            user = achievements.find_one(user_id=ctx.author.id)
+            economy.insert(dict(user_id=ctx.author.id, stats=stats_json))
+            user = economy.find_one(user_id=ctx.author.id)
 
         # Loads the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
@@ -215,7 +214,7 @@ class BuyRoleColorCog(Cog):
 
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
-        achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+        economy.update(dict(id=user["id"], stats=stats_json), ["id"])
         db.commit()
         db.close()
 

@@ -1,14 +1,13 @@
 import json
 import logging
 
-import dataset
 import discord.utils
 from discord import Message, Member
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
@@ -22,16 +21,8 @@ user_class = {
     "member": {
         "user_class": "Member",
         "previous_user_class": (),
-        "next_user_class": (
-            "User",
-            "Power User",
-            "Elite",
-            "Torrent Master",
-            "Power TM",
-            "Elite TM",
-            "Legend",
-        ),
-        "role": settings.get_value("role_member"),
+        "next_user_class": ("User", "Power User", "Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"),
+        "role": config["roles"]["member"],
         "buffer_requirement": 0,
         "message_requirement": 0,
         "next_buffer_requirement": 10240,
@@ -41,15 +32,8 @@ user_class = {
     "user": {
         "user_class": "User",
         "previous_user_class": ("Member",),
-        "next_user_class": (
-            "Power User",
-            "Elite",
-            "Torrent Master",
-            "Power TM",
-            "Elite TM",
-            "Legend",
-        ),
-        "role": settings.get_value("role_user"),
+        "next_user_class": ("Power User", "Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"),
+        "role": config["roles"]["user"],
         "buffer_requirement": 10240,
         "message_requirement": 1000,
         "next_buffer_requirement": 25600,
@@ -59,14 +43,8 @@ user_class = {
     "power_user": {
         "user_class": "Power User",
         "previous_user_class": ("Member", "User"),
-        "next_user_class": (
-            "Elite",
-            "Torrent Master",
-            "Power TM",
-            "Elite TM",
-            "Legend",
-        ),
-        "role": settings.get_value("role_power_user"),
+        "next_user_class": ("Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"),
+        "role": config["roles"]["power_user"],
         "buffer_requirement": 25600,
         "message_requirement": 2500,
         "next_buffer_requirement": 51200,
@@ -77,7 +55,7 @@ user_class = {
         "user_class": "Elite",
         "previous_user_class": ("Member", "User", "Power User"),
         "next_user_class": ("Torrent Master", "Power TM", "Elite TM", "Legend"),
-        "role": settings.get_value("role_elite"),
+        "role": config["roles"]["elite"],
         "buffer_requirement": 51200,
         "message_requirement": 5000,
         "next_buffer_requirement": 102400,
@@ -88,7 +66,7 @@ user_class = {
         "user_class": "Torrent Master",
         "previous_user_class": ("Member", "User", "Power User", "Elite"),
         "next_user_class": ("Power TM", "Elite TM", "Legend"),
-        "role": settings.get_value("role_torrent_master"),
+        "role": config["roles"]["torrent_master"],
         "buffer_requirement": 102400,
         "message_requirement": 10000,
         "next_buffer_requirement": 256000,
@@ -97,15 +75,9 @@ user_class = {
     },
     "power_tm": {
         "user_class": "Power TM",
-        "previous_user_class": (
-            "Member",
-            "User",
-            "Power User",
-            "Elite",
-            "Torrent Master",
-        ),
+        "previous_user_class": ("Member", "User", "Power User", "Elite", "Torrent Master"),
         "next_user_class": ("Elite TM", "Legend"),
-        "role": settings.get_value("role_power_tm"),
+        "role": config["roles"]["power_tm"],
         "buffer_requirement": 256000,
         "message_requirement": 22500,
         "next_buffer_requirement": 512000,
@@ -114,16 +86,9 @@ user_class = {
     },
     "elite_tm": {
         "user_class": "Elite TM",
-        "previous_user_class": (
-            "Member",
-            "User",
-            "Power User",
-            "Elite",
-            "Torrent Master",
-            "Power TM",
-        ),
+        "previous_user_class": ("Member", "User", "Power User", "Elite", "Torrent Master", "Power TM"),
         "next_user_class": ("Legend",),
-        "role": settings.get_value("role_elite_tm"),
+        "role": config["roles"]["elite_tm"],
         "buffer_requirement": 512000,
         "message_requirement": 45000,
         "next_buffer_requirement": 1048576,
@@ -132,17 +97,9 @@ user_class = {
     },
     "legend": {
         "user_class": "Legend",
-        "previous_user_class": (
-            "Member",
-            "User",
-            "Power User",
-            "Elite",
-            "Torrent Master",
-            "Power TM",
-            "Elite TM",
-        ),
+        "previous_user_class": ("Member", "User", "Power User", "Elite", "Torrent Master", "Power TM", "Elite TM"),
         "next_user_class": (),
-        "role": settings.get_value("role_legend"),
+        "role": config["roles"]["legend"],
         "buffer_requirement": 1048576,
         "message_requirement": 80000,
         "next_buffer_requirement": 0,
@@ -152,29 +109,21 @@ user_class = {
 }
 
 user_class_role = {
-    "member": settings.get_value("role_member"),
-    "user": settings.get_value("role_user"),
-    "power_user": settings.get_value("role_power_user"),
-    "elite": settings.get_value("role_elite"),
-    "torrent_master": settings.get_value("role_torrent_master"),
-    "power_tm": settings.get_value("role_power_tm"),
-    "elite_tm": settings.get_value("role_elite_tm"),
-    "legend": settings.get_value("role_legend"),
+    "member": config["roles"]["member"],
+    "user": config["roles"]["user"],
+    "power_user": config["roles"]["power_user"],
+    "elite": config["roles"]["elite"],
+    "torrent_master": config["roles"]["torrent_master"],
+    "power_tm": config["roles"]["power_tm"],
+    "elite_tm": config["roles"]["elite_tm"],
+    "legend": config["roles"]["legend"],
 }
 
 # The user stats template.
 stats_template = {
     "user_class": "Member",
     "previous_user_class": (),
-    "next_user_class": (
-        "User",
-        "Power User",
-        "Elite",
-        "Torrent Master",
-        "Power TM",
-        "Elite TM",
-        "Legend",
-    ),
+    "next_user_class": ("User", "Power User", "Elite", "Torrent Master", "Power TM", "Elite TM", "Legend"),
     "buffer": 0,
     "next_user_class_buffer": 0,
     "message_count": 0,
@@ -189,7 +138,7 @@ stats_template = {
     "saturation_upgrade": 0,
     "value_upgrade": 0,
     "daily_timestamp": 0,
-    "achievements": [],
+    "economy": [],
 }
 
 
@@ -207,16 +156,16 @@ class LevelingCog(Cog):
         if message.author.bot:
             return
 
-        # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
-        user = achievements.find_one(user_id=message.author.id)
+        # Connect to the database and get the economy table.
+        db = database.Database().get()
+        economy = db["economy"]
+        user = economy.find_one(user_id=message.author.id)
 
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
         if not user:
             stats_json = await self.create_user()
-            achievements.insert(dict(user_id=message.author.id, stats=stats_json))
-            user = achievements.find_one(user_id=message.author.id)
+            economy.insert(dict(user_id=message.author.id, stats=stats_json))
+            user = economy.find_one(user_id=message.author.id)
 
         # Load the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
@@ -228,7 +177,7 @@ class LevelingCog(Cog):
             stats = await self.calculate_buffer(message, stats)
             # Dump the modified JSON into the db.
             stats_json = json.dumps(stats)
-            achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+            economy.update(dict(id=user["id"], stats=stats_json), ["id"])
             db.commit()
 
         # Close the connection.
@@ -243,15 +192,15 @@ class LevelingCog(Cog):
             return
 
         # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
-        user = achievements.find_one(user_id=before.author.id)
+        db = database.Database().get()
+        economy = db["economy"]
+        user = economy.find_one(user_id=before.author.id)
 
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
         if not user:
             stats_json = await self.create_user()
-            achievements.insert(dict(user_id=before.author.id, stats=stats_json))
-            user = achievements.find_one(user_id=before.author.id)
+            economy.insert(dict(user_id=before.author.id, stats=stats_json))
+            user = economy.find_one(user_id=before.author.id)
 
         # Load the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
@@ -265,7 +214,7 @@ class LevelingCog(Cog):
             stats_new = await self.calculate_buffer(after, stats_old)
             # Dump the modified JSON into the db.
             stats_json = json.dumps(stats_new)
-            achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+            economy.update(dict(id=user["id"], stats=stats_json), ["id"])
             db.commit()
 
         # Close the connection.
@@ -280,15 +229,15 @@ class LevelingCog(Cog):
             return
 
         # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
-        user = achievements.find_one(user_id=message.author.id)
+        db = database.Database().get()
+        economy = db["economy"]
+        user = economy.find_one(user_id=message.author.id)
 
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
         if not user:
             stats_json = await self.create_user()
-            achievements.insert(dict(user_id=message.author.id, stats=stats_json))
-            user = achievements.find_one(user_id=message.author.id)
+            economy.insert(dict(user_id=message.author.id, stats=stats_json))
+            user = economy.find_one(user_id=message.author.id)
 
         # Load the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
@@ -300,7 +249,7 @@ class LevelingCog(Cog):
             stats = await self.calculate_buffer_remove(message, stats)
             # Dump the modified JSON into the db.
             stats_json = json.dumps(stats)
-            achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+            economy.update(dict(id=user["id"], stats=stats_json), ["id"])
             db.commit()
 
         # Close the connection.
@@ -310,11 +259,11 @@ class LevelingCog(Cog):
     async def on_member_join(self, member: Member):
         """Automatically add the user's custom role back if possible."""
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Get the user that just joined.
-        achievements = db["achievements"]
-        user = achievements.find_one(user_id=member.id)
+        economy = db["economy"]
+        user = economy.find_one(user_id=member.id)
 
         # If the user is found, load the JSON object in the database into a dictionary.
         if user:
@@ -330,7 +279,7 @@ class LevelingCog(Cog):
                     stats["custom_role_id"] = 0
                     # Dump the modified JSON into the db.
                     stats_json = json.dumps(stats)
-                    achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+                    economy.update(dict(id=user["id"], stats=stats_json), ["id"])
                     db.commit()
 
         # Close the connection.
@@ -366,8 +315,8 @@ class LevelingCog(Cog):
         buffer = length * multiplier
 
         # If the message author is a server booster, give them 20% more buffer per message.
-        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
-        if role_server_booster in message.author.roles:
+        role_nitro_booster = discord.utils.get(message.guild.roles, id=config["roles"]["nitro_booster"])
+        if role_nitro_booster in message.author.roles:
             buffer += buffer * 0.2
 
         # Set a max cap to prevent abuse (low effort copy paste, trolling, copypasta, etc.)
@@ -468,7 +417,7 @@ class LevelingCog(Cog):
         buffer = length * multiplier
 
         # 20% more buffer to be removed per message if the author is a server booster.
-        role_server_booster = discord.utils.get(message.guild.roles, id=settings.get_value("role_server_booster"))
+        role_server_booster = discord.utils.get(message.guild.roles, id=config["roles"]["nitro_booster"])
         if role_server_booster in message.author.roles:
             buffer += buffer * 0.2
 
@@ -518,18 +467,16 @@ class LevelingCog(Cog):
         in favor of multiple if statements for better efficiency.
         """
         # Return False if the channel is #shitposts.
-        if message.channel.id == settings.get_value("channel_shitposts"):
+        if message.channel.id == config["channels"]["shitposts"]:
             return False
         # Return True if the channel is #mudae-lounge or #bot-testing (for testing convenience).
         elif message.channel.id in {
-            settings.get_value("channel_mudae_lounge"),
-            settings.get_value("channel_bot_testing"),
+            config["channels"]["mudae_lounge"],
+            config["channels"]["bot_testing"],
         }:
             return True
         # Return True if the channel is under the "Community" category.
-        elif any(
-            message.channel.category.id == settings.get_value("category_community") for _ in message.guild.categories
-        ):
+        elif any(message.channel.category.id == config["categories"]["community"] for _ in message.guild.categories):
             return True
         # Return False otherwise.
         else:

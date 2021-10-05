@@ -3,7 +3,6 @@ import json
 import logging
 import re
 
-import dataset
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
@@ -11,8 +10,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from cogs.commands import settings
 from utils import embeds, database
+from utils.config import config
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
@@ -27,9 +26,10 @@ class Console(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="system",
-        name="call",
+        subcommand_group="call",
+        name="console",
         description="Single target cheat commands",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -124,12 +124,8 @@ class Console(Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            settings.get_value("guild_id"): [
-                create_permission(
-                    settings.get_value("role_developer"),
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
+            config["guild_ids"][0]: [
+                create_permission(config["roles"]["developer"], SlashCommandPermissionType.ROLE, True),
             ]
         },
     )
@@ -155,16 +151,16 @@ class Console(Cog):
         """Single target cheat commands."""
         await ctx.defer()
 
-        # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
+        # Connect to the database and get the economy table.
+        db = database.Database().get()
+        economy = db["economy"]
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
         # Attempt to find the user who issued the command.
-        user_entry = achievements.find_one(user_id=user.id)
+        user_entry = economy.find_one(user_id=user.id)
 
         # Return if the user is not found in the database.
         if not user_entry:
@@ -367,7 +363,7 @@ class Console(Cog):
 
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
-        achievements.update(dict(id=user_entry["id"], stats=stats_json), ["id"])
+        economy.update(dict(id=user_entry["id"], stats=stats_json), ["id"])
 
         # Commit the changes to the database and close it.
         db.commit()
@@ -376,9 +372,10 @@ class Console(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="system",
+        subcommand_group="call",
         name="global",
         description="Global cheat commands",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="add_buffer",
@@ -405,16 +402,6 @@ class Console(Cog):
                 required=False,
             ),
         ],
-        base_default_permission=False,
-        base_permissions={
-            settings.get_value("guild_id"): [
-                create_permission(
-                    settings.get_value("role_developer"),
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-            ]
-        },
     )
     async def global_console(
         self,
@@ -427,9 +414,9 @@ class Console(Cog):
         """ " Global commands."""
         await ctx.defer()
 
-        # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
+        # Connect to the database and get the economy table.
+        db = database.Database().get()
+        economy = db["economy"]
 
         # Initialize the embed.
         embed = embeds.make_embed(color="green")
@@ -438,12 +425,12 @@ class Console(Cog):
         if add_buffer is not None and add_buffer >= 0:
             entry_counter = 0
             # Iterate through all user entries in the database and update them.
-            for entry in achievements:
+            for entry in economy:
                 entry_counter += 1
                 entry_stats = json.loads(entry["stats"])
                 entry_stats["buffer"] += add_buffer
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+                economy.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
             embed.description = f"{entry_counter} members buffer have been increased by {add_buffer}!"
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is < 0, return.
@@ -458,14 +445,14 @@ class Console(Cog):
         if remove_buffer is not None and remove_buffer >= 0:
             entry_counter = 0
             # Iterate through all user entries in the database and update them.
-            for entry in achievements:
+            for entry in economy:
                 entry_counter += 1
                 entry_stats = json.loads(entry["stats"])
                 # If the total amount would go below 0, set it to 0 instead.
                 entry_stats["buffer"] -= remove_buffer if entry_stats["buffer"] - remove_buffer >= 0 else 0
                 # Dump the modified JSON into the db.
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+                economy.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
             embed.description = f"{entry_counter} members buffer have been decreased by {remove_buffer}!"
             await ctx.send(embed=embed)
         # Else if the input parameter exists but is < 0, return.
@@ -480,12 +467,12 @@ class Console(Cog):
         if add_freeleech_token is not None and add_freeleech_token >= 0:
             entry_counter = 0
             # Iterate through all user entries in the database and update them.
-            for entry in achievements:
+            for entry in economy:
                 entry_counter += 1
                 entry_stats = json.loads(entry["stats"])
                 entry_stats["freeleech_token"] += add_freeleech_token
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+                economy.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
             embed.description = f"{add_freeleech_token} freeleech token(s) were given to {entry_counter} members!"
             await ctx.send(embed=embed)
             # Else if the input parameter exists but is < 0, return.
@@ -500,7 +487,7 @@ class Console(Cog):
         if remove_freeleech_token is not None and remove_freeleech_token >= 0:
             entry_counter = 0
             # Iterate through all user entries in the database and update them.
-            for entry in achievements:
+            for entry in economy:
                 entry_counter += 1
                 entry_stats = json.loads(entry["stats"])
                 # If the total amount would go below 0, set it to 0 instead.
@@ -509,7 +496,7 @@ class Console(Cog):
                 )
                 # Dump the modified JSON into the db.
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+                economy.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
             embed.description = (
                 f"{remove_freeleech_token} freeleech token(s) were removed from {entry_counter} members!"
             )
@@ -527,10 +514,12 @@ class Console(Cog):
         db.close()
 
     @commands.before_invoke(record_usage)
-    @cog_ext.cog_slash(
+    @cog_ext.cog_subcommand(
+        base="system",
+        subcommand_group="call",
         name="refresh",
         description="Reload the user profile stats",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="user",
@@ -539,24 +528,15 @@ class Console(Cog):
                 required=False,
             ),
         ],
-        default_permission=False,
-        permissions={
-            settings.get_value("guild_id"): [
-                create_permission(
-                    settings.get_value("role_developer"),
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-            ]
-        },
+        base_default_permission=False,
     )
     async def refresh(self, ctx: SlashContext, user: discord.User = None):
         """A command to forcefully reload the user stats to add missing keys or remove deprecated keys."""
         await ctx.defer()
 
-        # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
+        # Connect to the database and get the economy table.
+        db = database.Database().get()
+        economy = db["economy"]
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
@@ -564,11 +544,11 @@ class Console(Cog):
         # If the user is not specified, default it to a global command.
         if not user:
             # Iterate through all the entries in the database and add the missing or remove the deprecated keys.
-            for entry in achievements:
+            for entry in economy:
                 entry_stats = json.loads(entry["stats"])
                 entry_stats = await leveling_cog.verify_integrity(entry_stats)
                 entry_stats_json = json.dumps(entry_stats)
-                achievements.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
+                economy.update(dict(id=entry["id"], stats=entry_stats_json), ["id"])
 
             # Commit the changes to the database and close it.
             db.commit()
@@ -583,7 +563,7 @@ class Console(Cog):
             user = await self.bot.fetch_user(user)
 
         # Attempt to find the user who issued the command.
-        user_entry = achievements.find_one(user_id=user.id)
+        user_entry = economy.find_one(user_id=user.id)
 
         # Return if the user is not found in the database.
         if not user_entry:
@@ -595,7 +575,7 @@ class Console(Cog):
 
         # Dump the modified JSON into the db.
         stats_json = json.dumps(stats)
-        achievements.update(dict(id=user_entry["id"], stats=stats_json), ["id"])
+        economy.update(dict(id=user_entry["id"], stats=stats_json), ["id"])
 
         # Send an embed to notify when the task is done.
         embed = embeds.make_embed(description=f"Successfully reloaded {user.mention}'s stats.", color="green")

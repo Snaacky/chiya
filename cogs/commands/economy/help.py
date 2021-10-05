@@ -4,8 +4,8 @@ from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 
-from cogs.commands import settings
 from utils import embeds
+from utils.config import config
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class HelpCog(Cog):
     @cog_ext.cog_slash(
         name="help",
         description="Detailed information about the economy",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
     )
     async def help(self, ctx: SlashContext):
         """Help command to view the detailed information about the economy system."""
@@ -29,8 +29,8 @@ class HelpCog(Cog):
 
         # Warn if the command is called outside of #bots channel. Using a tuple is more memory efficient.
         if ctx.channel.id not in (
-            settings.get_value("channel_bots"),
-            settings.get_value("channel_bot_testing"),
+            config["channels"]["bots"],
+            config["channels"]["bot_testing"],
         ):
             return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
@@ -115,17 +115,17 @@ class HelpCog(Cog):
     @cog_ext.cog_slash(
         name="commands",
         description="Detailed information about the economy",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
     )
     async def commands(self, ctx: SlashContext):
         """Help command to view a list of user commands."""
         await ctx.defer()
 
         # Warn if the command is called outside of #bots channel. Using a set is faster than a tuple.
-        if ctx.channel.id not in {
-            settings.get_value("channel_bots"),
-            settings.get_value("channel_bot_testing"),
-        }:
+        if ctx.channel.id not in (
+            config["channels"]["bots"],
+            config["channels"]["bot_testing"],
+        ):
             return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         embed = embeds.make_embed(title="Economy commands", color="green")

@@ -79,6 +79,13 @@ class Database:
             tickets.create_column("log_url", db.types.text)
             log.info("Created missing table: tickets")
 
+        # Create achievements table and columns to store user stats.
+        if "economy" not in db:
+            achievements = db.create_table("economy")
+            achievements.create_column("user_id", db.types.bigint)
+            achievements.create_column("stats", db.types.json)
+            log.info("Created missing table: economy")
+
         # Commit the changes to the database and close the connection.
         db.commit()
         db.close()

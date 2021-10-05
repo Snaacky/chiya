@@ -2,15 +2,14 @@ import asyncio
 import json
 import logging
 
-import dataset
 import discord.utils
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
-from cogs.commands import settings
 from utils import embeds, database
+from utils.config import config
 from utils.record import record_usage
 
 log = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ class BuyRoleMentionCog(Cog):
         subcommand_group="role",
         name="mention",
         description="Enables the custom role to be mentionable",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=config["guild_ids"],
         options=[
             create_option(
                 name="freeleech",
@@ -44,28 +43,26 @@ class BuyRoleMentionCog(Cog):
 
         # Warn if the command is called outside of #bots channel. Using a tuple is more memory efficient.
         if ctx.channel.id not in (
-            settings.get_value("channel_bots"),
-            settings.get_value("channel_bot_testing"),
+            config["channels"]["bots"],
+            config["channels"]["bot_testing"],
         ):
-            return await embeds.error_message(
-                ctx=ctx, description="This command can only be run in #bots channel."
-            )
+            return await embeds.error_message(ctx=ctx, description="This command can only be run in #bots channel.")
 
         # Get the LevelingCog for utilities functions.
         leveling_cog = self.bot.get_cog("LevelingCog")
 
-        # Connect to the database and get the achievement table.
-        db = dataset.connect(database.get_db())
-        achievements = db["achievements"]
+        # Connect to the database and get the economy table.
+        db = database.Database().get()
+        economy = db["economy"]
 
         # Attempt to find the user who issued the command.
-        user = achievements.find_one(user_id=ctx.author.id)
+        user = economy.find_one(user_id=ctx.author.id)
 
         # If the user is not found, initialize their entry, insert it into the db and get their entry which was previously a NoneType.
         if not user:
             stats_json = await leveling_cog.create_user()
-            achievements.insert(dict(user_id=ctx.author.id, stats=stats_json))
-            user = achievements.find_one(user_id=ctx.author.id)
+            economy.insert(dict(user_id=ctx.author.id, stats=stats_json))
+            user = economy.find_one(user_id=ctx.author.id)
 
         # Load the JSON object in the database into a dictionary to manipulate.
         stats = json.loads(user["stats"])
@@ -113,7 +110,9 @@ class BuyRoleMentionCog(Cog):
                 f"freeleech {'tokens' if fl_token > 1 else 'token'}? (yes/no/y/n)"
             )
         else:
-            confirm_embed.description = f"{ctx.author.mention}, enable your custom role to be mentionable for {cost} MB? (yes/no/y/n)"
+            confirm_embed.description = (
+                f"{ctx.author.mention}, enable your custom role to be mentionable for {cost} MB? (yes/no/y/n)"
+            )
         await ctx.send(embed=confirm_embed)
 
         # A function to check if the reply is "yes", "no", "y", or "n", and is the command's author in the current channel.
@@ -147,31 +146,27 @@ class BuyRoleMentionCog(Cog):
         # A check to make sure that the role actually exists since it's modifiable using the developer console.
         if not role:
             db.close()
-            return await embeds.error_message(
-                ctx=ctx, description="This role does not exist."
-            )
+            return await embeds.error_message(ctx=ctx, description="This role does not exist.")
 
         await role.edit(mentionable=True)
 
         # Create the embed to let the user know that the transaction was a success.
-        embed = embeds.make_embed(
-            title=f"Custom role upgraded: {role.name}", color="green"
-        )
+        embed = embeds.make_embed(title=f"Custom role upgraded: {role.name}", color="green")
         embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar_url)
 
         # Update the JSON object accordingly with flexible embed description and field.
         if freeleech:
             stats["freeleech_token"] -= fl_token
-            embed.description = f"Successfully purchased role mention for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+            embed.description = (
+                f"Successfully purchased role mention for {fl_token} freeleech {'tokens' if fl_token > 1 else 'token'}."
+            )
             embed.add_field(
                 name="​",
                 value=f"**Remaining freeleech tokens:** {stats['freeleech_token']}",
             )
         else:
             stats["buffer"] -= cost
-            embed.description = (
-                f"Successfully purchased role mention for {cost} MB buffer."
-            )
+            embed.description = f"Successfully purchased role mention for {cost} MB buffer."
             # Get the formatted buffer string.
             buffer_string = await leveling_cog.get_buffer_string(stats["buffer"])
             embed.add_field(name="​", value=f"**New buffer:** {buffer_string}")
@@ -180,7 +175,7 @@ class BuyRoleMentionCog(Cog):
 
         # Dump the modified JSON into the db and close it.
         stats_json = json.dumps(stats)
-        achievements.update(dict(id=user["id"], stats=stats_json), ["id"])
+        economy.update(dict(id=user["id"], stats=stats_json), ["id"])
         db.commit()
         db.close()
 
