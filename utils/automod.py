@@ -1,7 +1,7 @@
 import json
 import re
 
-from utils.config    import config
+from utils.config import config
 import dataset
 import discord
 from fuzzywuzzy import fuzz
@@ -15,8 +15,17 @@ async def check_message(message: discord.Message) -> bool:
     # Ignore the message if it's not from the automod-enabled channels/categories
     if not await is_in_enabled_channels(message):
         return False
+    
+    # excluding the message if the user's role has been excluded from automod
+    for role in message.author.roles:
+        if role.id in config['automod']['excluded_roles']:
+            return False
 
-    db = dataset.connect(database.get_db())
+    # excluding the message if the user has been excluded from automod
+    if message.author.id in config['automod']['excluded_users']:
+        return False
+
+    db = database.Database().get()
     # querying each individual category from the database.
     regex_censors = db["censor"].find(censor_type="regex")
     for censor in regex_censors:
@@ -144,24 +153,16 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
 
 async def is_in_enabled_channels(message: discord.Message) -> bool:
     """Check if the sent message is from one of the enabled channels or not."""
-    # Get all categories from the guild.
-    categories = message.guild.categories
-    # Return true if the message was sent any channel under the community category.
-    if any(
-        message.channel.category.id == config["categories"]["community"]
-        for category in categories
-    ):
+    # if the channel category is enabled
+    if message.channel.category_id in config['automod']['enabled_categories']:
+        # in case the channel the messagae was sent in was disabled
+        if message.channel.id in config['automod']['disabled_channels']:
+            return False
+        
         return True
-    # Return true if the message was sent any channel under the bots category.
-    if any(
-        message.channel.category.id == config["categories"]["bots"]
-        for category in categories
-    ):
+    
+    # in case a channel was specifically enabled for automod
+    if message.channel.id in config['automod']['enabled_channels']:
         return True
-    # Return true if the message was sent any channel under the voice category.
-    if any(
-        message.channel.category.id == config["categories"]["voice"]
-        for category in categories
-    ):
-        return True
+    
     return False
