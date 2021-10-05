@@ -33,6 +33,12 @@ channels:
   mute_log: 000000000000000000
   ticket_log: 000000000000000000
   nitro_log: 000000000000000000
+automod:
+  enabled_categories: [000000000000000000]
+  enabled_channels: [000000000000000000]
+  disabled_channels: [000000000000000000]
+  excluded_roles: [000000000000000000]
+  excluded_users: [000000000000000000]
 reddit:
   subreddit: "animepiracy"
   channel: 000000000000000000
