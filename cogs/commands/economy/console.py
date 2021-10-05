@@ -26,8 +26,7 @@ class Console(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="system",
-        subcommand_group="call",
-        name="console",
+        name="call",
         description="Single target cheat commands",
         guild_ids=config["guild_ids"],
         options=[
@@ -372,7 +371,6 @@ class Console(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="system",
-        subcommand_group="call",
         name="global",
         description="Global cheat commands",
         guild_ids=config["guild_ids"],
@@ -516,7 +514,6 @@ class Console(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="system",
-        subcommand_group="call",
         name="refresh",
         description="Reload the user profile stats",
         guild_ids=config["guild_ids"],
@@ -528,7 +525,6 @@ class Console(Cog):
                 required=False,
             ),
         ],
-        base_default_permission=False,
     )
     async def refresh(self, ctx: SlashContext, user: discord.User = None):
         """A command to forcefully reload the user stats to add missing keys or remove deprecated keys."""
