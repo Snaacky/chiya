@@ -18,7 +18,7 @@ from utils.record import record_usage
 log = logging.getLogger(__name__)
 
 
-class BuyColorCog(Cog):
+class BuyRoleColorCog(Cog):
     """Buy color command cog."""
 
     def __init__(self, bot: Bot):
@@ -67,7 +67,7 @@ class BuyColorCog(Cog):
         v = 0
 
         # S and V floored at 33 to prevent unreadable colors on dark theme. Each S and V upgrade extends the ceiling by 0.67.
-        floor = 33
+        floor = 30
         if saturation_upgrade > 0 or value_upgrade > 0:
             s = random.randint(floor, math.floor((floor + saturation_upgrade * ((100 - floor) / 100)))) / 100
             v = random.randint(floor, math.floor((floor + value_upgrade * ((100 - floor) / 100)))) / 100
@@ -78,6 +78,7 @@ class BuyColorCog(Cog):
     @commands.before_invoke(record_usage)
     @cog_ext.cog_subcommand(
         base="buy",
+        subcommand_group="role",
         name="color",
         description="Roll for a random role color",
         guild_ids=[settings.get_value("guild_id")],
@@ -90,7 +91,7 @@ class BuyColorCog(Cog):
             ),
         ],
     )
-    async def buy_color(self, ctx: SlashContext, freeleech: bool = False):
+    async def buy_role_color(self, ctx: SlashContext, freeleech: bool = False):
         """Roll a random role color using buffer."""
         await ctx.defer()
 
@@ -221,5 +222,5 @@ class BuyColorCog(Cog):
 
 def setup(bot: Bot) -> None:
     """Load the BuyColor cog."""
-    bot.add_cog(BuyColorCog(bot))
+    bot.add_cog(BuyRoleColorCog(bot))
     log.info("Commands loaded: buy_color")
