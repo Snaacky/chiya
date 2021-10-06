@@ -2,7 +2,6 @@ import logging
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
-from utils import automod
 
 log = logging.getLogger(__name__)
 
