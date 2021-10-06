@@ -99,7 +99,7 @@ class ProfileCog(Cog):
             f"**Purchased color packs:** {color_packs}\n"
             f"**Vouches received:** {stats['vouch']}\n"
             f"**Freeleech tokens:** {stats['freeleech_token']}\n\n"
-            f"**Custom role:** {custom_role}\n\n"
+            f"**Custom role:** {custom_role} {'(mentionable)' if role and role.mentionable else ''}\n\n"
             f"**Buffer:** {buffer_string}"
         )
 
