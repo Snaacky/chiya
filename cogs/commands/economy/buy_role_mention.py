@@ -77,8 +77,15 @@ class BuyRoleMentionCog(Cog):
         # Condition: Must have at least 1 freeleech token.
         fl_token_check = stats["freeleech_token"] >= fl_token
 
+        # Condition: Must already own a custom role.
+        custom_role_check = stats["has_custom_role"]
+
+        # Condition: Role must not be mentionable yet.
+        role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
+        mentionable_check = role.mentionable if role else False
+
         # If any of the conditions were not met, return an error embed.
-        if not buffer_check or (freeleech and not fl_token_check):
+        if not buffer_check or (freeleech and not fl_token_check) or not custom_role_check or mentionable_check:
             embed = embeds.make_embed(
                 title=f"Transaction failed",
                 description="One or more of the following conditions were not met:",
@@ -91,6 +98,18 @@ class BuyRoleMentionCog(Cog):
                 embed.add_field(
                     name="​",
                     value=f"**Condition:** You must have at least {await leveling_cog.get_buffer_string(cost)} buffer.",
+                    inline=False,
+                )
+            if not custom_role_check:
+                embed.add_field(
+                    name="​",
+                    value="**Condition:** You must own a custom role.",
+                    inline=False,
+                )
+            if mentionable_check:
+                embed.add_field(
+                    name="​",
+                    value=f"**Condition:** Your custom role {role.mention} is already mentionable.",
                     inline=False,
                 )
             if freeleech and not fl_token_check:
@@ -141,13 +160,7 @@ class BuyRoleMentionCog(Cog):
             db.close()
             return await ctx.send(embed=embed)
 
-        role = discord.utils.get(ctx.guild.roles, id=stats["custom_role_id"])
-
-        # A check to make sure that the role actually exists since it's modifiable using the developer console.
-        if not role:
-            db.close()
-            return await embeds.error_message(ctx=ctx, description="This role does not exist.")
-
+        # Edit the role to be mentionable.
         await role.edit(mentionable=True)
 
         # Create the embed to let the user know that the transaction was a success.
