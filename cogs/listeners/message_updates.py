@@ -133,11 +133,6 @@ class MessageUpdates(commands.Cog):
                     delete_message_days=1
                 )
 
-        if (await automod.check_message(message)):
-            await message.delete()
-            # if there is an offending term in a command, don't even process it
-            return
-
         # If message does not follow with the above code, treat it as a potential command.
         await self.bot.process_commands(message)
 
