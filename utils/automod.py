@@ -1,12 +1,11 @@
 import json
 import re
 
-from utils.config import config
-import dataset
 import discord
 from fuzzywuzzy import fuzz
 
 from utils import database
+from utils.config import config
 
 
 async def check_message(message: discord.Message) -> bool:
@@ -15,14 +14,14 @@ async def check_message(message: discord.Message) -> bool:
     # Ignore the message if it's not from the automod-enabled channels/categories
     if not await is_in_enabled_channels(message):
         return False
-    
+
     # excluding the message if the user's role has been excluded from automod
     for role in message.author.roles:
-        if role.id in config['automod']['excluded_roles']:
+        if role.id in config["automod"]["excluded_roles"]:
             return False
 
     # excluding the message if the user has been excluded from automod
-    if message.author.id in config['automod']['excluded_users']:
+    if message.author.id in config["automod"]["excluded_users"]:
         return False
 
     db = database.Database().get()
@@ -154,15 +153,15 @@ def check_fuzzy(message: str, term: str, threshold: int) -> bool:
 async def is_in_enabled_channels(message: discord.Message) -> bool:
     """Check if the sent message is from one of the enabled channels or not."""
     # if the channel category is enabled
-    if message.channel.category_id in config['automod']['enabled_categories']:
+    if message.channel.category_id in config["automod"]["enabled_categories"]:
         # in case the channel the messagae was sent in was disabled
-        if message.channel.id in config['automod']['disabled_channels']:
+        if message.channel.id in config["automod"]["disabled_channels"]:
             return False
-        
+
         return True
-    
+
     # in case a channel was specifically enabled for automod
-    if message.channel.id in config['automod']['enabled_channels']:
+    if message.channel.id in config["automod"]["enabled_channels"]:
         return True
-    
+
     return False

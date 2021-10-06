@@ -54,8 +54,12 @@ class AutomodCog(commands.Cog):
         base_default_permission=False,
         base_permissions={
             config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
+                create_permission(
+                    config["roles"]["staff"], SlashCommandPermissionType.ROLE, True
+                ),
+                create_permission(
+                    config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True
+                ),
             ]
         },
     )
@@ -156,7 +160,6 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        
     )
     async def add_censor(
         self,
@@ -219,7 +222,6 @@ class AutomodCog(commands.Cog):
             )
         ],
         base_default_permission=False,
-        
     )
     async def disable_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
@@ -262,7 +264,6 @@ class AutomodCog(commands.Cog):
             )
         ],
         base_default_permission=False,
-        
     )
     async def enable_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
@@ -305,7 +306,6 @@ class AutomodCog(commands.Cog):
             )
         ],
         base_default_permission=False,
-        
     )
     async def delete_censor(self, ctx: SlashContext, id: int):
         await ctx.defer()
@@ -353,7 +353,6 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        
     )
     async def exclude_user_from_automod(
         self, ctx: SlashContext, id: int, excluded_user: discord.User
@@ -412,7 +411,6 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        
     )
     async def unexclude_user_from_automod(
         self, ctx: SlashContext, id: int, unexcluded_user: discord.User
@@ -477,7 +475,6 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        
     )
     async def exclude_role_from_automod(
         self, ctx: SlashContext, id: int, excluded_role: discord.Role
@@ -534,7 +531,6 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=False,
-        
     )
     async def unexclude_role_from_automod(
         self, ctx: SlashContext, id: int, unexcluded_role: discord.Role
@@ -591,7 +587,6 @@ class AutomodCog(commands.Cog):
             ),
         ],
         base_default_permission=True,
-        
     )
     async def automod_details(self, ctx: SlashContext, id: int):
         await ctx.defer()
