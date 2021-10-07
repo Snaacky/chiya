@@ -5,8 +5,8 @@ import discord
 from discord import Member
 from discord.ext import commands
 
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class MutesHandler(commands.Cog):
         mute_channel = discord.utils.get(guild.channels, name=f"mute-{member.id}")
 
         if mute_channel:
-            mod_channel = guild.get_channel(settings.get_value("channel_moderation"))
+            mod_channel = guild.get_channel(config["channels"]["moderation"])
             user = await self.bot.fetch_user(member.id)
 
             # Add an unmute entry in the database to prevent archive_mute_channel()'s unmuter throwing NoneType() exception.

@@ -19,46 +19,40 @@ You will also need a Discord bot with [privileged intents](https://discordpy.rea
 
 ## Install
 
-**Step 1:** Download the `docker-compose.yml` to your local file system with `curl`, `wget`, etc. like so:
-```
-$ wget https://raw.githubusercontent.com/ranimepiracy/chiya/master/docker-compose.yml
-```
+**Step 1:** Download the `docker-compose.yml` to your local file system.
 
-**Step 2:** Create a `.env` file in the same folder as you saved your `docker-compose.yml` and fill out the following:
+**Step 2:** Create a `.env` file in the same folder and fill out the following:
 
 ```env
-# The Discord bot token from https://discordapp.com/developers/
+# The bot token for the Discord application
+# https://discordapp.com/developers/
 BOT_TOKEN=
 
-# The prefix for the bot to use. 
-# Not all commands are ported to slash commands due to some limitations.
-BOT_PREFIX=
-
-# The level at which logs should be outputted to console.
-# NOTSET, TRACE, DEBUG, INFO, WARN, ERROR, or CRITICAL
-LOG_LEVEL=
-
-# The folder where you plan to store your database files (on the host OS)
-DATABASE_FOLDER=
-
-# The folder where you plan to store your bot logs (on the host OS)
-LOGS_FOLDER=
-
-# Set two unique secure passwords for your MySQL users
-MYSQL_PASSWORD=
-MYSQL_ROOT_PASSWORD=
-
-# Your Reddit bot information from https://www.reddit.com/prefs/apps/
+# The client ID and secret for the Reddit application
+# https://www.reddit.com/prefs/apps/
 REDDIT_CLIENT_ID=
 REDDIT_CLIENT_SECRET=
 
-# Your Reddit bot user agent, see: https://github.com/reddit-archive/reddit/wiki/API#rules
-REDDIT_USER_AGENT=
+# The authentication settings for the database
+MYSQL_HOST=
+MYSQL_DB=
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_ROOT_PASSWORD=
+
+# The path on your host file system to config.yml
+CONFIG=
+
+# The folder on your host file system for storing database data
+DATABASE_FOLDER=
+
+# The folder on your host file system for storing logs
+LOGS_FOLDER=
 ```
 
-**Step 3:** Pull the Docker image by executing `docker-compose pull` in the same folder as the `docker-compose.yml`
+**Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out. 
 
-**Step 4:** Start Chiya by executing `docker container start chiya_bot_1`
+**Step 4:** Pull the Docker image and start the containers by running `docker-compose up -d` in the same folder.
 
 ## Contributing
 
@@ -67,7 +61,7 @@ Contributors are more than welcome to help make Chiya a better bot. Please follo
 1. Reach out on Discord and propose your idea beforehand.
 2. Clone the repository `git clone` and create a new branch `git checkout -b branch_name` for your work.
 3. Add a feature, fix a bug, or refactor some code.
-4. Open a Pull Request with a comprehensive description of changes.
+4. Open a Pull Request with a comprehensive list of changes.
 
 ## Built on
 
@@ -78,4 +72,5 @@ Chiya relies predominantly on the following projects:
 * [Docker](https://www.docker.com/)
 * [discord.py](https://github.com/Rapptz/discord.py)
 * [discord-interactions](https://github.com/goverfl0w/discord-interactions)
-* [dataset](https://dataset.readthedocs.io)
+* [dataset](https://github.com/pudo/dataset)
+* [asyncpraw](https://github.com/praw-dev/asyncpraw)

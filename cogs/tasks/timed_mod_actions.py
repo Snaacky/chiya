@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
@@ -35,11 +35,11 @@ class TimedModActionsTask(Cog):
             end_time={"lt": datetime.now(tz=timezone.utc).timestamp()}
         )
 
-        # Get the guild and mod channel to send the expiration notice into.
-        guild = self.bot.get_guild(settings.get_value("guild_id"))
-        channel = guild.get_channel(settings.get_value("channel_moderation"))
-
         for action in results:
+            # Get the guild and mod channel to send the expiration notice into.
+            guild = self.bot.get_guild(config["guild_ids"][0])
+            channel = guild.get_channel(config["channels"]["moderation"])
+
             if action["action_type"] == "mute":
                 # Update the database to mark the mod action as resolved.
                 db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])
@@ -83,26 +83,6 @@ class TimedModActionsTask(Cog):
                 await mutes.unmute_member(member=member, reason="Timed mute lapsed.", guild=guild)
                 await mutes.archive_mute_channel(user_id=member.id, guild=guild, reason="Mute time elapsed.")
                 await channel.send(embed=embed)
-
-            if action["action_type"] == "ban":
-                user = await self.bot.fetch_user(action["user_id"])
-
-                # Start creating the embed that will be used to alert the moderator that the user was successfully unbanned.
-                embed = embeds.make_embed(
-                    ctx=None,
-                    title=f"Unbanning user: {user}",
-                    thumbnail_url="https://i.imgur.com/4H0IYJH.png",
-                    color="soft_green"
-                )
-                embed.description = f"{user.mention} was unbanned as their temporary ban elapsed."
-
-                # Get the BanCog so that we can access functions from it.
-                bans = self.bot.get_cog("BanCog")
-
-                # Unbans the user and returns the embed letting the moderator know they were successfully unbanned.
-                await bans.unban_user(user=user, reason="Temporary ban elapsed.", guild=guild)
-                await channel.send(embed=embed)
-                db["timed_mod_actions"].update(dict(id=action["id"], is_done=True), ["id"])
 
             if action["action_type"] == "restrict":
                 # Update the database to mark the mod action as resolved.

@@ -1,23 +1,29 @@
 import logging
-import os
 
 import dataset
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
+
+from utils.config import config
 
 log = logging.getLogger(__name__)
 
 
 class Database:
     def __init__(self) -> None:
-        self.host = os.getenv("MYSQL_HOST")
-        self.db = os.getenv("MYSQL_DATABASE")
-        self.user = os.getenv("MYSQL_USER")
-        self.password = os.getenv("MYSQL_PASSWORD")
-        self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.db}"
+        self.host = config["database"]["host"]
+        self.database = config["database"]["database"]
+        self.user = config["database"]["user"]
+        self.password = config["database"]["password"]
+
+        if not all([self.host, self.database, self.user, self.password]):
+            log.error("One or more database connection variables are missing, exiting...")
+            raise SystemExit
+
+        self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
 
     def get(self) -> dataset.Database:
-        """ Returns the dataset database object. """
+        """Returns the dataset database object."""
         return dataset.connect(url=self.url)
 
     def setup(self) -> None:
@@ -72,14 +78,6 @@ class Database:
             tickets.create_column("ticket_topic", db.types.text)
             tickets.create_column("log_url", db.types.text)
             log.info("Created missing table: tickets")
-
-        # Create settings table and columns to store key:value pairs.
-        if "settings" not in db:
-            settings = db.create_table("settings")
-            settings.create_column("name", db.types.text)
-            settings.create_column("value", db.types.text)
-            settings.create_column("censored", db.types.boolean)
-            log.info("Created missing table: settings")
 
         # Commit the changes to the database and close the connection.
         db.commit()

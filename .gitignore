@@ -138,7 +138,6 @@ dmypy.json
 cython_debug/
 
 # Chiya
-config.py
 .idea/
 .vscode/
 *config.yml
@@ -147,3 +146,4 @@ config.py
 notes.txt
 *.bat
 db/*
+*.lnk
