@@ -193,15 +193,10 @@ class NotesCog(Cog):
             )
 
         if not actions:
-<<<<<<< HEAD
-            # Nothing was found, so returning an appropriate error.
-            return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!") 
-=======
-            await embeds.error_message(
-                ctx=ctx, description="No mod actions found for that user!"
+            return await embeds.error_message(
+                ctx=ctx, 
+                description="No mod actions found for that user!"
             )
-            return
->>>>>>> master
 
         db.close()
 
