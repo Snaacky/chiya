@@ -187,14 +187,14 @@ class NotesCog(Cog):
             actions.append(
                 f"""**{action_type}**
                 **ID:** {action['id']}
-                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")}
                 **Moderator:** <@!{action['mod_id']}>
                 **Reason:** {action['reason']}"""
             )
 
         if not actions:
             return await embeds.error_message(
-                ctx=ctx, 
+                ctx=ctx,
                 description="No mod actions found for that user!"
             )
 
@@ -260,14 +260,10 @@ class NotesCog(Cog):
 
         mod_log = table.find_one(id=id)
         if not mod_log:
-<<<<<<< HEAD
-            return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
-=======
             await embeds.error_message(
                 ctx=ctx, description="Could not find a log with that ID!"
             )
             return
->>>>>>> master
 
         user = await self.bot.fetch_user(mod_log["user_id"])
         embed = embeds.make_embed(
