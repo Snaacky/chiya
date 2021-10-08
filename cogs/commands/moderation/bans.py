@@ -85,8 +85,11 @@ class BanCog(Cog):
             channel = await user.create_dm()
             embed = embeds.make_embed(
                 author=False,
-                title=f"Uh-oh, you've been banned!",
-                description="You can submit a ban appeal on our subreddit [here](https://www.reddit.com/message/compose/?to=/r/animepiracy).",
+                title="Uh-oh, you've been banned!",
+                description=(
+                    "You can submit a ban appeal on our subreddit [here]"
+                    "(https://www.reddit.com/message/compose/?to=/r/animepiracy)."
+                ),
                 color=0xc2bac0
             )
             embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
@@ -146,7 +149,6 @@ class BanCog(Cog):
         if member:
             if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
                 return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-                
 
         # Checks if the user is already banned and let's the mod know if they already were.
         banned = await self.is_user_banned(guild=ctx.guild.id, user=user)
@@ -159,7 +161,6 @@ class BanCog(Cog):
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully banned.
         embed = embeds.make_embed(
@@ -174,12 +175,18 @@ class BanCog(Cog):
         # If the bot was unable to DM the user, adds a notice to the output to let the mod know.
         sent = await self.send_banned_dm_embed(ctx=ctx, user=user, reason=reason)
         if not sent:
-            embed.add_field(name="Notice:", value=f"Unable to message {user.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {user.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # Bans the user and returns the embed letting the moderator know they were successfully banned.
         await self.ban_member(ctx=ctx, user=user, reason=reason, delete_message_days=daystodelete)
         return await ctx.send(embed=embed)
-            
 
     @commands.bot_has_permissions(ban_members=True, send_messages=True)
     @commands.before_invoke(record_usage)

@@ -94,7 +94,7 @@ class MuteCog(Cog):
             dm_channel = await member.create_dm()
             embed = embeds.make_embed(
                 author=False,
-                title=f"Uh-oh, you've been muted!",
+                title="Uh-oh, you've been muted!",
                 description="If you believe this was a mistake, contact staff.",
                 color=0x8083b0
             )
@@ -117,7 +117,7 @@ class MuteCog(Cog):
             channel = await member.create_dm()
             embed = embeds.make_embed(
                 author=False,
-                title=f"Yay, you've been unmuted!",
+                title="Yay, you've been unmuted!",
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
@@ -138,13 +138,22 @@ class MuteCog(Cog):
         category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
         channel = await ctx.guild.create_text_channel(f"mute-{member.id}", category=category)
 
-        # Give both the staff and the user perms to access the channel. 
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]), read_messages=True)
+        # Give both the staff and the user perms to access the channel.
+        await channel.set_permissions(
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]),
+            read_messages=True
+        )
+        await channel.set_permissions(
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]),
+            read_messages=True
+        )
         await channel.set_permissions(member, read_messages=True)
 
         # Create embed at the start of the channel letting the user know how long they're muted for and why.
-        embed = embeds.make_embed(title="🤐 You were muted", description="If you have any questions or concerns about your mute, you may voice them here.")
+        embed = embeds.make_embed(
+            title="🤐 You were muted",
+            description="If you have any questions or concerns about your mute, you may voice them here."
+        )
         embed.add_field(name="User:", value=member.mention, inline=True)
         embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
         embed.add_field(name="Length:", value=duration, inline=True)
@@ -165,7 +174,6 @@ class MuteCog(Cog):
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            
 
         guild = guild or ctx.guild
         category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
@@ -319,7 +327,7 @@ class MuteCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
@@ -352,18 +360,30 @@ class MuteCog(Cog):
 
             # Attempt to DM the user to let them know they were muted.
             if not await self.send_muted_dm_embed(ctx=ctx, member=member, channel=channel, reason=reason):
-                embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+                embed.add_field(
+                    name="Notice:",
+                    value=(
+                        f"Unable to message {member.mention} about this action. "
+                        "This can be caused by the user not being in the server, "
+                        "having DMs disabled, or having the bot blocked."
+                    )
+                )
 
             # Mutes the user and returns the embed letting the moderator know they were successfully muted.
             await self.mute_member(ctx=ctx, member=member, reason=reason)
             return await ctx.send(embed=embed)
-            
 
         # Get the duration string for embed and mute end time for the specified duration.
         duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            return await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+            return await embeds.error_message(
+                ctx=ctx,
+                description=(
+                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
+                    "You can specify up to all four but you only need one."
+                )
+            )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
         embed = embeds.make_embed(
@@ -379,11 +399,30 @@ class MuteCog(Cog):
         channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason, duration=duration_string)
 
         # Attempt to DM the user to let them know they were muted.
-        if not await self.send_muted_dm_embed(ctx=ctx, member=member, channel=channel, reason=reason, duration=duration_string):
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+        if not await self.send_muted_dm_embed(
+            ctx=ctx,
+            member=member,
+            channel=channel,
+            reason=reason,
+            duration=duration_string
+        ):
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # Mutes the user and stores the unmute time in the database for the background task.
-        await self.mute_member(ctx=ctx, member=member, reason=reason, temporary=True, end_time=mute_end_time.timestamp())
+        await self.mute_member(
+            ctx=ctx,
+            member=member,
+            reason=reason,
+            temporary=True,
+            end_time=mute_end_time.timestamp()
+        )
         await ctx.send(embed=embed)
 
     @commands.bot_has_permissions(manage_roles=True, send_messages=True)
@@ -420,7 +459,7 @@ class MuteCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
@@ -446,13 +485,20 @@ class MuteCog(Cog):
         )
         embed.description = f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
 
-        # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.
+        # Execution order is important here, otherwise the wrong unmuter will be used in the embed.
         await self.unmute_member(ctx=ctx, member=member, reason=reason)
         await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 
         # Attempt to DM the user to let them and the mods know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # If the mod sent the /unmute in the mute channel, this will cause a errors.NotFound 404.
         # We cannot send the embed and then archive the channel because that will cause a error.AlreadyResponded.
