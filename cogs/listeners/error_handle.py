@@ -71,8 +71,7 @@ class error_handle(Cog):
 
         # Checking if error hasn't already been handled locally
         if hasattr(error, "handled"):
-            log.trace(f"Command {command} had its error already handled locally; ignoring.")
-            return
+            return log.trace(f"Command {command} had its error already handled locally; ignoring.")
 
         # Going through diffrent types of errors to handle them differently.
         if isinstance(error, errors.CommandNotFound) and not hasattr(ctx, "invoked_from_error_handler"):

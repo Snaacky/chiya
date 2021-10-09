@@ -108,8 +108,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Length:", value=duration, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/NlXwNqW.gif")
-            await dm_channel.send(embed=embed)
-            return True
+            return await dm_channel.send(embed=embed)
         except discord.HTTPException:
             return False
 
@@ -130,8 +129,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/rvvnpV2.gif")
-            await channel.send(embed=embed)
-            return True
+            return await channel.send(embed=embed)
         except discord.HTTPException:
             return False
 
@@ -175,26 +173,22 @@ class RestrictCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is restricted already.
         if await self.is_user_restricted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is already restricted.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already restricted.")
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # If duration is not specified, default it to a permanent restrict.
         if not duration:
@@ -213,15 +207,13 @@ class RestrictCog(Cog):
 
             # Restricts the user and returns the embed letting the moderator know they were successfully restricted.
             await self.restrict_member(ctx=ctx, member=member, reason=reason)
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # Get the duration string for embed and restrict end time for the specified duration.
         duration_string, restrict_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully restricted.
         embed = embeds.make_embed(
@@ -275,26 +267,22 @@ class RestrictCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is not restricted already.
         if not await self.is_user_restricted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is not restricted.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not restricted.")
 
         # Automatically default the reason string to N/A when the moderator does not provide a reason.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.") 
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully unrestricted.
         embed = embeds.make_embed(

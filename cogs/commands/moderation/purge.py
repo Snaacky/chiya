@@ -76,8 +76,7 @@ class PurgeCog(Cog):
 
         # Limit the reason parameter to 512 characters.
         if reason and len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # Limit the command at 100 messages maximum to avoid abuse.
         amount = 100 if amount > 100 else amount

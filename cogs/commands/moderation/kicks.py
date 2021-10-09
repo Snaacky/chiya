@@ -58,21 +58,18 @@ class KickCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
-
+            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
+            
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,

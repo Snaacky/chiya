@@ -50,8 +50,8 @@ class Reminder(Cog):
         duration_string, end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
+            
 
         # Open a connection to the database.
         db = database.Database().get()
@@ -111,13 +111,11 @@ class Reminder(Cog):
         old_message = reminder["message"]
 
         if reminder["author_id"] != ctx.author.id:
-            await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
-            return
-
+            return await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
+            
         if reminder["sent"]:
-            await embeds.error_message(ctx, "That reminder doesn't exist.")
-            return
-
+            return await embeds.error_message(ctx, "That reminder doesn't exist.")
+            
         data = dict(id=reminder["id"], message=new_message)
         remind_me.update(data, ["id"])
 
@@ -205,16 +203,13 @@ class Reminder(Cog):
         reminder = table.find_one(id=reminder_id)
 
         if not reminder:
-            await embeds.error_message(ctx=ctx, description="Invalid ID.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Invalid ID.")
 
         if reminder["author_id"] != ctx.author.id:
-            await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
-            return
+            return await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
 
         if reminder["sent"]:
-            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
-            return
+            return await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
 
         # All the checks should be done.
         data = dict(id=reminder_id, sent=True)

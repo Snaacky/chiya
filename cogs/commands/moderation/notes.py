@@ -187,16 +187,16 @@ class NotesCog(Cog):
             actions.append(
                 f"""**{action_type}**
                 **ID:** {action['id']}
-                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")}
                 **Moderator:** <@!{action['mod_id']}>
                 **Reason:** {action['reason']}"""
             )
 
         if not actions:
-            await embeds.error_message(
-                ctx=ctx, description="No mod actions found for that user!"
+            return await embeds.error_message(
+                ctx=ctx,
+                description="No mod actions found for that user!"
             )
-            return
 
         db.close()
 
