@@ -1,6 +1,6 @@
-import datetime
 import logging
 import time
+from datetime import datetime
 
 import discord
 from discord.ext import commands
@@ -187,7 +187,7 @@ class NotesCog(Cog):
             actions.append(
                 f"""**{action_type}**
                 **ID:** {action['id']}
-                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")}
+                **Timestamp:** {datetime.fromtimestamp(action['timestamp'])} UTC
                 **Moderator:** <@!{action['mod_id']}>
                 **Reason:** {action['reason']}"""
             )
