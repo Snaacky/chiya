@@ -1,6 +1,7 @@
 import logging
 import requests
 
+import discord
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -42,12 +43,6 @@ class Server(Cog):
         description="Sets the banner to the image provided",
         guild_ids=config["guild_ids"],
         base_default_permission=False,
-        base_permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
         options=[
             create_option(
                 name="link",
@@ -62,19 +57,19 @@ class Server(Cog):
         await ctx.defer()
 
         r = requests.get(url=link)
-    
+
         if r.status_code != 200:
-            return await ctx.send("The link you entered was not accessible.")
-        
+            return await embeds.error_message(ctx=ctx, description="The link you entered was not accessible.")
+
         try:
             await ctx.guild.edit(banner=r.content)
-        except Exception:
-            return await ctx.send("Unable to set banner.")
+        except discord.errors.InvalidArgument:
+            return await embeds.error_message(ctx=ctx, description="Unable to set banner, verify the link is correct.")
 
         embed = embeds.make_embed(
             ctx=ctx,
-            title=f"Set banner",
-            description=f"Banner was set to [image]({link}) by {ctx.author.mention}",
+            title="Banner updated",
+            description=f"Banner [image]({link}) updated by {ctx.author.mention}",
             color="soft_green"
         )
 
