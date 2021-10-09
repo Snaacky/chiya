@@ -31,8 +31,8 @@ class BoostsHandler(commands.Cog):
                 title="A new booster appeared!",
                 description=(
                     "Thank you so much for the server boost! ",
-                    f"We are now at {after.premium_subscription_count} boosts! ",
-                    "You can contact any <@&763031634379276308> member with a ",
+                    f"We are now at {after.premium_subscription_count} boosts! "
+                    "You can contact any <@&763031634379276308> member with a "
                     "[hex color](https://www.google.com/search?q=hex+color) "
                     "and your desired role name for a custom booster role."
                 ),
