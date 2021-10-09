@@ -226,8 +226,11 @@ class TicketCog(Cog):
             embed = embeds.make_embed(
                 author=False,
                 color=0xF4CDC5,
-                title=f"Ticket closed",
-                description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
+                title="Ticket closed",
+                description=(
+                    "Your ticket was closed. "
+                    "Please feel free to create a new ticket should you have any further inquiries."
+                )
             )
             embed.add_field(
                 name="Server:",

@@ -50,8 +50,13 @@ class Reminder(Cog):
         duration_string, end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            return await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            
+            return await embeds.error_message(
+                ctx=ctx,
+                description=(
+                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
+                    "You can specify up to all four but you only need one."
+                )
+            )
 
         # Open a connection to the database.
         db = database.Database().get()
@@ -112,10 +117,10 @@ class Reminder(Cog):
 
         if reminder["author_id"] != ctx.author.id:
             return await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
-            
+
         if reminder["sent"]:
             return await embeds.error_message(ctx, "That reminder doesn't exist.")
-            
+
         data = dict(id=reminder["id"], message=new_message)
         remind_me.update(data, ["id"])
 

@@ -58,8 +58,8 @@ class KickCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
+
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
@@ -83,7 +83,7 @@ class KickCog(Cog):
         try:  # In case user has DMs blocked.
             channel = await member.create_dm()
             dm_embed = embeds.make_embed(
-                title=f"Uh-oh, you've been kicked!",
+                title="Uh-oh, you've been kicked!",
                 description="I-I guess you can join back if you want? B-baka!",
                 image_url="https://i.imgur.com/UkrBRur.gif",
                 author=False,
@@ -94,7 +94,14 @@ class KickCog(Cog):
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)
         except discord.HTTPException:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # Send the kick DM to the user.
         await ctx.send(embed=embed)

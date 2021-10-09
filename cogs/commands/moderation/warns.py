@@ -57,7 +57,7 @@ class WarnsCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         if len(reason) > 512:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
@@ -76,7 +76,7 @@ class WarnsCog(Cog):
             channel = await member.create_dm()
             warn_embed = embeds.make_embed(
                 author=False,
-                title=f"Uh-oh, you've received a warning!",
+                title="Uh-oh, you've received a warning!",
                 description="If you believe this was a mistake, contact staff.",
                 color=0xf7dcad
             )
@@ -86,17 +86,24 @@ class WarnsCog(Cog):
             warn_embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
             await channel.send(embed=warn_embed)
         except discord.HTTPException:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # Open a connection to the database.
         db = database.Database().get()
 
         # Add the warning to the mod_log database.
         db["mod_logs"].insert(dict(
-            user_id=member.id, 
-            mod_id=ctx.author.id, 
-            timestamp=int(time.time()), 
-            reason=reason, 
+            user_id=member.id,
+            mod_id=ctx.author.id,
+            timestamp=int(time.time()),
+            reason=reason,
             type="warn"
         ))
 

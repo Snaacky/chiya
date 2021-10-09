@@ -289,8 +289,13 @@ class AdministrationCog(Cog):
     @commands.command(name="createcolorrolesembed", aliases=["ccre"])
     async def create_color_roles_embed(self, ctx: Context):
         embed = discord.Embed(
-            description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{config['roles']['nitro_booster']}> to receive a custom colored role."
+            description=(
+                "You can react to one of the squares below to be assigned a colored user role. "
+                f"If you are interested in a different color, you can become a <@&{config['roles']['nitro_booster']}> ",
+                "to receive a custom colored role."
+            )
         )
+
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls

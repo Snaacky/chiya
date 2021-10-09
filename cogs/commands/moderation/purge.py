@@ -23,15 +23,16 @@ class PurgeCog(Cog):
     @staticmethod
     async def can_purge_messages(ctx: SlashContext):
         # Implement override for the owner.
-        if ctx.author_id == ctx.guild.owner.id: return True
+        if ctx.author_id == ctx.guild.owner.id:
+            return True
 
         # Prevent mods from removing message in moderation categories
         if ctx.channel.category_id in [
-                config["categories"]["moderation"], 
+                config["categories"]["moderation"],
                 config["categories"]["development"],
                 config["categories"]["logs"],
                 config["categories"]["tickets"]
-            ]:
+        ]:
             await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
             return False
 
@@ -72,7 +73,8 @@ class PurgeCog(Cog):
         await ctx.defer()
 
         # Check to see if the bot is allowed to purge the messages.
-        if not await self.can_purge_messages(ctx): return
+        if not await self.can_purge_messages(ctx):
+            return
 
         # Limit the reason parameter to 512 characters.
         if reason and len(reason) > 512:
@@ -87,7 +89,7 @@ class PurgeCog(Cog):
         # Generate the return embed.
         embed = embeds.make_embed(
             ctx=ctx,
-            title=f"Purged messages",
+            title="Purged messages",
             description=f"{ctx.author.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color="soft_red"
