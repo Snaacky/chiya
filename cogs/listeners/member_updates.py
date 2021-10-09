@@ -4,7 +4,6 @@ from typing import Union
 from discord import User, Member, Guild
 from discord.ext import commands
 
-from handlers import boosts
 
 log = logging.getLogger(__name__)
 
@@ -91,9 +90,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_update
         """ 
-        # Process any potential new or lost boosters for #nitro-log.
-        await boosts.process_new_booster(before, after)
-        await boosts.process_lost_booster(before, after)
+
 
 def setup(bot: commands.Bot) -> None:
     """Load the member_updates cog."""
