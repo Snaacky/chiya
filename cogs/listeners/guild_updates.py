@@ -7,12 +7,12 @@ from discord.ext import commands
 
 log = logging.getLogger(__name__)
 
+
 class GuildUpdates(commands.Cog):
     """Guild event handler cog."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-
 
     @commands.Cog.listener()
     async def on_guild_available(self, guild: discord.Guild) -> None:
@@ -29,7 +29,6 @@ class GuildUpdates(commands.Cog):
         """
         log.info(f'{guild.name} has become available.')
 
-
     @commands.Cog.listener()
     async def on_guild_unavailable(self, guild: discord.Guild) -> None:
         """Event Listener which is called when a guild becomes unavailable.
@@ -41,7 +40,6 @@ class GuildUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_unavailable
         """
         log.info(f'{guild.name} is now unavailable.')
-
 
     @commands.Cog.listener()
     async def on_guild_channel_create(self, channel: discord.abc.GuildChannel) -> None:
@@ -58,7 +56,6 @@ class GuildUpdates(commands.Cog):
         """
         log.info(f'{channel.name} has been created in {channel.guild}.')
 
-
     @commands.Cog.listener()
     async def on_guild_channel_delete(self, channel: discord.abc.GuildChannel) -> None:
         """Event Listener which is called whenever a guild channel is deleted.
@@ -73,7 +70,6 @@ class GuildUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_delete
         """
         log.info(f'{channel.name} has been deleted in {channel.guild}.')
-
 
     @commands.Cog.listener()
     async def on_guild_channel_pins_update(self, channel: discord.abc.GuildChannel, last_pin: datetime.datetime) -> None:
@@ -91,7 +87,6 @@ class GuildUpdates(commands.Cog):
         """
         log.info(f'{channel.name} updated its pin: {last_pin}.')
 
-
     @commands.Cog.listener()
     async def on_guild_channel_update(self, before: discord.abc.GuildChannel, after: discord.abc.GuildChannel) -> None:
         """Event Listener which is called whenever a guild channel is updated. e.g. changed name, topic, permissions.
@@ -106,7 +101,6 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_channel_update
         """
-
 
     @commands.Cog.listener()
     async def on_guild_emojis_update(self, guild: discord.Guild, before: discord.Emoji, after: discord.Emoji) -> None:
@@ -124,7 +118,6 @@ class GuildUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_emojis_update
         """
 
-
     @commands.Cog.listener()
     async def on_guild_integrations_update(self, guild: discord.Guild) -> None:
         """Event Listener which is called whenever an integration is created, modified, or removed from a guild.
@@ -138,7 +131,6 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_integrations_update
         """
-
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
@@ -155,7 +147,6 @@ class GuildUpdates(commands.Cog):
         """
         log.info(f'{guild.name} has a joined a new guild')
 
-
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild) -> None:
         """Event Listener which is called when a Guild is removed from the Client.
@@ -169,7 +160,6 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_remove
         """
-
 
     @commands.Cog.listener()
     async def on_guild_role_create(self, role: discord.Role) -> None:
@@ -185,7 +175,6 @@ class GuildUpdates(commands.Cog):
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_role_create
         """
 
-
     @commands.Cog.listener()
     async def on_guild_role_delete(self, role: discord.Role) -> None:
         """Event Listener which is called when a Guild deletes a Role.
@@ -199,7 +188,6 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_role_delete
         """
-
 
     @commands.Cog.listener()
     async def on_guild_role_update(self, before: discord.Role, after: discord.Role) -> None:
@@ -215,7 +203,6 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_role_update
         """
-
 
     @commands.Cog.listener()
     async def on_guild_update(self, before: discord.Guild, after: discord.Guild) -> None:
