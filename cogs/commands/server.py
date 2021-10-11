@@ -75,6 +75,35 @@ class Server(Cog):
 
         await ctx.send(embed=embed)
 
+    @cog_ext.cog_subcommand(
+        base="server",
+        name="topic",
+        description="Sets the channel to the topic provided",
+        guild_ids=config["guild_ids"],
+        base_default_permission=False,
+        options=[
+            create_option(
+                name="channel",
+                description="The channel to edit",
+                option_type=7,
+                required=True
+            ),
+            create_option(
+                name="topic",
+                description="The topic message to set",
+                option_type=3,
+                required=True
+            )
+        ]
+    )
+    async def topic(self, ctx: SlashContext, channel: discord.TextChannel, topic: str):
+        """Sets the banner for the Discord server."""
+        await ctx.defer()
+        if len(topic) >= 1024:
+            return await embeds.error_message(ctx=ctx, description="Topic message must be less than 1024 characters.")
+        await channel.edit(topic=topic)
+        return await embeds.success_message(ctx=ctx, description="Successfully updated the channel topic.")
+
 
 def setup(bot: Bot) -> None:
     """ Load the Server cog. """
