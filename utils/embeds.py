@@ -57,6 +57,22 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
     return embed
 
 
+async def success_message(ctx: SlashContext, description: str, author: bool = True):
+    """Send basic sucess message
+
+    Note:
+        You must await this function
+
+    Args:
+        description (str): Success description.
+        ctx (Context): Discord context object, needed for author and timestamps.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    embed = make_embed(color="soft_green", author=False)
+    embed.add_field(name="Success:", value=description, inline=False)
+    await ctx.send(embed=embed, delete_after=30)
+
+
 async def error_message(ctx: SlashContext, description: str, author: bool = True):
     """Send basic error message
 
