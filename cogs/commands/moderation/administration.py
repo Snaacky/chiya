@@ -291,7 +291,7 @@ class AdministrationCog(Cog):
         embed = discord.Embed(
             description=(
                 "You can react to one of the squares below to be assigned a colored user role. "
-                f"If you are interested in a different color, you can become a <@&{config['roles']['nitro_booster']}> ",
+                f"If you are interested in a different color, you can become a <@&{config['roles']['nitro_booster']}> "
                 "to receive a custom colored role."
             )
         )
