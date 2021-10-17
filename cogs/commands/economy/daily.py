@@ -164,7 +164,7 @@ class DailyCog(Cog):
             ]
             embed.add_field(
                 name="​",
-                value=f"**Fortune favors the {random.choice(words)}**: You received 2x buffer for a total of {value} MB!",
+                value=f"**Fortune favors the {random.choice(words)}:** You received 2x buffer for a total of {value} MB!",
                 inline=False,
             )
 
