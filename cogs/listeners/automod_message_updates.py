@@ -2,12 +2,17 @@ import logging
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
-from utils import automod
+from utils import automod, embeds
+from utils.config import config
+
 
 log = logging.getLogger(__name__)
 
 
 class AutomodMessageUpdates(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
     
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -48,6 +53,26 @@ class AutomodMessageUpdates(commands.Cog):
             return
         # Act as if its a new message rather than an a edit.
         await self.on_message(after)
+    
+    @staticmethod
+    async def log_automodded_message(message: Message, automod_reason: str):
+        embed = embeds.make_embed(ctx=None, title="Message removed by automod.", color="red", author=True)
+        embed.set_author(name=message.author, icon_url = message.author.avatar_url)
+        message_content = message.clean_content[0:256]
+        removal_reason = automod_reason[0:512]
+        if len(automod_reason) > 512:
+            removal_reason+="..."
+        if len(message.clean_content) > 256:
+            message_content += "..."
+        embed.description = f"""**Message deleted: ** {message_content}
+        **Channel: ** {message.channel.mention}
+        **Reason: ** {removal_reason}
+        """
+
+        #bot: commands.Bot = self.bot
+        automod_log = message.guild.get_channel(config["channels"]["automod_log"])
+
+        await automod_log.send(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
