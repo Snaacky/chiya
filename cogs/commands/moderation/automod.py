@@ -11,6 +11,7 @@ from discord_slash.utils.manage_commands import (
     create_permission,
 )
 from utils import database, embeds
+from utils import automod
 from utils.config import config
 from utils.pagination import LinePaginator
 from utils.record import record_usage
@@ -198,6 +199,8 @@ class AutomodCog(commands.Cog):
 
         db.commit()
         db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -240,6 +243,8 @@ class AutomodCog(commands.Cog):
 
         db.commit()
         db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -283,6 +288,9 @@ class AutomodCog(commands.Cog):
         db.commit()
         db.close()
 
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
+
         embed = embeds.make_embed(
             ctx=ctx,
             description=f"Term `{censor['censor_term']}` of type `{censor['censor_type']}` was enabled.",
@@ -323,6 +331,8 @@ class AutomodCog(commands.Cog):
 
         db.commit()
         db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -380,6 +390,11 @@ class AutomodCog(commands.Cog):
         excluded_users.append(user_id)
         censor["excluded_users"] = json.dumps(excluded_users)
         table.update(censor, ["id"])
+
+        db.commit()
+        db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -445,6 +460,11 @@ class AutomodCog(commands.Cog):
         censor["excluded_users"] = json.dumps(excluded_users)
         table.update(censor, ["id"])
 
+        db.commit()
+        db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
+
         embed = embeds.make_embed(
             ctx=ctx,
             title="User Exclusion Removed.",
@@ -500,6 +520,11 @@ class AutomodCog(commands.Cog):
         excluded_roles.append(role_id)
         censor["excluded_roles"] = json.dumps(excluded_roles)
         table.update(censor, ["id"])
+
+        db.commit()
+        db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -563,6 +588,11 @@ class AutomodCog(commands.Cog):
         excluded_roles.remove(role_id)
         censor["excluded_roles"] = json.dumps(excluded_roles)
         table.update(censor, ["id"])
+
+        db.commit()
+        db.close()
+        # refresh the censor cache, so that the term is updated in the local copy
+        automod.refresh_censor_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
