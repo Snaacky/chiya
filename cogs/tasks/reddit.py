@@ -21,7 +21,7 @@ class RedditTask(commands.Cog):
         self.client_secret = config["reddit"]["client_secret"]
         self.user_agent = config["reddit"]["user_agent"]
         self.subreddit = config["reddit"]["subreddit"]
-        self.channel = self.bot.get_channel(config["reddit"]["channel"])
+        self.channel = config["reddit"]["channel"]
 
         if not all([self.client_id, self.client_secret, self.user_agent, self.subreddit, self.channel]):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
@@ -77,6 +77,9 @@ class RedditTask(commands.Cog):
                 if len(submission.selftext) >= 350:
                     embed.description = embed.description + "..."
 
+                if not isinstance(self.channel, discord.TextChannel):
+                    self.channel = await self.bot.fetch_channel(self.channel)
+            
                 log.info(f"{submission.title} was posted by /u/{submission.author.name}")
                 await self.channel.send(embed=embed)
                 self.cache.append(submission.id)
