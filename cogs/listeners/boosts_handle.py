@@ -46,8 +46,8 @@ class BoostsHandler(commands.Cog):
             nitro_logs = discord.utils.get(after.channels, id=config["channels"]["nitro_log"])
             embed = embeds.make_embed(
                 description=(
-                    "[A new boost was added to the server.]",
-                    "(https://canary.discord.com/channels/",
+                    "[A new boost was added to the server.]"
+                    "(https://canary.discord.com/channels/"
                     f"{after.id}/{after.system_channel.id}/{after.system_channel.last_message_id})"
                 ),
                 author=False,
@@ -73,7 +73,7 @@ class BoostsHandler(commands.Cog):
             embed = embeds.make_embed(
                 title="New booster",
                 description=(
-                    f"{after.mention} boosted the server. ",
+                    f"{after.mention} boosted the server. "
                     f"We're now at {after.guild.premium_subscription_count} boosts."
                 ),
                 author=False,
@@ -89,7 +89,7 @@ class BoostsHandler(commands.Cog):
             embed = embeds.make_embed(
                 title="Lost booster",
                 description=(
-                    f"{after.mention} no longer boosts the server. ",
+                    f"{after.mention} no longer boosts the server. "
                     f"We're now at {after.guild.premium_subscription_count} boosts."
                 ),
                 author=False,

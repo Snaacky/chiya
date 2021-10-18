@@ -42,9 +42,9 @@ class ReminderTask(Cog):
         # Iterate over all the results found from the DB query if a result is found.
         for reminder in result:
             channel = self.bot.get_channel(reminder["reminder_location"])
-            user = self.bot.get_user(reminder["author_id"])
+            user = await self.bot.fetch_user(reminder["author_id"])
             embed = embeds.make_embed(
-                title=f"Here is your reminder",
+                title="Here is your reminder",
                 description=reminder["message"],
                 color="blurple"
             )
