@@ -79,7 +79,7 @@ class RedditTask(commands.Cog):
 
                 if not isinstance(self.channel, discord.TextChannel):
                     self.channel = await self.bot.fetch_channel(self.channel)
-            
+
                 log.info(f"{submission.title} was posted by /u/{submission.author.name}")
                 await self.channel.send(embed=embed)
                 self.cache.append(submission.id)
