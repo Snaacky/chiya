@@ -20,7 +20,8 @@ bot = commands.Bot(
         bans=config["bot"]["intents"]["bans"],
         reactions=config["bot"]["intents"]["reactions"]
     ),
-    case_insensitive=config["bot"]["case_insensitive"]
+    case_insensitive=config["bot"]["case_insensitive"],
+    help_command=None
 )
 
 slash = SlashCommand(
