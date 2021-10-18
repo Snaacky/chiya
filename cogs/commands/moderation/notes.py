@@ -1,9 +1,8 @@
-import datetime
 import logging
 import time
+from datetime import datetime
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
@@ -16,7 +15,6 @@ from discord_slash.utils.manage_commands import (
 from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -28,8 +26,6 @@ class NotesCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="addnote",
         description="Add a note to a user",
@@ -187,16 +183,16 @@ class NotesCog(Cog):
             actions.append(
                 f"""**{action_type}**
                 **ID:** {action['id']}
-                **Timestamp:** {str(datetime.datetime.fromtimestamp(action['timestamp'], tz=datetime.timezone.utc)).replace("+00:00", " UTC")} 
+                **Timestamp:** {datetime.fromtimestamp(action['timestamp'])} UTC
                 **Moderator:** <@!{action['mod_id']}>
                 **Reason:** {action['reason']}"""
             )
 
         if not actions:
-            await embeds.error_message(
-                ctx=ctx, description="No mod actions found for that user!"
+            return await embeds.error_message(
+                ctx=ctx,
+                description="No mod actions found for that user!"
             )
-            return
 
         db.close()
 
@@ -214,8 +210,6 @@ class NotesCog(Cog):
             timeout=120,
         )
 
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="editlog",
         description="Edits an existing log or note for a user",

@@ -2,7 +2,6 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -12,7 +11,6 @@ from utils import database
 from utils import embeds
 from utils.config import config
 from utils.moderation import can_action_member
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -24,8 +22,6 @@ class KickCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.bot_has_permissions(kick_members=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="kick",
         description="Kicks the member from the server",
@@ -58,21 +54,18 @@ class KickCog(Cog):
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
         if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         if not reason:
             reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
         elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -86,7 +79,7 @@ class KickCog(Cog):
         try:  # In case user has DMs blocked.
             channel = await member.create_dm()
             dm_embed = embeds.make_embed(
-                title=f"Uh-oh, you've been kicked!",
+                title="Uh-oh, you've been kicked!",
                 description="I-I guess you can join back if you want? B-baka!",
                 image_url="https://i.imgur.com/UkrBRur.gif",
                 author=False,
@@ -97,7 +90,14 @@ class KickCog(Cog):
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)
         except discord.HTTPException:
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # Send the kick DM to the user.
         await ctx.send(embed=embed)

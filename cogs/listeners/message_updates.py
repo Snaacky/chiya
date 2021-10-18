@@ -132,9 +132,6 @@ class MessageUpdates(commands.Cog):
                     delete_message_days=1
                 )
 
-        # If message does not follow with the above code, treat it as a potential command.
-        await self.bot.process_commands(message)
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """Event Listener which is called when a reaction is added.

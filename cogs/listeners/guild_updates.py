@@ -4,9 +4,9 @@ import datetime
 import discord
 from discord.ext import commands
 
-from handlers import boosts
 
 log = logging.getLogger(__name__)
+
 
 class GuildUpdates(commands.Cog):
     """Guild event handler cog."""
@@ -218,8 +218,7 @@ class GuildUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/stable/api.html#discord.on_guild_update
         """
-        await boosts.on_new_boost(before, after)
-        await boosts.on_removed_boost(before, after)
+
 
 def setup(bot: commands.Bot) -> None:
     """Load the guild_updates cog."""

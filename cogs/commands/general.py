@@ -1,7 +1,6 @@
 import logging
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import SlashContext, cog_ext
 from discord_slash.model import SlashCommandPermissionType
@@ -9,7 +8,6 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 
 from utils import embeds
 from utils.config import config
-from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
@@ -20,8 +18,6 @@ class General(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(embed_links=True)
     @cog_ext.cog_slash(
         name="pfp",
         description="Gets the members profile picture",
@@ -47,24 +43,6 @@ class General(Cog):
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
-    @cog_ext.cog_slash(
-        name="population",
-        description="Gets the current server population count",
-        guild_ids=config["guild_ids"],
-        default_permission=False,
-        permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        },
-    )
-    async def count(self, ctx: SlashContext):
-        """Returns the current guild member count."""
-        await ctx.defer()
-        await ctx.send(ctx.guild.member_count)
-
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="vote",
         description="Adds the vote reactions to a message",

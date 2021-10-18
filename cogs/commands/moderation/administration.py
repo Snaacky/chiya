@@ -1,7 +1,5 @@
-import glob
 import io
 import logging
-import re
 import textwrap
 import traceback
 from contextlib import redirect_stdout
@@ -36,10 +34,8 @@ class AdministrationCog(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.group(aliases=["u", "ul"])
-    async def utilities(self, ctx):
-        if ctx.invoked_subcommand is None:
-            # Send the help command for this group
-            await ctx.send_help(ctx.command)
+    async def utilities(self):
+        return
 
     @commands.is_owner()
     @utilities.command(name="ping")
@@ -106,7 +102,7 @@ class AdministrationCog(Cog):
             value = stdout.getvalue()
             try:
                 await ctx.message.add_reaction("\u2705")
-            except:
+            except Exception:
                 pass
 
             if ret is None:
@@ -121,46 +117,6 @@ class AdministrationCog(Cog):
                 output = f"```py\n{value}{ret}\n```"
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.send(embed=embed)
-
-    @commands.is_owner()
-    @utilities.command(name="reload")
-    async def reload_cog(self, ctx: commands.Context, name_of_cog: str = None):
-        """Reloads specified cog or all cogs."""
-
-        regex = r"(?<=<).*(?=\..* object at 0x.*>)"
-        if name_of_cog is not None and name_of_cog in ctx.bot.cogs:
-            # Reload cog if it exists.
-            cog = re.search(regex, str(ctx.bot.cogs[name_of_cog]))
-            try:
-                self.bot.reload_extension(cog.group())
-
-            except commands.ExtensionError as e:
-                await ctx.message.add_reaction("❌")
-                await ctx.send(f"{e.__class__.__name__}: {e}")
-
-            else:
-                await ctx.message.add_reaction("✔")
-                await ctx.send(f"Reloaded `{cog.group()}` module!")
-
-        elif name_of_cog is None:
-            # Reload all the cogs in the folder named cogs.
-            # Skips over any cogs that start with '__' or do not end with .py.
-            try:
-                for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-                    if "\\" in cog:  # Pathing on Windows.
-                        self.bot.reload_extension(cog.replace("\\", ".")[:-3])
-                    else:  # Pathing on Linux.
-                        self.bot.reload_extension(cog.replace("/", ".")[:-3])
-            except commands.ExtensionError as e:
-                await ctx.message.add_reaction("❌")
-                await ctx.send(f"{e.__class__.__name__}: {e}")
-
-            else:
-                await ctx.message.add_reaction("✔")
-                await ctx.send("Reloaded all modules!")
-        else:
-            await ctx.message.add_reaction("❌")
-            await ctx.send("Module not found, check spelling, it's case sensitive.")
 
     @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
@@ -178,47 +134,74 @@ class AdministrationCog(Cog):
         embed = embeds.make_embed(
             title="📃  Discord Server Rules",
             color="quotes_grey",
-            description="This list is not all-encompassing and you may be actioned for a reason outside of these rules. Use common sense when interacting in our community.",
+            description=(
+                "This list is not all-encompassing and you may be actioned for a reason outside of these rules."
+                "Use common sense when interacting in our community."
+            )
         )
         embed.add_field(
             name="Rule 1: Do not send copyright-infringing material.",
             inline=False,
-            value="> Linking to torrents, pirated stream links, direct download links, or uploading files over Discord puts our community at risk of being shut down. We are a discussion community, not a file-sharing hub.",
+            value=(
+                "> Linking to torrents, pirated stream links, direct download links, or uploading files over Discord "
+                "puts our community at risk of being shut down. We are a discussion community, not a file-sharing hub."
+            )
         )
         embed.add_field(
             name="Rule 2: Be courteous and mindful of others.",
             inline=False,
-            value="> Do not engage in toxic behavior such as spamming, derailing conversations, attacking other users, or attempting to instigate drama. Bigotry will not be tolerated. Avoid problematic avatars, usernames, or nicknames.",
+            value=(
+                "> Do not engage in toxic behavior such as spamming, derailing conversations, "
+                "attacking other users, or attempting to instigate drama. Bigotry will not be tolerated. "
+                "Avoid problematic avatars, usernames, or nicknames.",
+            )
         )
         embed.add_field(
             name="Rule 3: Do not post self-promotional content.",
             inline=False,
-            value="> We are not a billboard nor the place to advertise your Discord server, app, website, service, etc.",
+            value="> We are not a billboard nor the place to advertise your Discord server, app, website, service, etc."
         )
         embed.add_field(
             name="Rule 4: Do not post unmarked spoilers.",
             inline=False,
-            value="> Use spoiler tags and include what series or episode your spoiler is in reference to outside the spoiler tag so people don't blindly click a spoiler.",
+            value=(
+                "> Use spoiler tags and include what series or episode your spoiler is in reference to outside the "
+                "spoiler tag so people don't blindly click a spoiler."
+            )
         )
         embed.add_field(
             name="Rule 5: Do not backseat moderate.",
             inline=False,
-            value="> If you see someone breaking the rules or have something to report, please submit a <#829861810999132160> ticket.",
+            value=(
+                "> If you see someone breaking the rules or have something to report, "
+                "please submit a <#829861810999132160> ticket."
+            )
         )
         embed.add_field(
             name="Rule 6: Do not abuse pings.",
             inline=False,
-            value="> Do not ping staff outside of conversation unless necessary. Do not ping VIP users for questions or help with their service. Do not spam or ghost ping other users.",
+            value=(
+                "> Do not ping staff outside of conversation unless necessary. "
+                "Do not ping VIP users for questions or help with their service. "
+                "Do not spam or ghost ping other users."
+            )
         )
         embed.add_field(
             name="Rule 7: Do not beg, buy, sell, or trade.",
             inline=False,
-            value="> This includes, but is not limited to, server ranks, roles, permissions, giveaways, private community invites, or any digital or physical goods.",
+            value=(
+                "> This includes, but is not limited to, server ranks, roles, permissions, "
+                "giveaways, private community invites, or any digital or physical goods."
+            )
         )
         embed.add_field(
             name="Rule 8: Follow the Discord Community Guidelines and Terms of Service.",
             inline=False,
-            value="> The Discord Community Guidelines and Terms of Service govern all servers on the platform. Please familarize yourself with them and the restrictions that come with them. \n> \n> https://discord.com/guidelines \n> https://discord.com/terms",
+            value=(
+                "> The Discord Community Guidelines and Terms of Service govern all servers on the platform. "
+                "Please familarize yourself with them and the restrictions that come with them. "
+                "\n> \n> https://discord.com/guidelines \n> https://discord.com/terms"
+            )
         )
         await ctx.send(embed=embed)
 
@@ -289,8 +272,13 @@ class AdministrationCog(Cog):
     @commands.command(name="createcolorrolesembed", aliases=["ccre"])
     async def create_color_roles_embed(self, ctx: Context):
         embed = discord.Embed(
-            description=f"You can react to one of the squares below to be assigned a colored user role. If you are interested in a different color, you can become a <@&{config['roles']['nitro_booster']}> to receive a custom colored role."
+            description=(
+                "You can react to one of the squares below to be assigned a colored user role. "
+                f"If you are interested in a different color, you can become a <@&{config['roles']['nitro_booster']}> "
+                "to receive a custom colored role."
+            )
         )
+
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls

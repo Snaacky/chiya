@@ -3,7 +3,6 @@ import time
 
 import discord
 import privatebinapi
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -12,7 +11,6 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 from utils import database
 from utils import embeds
 from utils.config import config
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -24,7 +22,6 @@ class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="ticket",
         description="Opens a new modmail ticket",
@@ -57,9 +54,8 @@ class TicketCog(Cog):
 
         # Throw an error and return if we found an already existing ticket.
         if ticket:
-            await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
             logging.info(f"{ctx.author} tried to create a new ticket but already had one open: {ticket}")
-            return
+            return await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
 
         # Give both the staff and the user perms to access the channel.
         permissions = {
@@ -121,7 +117,6 @@ class TicketCog(Cog):
         )
         await ctx.send(embed=embed, hidden=True)
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="close",
         description="Closes a ticket when sent in the ticket channel",
@@ -186,9 +181,11 @@ class TicketCog(Cog):
                 formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
-                # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
-                    mod_list.add(message.author)
+                # Iterates only through members that is still in the server.
+                if isinstance(message.author, discord.Member):
+                    # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
+                    if role_staff in message.author.roles or role_trial_mod in message.author.roles:
+                        mod_list.add(message.author)
 
         # An empty embed field will raise an HTTPException.
         if len(mod_list) == 0:
@@ -225,8 +222,11 @@ class TicketCog(Cog):
             embed = embeds.make_embed(
                 author=False,
                 color=0xF4CDC5,
-                title=f"Ticket closed",
-                description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
+                title="Ticket closed",
+                description=(
+                    "Your ticket was closed. "
+                    "Please feel free to create a new ticket should you have any further inquiries."
+                )
             )
             embed.add_field(
                 name="Server:",
