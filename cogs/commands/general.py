@@ -1,7 +1,6 @@
 import logging
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -9,7 +8,6 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 
 from utils import embeds
 from utils.config import config
-from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
@@ -20,8 +18,6 @@ class General(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(embed_links=True)
     @cog_ext.cog_slash(
         name="pfp",
         description="Gets the members profile picture",
@@ -47,7 +43,6 @@ class General(Cog):
         embed.set_image(url=user.avatar_url)
         await ctx.send(embed=embed)
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="vote",
         description="Adds the vote reactions to a message",

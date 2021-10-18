@@ -2,7 +2,6 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -12,7 +11,6 @@ from utils import database
 from utils import embeds
 from utils.config import config
 from utils.moderation import can_action_member
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -24,8 +22,6 @@ class KickCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.bot_has_permissions(kick_members=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="kick",
         description="Kicks the member from the server",

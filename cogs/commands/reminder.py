@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
@@ -10,7 +9,6 @@ import utils.duration
 from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
-from utils.record import record_usage
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +19,6 @@ class Reminder(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(send_messages=True)
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",

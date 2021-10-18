@@ -4,7 +4,6 @@ import time
 
 import discord
 import privatebinapi
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -15,7 +14,6 @@ from utils import database
 from utils import embeds
 from utils.config import config
 from utils.moderation import can_action_member
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -27,7 +25,6 @@ class MuteCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
     async def mute_member(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"])
         await member.add_roles(role, reason=reason)
@@ -79,13 +76,11 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    @staticmethod
     async def is_user_muted(ctx: SlashContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"]) in member.roles:
             return True
         return False
 
-    @staticmethod
     async def send_muted_dm_embed(ctx: SlashContext, member: discord.Member, channel: discord.TextChannel, reason: str = None, duration: str = None) -> bool:
         if not duration:
             duration = "Indefinite"
@@ -129,7 +124,6 @@ class MuteCog(Cog):
         except discord.HTTPException:
             return False
 
-    @staticmethod
     async def create_mute_channel(ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
         if not duration:
             duration = "Indefinite"
@@ -287,8 +281,6 @@ class MuteCog(Cog):
         # Delete the mute channel.
         await mute_channel.delete()
 
-    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="mute",
         description="Mutes a member in the server",
@@ -425,8 +417,6 @@ class MuteCog(Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="unmute",
         description="Unmutes a member in the server",

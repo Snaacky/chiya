@@ -3,7 +3,6 @@ import time
 
 import discord
 import privatebinapi
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -12,7 +11,6 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 from utils import database
 from utils import embeds
 from utils.config import config
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -24,7 +22,6 @@ class TicketCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="ticket",
         description="Opens a new modmail ticket",
@@ -120,7 +117,6 @@ class TicketCog(Cog):
         )
         await ctx.send(embed=embed, hidden=True)
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="close",
         description="Closes a ticket when sent in the ticket channel",

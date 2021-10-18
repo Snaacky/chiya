@@ -2,7 +2,6 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -12,7 +11,6 @@ from utils import database
 from utils import embeds
 from utils.config import config
 from utils.moderation import can_action_member
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -24,7 +22,6 @@ class BanCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
     async def ban_member(ctx: SlashContext, user: discord.User, reason: str, delete_message_days: int = 0):
         # Info: https://discordpy.readthedocs.io/en/stable/api.html#discord.Guild.ban
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=delete_message_days)
@@ -79,7 +76,6 @@ class BanCog(Cog):
         except discord.HTTPException:
             return False
 
-    @staticmethod
     async def send_banned_dm_embed(ctx: SlashContext, user: discord.User, reason: str = None) -> bool:
         try:  # In case user has DMs Blocked.
             channel = await user.create_dm()
@@ -102,8 +98,6 @@ class BanCog(Cog):
             return False
         return True
 
-    @commands.bot_has_permissions(ban_members=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="ban",
         description="Bans the user from the server",
@@ -188,8 +182,6 @@ class BanCog(Cog):
         await self.ban_member(ctx=ctx, user=user, reason=reason, delete_message_days=daystodelete)
         return await ctx.send(embed=embed)
 
-    @commands.bot_has_permissions(ban_members=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="unban",
         description="Unbans the user from the server",

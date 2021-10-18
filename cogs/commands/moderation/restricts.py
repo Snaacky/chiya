@@ -3,7 +3,6 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -14,7 +13,6 @@ from utils import database
 from utils import embeds
 from utils.config import config
 from utils.moderation import can_action_member
-from utils.record import record_usage
 
 # Enabling logs
 log = logging.getLogger(__name__)
@@ -26,13 +24,11 @@ class RestrictCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
     async def is_user_restricted(ctx: SlashContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]) in member.roles:
             return True
         return False
 
-    @staticmethod
     async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"])
         await member.add_roles(role, reason=reason)
@@ -89,7 +85,6 @@ class RestrictCog(Cog):
         db.commit()
         db.close()
 
-    @staticmethod
     async def send_restricted_dm_embed(ctx: SlashContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
         if not duration:
             duration = "Indefinite"
@@ -132,8 +127,6 @@ class RestrictCog(Cog):
         except discord.HTTPException:
             return False
 
-    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="restrict",
         description="Restricts message permissions from the member for the specified length of time",
@@ -251,8 +244,6 @@ class RestrictCog(Cog):
         await self.restrict_member(ctx=ctx, member=member, reason=reason, end_time=restrict_end_time.timestamp())
         await ctx.send(embed=embed)
 
-    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="unrestrict",
         description="Unrestricts the member",
