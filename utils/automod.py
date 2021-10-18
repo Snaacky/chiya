@@ -6,7 +6,7 @@ from cogs.listeners.automod_message_updates import AutomodMessageUpdates
 from discord.message import Message
 from fuzzywuzzy import fuzz
 
-from utils import database, embeds
+from utils import database
 from utils.config import config
 
 
