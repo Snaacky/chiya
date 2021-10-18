@@ -50,12 +50,12 @@ class TimedModActionsTask(Cog):
                 # Attempt to get the member if they still exist in the guild.
                 member = guild.get_member(action["user_id"])
 
-                # If the user has left the guild, send a message in #moderation and end the function. We don't need to process anything else.
+                # If the user has left the guild, send a message in #moderation and end the function.
                 if not member:
                     # Fetch the user object instead because the user is no longer a member of the server.
                     user = await self.bot.fetch_user(action["user_id"])
 
-                    # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
+                    # Creating the embed that will be used to alert the moderator that the user was successfully muted.
                     embed = embeds.make_embed(
                         title=f"Unmuting member: {user}",
                         thumbnail_url="https://i.imgur.com/W7DpUHC.png",
@@ -67,7 +67,7 @@ class TimedModActionsTask(Cog):
                     await mutes.archive_mute_channel(user_id=user.id, guild=guild, reason="Mute time elapsed.")
                     return await channel.send(embed=embed)
 
-                # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
+                # Create the embed that will be used to alert the moderator that the user was successfully muted.
                 embed = embeds.make_embed(
                     title=f"Unmuting member: {member}",
                     thumbnail_url="https://i.imgur.com/W7DpUHC.png",
@@ -77,7 +77,14 @@ class TimedModActionsTask(Cog):
 
                 # Attempt to DM the user to let them know they were unmuted.
                 if not await mutes.send_unmuted_dm_embed(member=member, reason="Timed mute lapsed.", guild=guild):
-                    embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+                    embed.add_field(
+                        name="Notice:",
+                        value=(
+                            f"Unable to message {member.mention} about this action. "
+                            "This can be caused by the user not being in the server, "
+                            "having DMs disabled, or having the bot blocked."
+                        )
+                    )
 
                 # Unmutes the user and returns the embed letting the moderator know they were successfully muted.
                 await mutes.unmute_member(member=member, reason="Timed mute lapsed.", guild=guild)
@@ -99,7 +106,6 @@ class TimedModActionsTask(Cog):
                     # Fetch the user object instead because the user is no longer a member of the server.
                     user = await self.bot.fetch_user(action["user_id"])
 
-                    # Create and send an embed that to alert the moderator that the user was unrestricted but is no longer in the guild.
                     embed = embeds.make_embed(
                         title=f"Unrestricting member: {user}",
                         description=f"Unrestricted {user.mention} because their restrict time elapsed but they have since left the server.",
@@ -119,9 +125,15 @@ class TimedModActionsTask(Cog):
 
                 # Attempt to DM the user to let them know they were unrestricted.
                 if not await restricts.send_unrestricted_dm_embed(member=member, reason="Timed restriction lapsed.", guild=guild):
-                    embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+                    embed.add_field(
+                        name="Notice:",
+                        value=(
+                            f"Unable to message {member.mention} about this action. "
+                            "This can be caused by the user not being in the server, "
+                            "having DMs disabled, or having the bot blocked."
+                        )
+                    )
 
-                # Unrestricts the user and returns the embed letting the moderator know they were successfully unrestricted.
                 await restricts.unrestrict_member(member=member, reason="Timed restriction lapsed.", guild=guild)
                 await channel.send(embed=embed)
 

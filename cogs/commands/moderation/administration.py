@@ -106,7 +106,7 @@ class AdministrationCog(Cog):
             value = stdout.getvalue()
             try:
                 await ctx.message.add_reaction("\u2705")
-            except:
+            except Exception:
                 pass
 
             if ret is None:
@@ -178,47 +178,74 @@ class AdministrationCog(Cog):
         embed = embeds.make_embed(
             title="📃  Discord Server Rules",
             color="quotes_grey",
-            description="This list is not all-encompassing and you may be actioned for a reason outside of these rules. Use common sense when interacting in our community.",
+            description=(
+                "This list is not all-encompassing and you may be actioned for a reason outside of these rules."
+                "Use common sense when interacting in our community."
+            )
         )
         embed.add_field(
             name="Rule 1: Do not send copyright-infringing material.",
             inline=False,
-            value="> Linking to torrents, pirated stream links, direct download links, or uploading files over Discord puts our community at risk of being shut down. We are a discussion community, not a file-sharing hub.",
+            value=(
+                "> Linking to torrents, pirated stream links, direct download links, or uploading files over Discord "
+                "puts our community at risk of being shut down. We are a discussion community, not a file-sharing hub."
+            )
         )
         embed.add_field(
             name="Rule 2: Be courteous and mindful of others.",
             inline=False,
-            value="> Do not engage in toxic behavior such as spamming, derailing conversations, attacking other users, or attempting to instigate drama. Bigotry will not be tolerated. Avoid problematic avatars, usernames, or nicknames.",
+            value=(
+                "> Do not engage in toxic behavior such as spamming, derailing conversations, "
+                "attacking other users, or attempting to instigate drama. Bigotry will not be tolerated. "
+                "Avoid problematic avatars, usernames, or nicknames.",
+            )
         )
         embed.add_field(
             name="Rule 3: Do not post self-promotional content.",
             inline=False,
-            value="> We are not a billboard nor the place to advertise your Discord server, app, website, service, etc.",
+            value="> We are not a billboard nor the place to advertise your Discord server, app, website, service, etc."
         )
         embed.add_field(
             name="Rule 4: Do not post unmarked spoilers.",
             inline=False,
-            value="> Use spoiler tags and include what series or episode your spoiler is in reference to outside the spoiler tag so people don't blindly click a spoiler.",
+            value=(
+                "> Use spoiler tags and include what series or episode your spoiler is in reference to outside the "
+                "spoiler tag so people don't blindly click a spoiler."
+            )
         )
         embed.add_field(
             name="Rule 5: Do not backseat moderate.",
             inline=False,
-            value="> If you see someone breaking the rules or have something to report, please submit a <#829861810999132160> ticket.",
+            value=(
+                "> If you see someone breaking the rules or have something to report, "
+                "please submit a <#829861810999132160> ticket."
+            )
         )
         embed.add_field(
             name="Rule 6: Do not abuse pings.",
             inline=False,
-            value="> Do not ping staff outside of conversation unless necessary. Do not ping VIP users for questions or help with their service. Do not spam or ghost ping other users.",
+            value=(
+                "> Do not ping staff outside of conversation unless necessary. "
+                "Do not ping VIP users for questions or help with their service. "
+                "Do not spam or ghost ping other users."
+            )
         )
         embed.add_field(
             name="Rule 7: Do not beg, buy, sell, or trade.",
             inline=False,
-            value="> This includes, but is not limited to, server ranks, roles, permissions, giveaways, private community invites, or any digital or physical goods.",
+            value=(
+                "> This includes, but is not limited to, server ranks, roles, permissions, "
+                "giveaways, private community invites, or any digital or physical goods."
+            )
         )
         embed.add_field(
             name="Rule 8: Follow the Discord Community Guidelines and Terms of Service.",
             inline=False,
-            value="> The Discord Community Guidelines and Terms of Service govern all servers on the platform. Please familarize yourself with them and the restrictions that come with them. \n> \n> https://discord.com/guidelines \n> https://discord.com/terms",
+            value=(
+                "> The Discord Community Guidelines and Terms of Service govern all servers on the platform. "
+                "Please familarize yourself with them and the restrictions that come with them. "
+                "\n> \n> https://discord.com/guidelines \n> https://discord.com/terms"
+            )
         )
         await ctx.send(embed=embed)
 
