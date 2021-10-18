@@ -17,7 +17,8 @@ log = logging.getLogger(__name__)
 """
 
 # The time, in seconds, for a message to be displayed
-AUTO_DELETE_TIME=30
+AUTO_DELETE_TIME = 30
+
 
 class error_handle(Cog):
     """error_handle."""
@@ -220,11 +221,6 @@ class error_handle(Cog):
             errors.MissingAnyRole,
         )
 
-        check_errors = (
-            errors.CheckAnyFailure,
-            errors.CheckFailure
-        )
-
         if isinstance(error, bot_missing_errors):
             embed = self._get_error_embed(
                 title="Bot is missing required permissions or roles",
@@ -233,10 +229,10 @@ class error_handle(Cog):
             )
             try:
                 await ctx.send(embed=embed, delete_after=AUTO_DELETE_TIME)
-            except: # this will likely fail if the error to begin with is not able to post embeds
+            except Exception:  # this will likely fail if the error to begin with is not able to post embeds
                 await ctx.send(
                     "Sorry, it looks like I don't have the permissions or roles I need to do that.\n" +
-                        f"Missing: `{error.args[0]}`",
+                    f"Missing: `{error.args[0]}`",
                     delete_after=AUTO_DELETE_TIME
                 )
             log.info(f"Bot missing permissions {error.args[0]=} in {ctx.guild.name=}")
@@ -315,18 +311,18 @@ class error_handle(Cog):
         """
         if error.status == 404:
             await ctx.send("There does not seem to be anything matching your query.",
-                delete_after=AUTO_DELETE_TIME)
+                           delete_after=AUTO_DELETE_TIME)
             log.debug(f"API responded with 404 for command {ctx.command}")
 
         elif error.status == 400:
             await ctx.send("According to the API, your request is malformed.",
-                delete_after=AUTO_DELETE_TIME)
+                           delete_after=AUTO_DELETE_TIME)
             content = await error.response.json()
             log.debug(f"API responded with 400 for command {ctx.command}: %r.", content)
 
         elif 500 <= error.status < 600:
             await ctx.send("Sorry, there seems to be an internal issue with the API.",
-                delete_after=AUTO_DELETE_TIME)
+                           delete_after=AUTO_DELETE_TIME)
             log.warning(f"API responded with {error.status} for command {ctx.command}")
 
         else:
@@ -352,9 +348,10 @@ class error_handle(Cog):
             f"```{error.__class__.__name__}: {error}```"
         )
 
-        #TODO: Make channel to report these errors.
+        # TODO: Make channel to report these errors.
 
         log.error(f"Error executing command invoked by {ctx.message.author}: {ctx.message.content}", exc_info=error)
+
 
 class ResponseCodeError(ValueError):
     """Raised when a non-OK HTTP response is received."""
@@ -373,6 +370,7 @@ class ResponseCodeError(ValueError):
     def __str__(self):
         response = self.response_json if self.response_json else self.response_text
         return f"Status: {self.status} Response: {response}"
+
 
 def setup(bot) -> None:
     """Load the error_handle cog."""
