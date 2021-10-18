@@ -7,6 +7,7 @@ from discord.ext import commands
 
 log = logging.getLogger(__name__)
 
+
 class MemberUpdates(commands.Cog):
     """Member event handler cog."""
 
@@ -28,7 +29,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_ban
         """
-        log.info(f'{user} was banned from {guild.name}')
+        log.info(f"{user} was banned from {guild.name}")
 
     @commands.Cog.listener()
     async def on_member_unban(self, guild: Guild, user: User) -> None:
@@ -37,14 +38,14 @@ class MemberUpdates(commands.Cog):
         Args:
             guild (Guild): The guild the user got unbanned from.
             user (User): The user that got unbanned.
-        
+
         Note:
             This requires Intents.bans to be enabled.
 
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_unban
         """
-        log.info(f'{user} was unbanned from {guild.name}')
+        log.info(f"{user} was unbanned from {guild.name}")
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member) -> None:
@@ -59,7 +60,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_join
         """
-        log.info(f'{member} has joined {member.guild.name}.')       
+        log.info(f"{member} has joined {member.guild.name}.")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: Member) -> None:
@@ -74,7 +75,7 @@ class MemberUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_remove
         """
-        log.info(f'{member} has left {member.guild.name}.')
+        log.info(f"{member} has left {member.guild.name}.")
 
     @commands.Cog.listener()
     async def on_member_update(self, before: Member, after: Member) -> None:
@@ -89,7 +90,7 @@ class MemberUpdates(commands.Cog):
 
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html#discord.on_member_update
-        """ 
+        """
 
 
 def setup(bot: commands.Bot) -> None:
