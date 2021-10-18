@@ -1,7 +1,5 @@
-import glob
 import io
 import logging
-import re
 import textwrap
 import traceback
 from contextlib import redirect_stdout
@@ -36,10 +34,8 @@ class AdministrationCog(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.group(aliases=["u", "ul"])
-    async def utilities(self, ctx):
-        if ctx.invoked_subcommand is None:
-            # Send the help command for this group
-            await ctx.send_help(ctx.command)
+    async def utilities(self):
+        return
 
     @commands.is_owner()
     @utilities.command(name="ping")
@@ -121,46 +117,6 @@ class AdministrationCog(Cog):
                 output = f"```py\n{value}{ret}\n```"
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.send(embed=embed)
-
-    @commands.is_owner()
-    @utilities.command(name="reload")
-    async def reload_cog(self, ctx: commands.Context, name_of_cog: str = None):
-        """Reloads specified cog or all cogs."""
-
-        regex = r"(?<=<).*(?=\..* object at 0x.*>)"
-        if name_of_cog is not None and name_of_cog in ctx.bot.cogs:
-            # Reload cog if it exists.
-            cog = re.search(regex, str(ctx.bot.cogs[name_of_cog]))
-            try:
-                self.bot.reload_extension(cog.group())
-
-            except commands.ExtensionError as e:
-                await ctx.message.add_reaction("❌")
-                await ctx.send(f"{e.__class__.__name__}: {e}")
-
-            else:
-                await ctx.message.add_reaction("✔")
-                await ctx.send(f"Reloaded `{cog.group()}` module!")
-
-        elif name_of_cog is None:
-            # Reload all the cogs in the folder named cogs.
-            # Skips over any cogs that start with '__' or do not end with .py.
-            try:
-                for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-                    if "\\" in cog:  # Pathing on Windows.
-                        self.bot.reload_extension(cog.replace("\\", ".")[:-3])
-                    else:  # Pathing on Linux.
-                        self.bot.reload_extension(cog.replace("/", ".")[:-3])
-            except commands.ExtensionError as e:
-                await ctx.message.add_reaction("❌")
-                await ctx.send(f"{e.__class__.__name__}: {e}")
-
-            else:
-                await ctx.message.add_reaction("✔")
-                await ctx.send("Reloaded all modules!")
-        else:
-            await ctx.message.add_reaction("❌")
-            await ctx.send("Module not found, check spelling, it's case sensitive.")
 
     @commands.is_owner()
     @commands.bot_has_permissions(embed_links=True, send_messages=True)
