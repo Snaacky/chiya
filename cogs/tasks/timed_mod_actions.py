@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class TimedModActionsTask(Cog):
-    """ Timed Mod Actions Background  """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -143,6 +142,5 @@ class TimedModActionsTask(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the TimedModActionsTask cog. """
     bot.add_cog(TimedModActionsTask(bot))
     log.info("Cog loaded: timed_mod_actions_task")

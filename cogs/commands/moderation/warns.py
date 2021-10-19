@@ -16,7 +16,6 @@ log = logging.getLogger(__name__)
 
 
 class WarnsCog(Cog):
-    """ Warns Cog """
 
     def __init__(self, bot):
         self.bot = bot
@@ -111,6 +110,5 @@ class WarnsCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Notes cog. """
     bot.add_cog(WarnsCog(bot))
     log.info("Commands loaded: warns")

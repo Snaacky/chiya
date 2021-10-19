@@ -8,7 +8,6 @@ log = logging.getLogger(__name__)
 
 
 class MessageUpdates(commands.Cog):
-    """Message event handler cog."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

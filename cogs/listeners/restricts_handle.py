@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class RestrictsHandler(commands.Cog):
-    """Handles restrict evasion."""
 
     def __init__(self, bot):
         self.bot = bot

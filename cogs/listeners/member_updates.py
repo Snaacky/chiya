@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 
 class MemberUpdates(commands.Cog):
-    """Member event handler cog."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

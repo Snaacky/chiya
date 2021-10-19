@@ -13,7 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class MutesHandler(commands.Cog):
-    """Handles actions such as mute evasion."""
 
     def __init__(self, bot):
         self.bot = bot

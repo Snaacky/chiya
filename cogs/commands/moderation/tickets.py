@@ -17,7 +17,6 @@ log = logging.getLogger(__name__)
 
 
 class TicketCog(Cog):
-    """Ticket Cog"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -266,6 +265,5 @@ class TicketCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """Load the Ticket cog."""
     bot.add_cog(TicketCog(bot))
     log.info("Commands loaded: tickets")

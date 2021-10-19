@@ -13,7 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class PurgeCog(Cog):
-    """ Purge Cog """
 
     def __init__(self, bot):
         self.bot = bot
@@ -99,6 +98,5 @@ class PurgeCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Purge cog. """
     bot.add_cog(PurgeCog(bot))
     log.info("Commands loaded: purge")

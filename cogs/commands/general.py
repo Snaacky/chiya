@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 
 
 class General(Cog):
-    """ General Commands Cog """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -84,6 +83,5 @@ class General(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the General cog. """
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")

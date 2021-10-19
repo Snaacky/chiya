@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 
 
 class Reminder(Cog):
-    """ Handles reminder commands """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -259,6 +258,5 @@ class Reminder(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Reminder cog. """
     bot.add_cog(Reminder(bot))
     log.info("Commands loaded: reminder")

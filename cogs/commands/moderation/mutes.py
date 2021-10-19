@@ -20,7 +20,6 @@ log = logging.getLogger(__name__)
 
 
 class MuteCog(Cog):
-    """ Mute Cog """
 
     def __init__(self, bot):
         self.bot = bot
@@ -499,6 +498,5 @@ class MuteCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Mute cog. """
     bot.add_cog(MuteCog(bot))
     log.info("Commands loaded: mutes")

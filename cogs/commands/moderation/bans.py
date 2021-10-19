@@ -17,6 +17,7 @@ log = logging.getLogger(__name__)
 
 
 class BanCog(Cog):
+
     def __init__(self, bot):
         self.bot = bot
 

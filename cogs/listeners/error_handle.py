@@ -21,7 +21,6 @@ AUTO_DELETE_TIME = 30
 
 
 class error_handle(Cog):
-    """error_handle."""
 
     def __init__(self, bot):
         self.bot = bot
