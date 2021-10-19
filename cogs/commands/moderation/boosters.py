@@ -24,7 +24,12 @@ class BoostersCog(Cog):
         }
     )
     async def boosters(self, ctx: SlashContext):
-        """ Sends a list of users boosting the server. """
+        """
+        Slash command for getting the current list of server boosters.
+
+        Args:
+            ctx (SlashContext): The context of the slash command.
+        """
         await ctx.defer()
 
         embed = embeds.make_embed(
@@ -40,5 +45,4 @@ class BoostersCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the BoosterCog cog. """
     bot.add_cog(BoostersCog(bot))
