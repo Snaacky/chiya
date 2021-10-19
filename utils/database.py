@@ -6,6 +6,7 @@ from sqlalchemy_utils import database_exists, create_database
 
 from utils.config import config
 
+
 log = logging.getLogger(__name__)
 
 
@@ -25,6 +26,12 @@ class Database:
     def get(self) -> dataset.Database:
         """Returns the dataset database object."""
         return dataset.connect(url=self.url)
+
+    def insert(self, table: str, data: dict):
+        db = self.get()
+        db[table].insert(data)
+        db.commit()
+        db.close()
 
     def setup(self) -> None:
         """Sets up the tables needed for Chiya."""
