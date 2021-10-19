@@ -1,3 +1,5 @@
+import logging
+
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -7,7 +9,11 @@ from utils.config import config
 from utils import embeds
 
 
+log = logging.getLogger(__name__)
+
+
 class BoostersCog(Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -46,3 +52,4 @@ class BoostersCog(Cog):
 
 def setup(bot: Bot) -> None:
     bot.add_cog(BoostersCog(bot))
+    log.info("Commands loaded: boosters")
