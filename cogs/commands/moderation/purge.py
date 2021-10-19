@@ -8,7 +8,7 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 from utils import embeds
 from utils.config import config
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 

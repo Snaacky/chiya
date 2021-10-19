@@ -16,7 +16,7 @@ from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 

@@ -15,7 +15,7 @@ from utils import embeds
 from utils.config import config
 from utils.moderation import can_action_member
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
