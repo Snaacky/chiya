@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Context, errors
 
 from utils import embeds
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 

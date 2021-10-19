@@ -8,6 +8,7 @@ from discord.ext import commands
 
 from utils import database
 
+
 log = logging.getLogger(__name__)
 
 

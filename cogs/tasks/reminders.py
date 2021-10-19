@@ -7,6 +7,7 @@ from discord.ext.commands import Bot, Cog
 
 from utils import database, embeds
 
+
 log = logging.getLogger(__name__)
 
 

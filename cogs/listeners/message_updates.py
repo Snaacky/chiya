@@ -3,6 +3,7 @@ import logging
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
 
+
 log = logging.getLogger(__name__)
 
 

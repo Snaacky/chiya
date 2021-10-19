@@ -7,7 +7,7 @@ from discord.ext import commands
 from utils import database
 from utils.config import config
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 

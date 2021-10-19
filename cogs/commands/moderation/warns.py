@@ -11,7 +11,7 @@ from utils import database
 from utils import embeds
 from utils.config import config
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
