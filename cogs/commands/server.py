@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import requests
 
@@ -10,11 +11,11 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 from utils import embeds
 from utils.config import config
 
+
 log = logging.getLogger(__name__)
 
 
 class Server(Cog):
-    """ Server Commands Cog """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -33,7 +34,12 @@ class Server(Cog):
         }
     )
     async def pop(self, ctx: SlashContext):
-        """Returns the current guild member count."""
+        """
+        Slash command for getting the current population of the server.
+
+        Args:
+            ctx (SlashContext): The context of the slash command.
+        """
         await ctx.defer()
         await ctx.send(ctx.guild.member_count)
 
@@ -53,7 +59,13 @@ class Server(Cog):
         ]
     )
     async def banner(self, ctx: SlashContext, link: str):
-        """Sets the banner for the Discord server."""
+        """
+        Slash command for updating the server banner.
+
+        Args:
+            ctx (SlashContext): The context of the slash command.
+            link (str): A direct link to the image to use for the update.
+        """
         await ctx.defer()
 
         r = requests.get(url=link)
@@ -66,46 +78,47 @@ class Server(Cog):
         except discord.errors.InvalidArgument:
             return await embeds.error_message(ctx=ctx, description="Unable to set banner, verify the link is correct.")
 
-        embed = embeds.make_embed(
+        await ctx.send(embed=embeds.make_embed(
             ctx=ctx,
             title="Banner updated",
             description=f"Banner [image]({link}) updated by {ctx.author.mention}",
             color="soft_green"
-        )
-
-        await ctx.send(embed=embed)
+        ))
 
     @cog_ext.cog_subcommand(
         base="server",
-        name="topic",
-        description="Sets the channel to the topic provided",
+        name="pingable",
+        description="Makes a role pingable for 10 seconds",
         guild_ids=config["guild_ids"],
         base_default_permission=False,
         options=[
             create_option(
-                name="channel",
-                description="The channel to edit",
-                option_type=7,
-                required=True
-            ),
-            create_option(
-                name="topic",
-                description="The topic message to set",
-                option_type=3,
+                name="role",
+                description="The role to make pingable",
+                option_type=8,
                 required=True
             )
         ]
     )
-    async def topic(self, ctx: SlashContext, channel: discord.TextChannel, topic: str):
-        """Sets the banner for the Discord server."""
+    async def pingable(self, ctx: SlashContext, role: discord.Role):
+        """
+        Slash command for making server roles temporarily pingable.
+
+        Args:
+            ctx (SlashContext): The context of the slash command.
+            role (discord.Role): The role to be made temporarily pingable.
+        """
         await ctx.defer()
-        if len(topic) >= 1024:
-            return await embeds.error_message(ctx=ctx, description="Topic message must be less than 1024 characters.")
-        await channel.edit(topic=topic)
-        return await embeds.success_message(ctx=ctx, description="Successfully updated the channel topic.")
+
+        if role.mentionable:
+            return await embeds.success_message(ctx, description="That role is already mentionable.")
+
+        await role.edit(mentionable=True)
+        await embeds.success_message(ctx, description="You have 10 seconds to ping the role.")
+        await asyncio.sleep(10)
+        await role.edit(mentionable=False)
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Server cog. """
     bot.add_cog(Server(bot))
     log.info("Commands loaded: server")
