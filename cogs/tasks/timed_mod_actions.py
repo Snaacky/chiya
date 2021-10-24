@@ -73,7 +73,7 @@ class TimedModActionsTask(Cog):
                 )
 
                 restricts = self.bot.get_cog("RestrictCog")
-                if not await restricts.send_unrestricted_dm_embed(member=member, reason="Timed restriction lapsed.", guild=guild):
+                if not await restricts.send_unrestricted_dm_embed(member=member, reason="Timed restriction lapsed."):
                     embed.add_field(
                         name="Notice:",
                         value=(
@@ -83,7 +83,7 @@ class TimedModActionsTask(Cog):
                         )
                     )
 
-                await restricts.unrestrict_member(member=member, reason="Timed restriction lapsed.", guild=guild)
+                await restricts.unrestrict_member(member=member, reason="Timed restriction lapsed.")
                 await channel.send(embed=embed)
 
         db.commit()

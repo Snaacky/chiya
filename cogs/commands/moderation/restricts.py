@@ -22,12 +22,12 @@ class RestrictCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_restricted(ctx: SlashContext, member: discord.Member) -> bool:
+    async def is_user_restricted(self, ctx: SlashContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]) in member.roles:
             return True
         return False
 
-    async def restrict_member(ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
+    async def restrict_member(self, ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
         await member.add_roles(discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]), reason=reason)
 
         db = database.Database().get()
@@ -53,12 +53,14 @@ class RestrictCog(Cog):
         db.close()
 
     async def unrestrict_member(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> None:
-        await member.remove_roles(discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]), reason=reason)
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
+        moderator = ctx.author if ctx else self.bot.user
+        await member.remove_roles(discord.utils.get(guild.roles, id=config["roles"]["restricted"]), reason=reason)
 
         db = database.Database().get()
         db["mod_logs"].insert(dict(
             user_id=member.id,
-            mod_id=ctx.author.id,
+            mod_id=moderator.id,
             timestamp=int(time.time()),
             reason=reason,
             type="unrestrict"
@@ -71,7 +73,7 @@ class RestrictCog(Cog):
         db.commit()
         db.close()
 
-    async def send_restricted_dm_embed(ctx: SlashContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
+    async def send_restricted_dm_embed(self, ctx: SlashContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
         try:
             channel = await member.create_dm()
             embed = embeds.make_embed(
@@ -89,8 +91,7 @@ class RestrictCog(Cog):
         except discord.errors.Forbidden:
             return False
 
-    async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> bool:
-        guild = guild or ctx.guild
+    async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
         try:
@@ -101,7 +102,7 @@ class RestrictCog(Cog):
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
-            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy)", inline=True)
+            embed.add_field(name="Server:", value="[/r/animepiracy](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/rvvnpV2.gif")
@@ -112,7 +113,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="restrict",
         description="Restricts message permissions from the member for the specified length of time",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -135,7 +136,7 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
@@ -196,7 +197,7 @@ class RestrictCog(Cog):
     @cog_ext.cog_slash(
         name="unrestrict",
         description="Unrestricts the member",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -213,7 +214,7 @@ class RestrictCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
