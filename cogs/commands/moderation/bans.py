@@ -7,8 +7,7 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from utils.database import Database
-from utils import embeds
+from utils import database, embeds
 from utils.config import config
 from utils.moderation import can_action_member
 
@@ -83,7 +82,7 @@ class BanCog(Cog):
             daystodelete (int): The days of messages to delete from the banned user.
 
         Notes:
-            daystodelete is capped at 7 days maximum, this is a Discord API limitation.
+            delete_message_days is capped at 7 days maximum, this is a Discord API limitation.
 
         Raises:
             discord.errors.Forbidden: Raised when unable to message the banned user due to
@@ -141,16 +140,12 @@ class BanCog(Cog):
 
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete)
 
-        Database().insert(
-            table="mod_logs",
-            data=dict(
-                user_id=user.id,
-                mod_id=ctx.author.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="ban"
-            )
-        )
+        db = database.Database().get()
+        db["mod_logs"].insert(dict(
+            user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
+        ))
+        db.commit()
+        db.close()
 
         await ctx.send(embed=embed)
 
@@ -221,16 +216,16 @@ class BanCog(Cog):
         except discord.HTTPException:
             return
 
-        Database().insert(
-            table="mod_logs",
-            data=dict(
-                user_id=user.id,
-                mod_id=ctx.author.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="unban"
-            )
-        )
+        db = database.Database().get()
+        db["mod_logs"].insert(dict(
+            user_id=user.id,
+            mod_id=ctx.author.id,
+            timestamp=int(time.time()),
+            reason=reason,
+            type="unban"
+        ))
+        db.commit()
+        db.close()
 
         await ctx.send(embed=embed)
 

@@ -7,9 +7,8 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
-from utils import embeds
+from utils import database, embeds
 from utils.config import config
-from utils.database import Database
 from utils.moderation import can_action_member
 
 
@@ -104,17 +103,12 @@ class KickCog(Cog):
 
         await ctx.guild.kick(user=member, reason=reason)
 
-        Database().insert(
-            table="mod_logs",
-            data=dict(
-                user_id=member.id,
-                mod_id=ctx.author.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="kick"
-            )
-        )
-
+        db = database.Database().get()
+        db["mod_logs"].insert(dict(
+            user_id=member.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="kick"
+        ))
+        db.commit()
+        db.close()
         await ctx.send(embed=embed)
 
 
