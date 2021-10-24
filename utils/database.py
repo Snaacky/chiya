@@ -27,12 +27,6 @@ class Database:
         """Returns the dataset database object."""
         return dataset.connect(url=self.url)
 
-    def insert(self, table: str, data: dict):
-        db = self.get()
-        db[table].insert(data)
-        db.commit()
-        db.close()
-
     def setup(self) -> None:
         """Sets up the tables needed for Chiya."""
         # Create the database if it doesn't already exist.
