@@ -30,10 +30,10 @@ class PurgeCog(Cog):
         # TODO: migrate to disnake for ctx.guild.stickers
         name="backup",
         description="Creates a backup of the server",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
@@ -85,6 +85,7 @@ class PurgeCog(Cog):
                 position=role.position,
                 color=role.color.value
             ))
+            # TODO: get role icon, probably disnake
 
         log.info("Backing up guild categories")
         for category in ctx.guild.categories:
