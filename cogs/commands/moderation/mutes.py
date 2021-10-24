@@ -24,7 +24,7 @@ class MuteCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def mute_member(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"])
         await member.add_roles(role, reason=reason)
 
@@ -52,8 +52,8 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
-        guild = guild or ctx.guild
+    async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> None:
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Muted" role from member.
@@ -75,16 +75,13 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    async def is_user_muted(ctx: SlashContext, member: discord.Member) -> bool:
+    async def is_user_muted(self, ctx: SlashContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"]) in member.roles:
             return True
         return False
 
-    async def send_muted_dm_embed(ctx: SlashContext, member: discord.Member, channel: discord.TextChannel, reason: str = None, duration: str = None) -> bool:
-        if not duration:
-            duration = "Indefinite"
-
-        try:  # In case user has DMs blocked.
+    async def send_muted_dm_embed(self, ctx: SlashContext, member: discord.Member, channel: discord.TextChannel, reason: str = None, duration: str = None) -> bool:
+        try:
             dm_channel = await member.create_dm()
             embed = embeds.make_embed(
                 author=False,
@@ -94,7 +91,7 @@ class MuteCog(Cog):
             )
             embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
-            embed.add_field(name="Length:", value=duration, inline=True)
+            embed.add_field(name="Length:", value=duration or "Indefinite", inline=True)
             embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/840Q48l.gif")
@@ -102,8 +99,7 @@ class MuteCog(Cog):
         except discord.HTTPException:
             return False
 
-    async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> bool:
-        guild = guild or ctx.guild
+    async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
         # Send member message telling them that they were unmuted and why.
@@ -115,7 +111,7 @@ class MuteCog(Cog):
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
-            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy)", inline=True)
+            embed.add_field(name="Server:", value="[/r/animepiracy](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
@@ -123,7 +119,7 @@ class MuteCog(Cog):
         except discord.HTTPException:
             return False
 
-    async def create_mute_channel(ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
+    async def create_mute_channel(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
         if not duration:
             duration = "Indefinite"
 
@@ -159,33 +155,20 @@ class MuteCog(Cog):
 
         return channel
 
-    async def archive_mute_channel(self, user_id: int, reason: str = None, ctx: SlashContext = None, guild: int = None):
-
-        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if not reason:
-            reason = "No reason provided."
-        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-
-        guild = guild or ctx.guild
+    async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None):
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
         # Open a connection to the database.
         db = database.Database().get()
 
-        #  TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
-        table = db["mod_logs"]
         # Gets the most recent mute for the user, sorted by descending (-) ID.
-        mute_entry = table.find_one(user_id=user_id, type="mute", order_by="-id")
-        unmute_entry = table.find_one(user_id=user_id, type="unmute", order_by="-id")
-        mute_reason = mute_entry["reason"]
+        mute_entry = db["mod_logs"].find_one(user_id=user_id, type="mute", order_by="-id")
+        unmute_entry = db["mod_logs"].find_one(user_id=user_id, type="unmute", order_by="-id")
         muter = await self.bot.fetch_user(mute_entry["mod_id"])
         unmuter = await self.bot.fetch_user(unmute_entry["mod_id"])
 
-        # Commit the changes to the database and close the connection.
-        db.commit()
         db.close()
 
         # Get the member object of the ticket creator.
@@ -195,7 +178,7 @@ class MuteCog(Cog):
         message_log = (
             f"Muted User: {member} ({member.id})\n\n"
             f"Muted By: {muter} ({muter.id})\n"
-            f"Mute Reason: {mute_reason}\n\n"
+            f"Mute Reason: {mute_entry['reason']}\n\n"
             f"Unmuted By: {unmuter} ({unmuter.id})\n"
             f"Unmute Reason: {reason}\n\n"
         )
@@ -267,7 +250,7 @@ class MuteCog(Cog):
         embed.add_field(name="Muted User:", value=member.mention, inline=True)
         embed.add_field(name="Muted By:", value=muter.mention, inline=True)
         embed.add_field(name="Unmuted By:", value=unmuter.mention, inline=True)
-        embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
+        embed.add_field(name="Mute Reason:", value=mute_entry['reason'], inline=False)
         embed.add_field(name="Unmute Reason:", value=reason, inline=False)
         embed.add_field(name="Duration:", value=elapsed_time, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
@@ -283,7 +266,7 @@ class MuteCog(Cog):
     @cog_ext.cog_slash(
         name="mute",
         description="Mutes a member in the server",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -295,7 +278,7 @@ class MuteCog(Cog):
                 name="reason",
                 description="The reason why the member is being muted",
                 option_type=3,
-                required=False
+                required=True
             ),
             create_option(
                 name="duration",
@@ -306,13 +289,13 @@ class MuteCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
-    async def mute(self, ctx: SlashContext, member: discord.Member, duration: str = None, reason: str = None):
+    async def mute(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
         """ Mutes member in guild. """
         await ctx.defer()
 
@@ -321,18 +304,15 @@ class MuteCog(Cog):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
+        if not await can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is muted already.
         if await self.is_user_muted(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
+        if len(reason) > 512:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # If the duration is not specified, default it to a permanent mute.
@@ -412,14 +392,14 @@ class MuteCog(Cog):
             member=member,
             reason=reason,
             temporary=True,
-            end_time=mute_end_time.timestamp()
+            end_time=mute_end_time
         )
         await ctx.send(embed=embed)
 
     @cog_ext.cog_slash(
         name="unmute",
         description="Unmutes a member in the server",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -431,18 +411,18 @@ class MuteCog(Cog):
                 name="reason",
                 description="The reason why the member is being unmuted",
                 option_type=3,
-                required=False
+                required=True
             ),
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
-    async def unmute(self, ctx: SlashContext, member: discord.Member, reason: str = None):
+    async def unmute(self, ctx: SlashContext, member: discord.Member, reason: str):
         """ Unmutes member in guild. """
         await ctx.defer()
 
@@ -451,18 +431,15 @@ class MuteCog(Cog):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
+        if not await can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is not muted already.
         if not await self.is_user_muted(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
+        if len(reason) > 512:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully unmuted.
