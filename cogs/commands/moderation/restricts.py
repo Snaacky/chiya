@@ -160,6 +160,8 @@ class RestrictCog(Cog):
 
         if duration:
             duration_string, restrict_end_time = utils.duration.get_duration(duration=duration)
+        else:
+            duration_string = restrict_end_time = None
 
         if duration and not duration_string:
             return await embeds.error_message(
