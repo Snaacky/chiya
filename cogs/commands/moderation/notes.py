@@ -28,7 +28,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="addnote",
         description="Add a note to a user",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="user",
@@ -45,7 +45,7 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
@@ -99,7 +99,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="search",
         description="View users notes and mod actions history",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="user",
@@ -127,7 +127,7 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
@@ -212,7 +212,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="editlog",
         description="Edits an existing log or note for a user",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -229,7 +229,7 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,

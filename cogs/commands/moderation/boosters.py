@@ -20,10 +20,10 @@ class BoostersCog(Cog):
     @cog_ext.cog_slash(
         name="boosters",
         description="List all the current server boosters",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]

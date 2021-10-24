@@ -42,7 +42,7 @@ class PurgeCog(Cog):
     @cog_ext.cog_slash(
         name="purge",
         description="Purges the last X amount of messages",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="amount",
@@ -59,7 +59,7 @@ class PurgeCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]

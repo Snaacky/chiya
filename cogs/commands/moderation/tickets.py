@@ -23,7 +23,7 @@ class TicketCog(Cog):
     @cog_ext.cog_slash(
         name="ticket",
         description="Opens a new modmail ticket",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="topic",
@@ -107,10 +107,10 @@ class TicketCog(Cog):
     @cog_ext.cog_slash(
         name="close",
         description="Closes a ticket when sent in the ticket channel",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,

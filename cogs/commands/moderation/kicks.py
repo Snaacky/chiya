@@ -23,7 +23,7 @@ class KickCog(Cog):
     @cog_ext.cog_slash(
         name="kick",
         description="Kicks the member from the server",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -40,7 +40,7 @@ class KickCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]

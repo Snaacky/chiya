@@ -24,10 +24,10 @@ class Server(Cog):
         base="server",
         name="pop",
         description="Gets the current server population",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         base_default_permission=False,
         base_permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
@@ -47,7 +47,7 @@ class Server(Cog):
         base="server",
         name="banner",
         description="Sets the banner to the image provided",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         base_default_permission=False,
         options=[
             create_option(
@@ -89,7 +89,7 @@ class Server(Cog):
         base="server",
         name="pingable",
         description="Makes a role pingable for 10 seconds",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         base_default_permission=False,
         options=[
             create_option(

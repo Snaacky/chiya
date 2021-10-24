@@ -42,7 +42,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="ban",
         description="Bans the user from the server",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="user",
@@ -65,7 +65,7 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
@@ -152,7 +152,7 @@ class BanCog(Cog):
     @cog_ext.cog_slash(
         name="unban",
         description="Unbans the user from the server",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="user",
@@ -169,7 +169,7 @@ class BanCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]

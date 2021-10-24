@@ -22,7 +22,7 @@ class Reminder(Cog):
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="duration",
@@ -84,7 +84,7 @@ class Reminder(Cog):
         base="reminder",
         name="edit",
         description="Edit an existing reminder",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="reminder_id",
@@ -140,7 +140,7 @@ class Reminder(Cog):
         base="reminder",
         name="list",
         description="List your existing reminders",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
     )
     async def list_reminders(self, ctx: SlashContext):
         """ List your reminders. """
@@ -182,7 +182,7 @@ class Reminder(Cog):
         base="reminder",
         name="delete",
         description="Delete an existing reminder",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="reminder_id",
@@ -235,7 +235,7 @@ class Reminder(Cog):
         base="reminder",
         name="clear",
         description="Clears all of your existing reminders",
-        guild_ids=config["guild_ids"]
+        guild_ids=[config["guild_id"]]
     )
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """
