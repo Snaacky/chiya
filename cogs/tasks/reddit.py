@@ -17,11 +17,11 @@ class RedditTask(commands.Cog):
         self.bot = bot
         self.bot_started_at = time.time()
         self.cache = []
-        self.client_id = config["reddit"]["client_id"]
-        self.client_secret = config["reddit"]["client_secret"]
-        self.user_agent = config["reddit"]["user_agent"]
-        self.subreddit = config["reddit"]["subreddit"]
-        self.channel = config["reddit"]["channel"]
+        self.client_id = config.get("reddit", {}).get("client_id")
+        self.client_secret = config.get("reddit", {}).get("client_secret")
+        self.user_agent = config.get("reddit", {}).get("user_agent")
+        self.subreddit = config.get("reddit", {}).get("subreddit")
+        self.channel = config.get("reddit", {}).get("channel")
 
         if not all([self.client_id, self.client_secret, self.user_agent, self.subreddit, self.channel]):
             log.warning("Reddit functionality is disabled due to missing prerequisites")
