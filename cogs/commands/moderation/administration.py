@@ -469,25 +469,66 @@ class AdministrationCog(Cog):
                 style=ButtonStyle.blurple, label="Edit", custom_id="edit_button"
             ),
         ]
-        action_row_main_menu = create_actionrow(*buttons_main_menu)
-        await embed_message.edit(components=[action_row_main_menu])
-
-        try:
-            button_ctx: ComponentContext = await wait_for_component(
-                self.bot, components=[action_row_main_menu], messages=embed_message, timeout=30
+        buttons_edit_menu = [
+            create_button(
+                style = ButtonStyle.blurple, label = "Edit title", custom_id="edit_title_button"
+            ),
+            create_button(
+                style = ButtonStyle.blurple, label = "Edit description", custom_id = "edit_description_button"
             )
-            await button_ctx.defer(edit_origin=True)
-            if button_ctx.custom_id == "save_button":
-                await embed_message.edit(components=[])
-            elif button_ctx.custom_id == "edit_button":
-                await embed_message.edit(
-                    content="Enter title for new field:", components=[]
-                )
-            elif button_ctx.custom_id == "delete_button":
-                await embed_message.delete()
+        ]
+        action_row_main_menu = create_actionrow(*buttons_main_menu)
+        action_row_edit_menu = create_actionrow(*buttons_edit_menu)
+        await embed_message.edit(components=[action_row_main_menu])
+        
+        def check_message(message):
+            return message.author == ctx.author
+        
+        def edit_embed_field (embed: discord.Embed, field: str, new_value: str) -> discord.Embed:
+            embed = embed.to_dict()
+            embed[field] = new_value
+            return discord.Embed.from_dict(embed)
 
-        except asyncio.TimeoutError:
-            embed_message.edit(components=[])
+        while True:
+            try:
+                button_ctx: ComponentContext = await wait_for_component(
+                    self.bot, components=[action_row_main_menu], messages=embed_message, timeout=30
+                )
+                await button_ctx.defer(edit_origin=True)
+                
+                if button_ctx.custom_id == "save_button":
+                    await embed_message.edit(components=[])
+                    return
+                
+                elif button_ctx.custom_id == "edit_button":
+                    await embed_message.edit(components=[action_row_edit_menu])
+                    button_ctx: ComponentContext = await wait_for_component(
+                        self.bot, components=[action_row_edit_menu], messages=embed_message, timeout=30
+                    )
+                    await button_ctx.defer(edit_origin=True)
+                    if button_ctx.custom_id == "edit_title_button":
+                        await embed_message.edit(content="Enter new title:")
+                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                        embed = edit_embed_field(embed, "title", message.content)
+                        await embed_message.edit(content="", components=[], embed=embed)
+                        await message.delete()
+                        
+                    
+                    elif button_ctx.custom_id == "edit_description_button":
+                        await embed_message.edit(content="Enter new description:")
+                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                        embed = edit_embed_field(embed, "description", message.content)
+                        await embed_message.edit(content="", components=[], embed=embed)
+                        await message.delete()
+    
+                    else:
+                        await embed_message.delete()
+                        return
+                
+                await embed_message.edit(components=[action_row_main_menu])
+
+            except asyncio.TimeoutError:
+                embed_message.edit(content="", components=[])
 
 
 def setup(bot: Bot) -> None:
