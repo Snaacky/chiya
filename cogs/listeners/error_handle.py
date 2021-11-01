@@ -7,7 +7,7 @@ from discord.ext.commands import Cog, Context, errors
 
 from utils import embeds
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
@@ -21,7 +21,6 @@ AUTO_DELETE_TIME = 30
 
 
 class error_handle(Cog):
-    """error_handle."""
 
     def __init__(self, bot):
         self.bot = bot

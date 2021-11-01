@@ -7,11 +7,11 @@ from discord.ext.commands import Bot, Cog
 
 from utils import database, embeds
 
+
 log = logging.getLogger(__name__)
 
 
 class ReminderTask(Cog):
-    """ Reminder Background Task """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -67,6 +67,5 @@ class ReminderTask(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the ReminderTask cog. """
     bot.add_cog(ReminderTask(bot))
     log.info("Task loaded: reminder")

@@ -1,6 +1,5 @@
 # Info about this file: https://pip.pypa.io/en/latest/user_guide/#requirements-files
 discord.py==1.7.3                   # https://discordpy.readthedocs.io/
-dataset==1.5.0                      # https://dataset.readthedocs.io/
 asyncpraw==7.4.0                    # https://asyncpraw.readthedocs.io/
 coloredlogs==15.0.1                 # https://coloredlogs.readthedocs.io/
 parsedatetime==2.6                  # https://pypi.org/project/parsedatetime/
@@ -11,3 +10,4 @@ SQLAlchemy-Utils==0.37.8            # https://sqlalchemy-utils.readthedocs.io/
 fuzzywuzzy==0.18.0                  # https://chairnerd.seatgeek.com/fuzzywuzzy-fuzzy-string-matching-in-python/
 pyaml_env~=1.1.1                    # https://github.com/mkaranasou/pyaml_env
 requests==2.26.0                    # https://docs.python-requests.org/en/latest/
+git+https://github.com/snaacky/dataset.git

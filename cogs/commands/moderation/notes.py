@@ -16,12 +16,11 @@ from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
 class NotesCog(Cog):
-    """Notes Cog"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -29,7 +28,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="addnote",
         description="Add a note to a user",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="user",
@@ -46,7 +45,7 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
@@ -100,7 +99,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="search",
         description="View users notes and mod actions history",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="user",
@@ -128,7 +127,7 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
@@ -213,7 +212,7 @@ class NotesCog(Cog):
     @cog_ext.cog_slash(
         name="editlog",
         description="Edits an existing log or note for a user",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -230,7 +229,7 @@ class NotesCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
@@ -280,6 +279,5 @@ class NotesCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """Load the Notes cog."""
     bot.add_cog(NotesCog(bot))
     log.info("Commands loaded: notes")

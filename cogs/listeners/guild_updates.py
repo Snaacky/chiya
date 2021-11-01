@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 
 class GuildUpdates(commands.Cog):
-    """Guild event handler cog."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot

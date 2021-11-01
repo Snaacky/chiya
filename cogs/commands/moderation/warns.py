@@ -11,12 +11,11 @@ from utils import database
 from utils import embeds
 from utils.config import config
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
 class WarnsCog(Cog):
-    """ Warns Cog """
 
     def __init__(self, bot):
         self.bot = bot
@@ -24,7 +23,7 @@ class WarnsCog(Cog):
     @cog_ext.cog_slash(
         name="warn",
         description="Warn the member",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -41,7 +40,7 @@ class WarnsCog(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
@@ -111,6 +110,5 @@ class WarnsCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Notes cog. """
     bot.add_cog(WarnsCog(bot))
     log.info("Commands loaded: warns")
