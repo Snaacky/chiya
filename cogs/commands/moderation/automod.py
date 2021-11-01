@@ -30,7 +30,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="term",
         name="search",
         description="Searches and/or lists all the currently censored terms.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="search_term",
@@ -54,7 +54,7 @@ class AutomodCog(commands.Cog):
         ],
         base_default_permission=False,
         base_permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"], SlashCommandPermissionType.ROLE, True
                 ),
@@ -132,7 +132,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="term",
         name="add",
         description="Adds a term to the censor list.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="censor_type",
@@ -215,7 +215,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="term",
         name="disable",
         description="Disables a term from the censor list.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -259,7 +259,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="term",
         name="enable",
         description="Enables a term from the censor list.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -304,7 +304,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="term",
         name="delete",
         description="Deletes a term from the censor list.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -347,7 +347,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="user_exclusion",
         name="add",
         description="Excludes a user from an automod listing.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -410,7 +410,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="user_exclusion",
         name="remove",
         description="Removes the exclusion of a user from an automod listing.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -479,7 +479,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="role_exclusion",
         name="add",
         description="Excludes a role from an automod listing.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -540,7 +540,7 @@ class AutomodCog(commands.Cog):
         subcommand_group="role_exclusion",
         name="remove",
         description="Removes the exclusion of a role from an automod listing.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
@@ -607,7 +607,7 @@ class AutomodCog(commands.Cog):
         base="automod",
         name="details",
         description="Displays the advanced details for an automod listing.",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="id",
