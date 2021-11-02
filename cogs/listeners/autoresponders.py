@@ -37,7 +37,7 @@ class AutoResponders(commands.Cog):
                         "We are a discussion community, not a file-sharing hub."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url="https://i.imgur.com/eUoRMy9.png",
+                    thumbnail_url="https://i.imgur.com/X0upMFa.png",
                     title_url=rules_message
                 ))
             case "rule2":
