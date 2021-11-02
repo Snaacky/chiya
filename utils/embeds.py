@@ -93,6 +93,30 @@ async def error_message(ctx: SlashContext, description: str, author: bool = True
     await ctx.send(embed=embed, delete_after=30)
 
 
+async def warning_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+    """ Send a basic warning message
+
+    Note:
+        You must await this function
+
+    Args:
+        description (str): Warning description
+        ctx (Context): Discord context object, needed for author and timestamps.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    if not title:
+        title = "Warning"
+    await ctx.send(embed=make_embed(
+        title=title,
+        description=f"{description}",
+        ctx=ctx,
+        color="dark_gold",
+        author=author
+        ),
+        delete_after=30
+    )
+
+
 def error_embed(ctx: SlashContext, title: str, description: str, author: bool = True) -> discord.Embed:
     """ Make a basic error message embed
 
@@ -106,25 +130,3 @@ def error_embed(ctx: SlashContext, title: str, description: str, author: bool = 
         discord.Embed: discord embed object.
     """
     return make_embed(title=f"Error: {title}", description=f"{description}", ctx=ctx, color="soft_red", author=author)
-
-
-async def warning_message(ctx: SlashContext, description: str, author: bool = True):
-    """ Send a basic warning message
-
-    Note:
-        You must await this function
-
-    Args:
-        description (str): Warning description
-        ctx (Context): Discord context object, needed for author and timestamps.
-        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
-    """
-    await ctx.send(embed=make_embed(
-        title="Warning",
-        description=f"{description}",
-        ctx=ctx,
-        color="dark_gold",
-        author=author
-        ),
-        delete_after=30
-    )
