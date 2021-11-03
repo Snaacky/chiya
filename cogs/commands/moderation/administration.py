@@ -468,6 +468,9 @@ class AdministrationCog(Cog):
             create_button(
                 style=ButtonStyle.blurple, label="Edit", custom_id="edit_button"
             ),
+            create_button(
+                style=ButtonStyle.blurple, label="Add Field", custom_id="add_field_button"
+            ),
         ]
         buttons_edit_menu = [
             create_button(
@@ -475,7 +478,7 @@ class AdministrationCog(Cog):
             ),
             create_button(
                 style = ButtonStyle.blurple, label = "Edit description", custom_id = "edit_description_button"
-            )
+            ),
         ]
         action_row_main_menu = create_actionrow(*buttons_main_menu)
         action_row_edit_menu = create_actionrow(*buttons_edit_menu)
@@ -509,26 +512,45 @@ class AdministrationCog(Cog):
                     if button_ctx.custom_id == "edit_title_button":
                         await embed_message.edit(content="Enter new title:")
                         message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                        embed = edit_embed_field(embed, "title", message.content)
-                        await embed_message.edit(content="", components=[], embed=embed)
                         await message.delete()
-                        
+                        embed = edit_embed_field(embed, "title", message.content)
+                        await embed_message.edit(content="", embed=embed)
                     
                     elif button_ctx.custom_id == "edit_description_button":
                         await embed_message.edit(content="Enter new description:")
                         message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                        embed = edit_embed_field(embed, "description", message.content)
-                        await embed_message.edit(content="", components=[], embed=embed)
                         await message.delete()
+                        embed = edit_embed_field(embed, "description", message.content)
+                        await embed_message.edit(content="", embed=embed)
+                        
     
                     else:
                         await embed_message.delete()
                         return
+                    
+                elif button_ctx.custom_id == "add_field_button":
+                    await embed_message.edit(content="Enter name of field:")
+                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                    await message.delete()
+                    field_name = message.content
+                    await embed_message.edit(content="Enter value of field:")
+                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                    await message.delete()
+                    field_value = message.content
+                    await embed_message.edit(content="Inline? (y/n)?:")
+                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                    await message.delete()
+                    field_inline = True if message.content.lower().startswith('y') else False
+                    embed.add_field(name=field_name, value=field_value, inline=field_inline)
+                    await embed_message.edit(content="", embed=embed)
+                    
+                    
+
                 
                 await embed_message.edit(components=[action_row_main_menu])
 
             except asyncio.TimeoutError:
-                embed_message.edit(content="", components=[])
+                await embed_message.edit(content="", components=[])
 
 
 def setup(bot: Bot) -> None:
