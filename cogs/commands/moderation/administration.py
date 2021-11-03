@@ -479,9 +479,28 @@ class AdministrationCog(Cog):
             create_button(
                 style = ButtonStyle.blurple, label = "Edit description", custom_id = "edit_description_button"
             ),
+            create_button(
+                style = ButtonStyle.blurple, label = "Edit field", custom_id = "edit_field_button"
+            ),
+        ]
+        buttons_edit_field_menu = [
+            create_button(
+                style = ButtonStyle.blurple, label = "Edit name", custom_id="edit_field_name_button"
+            ),
+            create_button(
+                style = ButtonStyle.blurple, label = "Edit value", custom_id = "edit_field_value_button"
+            ),
+            create_button(
+                style = ButtonStyle.blurple, label = "Toggle inline", custom_id = "toggle_inline_button"
+            ),
+            create_button(
+                style = ButtonStyle.red, label = "Remove Field", custom_id = "remove_field_button"
+            ),
+
         ]
         action_row_main_menu = create_actionrow(*buttons_main_menu)
         action_row_edit_menu = create_actionrow(*buttons_edit_menu)
+        action_row_edit_field_menu = create_actionrow(*buttons_edit_field_menu)
         await embed_message.edit(components=[action_row_main_menu])
         
         def check_message(message):
@@ -491,6 +510,13 @@ class AdministrationCog(Cog):
             embed = embed.to_dict()
             embed[field] = new_value
             return discord.Embed.from_dict(embed)
+        
+        def mark_embed_fields(embed: discord.Embed) -> discord.Embed:
+            embed = embed.to_dict()
+            for i,field in enumerate(embed['fields']):
+                embed['fields'][i]['name'] = f"{i}: {field['name']}"
+            return discord.Embed.from_dict(embed)
+                
 
         while True:
             try:
@@ -522,11 +548,22 @@ class AdministrationCog(Cog):
                         await message.delete()
                         embed = edit_embed_field(embed, "description", message.content)
                         await embed_message.edit(content="", embed=embed)
+                    
+                    elif button_ctx.custom_id == "edit_field_button":
+                        if len(embed.to_dict()['fields']) != 0:
+                            await embed_message.edit(embed=mark_embed_fields(embed), content="Enter the field ID to edit:", components=[])
+                            message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                            await message.delete()
+                            field_index = int(message.content)
+                            if field_index < len(embed.to_dict()['fields']) and field_index >= 0:
+                                await embed_message.edit(embed=embed, components=[action_row_edit_field_menu])
+
+                            else:
+                                await embed_message.edit(embed=embed)
+
+                            
+
                         
-    
-                    else:
-                        await embed_message.delete()
-                        return
                     
                 elif button_ctx.custom_id == "add_field_button":
                     await embed_message.edit(content="Enter name of field:")
@@ -550,7 +587,7 @@ class AdministrationCog(Cog):
                 await embed_message.edit(components=[action_row_main_menu])
 
             except asyncio.TimeoutError:
-                await embed_message.edit(content="", components=[])
+                await embed_message.edit(content="", embed=embed, components=[])
 
 
 def setup(bot: Bot) -> None:
