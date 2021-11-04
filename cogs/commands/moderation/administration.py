@@ -525,65 +525,62 @@ class AdministrationCog(Cog):
                 )
                 await button_ctx.defer(edit_origin=True)
                 
-                if button_ctx.custom_id == "save_button":
-                    await embed_message.edit(components=[])
-                    return
-                
-                elif button_ctx.custom_id == "edit_button":
-                    await embed_message.edit(components=[action_row_edit_menu])
-                    button_ctx: ComponentContext = await wait_for_component(
-                        self.bot, components=[action_row_edit_menu], messages=embed_message, timeout=30
-                    )
-                    await button_ctx.defer(edit_origin=True)
-                    if button_ctx.custom_id == "edit_title_button":
-                        await embed_message.edit(content="Enter new title:")
-                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                        await message.delete()
-                        embed = edit_embed_field(embed, "title", message.content)
-                        await embed_message.edit(content="", embed=embed)
-                    
-                    elif button_ctx.custom_id == "edit_description_button":
-                        await embed_message.edit(content="Enter new description:")
-                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                        await message.delete()
-                        embed = edit_embed_field(embed, "description", message.content)
-                        await embed_message.edit(content="", embed=embed)
-                    
-                    elif button_ctx.custom_id == "edit_field_button":
-                        if len(embed.to_dict()['fields']) != 0:
-                            await embed_message.edit(embed=mark_embed_fields(embed), content="Enter the field ID to edit:", components=[])
-                            message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                            await message.delete()
-                            field_index = int(message.content)
-                            if field_index < len(embed.to_dict()['fields']) and field_index >= 0:
-                                await embed_message.edit(embed=embed, components=[action_row_edit_field_menu])
+                match button_ctx.custom_id:
+                    case "save_button":
+                        await embed_message.edit(components=[])
+                        return
 
-                            else:
-                                await embed_message.edit(embed=embed)
-
+                    case "edit_button":
+                        await embed_message.edit(components=[action_row_edit_menu])
+                        button_ctx: ComponentContext = await wait_for_component(
+                            self.bot, components=[action_row_edit_menu], messages=embed_message, timeout=30
+                        )
+                        await button_ctx.defer(edit_origin=True)
+                        match button_ctx.custom_id:
+                            case "edit_title_button":
+                                await embed_message.edit(content="Enter new title:")
+                                message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                                await message.delete()
+                                embed = edit_embed_field(embed, "title", message.content)
+                                await embed_message.edit(content="", embed=embed)
                             
-
+                            case "edit_description_button":
+                                await embed_message.edit(content="Enter new description:")
+                                message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                                await message.delete()
+                                embed = edit_embed_field(embed, "description", message.content)
+                                await embed_message.edit(content="", embed=embed)
                         
-                    
-                elif button_ctx.custom_id == "add_field_button":
-                    await embed_message.edit(content="Enter name of field:")
-                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                    await message.delete()
-                    field_name = message.content
-                    await embed_message.edit(content="Enter value of field:")
-                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                    await message.delete()
-                    field_value = message.content
-                    await embed_message.edit(content="Inline? (y/n)?:")
-                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
-                    await message.delete()
-                    field_inline = True if message.content.lower().startswith('y') else False
-                    embed.add_field(name=field_name, value=field_value, inline=field_inline)
-                    await embed_message.edit(content="", embed=embed)
-                    
-                    
+                            case "edit_field_button":
+                                if len(embed.to_dict()['fields']) != 0:
+                                    await embed_message.edit(embed=mark_embed_fields(embed), content="Enter the field ID to edit:", components=[])
+                                    message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                                    await message.delete()
+                                    field_index = int(message.content)
+                                    if field_index < len(embed.to_dict()['fields']) and field_index >= 0:
+                                        await embed_message.edit(embed=embed, components=[action_row_edit_field_menu])
+                                        # TODO: Complete this
 
-                
+                                    else:
+                                        await embed_message.edit(embed=embed)
+                    
+                    case "add_field_button":
+                        await embed_message.edit(content="Enter name of field:")
+                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                        await message.delete()
+                        field_name = message.content
+                        await embed_message.edit(content="Enter value of field:")
+                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                        await message.delete()
+                        field_value = message.content
+                        await embed_message.edit(content="Inline? (y/n)?:")
+                        message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                        await message.delete()
+                        field_inline = True if message.content.lower().startswith('y') else False
+                        embed.add_field(name=field_name, value=field_value, inline=field_inline)
+                        await embed_message.edit(content="", embed=embed)
+
+   
                 await embed_message.edit(components=[action_row_main_menu])
 
             except asyncio.TimeoutError:
