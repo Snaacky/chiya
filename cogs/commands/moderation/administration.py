@@ -516,6 +516,11 @@ class AdministrationCog(Cog):
             for i,field in enumerate(embed['fields']):
                 embed['fields'][i]['name'] = f"{i}: {field['name']}"
             return discord.Embed.from_dict(embed)
+        
+        def edit_field_at(embed: discord.Embed, field_index: int, field_name: str, updated_value: str) -> discord.Embed:
+            embed = embed.to_dict()
+            embed['fields'][field_index][field_name] = updated_value
+            return discord.Embed.from_dict(embed)
                 
 
         while True:
@@ -560,6 +565,29 @@ class AdministrationCog(Cog):
                                     if field_index < len(embed.to_dict()['fields']) and field_index >= 0:
                                         await embed_message.edit(embed=embed, components=[action_row_edit_field_menu])
                                         # TODO: Complete this
+                                        button_ctx: ComponentContext = await wait_for_component(
+                                            self.bot, components=[action_row_edit_field_menu], messages=embed_message, timeout=30
+                                        )
+                                        await button_ctx.defer(edit_origin=True)
+                                        match button_ctx.custom_id:
+                                            case "edit_field_name_button":
+                                                await embed_message.edit(content="Enter new field name:", components=[])
+                                                message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
+                                                await message.delete()
+                                                new_field_name = message.content
+                                                embed = edit_field_at(embed, field_index, "name", new_field_name)
+                                                await embed_message.edit(embed=embed, content="")
+                                                
+                                            
+                                            case "edit_field_name_button":
+                                                """"""
+
+                                            case "toggle_inline_button":
+                                                """"""
+                                            case "remove_field_button":
+                                                """"""
+                                            
+                                        
 
                                     else:
                                         await embed_message.edit(embed=embed)
