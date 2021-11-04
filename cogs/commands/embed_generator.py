@@ -189,6 +189,7 @@ class EmbedGeneratorCog(Cog):
         def check_message(message):
             return message.author == ctx.author
         
+        # TODO: Move all these methods to a utility file, or otherwise outside this method
         def edit_embed_field (embed: discord.Embed, field: str, new_value: str) -> discord.Embed:
             embed = embed.to_dict()
             embed[field] = new_value
@@ -233,14 +234,14 @@ class EmbedGeneratorCog(Cog):
                             await button_ctx.defer(edit_origin=True)
                             match button_ctx.custom_id:
                                 case "edit_title_button":
-                                    await embed_message.edit(content="Enter new title:")
+                                    await embed_message.edit(content="Enter new title:", components=[])
                                     message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                     await message.delete()
                                     embed = edit_embed_field(embed, "title", message.content)
                                     await embed_message.edit(content="", embed=embed)
                                 
                                 case "edit_description_button":
-                                    await embed_message.edit(content="Enter new description:")
+                                    await embed_message.edit(content="Enter new description:", components=[])
                                     message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                     await message.delete()
                                     embed = edit_embed_field(embed, "description", message.content)
