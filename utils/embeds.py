@@ -4,7 +4,7 @@ import discord
 from discord_slash import SlashContext
 
 
-def make_embed(ctx: SlashContext = None, title: str = "", description: str = "", color="default", thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
+def make_embed(ctx: SlashContext = None, title: str = "", description: str = "", color="default", title_url: str = None, thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
     """General embed template
 
     Args:
@@ -12,6 +12,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
         description (str, optional): Secondary text of your embed. Defaults to None.
         ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
         color (str, optional): Use a predefined name or use a hex color value. Defaults to 'dark_theme'.
+        title_url (str, optional): URL to hyperlink the embed title to. Defaults to None.
         thumbnail_url (str, optional): URL for the side image of embed. Defaults to None.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
 
@@ -33,7 +34,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
         downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699
     )
 
-    # If the color given was a valid name, use the corresponding hex value, else assume the value is already in hex form.
+    # Uuse the corresponding hex value if matching key, else assume the value is already in hex form.
     if isinstance(color, str) and color.lower() in colors:
         embed = discord.Embed(color=colors[color.lower()], title=title, description=description)
     else:
@@ -53,6 +54,9 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
     # Adding Timestamp for ease of tracking when embeds are posted.
     if ctx:
         embed.timestamp = datetime.datetime.utcnow()
+
+    if title_url:
+        embed.url = title_url
 
     return embed
 
@@ -89,6 +93,30 @@ async def error_message(ctx: SlashContext, description: str, author: bool = True
     await ctx.send(embed=embed, delete_after=30)
 
 
+async def warning_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+    """ Send a basic warning message
+
+    Note:
+        You must await this function
+
+    Args:
+        description (str): Warning description
+        ctx (Context): Discord context object, needed for author and timestamps.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    if not title:
+        title = "Warning"
+    await ctx.send(embed=make_embed(
+        title=title,
+        description=f"{description}",
+        ctx=ctx,
+        color="dark_gold",
+        author=author
+        ),
+        delete_after=30
+    )
+
+
 def error_embed(ctx: SlashContext, title: str, description: str, author: bool = True) -> discord.Embed:
     """ Make a basic error message embed
 
@@ -102,17 +130,3 @@ def error_embed(ctx: SlashContext, title: str, description: str, author: bool = 
         discord.Embed: discord embed object.
     """
     return make_embed(title=f"Error: {title}", description=f"{description}", ctx=ctx, color="soft_red", author=author)
-
-
-async def warning_message(ctx: SlashContext, description: str, author: bool = True):
-    """ Send a basic warning message
-    
-    Note:
-        You must await this function
-
-    Args:
-        description (str): Warning description
-        ctx (Context): Discord context object, needed for author and timestamps.
-        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
-    """
-    await ctx.send(embed=make_embed(title="Warning", description=f"{description}", ctx=ctx, color="dark_gold", author=author), delete_after=30)
