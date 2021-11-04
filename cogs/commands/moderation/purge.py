@@ -17,7 +17,7 @@ class PurgeCog(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_purge_messages(ctx: SlashContext):
+    async def can_purge_messages(self, ctx: SlashContext):
         """
         Checks if messages can be purged based on the context.
 
