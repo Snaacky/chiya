@@ -60,7 +60,7 @@ class Reminder(Cog):
         remind_id = db["remind_me"].insert(dict(
             reminder_location=ctx.channel.id,
             author_id=ctx.author.id,
-            date_to_remind=end_time.timestamp(),
+            date_to_remind=end_time,
             message=message,
             sent=False
         ))
