@@ -584,8 +584,7 @@ class AdministrationCog(Cog):
                                                 embed = edit_field_at(embed, field_index, "name", new_field_name)
                                                 await embed_message.edit(embed=embed, content="")
                                                 
-                                            
-                                            case "edit_field_name_button":
+                                            case "edit_field_value_button":
                                                 await embed_message.edit(content="Enter new field value:", components=[])
                                                 message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                                 await message.delete()
@@ -595,7 +594,7 @@ class AdministrationCog(Cog):
 
                                             case "toggle_inline_button":
                                                 new_inline_state = not embed.to_dict()['fields'][field_index]['inline']
-                                                embed = edit_field_at(embed, field_index, "inline", new_field_value)
+                                                embed = edit_field_at(embed, field_index, "inline", new_inline_state)
                                                 await embed_message.edit(embed=embed)
                                                 
                                             case "remove_field_button":
