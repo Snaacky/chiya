@@ -521,7 +521,13 @@ class AdministrationCog(Cog):
             embed = embed.to_dict()
             embed['fields'][field_index][field_name] = updated_value
             return discord.Embed.from_dict(embed)
-                
+        
+        def remove_field_at(embed: discord.Embed, field_index: int) -> discord.Embed:
+            embed = embed.to_dict()
+            embed_fields = embed['fields']
+            embed_fields.pop(field_index)
+            embed['fields'] = embed_fields
+            return discord.Embed.from_dict(embed)
 
         while True:
             try:
@@ -593,10 +599,9 @@ class AdministrationCog(Cog):
                                                 await embed_message.edit(embed=embed)
                                                 
                                             case "remove_field_button":
-                                                    """""" 
+                                                embed = remove_field_at(embed, field_index)
+                                                await embed_message.edit(embed=embed) 
                                             
-                                        
-
                                     else:
                                         await embed_message.edit(embed=embed)
                     
