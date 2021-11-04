@@ -50,8 +50,7 @@ class MutesHandler(commands.Cog):
             await mutes.archive_mute_channel(
                 ctx=None,
                 user_id=user.id,
-                reason="Mute channel archived after member banned due to mute evasion.",
-                guild=guild,
+                reason="Mute channel archived after member banned due to mute evasion."
             )
 
             # Add the ban to the mod_log database.
