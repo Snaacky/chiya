@@ -27,7 +27,7 @@ class AutoResponders(commands.Cog):
             return
 
         rules_message = "https://ptb.discord.com/channels/622243127435984927/623100638812962816/904426149491400715"
-        match message.clean_content:
+        match message.clean_content.lower():
             case "rule1":
                 await message.reply(embed=embeds.make_embed(
                     title="Rule 1: Do not share copyright infringing files or links",
