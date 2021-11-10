@@ -1,4 +1,5 @@
 import logging
+import re
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
@@ -120,6 +121,10 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
+
+        # Remove messages containing Cyrillic characters used for bypassing automod.
+        if bool(re.search('[\u0400-\u04FF]', message.clean_content)):
+            await message.delete()
 
         # Temporary auto-ban solution for scam bots.
         scam_links = ["stearncommunytiy.ru", "stearncormuntity.ru", "discord-drop.info"]
