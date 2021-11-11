@@ -189,30 +189,6 @@ class EmbedGeneratorCog(Cog):
         def check_message(message):
             return message.author == ctx.author
         
-        # TODO: Move all these methods to a utility file, or otherwise outside this method
-        def edit_embed_field (embed: discord.Embed, field: str, new_value: str) -> discord.Embed:
-            embed = embed.to_dict()
-            embed[field] = new_value
-            return discord.Embed.from_dict(embed)
-        
-        def mark_embed_fields(embed: discord.Embed) -> discord.Embed:
-            embed = embed.to_dict()
-            for i,field in enumerate(embed['fields']):
-                embed['fields'][i]['name'] = f"{i}: {field['name']}"
-            return discord.Embed.from_dict(embed)
-        
-        def edit_field_at(embed: discord.Embed, field_index: int, field_name: str, updated_value: str) -> discord.Embed:
-            embed = embed.to_dict()
-            embed['fields'][field_index][field_name] = updated_value
-            return discord.Embed.from_dict(embed)
-        
-        def remove_field_at(embed: discord.Embed, field_index: int) -> discord.Embed:
-            embed = embed.to_dict()
-            embed_fields = embed['fields']
-            embed_fields.pop(field_index)
-            embed['fields'] = embed_fields
-            return discord.Embed.from_dict(embed)
-
         while True:
             try:
                 button_ctx: ComponentContext = await wait_for_component(
@@ -237,19 +213,19 @@ class EmbedGeneratorCog(Cog):
                                     await embed_message.edit(content="Enter new title:", components=[])
                                     message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                     await message.delete()
-                                    embed = edit_embed_field(embed, "title", message.content)
+                                    embed = embeds.edit_embed_field(embed, "title", message.content)
                                     await embed_message.edit(content="", embed=embed)
                                 
                                 case "edit_description_button":
                                     await embed_message.edit(content="Enter new description:", components=[])
                                     message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                     await message.delete()
-                                    embed = edit_embed_field(embed, "description", message.content)
+                                    embed = embeds.edit_embed_field(embed, "description", message.content)
                                     await embed_message.edit(content="", embed=embed)
                             
                                 case "edit_field_button":
                                     if "fields" in embed.to_dict().keys():
-                                        await embed_message.edit(embed=mark_embed_fields(embed), content="Enter the field ID to edit:", components=[])
+                                        await embed_message.edit(embed=embeds.mark_embed_fields(embed), content="Enter the field ID to edit:", components=[])
                                         message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                         await message.delete()
                                         field_index = int(message.content)
@@ -265,7 +241,7 @@ class EmbedGeneratorCog(Cog):
                                                     message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                                     await message.delete()
                                                     new_field_name = message.content
-                                                    embed = edit_field_at(embed, field_index, "name", new_field_name)
+                                                    embed = embeds.edit_field_at(embed, field_index, "name", new_field_name)
                                                     await embed_message.edit(embed=embed, content="")
                                                     
                                                 case "edit_field_value_button":
@@ -273,19 +249,20 @@ class EmbedGeneratorCog(Cog):
                                                     message = await ctx.bot.wait_for("message", timeout=30, check=check_message)
                                                     await message.delete()
                                                     new_field_value = message.content
-                                                    embed = edit_field_at(embed, field_index, "value", new_field_value)
+                                                    embed = embeds.edit_field_at(embed, field_index, "value", new_field_value)
                                                     await embed_message.edit(embed=embed, content="")
 
                                                 case "toggle_inline_button":
                                                     new_inline_state = not embed.to_dict()['fields'][field_index]['inline']
-                                                    embed = edit_field_at(embed, field_index, "inline", new_inline_state)
+                                                    embed = embeds.edit_field_at(embed, field_index, "inline", new_inline_state)
                                                     await embed_message.edit(embed=embed)
                                                     
                                                 case "remove_field_button":
-                                                    embed = remove_field_at(embed, field_index)
+                                                    embed = embeds.remove_field_at(embed, field_index)
                                                     await embed_message.edit(embed=embed) 
-                                
+                                        
                                 case "main_menu_button":
+                                    await embed_message.edit(content=[], components=[])
                                     break
                     
                     case "add_field_button":
