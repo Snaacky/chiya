@@ -61,7 +61,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
     return embed
 
 
-async def success_message(ctx: SlashContext, description: str, author: bool = True):
+async def success_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
     """Send basic sucess message
 
     Note:
@@ -72,12 +72,12 @@ async def success_message(ctx: SlashContext, description: str, author: bool = Tr
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    embed = make_embed(color="soft_green", author=False)
-    embed.add_field(name="Success:", value=description, inline=False)
+    title = "Success:" if not title else title
+    embed = make_embed(name="Success:", value=description, color="soft_green", author=False)
     await ctx.send(embed=embed, delete_after=30)
 
 
-async def error_message(ctx: SlashContext, description: str, author: bool = True):
+async def error_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
     """Send basic error message
 
     Note:
@@ -88,8 +88,8 @@ async def error_message(ctx: SlashContext, description: str, author: bool = True
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    embed = make_embed(color="soft_red", author=False)
-    embed.add_field(name="Error:", value=description, inline=False)
+    title = "Error:" if not title else title
+    embed = make_embed(title=title, description=description, color="soft_red", author=False)
     await ctx.send(embed=embed, delete_after=30)
 
 
@@ -101,14 +101,14 @@ async def warning_message(ctx: SlashContext, description: str, title: str = None
 
     Args:
         description (str): Warning description
+        title (str, optional): Title to name the warning embed.
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    if not title:
-        title = "Warning"
+    title = "Warning:" if not title else title
     await ctx.send(embed=make_embed(
         title=title,
-        description=f"{description}",
+        description=description,
         ctx=ctx,
         color="dark_gold",
         author=author
@@ -121,7 +121,7 @@ def error_embed(ctx: SlashContext, title: str, description: str, author: bool = 
     """ Make a basic error message embed
 
     Args:
-        title (str): Name of error.
+        title (str): Title to name the error embed.
         description (str): Error description.
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
@@ -129,4 +129,5 @@ def error_embed(ctx: SlashContext, title: str, description: str, author: bool = 
     Returns:
         discord.Embed: discord embed object.
     """
-    return make_embed(title=f"Error: {title}", description=f"{description}", ctx=ctx, color="soft_red", author=author)
+    title = "Error:" if not title else title
+    return make_embed(title=title, description=description, ctx=ctx, color="soft_red", author=author)
