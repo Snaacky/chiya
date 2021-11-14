@@ -162,6 +162,31 @@ class MessageUpdates(commands.Cog):
         match payload.message_id:
             case color_roles_embed:
                 await payload.member.add_roles(discord.utils.get(payload.member.guild.roles, id=color_roles_mapping[payload.emoji.id]))
+    
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload):
+        """Event Listener which is called when a reaction is removed.
+        Args:
+            payload (RawReactionActionEvent) – The raw event payload data.
+        Note:
+            This requires Intents.reactions to be enabled.
+        For more information:
+            https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_raw_reaction_add
+        """
+        # Ignore reactions added by the bot.
+        if payload.user_id == self.bot.user.id:
+            return
+
+        color_roles_embed = config['embeds']['color_roles']
+        color_roles = config['roles']['color_roles']
+        color_emoji = config['emoji']['colors']
+        color_roles_mapping = dict(zip(color_emoji.values(), color_roles.values()))
+        
+        match payload.message_id:
+            case color_roles_embed:
+                guild = self.bot.get_guild(config['guild_id'])
+                member = guild.get_member(payload.user_id)
+                await member.remove_roles(discord.utils.get(guild.roles, id=color_roles_mapping[payload.emoji.id]))
                 
                 
                 
