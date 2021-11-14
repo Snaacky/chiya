@@ -13,7 +13,7 @@ from utils import embeds
 log = logging.getLogger(__name__)
 
 
-class ContextCog(Cog):
+class MoveQuestionCog(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -78,5 +78,5 @@ class ContextCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    bot.add_cog(ContextCog(bot))
-    log.info("Commands loaded: context")
+    bot.add_cog(MoveQuestionCog(bot))
+    log.info("App loaded: move_question")
