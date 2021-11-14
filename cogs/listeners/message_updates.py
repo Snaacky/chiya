@@ -1,6 +1,9 @@
 import logging
 import re
 
+from utils.config import config
+
+import discord
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
 
@@ -105,6 +108,7 @@ class MessageUpdates(commands.Cog):
         For more information:
             https://discordpy.readthedocs.io/en/latest/api.html?highlight=on_reaction_add#discord.on_reaction_add
         """
+        
 
     @commands.Cog.listener()
     async def on_message(self, message: Message):
@@ -149,6 +153,18 @@ class MessageUpdates(commands.Cog):
         # Ignore reactions added by the bot.
         if payload.user_id == self.bot.user.id:
             return
+
+        color_roles_embed = config['embeds']['color_roles']
+        color_roles = config['roles']['color_roles']
+        color_emoji = config['emoji']['colors']
+        color_roles_mapping = dict(zip(color_emoji.values(), color_roles.values()))
+        
+        match payload.message_id:
+            case color_roles_embed:
+                await payload.member.add_roles(discord.utils.get(payload.member.guild.roles, id=color_roles_mapping[payload.emoji.id]))
+                
+                
+                
 
 
 def setup(bot: commands.Bot) -> None:
