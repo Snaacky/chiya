@@ -1,6 +1,3 @@
-# An explanation for all the variables can be found at:
-# https://github.com/ranimepiracy/chiya/wiki/Setting-up-config.yml
-
 guild_id: 000000000000000000
 emoji_guild_ids: [000000000000000000]
 bot:
@@ -45,3 +42,5 @@ database:
   host: !ENV ${MYSQL_HOST}
   user: !ENV ${MYSQL_USER}
   password: !ENV ${MYSQL_PASSWORD}
+privatebin:
+  url: "https://privatebin.net"
