@@ -31,6 +31,12 @@ roles:
     blue: 000000000000000000
     pink: 000000000000000000
     purple: 000000000000000000
+  event_roles:
+    giveaway_events: 000000000000000000
+    server_announcements: 000000000000000000
+    group_watch_events: 000000000000000000
+    mudae_events: 000000000000000000
+    rin_events: 000000000000000000
 
 categories:
   tickets: 000000000000000000
