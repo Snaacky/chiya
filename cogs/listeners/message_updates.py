@@ -10,6 +10,26 @@ from discord.ext import commands
 
 log = logging.getLogger(__name__)
 
+assignable_roles_emoji = {
+    'giveaway_events': '🎁',
+    'server_announcements': '📢',
+    'group_watch_events': '📽',
+    'mudae_events': 'kakeraW',
+    'rin_events': '🧩',
+}
+color_emoji = {
+    'red': 805032092907601952,
+    'orange': 805032107952308235,
+    'yellow': 805032120971165709,
+    'green': 805032132325801994,
+    'blue': 805032145030348840,
+    'pink': 805032162197635114,
+    'purple': 805032172074696744,
+}
+color_roles_embed = config['embeds']['color_roles']
+assignable_roles_embed = config['embeds']['assignable_roles']
+color_roles = config['roles']['color_roles']
+assignable_roles = config['roles']['assignable_roles']
 
 class MessageUpdates(commands.Cog):
 
@@ -153,15 +173,13 @@ class MessageUpdates(commands.Cog):
         # Ignore reactions added by the bot.
         if payload.user_id == self.bot.user.id:
             return
-
-        color_roles_embed = config['embeds']['color_roles']
-        color_roles = config['roles']['color_roles']
-        color_emoji = config['emoji']['colors']
-        color_roles_mapping = dict(zip(color_emoji.values(), color_roles.values()))
         
-        match payload.message_id:
-            case color_roles_embed:
-                await payload.member.add_roles(discord.utils.get(payload.member.guild.roles, id=color_roles_mapping[payload.emoji.id]))
+        if payload.message_id == color_roles_embed:
+            await payload.member.add_roles(discord.utils.get(payload.member.guild.roles, id=dict(zip(color_emoji.values(), color_roles.values()))[payload.emoji.id]))
+        
+        elif payload.message_id == assignable_roles_embed:
+            await payload.member.add_roles(discord.utils.get(payload.member.guild.roles, id=dict(zip(assignable_roles_emoji.values(), assignable_roles.values()))[payload.emoji.name]))
+            
     
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
@@ -176,18 +194,16 @@ class MessageUpdates(commands.Cog):
         # Ignore reactions added by the bot.
         if payload.user_id == self.bot.user.id:
             return
-
-        color_roles_embed = config['embeds']['color_roles']
-        color_roles = config['roles']['color_roles']
-        color_emoji = config['emoji']['colors']
-        color_roles_mapping = dict(zip(color_emoji.values(), color_roles.values()))
         
-        match payload.message_id:
-            case color_roles_embed:
-                guild = self.bot.get_guild(config['guild_id'])
-                member = guild.get_member(payload.user_id)
-                await member.remove_roles(discord.utils.get(guild.roles, id=color_roles_mapping[payload.emoji.id]))
-                
+        if payload.message_id == color_roles_embed:
+            guild = self.bot.get_guild(config['guild_id'])
+            member = guild.get_member(payload.user_id)
+            await member.remove_roles(discord.utils.get(guild.roles, id=dict(zip(color_emoji.values(), color_roles.values()))[payload.emoji.id]))
+        elif payload.message_id == assignable_roles_embed:
+            guild = self.bot.get_guild(config['guild_id'])
+            member = guild.get_member(payload.user_id)
+            await member.remove_roles(discord.utils.get(guild.roles, id=dict(zip(assignable_roles_emoji.values(), assignable_roles.values()))[payload.emoji.name]))
+            
                 
                 
 
