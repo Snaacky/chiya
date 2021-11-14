@@ -3,10 +3,12 @@ import time
 
 import discord
 import privatebinapi
+from discord.ext import commands
 from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
+from discord_slash import cog_ext, SlashContext, ComponentContext
+from discord_slash.model import SlashCommandPermissionType, ButtonStyle
 from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
 
 from utils import database, embeds
 from utils.config import config
@@ -232,6 +234,47 @@ class TicketCog(Cog):
 
         # Delete the channel.
         await ctx.channel.delete()
+
+    @cog_ext.cog_slash(
+        name="tesfdsft",
+        description="asdahgfd",
+        guild_ids=[config["guild_id"]],
+        default_permission=False,
+        permissions={
+            config["guild_id"]: [
+                create_permission(
+                    config["roles"]["staff"],
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
+                create_permission(
+                    config["roles"]["trial_mod"],
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
+                create_permission(
+                    config["roles"]["snaacky"],
+                    SlashCommandPermissionType.ROLE,
+                    True,
+                ),
+            ]
+        },
+    )
+    async def tesfdsft(self, ctx: SlashContext):
+        buttons = [
+            create_button(
+                style=ButtonStyle.green,
+                label="A Green Button"
+            ),
+        ]
+        action_row = create_actionrow(*buttons)
+        await ctx.send("My Message", components=[action_row])
+
+    # @commands.Cog.listener()
+    # async def on_component(self, ctx: ComponentContext):
+        # you may want to filter or change behaviour based on custom_id or message
+    #     await ctx.send("This is a test of the private button system.", hidden=True)
+        # await ctx.edit_origin(content="You pressed a button!")
 
 
 def setup(bot: Bot) -> None:

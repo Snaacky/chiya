@@ -7,6 +7,7 @@ from contextlib import redirect_stdout
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
+from discord_slash.utils.manage_commands import remove_all_commands
 
 from utils import embeds
 from utils.config import config
@@ -34,7 +35,7 @@ class AdministrationCog(Cog):
 
     @commands.before_invoke(record_usage)
     @commands.group(aliases=["u", "ul"])
-    async def utilities(self):
+    async def utilities(self, ctx):
         return
 
     @commands.is_owner()
@@ -42,6 +43,11 @@ class AdministrationCog(Cog):
     async def ping(self, ctx):
         """Returns the Discord WebSocket latency."""
         await ctx.send(f"{round(self.bot.latency * 1000)}ms.")
+
+    @commands.is_owner()
+    @utilities.command(name="removecmds")
+    async def removecmds(self, ctx):
+        await remove_all_commands(bot_id=self.bot.user.id, bot_token=config["bot"]["token"], guild_ids=[config["guild_id"]])
 
     @commands.is_owner()
     @utilities.command(name="say")
