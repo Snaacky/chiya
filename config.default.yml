@@ -45,3 +45,5 @@ database:
   host: !ENV ${MYSQL_HOST}
   user: !ENV ${MYSQL_USER}
   password: !ENV ${MYSQL_PASSWORD}
+privatebin:
+  url: "https://privatebin.net"
