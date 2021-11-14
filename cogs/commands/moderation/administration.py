@@ -223,13 +223,13 @@ class AdministrationCog(Cog):
     @commands.before_invoke(record_usage)
     @commands.command(name="createassignablerolesembed", aliases=["care"])
     async def create_assignable_roles_embed(self, ctx: Context):
-        role_assignment_text = """
+        role_assignment_text = f"""
         You can react to one of the emotes below to assign yourself an event role.
 
         🎁  <@&832528733763928094> - Receive giveaway pings.
         📢  <@&827611682917711952> - Receive server announcement pings.
         📽  <@&831999443220955136> - Receive group watch event pings.
-        <:kakeraW:830594599001129000>  <@&832512304334766110> - Receive Mudae event and season pings.
+        <:kakeraW:870621286605402152>  <@&832512304334766110> - Receive Mudae event and season pings.
         🧩  <@&832512320306675722> - Receive Rin event pings.
         """
         embed = discord.Embed(description=role_assignment_text)
@@ -242,7 +242,7 @@ class AdministrationCog(Cog):
         await msg.add_reaction("🎁")
         await msg.add_reaction("📢")
         await msg.add_reaction("📽")
-        await msg.add_reaction(":kakeraW:830594599001129000")
+        await msg.add_reaction(":kakeraW:870621286605402152")
         await msg.add_reaction("🧩")
         await ctx.message.delete()
 
