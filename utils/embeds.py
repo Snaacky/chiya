@@ -73,7 +73,7 @@ async def success_message(ctx: SlashContext, description: str, title: str = None
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
     title = "Success:" if not title else title
-    embed = make_embed(title="Success:", value=description, color="soft_green", author=False)
+    embed = make_embed(title="Success:", description=description, color="soft_green", author=False)
     await ctx.send(embed=embed, delete_after=30)
 
 
