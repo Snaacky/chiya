@@ -71,7 +71,7 @@ class PurgeCog(Cog):
 
         Args:
             ctx (SlashContext): The context of the slash command.
-            amount (int): The number of meessages to purge.
+            amount (int): The number of messages to purge.
             reason (str): The reason provided by the staff member issuing the purge.
 
         Notes:
@@ -92,13 +92,15 @@ class PurgeCog(Cog):
         amount = 100 if amount > 100 else amount
 
         await ctx.channel.purge(limit=amount, before=ctx.created_at, bulk=True)
-        await ctx.send(embed=embeds.make_embed(
+        embed = embeds.make_embed(
             ctx=ctx,
             title="Purged messages",
             description=f"{ctx.author.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color="soft_red"
-        ))
+        )
+        embed.add_field(name="Reason:", value=reason, inline=False)
+        await ctx.send(embed=embed)
 
 
 def setup(bot: Bot) -> None:
