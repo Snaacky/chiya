@@ -126,15 +126,13 @@ class MessageUpdates(commands.Cog):
         if bool(re.search('[\u0400-\u04FF]', message.clean_content)):
             await message.delete()
 
-        # Temporary auto-ban solution for scam bots.
-        scam_links = ["stearncommunytiy.ru", "stearncormuntity.ru", "discord-drop.info"]
-        for link in scam_links:
-            if link in message.clean_content:
-                await message.guild.ban(
-                    user=message.author,
-                    reason=f"Scam link: {link}",
-                    delete_message_days=1
-                )
+        # Premptively ban any users who @everyone with "nitro" in their message.
+        if all(match in message.content for match in ["nitro", "@everyone"]):
+            await message.guild.ban(
+                user=message.author,
+                reason="Banned by potential Nitro scam link detection",
+                delete_message_days=1
+            )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
