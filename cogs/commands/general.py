@@ -52,7 +52,7 @@ class General(Cog):
                 name="message",
                 description="The ID for the target message",
                 option_type=3,
-                required=True
+                required=False
             ),
         ],
         default_permission=False,
@@ -68,11 +68,18 @@ class General(Cog):
         await ctx.defer()
 
         if message:
-            message = await ctx.channel.fetch_message(message)
+            try:
+                message = await ctx.channel.fetch_message(message)
+            except:
+                await embeds.error_message(ctx=ctx, description="That message is not accessible or doesn't exist!")
+                return
+                
 
         if not message:
-            messages = await ctx.channel.history(limit=1).flatten()
-            message = messages[0]
+            messages = await ctx.channel.history(limit=2).flatten()
+            message = messages[1]
+        
+        
 
         await message.add_reaction(":yes:778724405333196851")
         await message.add_reaction(":no:778724416230129705")
