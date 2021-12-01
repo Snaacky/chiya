@@ -70,7 +70,7 @@ class General(Cog):
         if message:
             try:
                 message = await ctx.channel.fetch_message(message)
-            except:
+            except Exception:
                 return await embeds.error_message(ctx=ctx, description="That message is not accessible or doesn't exist!")
                 
         if not message:
