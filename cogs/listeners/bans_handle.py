@@ -2,12 +2,12 @@ import logging
 import time
 from typing import Union
 
-import dataset
 import discord
 from discord import User, Member, Guild
 from discord.ext import commands
 
 from utils import database
+
 
 log = logging.getLogger(__name__)
 
@@ -20,15 +20,15 @@ class BansHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild: Guild, user: Union[User, Member]):
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Get the ban entry of the user who just got banned.
         ban_entry = await guild.fetch_ban(user)
 
-        """ 
+        """
         Attempts to get the ban author from the most recent ban entry from the mod log. We can use
         "async for entry in logs:" to convert the AsyncIterator into a list but it's not as clean as flatten().
-        See: https://discordpy.readthedocs.io/en/stable/api.html?highlight=audit_logs#discord.Guild.audit_logs 
+        See: https://discordpy.readthedocs.io/en/stable/api.html?highlight=audit_logs#discord.Guild.audit_logs
         """
         logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
 

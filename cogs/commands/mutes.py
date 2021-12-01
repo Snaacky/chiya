@@ -2,39 +2,34 @@ import datetime
 import logging
 import time
 
-import dataset
 import discord
 import privatebinapi
-from discord.ext import commands
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_option, create_permission
 
 import utils.duration
-from cogs.commands import settings
 from utils import database
 from utils import embeds
+from utils.config import config
 from utils.moderation import can_action_member
-from utils.record import record_usage
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
 class MuteCog(Cog):
-    """ Mute Cog """
 
     def __init__(self, bot):
         self.bot = bot
 
-    @staticmethod
-    async def mute_member(ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
-        role = discord.utils.get(ctx.guild.roles, id=settings.get_value("role_muted"))
+    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
+        role = discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"])
         await member.add_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the mute to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -57,16 +52,16 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> None:
-        guild = guild or ctx.guild
+    async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> None:
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Muted" role from member.
-        role = discord.utils.get(guild.roles, id=settings.get_value("role_muted"))
+        role = discord.utils.get(guild.roles, id=config["roles"]["muted"])
         await member.remove_roles(role, reason=reason)
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Add the unmute to the mod_log database.
         db["mod_logs"].insert(dict(
@@ -80,38 +75,31 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    @staticmethod
-    async def is_user_muted(ctx: SlashContext, member: discord.Member) -> bool:
-        if discord.utils.get(ctx.guild.roles, id=settings.get_value("role_muted")) in member.roles:
+    async def is_user_muted(self, ctx: SlashContext, member: discord.Member) -> bool:
+        if discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"]) in member.roles:
             return True
         return False
 
-    @staticmethod
-    async def send_muted_dm_embed(ctx: SlashContext, member: discord.Member, channel: discord.TextChannel, reason: str = None, duration: str = None) -> bool:
-        if not duration:
-            duration = "Indefinite"
-
-        try:  # In case user has DMs blocked.
+    async def send_muted_dm_embed(self, ctx: SlashContext, member: discord.Member, channel: discord.TextChannel, reason: str = None, duration: str = None) -> bool:
+        try:
             dm_channel = await member.create_dm()
             embed = embeds.make_embed(
                 author=False,
-                title=f"Uh-oh, you've been muted!",
+                title="Uh-oh, you've been muted!",
                 description="If you believe this was a mistake, contact staff.",
                 color=0x8083b0
             )
-            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
-            embed.add_field(name="Length:", value=duration, inline=True)
+            embed.add_field(name="Length:", value=duration or "Indefinite", inline=True)
             embed.add_field(name="Mute Channel:", value=channel.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/840Q48l.gif")
-            await dm_channel.send(embed=embed)
-            return True
+            return await dm_channel.send(embed=embed)
         except discord.HTTPException:
             return False
 
-    async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None, guild: discord.Guild = None) -> bool:
-        guild = guild or ctx.guild
+    async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
         # Send member message telling them that they were unmuted and why.
@@ -119,35 +107,42 @@ class MuteCog(Cog):
             channel = await member.create_dm()
             embed = embeds.make_embed(
                 author=False,
-                title=f"Yay, you've been unmuted!",
+                title="Yay, you've been unmuted!",
                 description="Review our server rules to avoid being actioned again in the future.",
                 color=0x8a3ac5
             )
-            embed.add_field(name="Server:", value=f"[{guild}](https://discord.gg/piracy/)", inline=True)
+            embed.add_field(name="Server:", value="[/r/animepiracy](https://discord.gg/piracy)", inline=True)
             embed.add_field(name="Moderator:", value=moderator.mention, inline=True)
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/U5Fvr2Y.gif")
-            await channel.send(embed=embed)
-            return True
+            return await channel.send(embed=embed)
         except discord.HTTPException:
             return False
 
-    @staticmethod
-    async def create_mute_channel(ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
+    async def create_mute_channel(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
         if not duration:
             duration = "Indefinite"
 
-        # Create a channel in the category specified in settings.
-        category = discord.utils.get(ctx.guild.categories, id=settings.get_value("category_tickets"))
+        # Create a channel in the category specified in the config.
+        category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
         channel = await ctx.guild.create_text_channel(f"mute-{member.id}", category=category)
 
-        # Give both the staff and the user perms to access the channel. 
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=settings.get_value("role_trial_mod")), read_messages=True)
-        await channel.set_permissions(discord.utils.get(ctx.guild.roles, id=settings.get_value("role_staff")), read_messages=True)
+        # Give both the staff and the user perms to access the channel.
+        await channel.set_permissions(
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]),
+            read_messages=True
+        )
+        await channel.set_permissions(
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]),
+            read_messages=True
+        )
         await channel.set_permissions(member, read_messages=True)
 
         # Create embed at the start of the channel letting the user know how long they're muted for and why.
-        embed = embeds.make_embed(title="🤐 You were muted", description="If you have any questions or concerns about your mute, you may voice them here.")
+        embed = embeds.make_embed(
+            title="🤐 You were muted",
+            description="If you have any questions or concerns about your mute, you may voice them here."
+        )
         embed.add_field(name="User:", value=member.mention, inline=True)
         embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
         embed.add_field(name="Length:", value=duration, inline=True)
@@ -160,34 +155,20 @@ class MuteCog(Cog):
 
         return channel
 
-    async def archive_mute_channel(self, user_id: int, reason: str = None, ctx: SlashContext = None, guild: int = None):
-
-        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        if not reason:
-            reason = "No reason provided."
-        # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
-
-        guild = guild or ctx.guild
-        category = discord.utils.get(guild.categories, id=settings.get_value("category_tickets"))
+    async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None):
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
+        category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
-        #  TODO: Get the mute reason by looking up the latest mute for the user and getting the reason column data.
-        table = db["mod_logs"]
         # Gets the most recent mute for the user, sorted by descending (-) ID.
-        mute_entry = table.find_one(user_id=user_id, type="mute", order_by="-id")
-        unmute_entry = table.find_one(user_id=user_id, type="unmute", order_by="-id")
-        mute_reason = mute_entry["reason"]
+        mute_entry = db["mod_logs"].find_one(user_id=user_id, type="mute", order_by="-id")
+        unmute_entry = db["mod_logs"].find_one(user_id=user_id, type="unmute", order_by="-id")
         muter = await self.bot.fetch_user(mute_entry["mod_id"])
         unmuter = await self.bot.fetch_user(unmute_entry["mod_id"])
 
-        # Commit the changes to the database and close the connection.
-        db.commit()
         db.close()
 
         # Get the member object of the ticket creator.
@@ -197,7 +178,7 @@ class MuteCog(Cog):
         message_log = (
             f"Muted User: {member} ({member.id})\n\n"
             f"Muted By: {muter} ({muter.id})\n"
-            f"Mute Reason: {mute_reason}\n\n"
+            f"Mute Reason: {mute_entry['reason']}\n\n"
             f"Unmuted By: {unmuter} ({unmuter.id})\n"
             f"Unmute Reason: {reason}\n\n"
         )
@@ -209,26 +190,26 @@ class MuteCog(Cog):
         mod_list.add(muter)
 
         # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(guild.roles, id=settings.get_value("role_staff"))
-        role_trial_mod = discord.utils.get(guild.roles, id=settings.get_value("role_trial_mod"))
+        role_staff = discord.utils.get(guild.roles, id=config["roles"]["staff"])
+        role_trial_mod = discord.utils.get(guild.roles, id=config["roles"]["trial_mod"])
 
         # TODO: Implement so it gets the channel when the moderator is the bot
         # Loop through all messages in the ticket from old to new.
         async for message in mute_channel.history(oldest_first=True):
             # Ignore the bot replies.
             if not message.author.bot:
-                # Time format is unnecessarily lengthy so trimming it down and keep the log go easier on the eyes.
-                formatted_time = str(message.created_at).split(".")[-2]
+                # Pretty print the time tag into a more digestible format.
+                formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
                 # Iterates only through members that is still in the server.
-                if isinstance(member, discord.Member):
+                if isinstance(message.author, discord.Member):
                     # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                     if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                         mod_list.add(message.author)
 
         # Dump message log to PrivateBin. This returns a dictionary, but only the url is needed for the embed.
-        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
+        url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
 
         # Get the amount of time elapsed since the user was muted.
         time_delta = datetime.datetime.utcnow() - mute_channel.created_at
@@ -269,25 +250,23 @@ class MuteCog(Cog):
         embed.add_field(name="Muted User:", value=member.mention, inline=True)
         embed.add_field(name="Muted By:", value=muter.mention, inline=True)
         embed.add_field(name="Unmuted By:", value=unmuter.mention, inline=True)
-        embed.add_field(name="Mute Reason:", value=mute_reason, inline=False)
+        embed.add_field(name="Mute Reason:", value=mute_entry['reason'], inline=False)
         embed.add_field(name="Unmute Reason:", value=reason, inline=False)
         embed.add_field(name="Duration:", value=elapsed_time, inline=False)
         embed.add_field(name="Participating Moderators:", value=" ".join(mod.mention for mod in mod_list), inline=False)
         embed.add_field(name="Mute Log: ", value=url, inline=False)
 
         # Send the embed to #mute-log.
-        mute_log = discord.utils.get(guild.channels, id=settings.get_value("channel_mute_log"))
+        mute_log = discord.utils.get(guild.channels, id=config["channels"]["mute_log"])
         await mute_log.send(embed=embed)
 
         # Delete the mute channel.
         await mute_channel.delete()
 
-    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="mute",
         description="Mutes a member in the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -299,7 +278,7 @@ class MuteCog(Cog):
                 name="reason",
                 description="The reason why the member is being muted",
                 option_type=3,
-                required=False
+                required=True
             ),
             create_option(
                 name="duration",
@@ -310,38 +289,31 @@ class MuteCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_id"]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
-    async def mute(self, ctx: SlashContext, member: discord.Member, duration: str = None, reason: str = None):
+    async def mute(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
         """ Mutes member in guild. """
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+        if not await can_action_member(ctx=ctx, member=member):
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is muted already.
         if await self.is_user_muted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+        if len(reason) > 512:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # If the duration is not specified, default it to a permanent mute.
         if not duration:
@@ -359,19 +331,30 @@ class MuteCog(Cog):
 
             # Attempt to DM the user to let them know they were muted.
             if not await self.send_muted_dm_embed(ctx=ctx, member=member, channel=channel, reason=reason):
-                embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+                embed.add_field(
+                    name="Notice:",
+                    value=(
+                        f"Unable to message {member.mention} about this action. "
+                        "This can be caused by the user not being in the server, "
+                        "having DMs disabled, or having the bot blocked."
+                    )
+                )
 
             # Mutes the user and returns the embed letting the moderator know they were successfully muted.
             await self.mute_member(ctx=ctx, member=member, reason=reason)
-            await ctx.send(embed=embed)
-            return
+            return await ctx.send(embed=embed)
 
         # Get the duration string for embed and mute end time for the specified duration.
         duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
+            return await embeds.error_message(
+                ctx=ctx,
+                description=(
+                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
+                    "You can specify up to all four but you only need one."
+                )
+            )
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully muted.
         embed = embeds.make_embed(
@@ -387,19 +370,36 @@ class MuteCog(Cog):
         channel = await self.create_mute_channel(ctx=ctx, member=member, reason=reason, duration=duration_string)
 
         # Attempt to DM the user to let them know they were muted.
-        if not await self.send_muted_dm_embed(ctx=ctx, member=member, channel=channel, reason=reason, duration=duration_string):
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+        if not await self.send_muted_dm_embed(
+            ctx=ctx,
+            member=member,
+            channel=channel,
+            reason=reason,
+            duration=duration_string
+        ):
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # Mutes the user and stores the unmute time in the database for the background task.
-        await self.mute_member(ctx=ctx, member=member, reason=reason, temporary=True, end_time=mute_end_time.timestamp())
+        await self.mute_member(
+            ctx=ctx,
+            member=member,
+            reason=reason,
+            temporary=True,
+            end_time=mute_end_time
+        )
         await ctx.send(embed=embed)
 
-    @commands.bot_has_permissions(manage_roles=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="unmute",
         description="Unmutes a member in the server",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="member",
@@ -411,43 +411,36 @@ class MuteCog(Cog):
                 name="reason",
                 description="The reason why the member is being unmuted",
                 option_type=3,
-                required=False
+                required=True
             ),
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_id"]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
-    async def unmute(self, ctx: SlashContext, member: discord.Member, reason: str = None):
+    async def unmute(self, ctx: SlashContext, member: discord.Member, reason: str):
         """ Unmutes member in guild. """
         await ctx.defer()
 
         # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
-            await embeds.error_message(ctx=ctx, description=f"That user is not in the server.")
-            return
+            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
         # Checks if invoker can action that member (self, bot, etc.)
-        if not await can_action_member(bot=self.bot, ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-            return
+        if not await can_action_member(ctx=ctx, member=member):
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         # Check if the user is not muted already.
         if not await self.is_user_muted(ctx=ctx, member=member):
-            await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
-            return
+            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
 
-        # Automatically default the reason string to N/A when the moderator does not provide a reason.
-        if not reason:
-            reason = "No reason provided."
         # Discord caps embed fields at a ridiculously low character limit, avoids problems with future embeds.
-        elif len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return
+        if len(reason) > 512:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         # Start creating the embed that will be used to alert the moderator that the user was successfully unmuted.
         embed = embeds.make_embed(
@@ -458,13 +451,20 @@ class MuteCog(Cog):
         )
         embed.description = f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
 
-        # Unmutes the user and and archives the channel. Execution order is important here, otherwise the wrong unmuter will be used in the embed.
+        # Execution order is important here, otherwise the wrong unmuter will be used in the embed.
         await self.unmute_member(ctx=ctx, member=member, reason=reason)
         await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 
         # Attempt to DM the user to let them and the mods know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
-            embed.add_field(name="Notice:", value=f"Unable to message {member.mention} about this action. This can be caused by the user not being in the server, having DMs disabled, or having the bot blocked.")
+            embed.add_field(
+                name="Notice:",
+                value=(
+                    f"Unable to message {member.mention} about this action. "
+                    "This can be caused by the user not being in the server, "
+                    "having DMs disabled, or having the bot blocked."
+                )
+            )
 
         # If the mod sent the /unmute in the mute channel, this will cause a errors.NotFound 404.
         # We cannot send the embed and then archive the channel because that will cause a error.AlreadyResponded.
@@ -475,6 +475,5 @@ class MuteCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Mute cog. """
     bot.add_cog(MuteCog(bot))
     log.info("Commands loaded: mutes")

@@ -1,0 +1,46 @@
+guild_id: 000000000000000000
+emoji_guild_ids: [000000000000000000]
+bot:
+  token: !ENV ${BOT_TOKEN}
+  prefix: "!"
+  log_level: "INFO"
+  intents:
+    messages: True
+    guilds: True
+    members: True
+    bans: True
+    reactions: True
+  case_insensitive: True
+  sync_commands: True
+  sync_on_cog_reload: True
+roles:
+  staff: 000000000000000000
+  trial_mod: 000000000000000000
+  muted: 000000000000000000
+  restricted: 000000000000000000
+  vip: 000000000000000000
+  nitro_booster: 000000000000000000
+categories:
+  tickets: 000000000000000000
+  moderation: 000000000000000000
+  logs: 000000000000000000
+  development: 000000000000000000
+channels:
+  moderation: 000000000000000000
+  mute_log: 000000000000000000
+  ticket_log: 000000000000000000
+  nitro_log: 000000000000000000
+  questions_and_help: 000000000000000000
+reddit:
+  subreddit: "animepiracy"
+  channel: 000000000000000000
+  client_id: !ENV ${REDDIT_CLIENT_ID}
+  client_secret: !ENV ${REDDIT_CLIENT_SECRET}
+  user_agent: "Chiya:v1.0.0 (for /r/animepiracy)"
+database:
+  database: !ENV ${MYSQL_DATABASE}
+  host: !ENV ${MYSQL_HOST}
+  user: !ENV ${MYSQL_USER}
+  password: !ENV ${MYSQL_PASSWORD}
+privatebin:
+  url: "https://privatebin.net"

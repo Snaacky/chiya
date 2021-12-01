@@ -1,33 +1,28 @@
 import logging
 from datetime import datetime
 
-import dataset
-from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 import utils.duration
-from cogs.commands import settings
 from utils import database, embeds
+from utils.config import config
 from utils.pagination import LinePaginator
-from utils.record import record_usage
+
 
 log = logging.getLogger(__name__)
 
 
 class Reminder(Cog):
-    """ Handles reminder commands """
 
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(send_messages=True)
     @cog_ext.cog_slash(
         name="remindme",
         description="Sets a reminder note to be sent at a future date",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="duration",
@@ -51,16 +46,21 @@ class Reminder(Cog):
         duration_string, end_time = utils.duration.get_duration(duration=duration)
         # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
-            await embeds.error_message(ctx=ctx, description=f"Duration syntax: `#d#h#m#s` (day, hour, min, sec)\nYou can specify up to all four but you only need one.")
-            return
+            return await embeds.error_message(
+                ctx=ctx,
+                description=(
+                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
+                    "You can specify up to all four but you only need one."
+                )
+            )
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_id = db["remind_me"].insert(dict(
             reminder_location=ctx.channel.id,
             author_id=ctx.author.id,
-            date_to_remind=end_time.timestamp(),
+            date_to_remind=end_time,
             message=message,
             sent=False
         ))
@@ -84,16 +84,16 @@ class Reminder(Cog):
         base="reminder",
         name="edit",
         description="Edit an existing reminder",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
-                name="id",
+                name="reminder_id",
                 description="The ID of the reminder to be updated",
                 option_type=3,
                 required=True
             ),
             create_option(
-                name="message",
+                name="new_message",
                 description="The updated message for the reminder",
                 option_type=3,
                 required=True
@@ -105,19 +105,17 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         reminder = remind_me.find_one(id=reminder_id)
         old_message = reminder["message"]
 
         if reminder["author_id"] != ctx.author.id:
-            await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
-            return
+            return await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
 
         if reminder["sent"]:
-            await embeds.error_message(ctx, "That reminder doesn't exist.")
-            return
+            return await embeds.error_message(ctx, "That reminder doesn't exist.")
 
         data = dict(id=reminder["id"], message=new_message)
         remind_me.update(data, ["id"])
@@ -142,14 +140,14 @@ class Reminder(Cog):
         base="reminder",
         name="list",
         description="List your existing reminders",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
     )
     async def list_reminders(self, ctx: SlashContext):
         """ List your reminders. """
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         remind_me = db["remind_me"]
@@ -184,7 +182,7 @@ class Reminder(Cog):
         base="reminder",
         name="delete",
         description="Delete an existing reminder",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="reminder_id",
@@ -199,23 +197,20 @@ class Reminder(Cog):
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders from user and haven't been sent.
         table = db["remind_me"]
         reminder = table.find_one(id=reminder_id)
 
         if not reminder:
-            await embeds.error_message(ctx=ctx, description="Invalid ID.")
-            return
+            return await embeds.error_message(ctx=ctx, description="Invalid ID.")
 
         if reminder["author_id"] != ctx.author.id:
-            await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
-            return
+            return await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
 
         if reminder["sent"]:
-            await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
-            return
+            return await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
 
         # All the checks should be done.
         data = dict(id=reminder_id, sent=True)
@@ -240,14 +235,14 @@ class Reminder(Cog):
         base="reminder",
         name="clear",
         description="Clears all of your existing reminders",
-        guild_ids=[settings.get_value("guild_id")]
+        guild_ids=[config["guild_id"]]
     )
     async def clear_reminders(self, ctx: SlashContext):
         """ Clears all reminders. """
         await ctx.defer()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         remind_me = db["remind_me"]
         result = remind_me.find(author_id=ctx.author.id, sent=False)
@@ -263,6 +258,5 @@ class Reminder(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the Reminder cog. """
     bot.add_cog(Reminder(bot))
     log.info("Commands loaded: reminder")

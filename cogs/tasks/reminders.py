@@ -1,18 +1,17 @@
 import logging
 from datetime import datetime, timezone
 
-import dataset
 import discord
 from discord.ext import tasks
 from discord.ext.commands import Bot, Cog
 
 from utils import database, embeds
 
+
 log = logging.getLogger(__name__)
 
 
 class ReminderTask(Cog):
-    """ Reminder Background Task """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -30,7 +29,7 @@ class ReminderTask(Cog):
         current_time = datetime.now(tz=timezone.utc).timestamp()
 
         # Open a connection to the database.
-        db = dataset.connect(database.get_db())
+        db = database.Database().get()
 
         # Find all reminders that are older than current time and have not been sent yet.
         remind_me = db["remind_me"]
@@ -38,15 +37,14 @@ class ReminderTask(Cog):
 
         # If no results are found, simply terminate the db connection and return.
         if not result:
-            db.close()
-            return
+            return db.close()
 
         # Iterate over all the results found from the DB query if a result is found.
         for reminder in result:
             channel = self.bot.get_channel(reminder["reminder_location"])
-            user = self.bot.get_user(reminder["author_id"])
+            user = await self.bot.fetch_user(reminder["author_id"])
             embed = embeds.make_embed(
-                title=f"Here is your reminder",
+                title="Here is your reminder",
                 description=reminder["message"],
                 color="blurple"
             )
@@ -69,6 +67,5 @@ class ReminderTask(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the ReminderTask cog. """
     bot.add_cog(ReminderTask(bot))
     log.info("Task loaded: reminder")

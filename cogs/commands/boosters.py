@@ -1,34 +1,41 @@
-from discord.ext import commands
+import logging
+
 from discord.ext.commands import Cog, Bot
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
 from discord_slash.utils.manage_commands import create_permission
 
-from cogs.commands import settings
+from utils.config import config
 from utils import embeds
-from utils.record import record_usage
+
+
+log = logging.getLogger(__name__)
 
 
 class BoostersCog(Cog):
+
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.bot_has_permissions(send_messages=True)
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="boosters",
         description="List all the current server boosters",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
-                create_permission(settings.get_value("role_staff"), SlashCommandPermissionType.ROLE, True),
-                create_permission(settings.get_value("role_trial_mod"), SlashCommandPermissionType.ROLE, True)
+            config["guild_id"]: [
+                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
+                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
         }
     )
     async def boosters(self, ctx: SlashContext):
-        """ Sends a list of users boosting the server. """
+        """
+        Slash command for getting the current list of server boosters.
+
+        Args:
+            ctx (SlashContext): The context of the slash command.
+        """
         await ctx.defer()
 
         embed = embeds.make_embed(
@@ -44,5 +51,5 @@ class BoostersCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the BoosterCog cog. """
     bot.add_cog(BoostersCog(bot))
+    log.info("Commands loaded: boosters")

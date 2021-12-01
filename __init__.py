@@ -6,13 +6,16 @@ from pathlib import Path
 
 import coloredlogs
 
-log_level = os.getenv("LOG_LEVEL")
+from utils.config import config
+
+log_level = config["bot"]["log_level"]
 if not log_level:
     log_level = "NOTSET"
 
 # Adding Trace to enchance debugging verbose logs. DO NOT USE FOR PRODUCTION
 TRACE_LEVEL = logging.TRACE = 5
 logging.addLevelName(TRACE_LEVEL, "TRACE")
+
 
 def monkeypatch_trace(self: logging.Logger, msg: str, *args, **kwargs) -> None:
     """
@@ -22,6 +25,7 @@ def monkeypatch_trace(self: logging.Logger, msg: str, *args, **kwargs) -> None:
     """
     if self.isEnabledFor(TRACE_LEVEL):
         self._log(TRACE_LEVEL, msg, args, **kwargs)
+
 
 # Initializing Trace
 Logger.trace = monkeypatch_trace

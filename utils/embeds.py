@@ -1,11 +1,10 @@
 import datetime
 
 import discord
-from discord.ext.commands import Context
 from discord_slash import SlashContext
 
 
-def make_embed(ctx: SlashContext = None, title: str = "", description: str = "", color="default", thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
+def make_embed(ctx: SlashContext = None, title: str = "", description: str = "", color="default", title_url: str = None, thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
     """General embed template
 
     Args:
@@ -13,6 +12,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
         description (str, optional): Secondary text of your embed. Defaults to None.
         ctx (Context, optional): Discord context object, needed for author and timestamps. Defaults to None.
         color (str, optional): Use a predefined name or use a hex color value. Defaults to 'dark_theme'.
+        title_url (str, optional): URL to hyperlink the embed title to. Defaults to None.
         thumbnail_url (str, optional): URL for the side image of embed. Defaults to None.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
 
@@ -30,11 +30,11 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
         blank=0x2f3136, quotes_grey=0x4f545c, soft_red=0xcd6d6d, soft_green=0x68c290, soft_orange=0xf9cb54,
         bright_green=0x01d277,
         # Reddit colors:
-        reddit=0xff5700, orange_red=0xFF450, upvote=0xFF8b60, neutral=0xC6C6C6,
+        reddit=0xff5700, orange_red=0xFF4500, upvote=0xFF8b60, neutral=0xC6C6C6,
         downvote=0x9494FF, light_bg=0xEFF7FF, header=0xCEE3F8, ui_text=0x336699
     )
 
-    # If the color given was a valid name, use the corresponding hex value, else assume the value is already in hex form.
+    # Uuse the corresponding hex value if matching key, else assume the value is already in hex form.
     if isinstance(color, str) and color.lower() in colors:
         embed = discord.Embed(color=colors[color.lower()], title=title, description=description)
     else:
@@ -55,10 +55,29 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
     if ctx:
         embed.timestamp = datetime.datetime.utcnow()
 
+    if title_url:
+        embed.url = title_url
+
     return embed
 
 
-async def error_message(ctx: SlashContext, description: str, author: bool = True):
+async def success_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+    """Send basic sucess message
+
+    Note:
+        You must await this function
+
+    Args:
+        description (str): Success description.
+        ctx (Context): Discord context object, needed for author and timestamps.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    title = "Success:" if not title else title
+    embed = make_embed(title="Success:", description=description, color="soft_green", author=False)
+    await ctx.send(embed=embed, delete_after=30)
+
+
+async def error_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
     """Send basic error message
 
     Note:
@@ -69,16 +88,40 @@ async def error_message(ctx: SlashContext, description: str, author: bool = True
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
-    embed = make_embed(color="soft_red", author=False)
-    embed.add_field(name="Error:", value=description, inline=False)
+    title = "Error:" if not title else title
+    embed = make_embed(title=title, description=description, color="soft_red", author=False)
     await ctx.send(embed=embed, delete_after=30)
+
+
+async def warning_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+    """ Send a basic warning message
+
+    Note:
+        You must await this function
+
+    Args:
+        description (str): Warning description
+        title (str, optional): Title to name the warning embed.
+        ctx (Context): Discord context object, needed for author and timestamps.
+        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
+    """
+    title = "Warning:" if not title else title
+    await ctx.send(embed=make_embed(
+        title=title,
+        description=description,
+        ctx=ctx,
+        color="dark_gold",
+        author=author
+        ),
+        delete_after=30
+    )
 
 
 def error_embed(ctx: SlashContext, title: str, description: str, author: bool = True) -> discord.Embed:
     """ Make a basic error message embed
 
     Args:
-        title (str): Name of error.
+        title (str): Title to name the error embed.
         description (str): Error description.
         ctx (Context): Discord context object, needed for author and timestamps.
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
@@ -86,43 +129,5 @@ def error_embed(ctx: SlashContext, title: str, description: str, author: bool = 
     Returns:
         discord.Embed: discord embed object.
     """
-    return make_embed(title=f"Error: {title}", description=f"{description}", ctx=ctx, color="soft_red", author=author)
-
-
-async def warning_message(ctx: SlashContext, description: str, author: bool = True):
-    """ Send a basic warning message
-    
-    Note:
-        You must await this function
-
-    Args:
-        description (str): Warning description
-        ctx (Context): Discord context object, needed for author and timestamps.
-        author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
-    """
-    await ctx.send(embed=make_embed(title="Warning", description=f"{description}", ctx=ctx, color="dark_gold", author=author), delete_after=30)
-    
-# Embed modification utilities
-def edit_embed_field (embed: discord.Embed, field: str, new_value: str) -> discord.Embed:
-    embed = embed.to_dict()
-    embed[field] = new_value
-    return discord.Embed.from_dict(embed)
-
-def mark_embed_fields(embed: discord.Embed) -> discord.Embed:
-    embed = embed.to_dict()
-    for i,field in enumerate(embed['fields']):
-        embed['fields'][i]['name'] = f"{i}: {field['name']}"
-    return discord.Embed.from_dict(embed)
-
-def edit_field_at(embed: discord.Embed, field_index: int, field_name: str, updated_value: str) -> discord.Embed:
-    embed = embed.to_dict()
-    embed['fields'][field_index][field_name] = updated_value
-    return discord.Embed.from_dict(embed)
-
-def remove_field_at(embed: discord.Embed, field_index: int) -> discord.Embed:
-    embed = embed.to_dict()
-    embed_fields = embed['fields']
-    embed_fields.pop(field_index)
-    embed['fields'] = embed_fields
-    return discord.Embed.from_dict(embed)
-
+    title = "Error:" if not title else title
+    return make_embed(title=title, description=description, ctx=ctx, color="soft_red", author=author)

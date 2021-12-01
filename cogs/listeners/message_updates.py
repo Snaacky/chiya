@@ -1,13 +1,14 @@
 import logging
+import re
 
 from discord import Message, RawBulkMessageDeleteEvent, RawMessageUpdateEvent
 from discord.ext import commands
+
 
 log = logging.getLogger(__name__)
 
 
 class MessageUpdates(commands.Cog):
-    """Message event handler cog."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -120,19 +121,18 @@ class MessageUpdates(commands.Cog):
         # Ignore messages from all bots (this includes itself).
         if message.author.bot:
             return
-        
-        # Temporary auto-ban solution for scam bots.
-        scam_links = ["stearncommunytiy.ru", "stearncormuntity.ru", "discord-drop.info"]
-        for link in scam_links:
-            if link in message.clean_content:
-                await message.guild.ban(
-                    user=message.author, 
-                    reason=f"Scam link: {link}",
-                    delete_message_days=1
-                )
 
-        # If message does not follow with the above code, treat it as a potential command.
-        await self.bot.process_commands(message)
+        # Remove messages containing Cyrillic characters used for bypassing automod.
+        if bool(re.search('[\u0400-\u04FF]', message.clean_content)):
+            await message.delete()
+
+        # Premptively ban any users who @everyone with "nitro" in their message.
+        if all(match in message.content for match in ["nitro", "@everyone"]):
+            await message.guild.ban(
+                user=message.author,
+                reason="Banned by potential Nitro scam link detection",
+                delete_message_days=1
+            )
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
