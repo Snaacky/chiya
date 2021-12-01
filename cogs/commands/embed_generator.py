@@ -17,7 +17,7 @@ from discord_slash.utils.manage_components import (
     wait_for_component,
 )
 
-from cogs.commands import settings
+from utils.config import config
 from utils import embeds
 from utils.record import record_usage
 
@@ -36,7 +36,7 @@ class EmbedGeneratorCog(Cog):
     @cog_ext.cog_slash(
         name="create_embed",
         description="Creates an embed from the specified parameters.",
-        guild_ids=[settings.get_value("guild_id")],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="title", description="Embed title.", option_type=3, required=False
@@ -86,14 +86,14 @@ class EmbedGeneratorCog(Cog):
         ],
         default_permission=False,
         permissions={
-            settings.get_value("guild_id"): [
+            config["guild_id"]: [
                 create_permission(
-                    settings.get_value("role_staff"),
+                    config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
                 create_permission(
-                    settings.get_value("role_trial_mod"),
+                    config["roles"]["trial_mod"],
                     SlashCommandPermissionType.ROLE,
                     True,
                 ),
