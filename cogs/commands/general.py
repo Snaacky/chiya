@@ -71,8 +71,7 @@ class General(Cog):
             try:
                 message = await ctx.channel.fetch_message(message)
             except:
-                await embeds.error_message(ctx=ctx, description="That message is not accessible or doesn't exist!")
-                return
+                return await embeds.error_message(ctx=ctx, description="That message is not accessible or doesn't exist!")
                 
         if not message:
             messages = await ctx.channel.history(limit=2).flatten()
