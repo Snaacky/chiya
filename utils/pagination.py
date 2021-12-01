@@ -16,9 +16,11 @@ PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMO
 
 log = logging.getLogger(__name__)
 
+
 class EmptyPaginatorEmbed(Exception):
     """Raised when attempting to paginate with empty contents."""
     pass
+
 
 class LinePaginator(Paginator):
     """ A class that aids in paginating code blocks for Discord messages.
@@ -39,7 +41,7 @@ class LinePaginator(Paginator):
         scale_to_size: int = 2000,
         max_lines: typing.Optional[int] = None,
         linesep: str = "\n"
-        ) -> None:
+    ) -> None:
         """
         This function overrides the Paginator.__init__ from inside discord.ext.commands.\n
         It overrides in order to allow us to configure the maximum number of lines per page.
@@ -365,4 +367,4 @@ class LinePaginator(Paginator):
         try:
             await message.clear_reactions()
         except discord.NotFound:
-            pass # do nothing
+            pass  # do nothing

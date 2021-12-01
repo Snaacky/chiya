@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from discord_slash import SlashCommand
 
-import __init__
+import __init__  # noqa
 import utils.database
 from utils.config import config
 
@@ -14,20 +14,22 @@ log = logging.getLogger(__name__)
 bot = commands.Bot(
     command_prefix=config["bot"]["prefix"],
     intents=discord.Intents(
-        messages=config["bot"]["intents"]["messages"], 
-        guilds=config["bot"]["intents"]["guilds"], 
-        members=config["bot"]["intents"]["members"], 
-        bans=config["bot"]["intents"]["bans"], 
+        messages=config["bot"]["intents"]["messages"],
+        guilds=config["bot"]["intents"]["guilds"],
+        members=config["bot"]["intents"]["members"],
+        bans=config["bot"]["intents"]["bans"],
         reactions=config["bot"]["intents"]["reactions"]
     ),
-    case_insensitive=config["bot"]["case_insensitive"]
+    case_insensitive=config["bot"]["case_insensitive"],
+    help_command=None
 )
 
 slash = SlashCommand(
-    bot, 
+    bot,
     sync_commands=config["bot"]["sync_commands"],
     sync_on_cog_reload=config["bot"]["sync_on_cog_reload"],
 )
+
 
 @bot.event
 async def on_ready():

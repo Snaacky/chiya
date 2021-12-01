@@ -6,6 +6,7 @@ from sqlalchemy_utils import database_exists, create_database
 
 from utils.config import config
 
+
 log = logging.getLogger(__name__)
 
 

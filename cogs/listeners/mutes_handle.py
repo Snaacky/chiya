@@ -8,12 +8,11 @@ from discord.ext import commands
 from utils import database, embeds
 from utils.config import config
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
 class MutesHandler(commands.Cog):
-    """Handles actions such as mute evasion."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -30,7 +29,6 @@ class MutesHandler(commands.Cog):
             mod_channel = guild.get_channel(config["channels"]["moderation"])
             user = await self.bot.fetch_user(member.id)
 
-            # Add an unmute entry in the database to prevent archive_mute_channel()'s unmuter throwing NoneType() exception.
             mute_entry = db["mod_logs"].find_one(user_id=member.id, type="mute")
             # Add an "unmute" entry into the database.
             if mute_entry:
@@ -52,8 +50,7 @@ class MutesHandler(commands.Cog):
             await mutes.archive_mute_channel(
                 ctx=None,
                 user_id=user.id,
-                reason="Mute channel archived after member banned due to mute evasion.",
-                guild=guild,
+                reason="Mute channel archived after member banned due to mute evasion."
             )
 
             # Add the ban to the mod_log database.
@@ -72,7 +69,7 @@ class MutesHandler(commands.Cog):
             embed = embeds.make_embed(
                 ctx=None,
                 title=f"Member {user.name}#{user.discriminator} banned",
-                description=f"User {user.mention} was banned indefinitely because they evaded their timed mute by leaving.",
+                description=f"{user.mention} was banned indefinitely because they evaded their timed mute by leaving.",
                 thumbnail_url="https://i.imgur.com/l0jyxkz.png",
                 color="soft_red"
             )

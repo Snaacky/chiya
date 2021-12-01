@@ -1,7 +1,6 @@
 import logging
 
 import discord
-from discord.ext import commands
 from discord.ext.commands import Bot, Cog
 from discord_slash import cog_ext, SlashContext
 from discord_slash.model import SlashCommandPermissionType
@@ -9,23 +8,20 @@ from discord_slash.utils.manage_commands import create_option, create_permission
 
 from utils import embeds
 from utils.config import config
-from utils.record import record_usage
+
 
 log = logging.getLogger(__name__)
 
 
 class General(Cog):
-    """ General Commands Cog """
 
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
-    @commands.bot_has_permissions(embed_links=True)
     @cog_ext.cog_slash(
         name="pfp",
         description="Gets the members profile picture",
-        guild_ids=config["guild_ids"]
+        guild_ids=[config["guild_id"]]
     )
     async def pfp(self, ctx: SlashContext, user: discord.User = None):
         """ Returns the profile picture of the invoker or the mentioned user. """
@@ -48,27 +44,9 @@ class General(Cog):
         await ctx.send(embed=embed)
 
     @cog_ext.cog_slash(
-        name="population",
-        description="Gets the current server population count",
-        guild_ids=config["guild_ids"],
-        default_permission=False,
-        permissions={
-            config["guild_ids"][0]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def count(self, ctx: SlashContext):
-        """Returns the current guild member count."""
-        await ctx.defer()
-        await ctx.send(ctx.guild.member_count)
-
-    @commands.before_invoke(record_usage)
-    @cog_ext.cog_slash(
         name="vote",
         description="Adds the vote reactions to a message",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="message",
@@ -79,7 +57,7 @@ class General(Cog):
         ],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
                 create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
             ]
@@ -105,6 +83,5 @@ class General(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the General cog. """
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")

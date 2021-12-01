@@ -146,3 +146,4 @@ cython_debug/
 notes.txt
 *.bat
 db/*
+*.lnk

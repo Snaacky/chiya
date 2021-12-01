@@ -1,5 +1,5 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.9-slim-buster
+FROM python:3.10.0-slim-buster
 LABEL maintainer="https://github.com/ranimepiracy/Chiya"
 
 # Keeps Python from generating .pyc files in the container
@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Install MySQL
 RUN apt-get update -y && \
-    apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb
+    apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git
 
 # Install pip requirements
 COPY requirements.txt .

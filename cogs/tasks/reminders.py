@@ -7,11 +7,11 @@ from discord.ext.commands import Bot, Cog
 
 from utils import database, embeds
 
+
 log = logging.getLogger(__name__)
 
 
 class ReminderTask(Cog):
-    """ Reminder Background Task """
 
     def __init__(self, bot: Bot):
         self.bot = bot
@@ -37,15 +37,14 @@ class ReminderTask(Cog):
 
         # If no results are found, simply terminate the db connection and return.
         if not result:
-            db.close()
-            return
+            return db.close()
 
         # Iterate over all the results found from the DB query if a result is found.
         for reminder in result:
             channel = self.bot.get_channel(reminder["reminder_location"])
-            user = self.bot.get_user(reminder["author_id"])
+            user = await self.bot.fetch_user(reminder["author_id"])
             embed = embeds.make_embed(
-                title=f"Here is your reminder",
+                title="Here is your reminder",
                 description=reminder["message"],
                 color="blurple"
             )
@@ -68,6 +67,5 @@ class ReminderTask(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """ Load the ReminderTask cog. """
     bot.add_cog(ReminderTask(bot))
     log.info("Task loaded: reminder")

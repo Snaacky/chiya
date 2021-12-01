@@ -7,12 +7,11 @@ from discord.ext import commands
 from utils import database
 from utils.config import config
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
 class RestrictsHandler(commands.Cog):
-    """Handles restrict evasion."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -25,7 +24,7 @@ class RestrictsHandler(commands.Cog):
         # Get the "Restricted" role.
         role_restricted = discord.utils.get(member.guild.roles, id=config["roles"]["restricted"])
 
-        # Get the restrict entries with is_done = False from database and check if its ID matches the user who just joined.
+        # Check if any unfinished timed mod actions exist for the newly joined user.
         timed_restriction_entry = db["timed_mod_actions"].find_one(user_id=member.id, is_done=False)
         if timed_restriction_entry:
             await member.add_roles(role_restricted)

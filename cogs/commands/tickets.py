@@ -5,30 +5,27 @@ import discord
 import privatebinapi
 from discord.ext import commands
 from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
+from discord_slash import cog_ext, SlashContext, ComponentContext
+from discord_slash.model import SlashCommandPermissionType, ButtonStyle
 from discord_slash.utils.manage_commands import create_option, create_permission
+from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
 
-from utils import database
-from utils import embeds
+from utils import database, embeds
 from utils.config import config
-from utils.record import record_usage
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
 class TicketCog(Cog):
-    """Ticket Cog"""
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="ticket",
         description="Opens a new modmail ticket",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         options=[
             create_option(
                 name="topic",
@@ -42,34 +39,31 @@ class TicketCog(Cog):
         """Opens a new modmail ticket."""
         await ctx.defer(hidden=True)
 
-        # Embed field length cannot exceed 1024 characters.
-        # https://discord.com/developers/docs/resources/channel#embed-limits
         if len(topic) > 1024:
-            embed = embeds.make_embed(
-                description="Your ticket topic exceeded 1024 characters. "
-                "Please keep the topic concise and further elaborate it in the ticket instead."
+            return await ctx.send(
+                embed=embeds.error_message(
+                    description=(
+                        "Your ticket topic exceeded 1024 characters. "
+                        "Please keep the topic concise and further elaborate it in the ticket instead."
+                    )
+                ),
+                hidden=True
             )
-            return await ctx.send(embed=embed, hidden=True)
 
-        # Check if a duplicate ticket already exists for the member.
         category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.author.id}")
 
-        # Throw an error and return if we found an already existing ticket.
         if ticket:
-            await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
             logging.info(f"{ctx.author} tried to create a new ticket but already had one open: {ticket}")
-            return
+            return await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
 
-        # Give both the staff and the user perms to access the channel.
         permissions = {
-            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]): discord.PermissionOverwrite(read_messages=False),
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]): discord.PermissionOverwrite(read_messages=True),
             discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
 
-        # Create a channel in the tickets category specified in config.
         channel = await ctx.guild.create_text_channel(
             name=f"ticket-{ctx.author.id}",
             category=category,
@@ -77,11 +71,9 @@ class TicketCog(Cog):
             topic=topic,
         )
 
-        # If the ticket creator is a VIP, ping the staff for fast response.
         if any(role.id == config["roles"]["vip"] for role in ctx.author.roles):
             await channel.send(f"<@&{config['roles']['staff']}>")
 
-        # Create an embed at the top of the new ticket so the mod knows who opened it.
         embed = embeds.make_embed(
             title="🎫  Ticket created",
             description="Please remain patient for a staff member to assist you.",
@@ -91,22 +83,15 @@ class TicketCog(Cog):
         embed.add_field(name="Ticket Topic:", value=topic, inline=False)
         await channel.send(embed=embed)
 
-        # Open a connection to the database.
         db = database.Database().get()
-
-        # Insert a pending ticket into the database.
-        db["tickets"].insert(
-            dict(
-                user_id=ctx.author.id,
-                status="in-progress",
-                guild=ctx.guild.id,
-                timestamp=int(time.time()),
-                ticket_topic=topic,
-                log_url=None,
-            )
-        )
-
-        # Commit the changes to the database and close the connection.
+        db["tickets"].insert(dict(
+            user_id=ctx.author.id,
+            status="in-progress",
+            guild=ctx.guild.id,
+            timestamp=int(time.time()),
+            ticket_topic=topic,
+            log_url=None,
+        ))
         db.commit()
         db.close()
 
@@ -121,14 +106,13 @@ class TicketCog(Cog):
         )
         await ctx.send(embed=embed, hidden=True)
 
-    @commands.before_invoke(record_usage)
     @cog_ext.cog_slash(
         name="close",
         description="Closes a ticket when sent in the ticket channel",
-        guild_ids=config["guild_ids"],
+        guild_ids=[config["guild_id"]],
         default_permission=False,
         permissions={
-            config["guild_ids"][0]: [
+            config["guild_id"]: [
                 create_permission(
                     config["roles"]["staff"],
                     SlashCommandPermissionType.ROLE,
@@ -154,10 +138,7 @@ class TicketCog(Cog):
                 description="You can only run this command in active ticket channels.",
             )
 
-        # Open a connection to the database.
         db = database.Database().get()
-
-        # Get the ticket in the database.
         table = db["tickets"]
         ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
 
@@ -186,16 +167,18 @@ class TicketCog(Cog):
                 formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
                 # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
-                # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
-                if role_staff in message.author.roles or role_trial_mod in message.author.roles:
-                    mod_list.add(message.author)
+                # Iterates only through members that is still in the server.
+                if isinstance(message.author, discord.Member):
+                    # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
+                    if role_staff in message.author.roles or role_trial_mod in message.author.roles:
+                        mod_list.add(message.author)
 
         # An empty embed field will raise an HTTPException.
         if len(mod_list) == 0:
             mod_list.add(self.bot.user)
 
         # Gets the paste URL from the PrivateBin POST.
-        url = privatebinapi.send("https://bin.piracy.moe", text=message_log, expiration="never")["full_url"]
+        url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
 
         # Create the embed in #ticket-log.
         embed = embeds.make_embed(
@@ -225,8 +208,11 @@ class TicketCog(Cog):
             embed = embeds.make_embed(
                 author=False,
                 color=0xF4CDC5,
-                title=f"Ticket closed",
-                description="Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries.",
+                title="Ticket closed",
+                description=(
+                    "Your ticket was closed. "
+                    "Please feel free to create a new ticket should you have any further inquiries."
+                )
             )
             embed.add_field(
                 name="Server:",
@@ -239,25 +225,10 @@ class TicketCog(Cog):
         except discord.HTTPException:
             logging.info(f"Attempted to send ticket log DM to {member} but they are not accepting DMs.")
 
-        # Add the ticket to the database if it was never written.
-        if not ticket:
-            db["tickets"].insert(
-                dict(
-                    user_id=ticket_creator_id,
-                    status="completed",
-                    guild=ctx.guild.id,
-                    timestamp=int(time.time()),
-                    ticket_topic=ticket_topic,
-                    log_url=url,
-                )
-            )
-        else:
-            # Otherwise, update the ticket status in the database.
-            ticket["status"] = "completed"
-            ticket["log_url"] = url
-            table.update(ticket, ["id"])
+        ticket["status"] = "completed"
+        ticket["log_url"] = url
+        table.update(ticket, ["id"])
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
 
@@ -266,6 +237,5 @@ class TicketCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """Load the Ticket cog."""
     bot.add_cog(TicketCog(bot))
     log.info("Commands loaded: tickets")
