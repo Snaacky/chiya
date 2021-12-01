@@ -131,3 +131,27 @@ def error_embed(ctx: SlashContext, title: str, description: str, author: bool = 
     """
     title = "Error:" if not title else title
     return make_embed(title=title, description=description, ctx=ctx, color="soft_red", author=author)
+
+# Embed modification utilities
+def edit_embed_field (embed: discord.Embed, field: str, new_value: str) -> discord.Embed:
+    embed = embed.to_dict()
+    embed[field] = new_value
+    return discord.Embed.from_dict(embed)
+
+def mark_embed_fields(embed: discord.Embed) -> discord.Embed:
+    embed = embed.to_dict()
+    for i,field in enumerate(embed['fields']):
+        embed['fields'][i]['name'] = f"{i}: {field['name']}"
+    return discord.Embed.from_dict(embed)
+
+def edit_field_at(embed: discord.Embed, field_index: int, field_name: str, updated_value: str) -> discord.Embed:
+    embed = embed.to_dict()
+    embed['fields'][field_index][field_name] = updated_value
+    return discord.Embed.from_dict(embed)
+
+def remove_field_at(embed: discord.Embed, field_index: int) -> discord.Embed:
+    embed = embed.to_dict()
+    embed_fields = embed['fields']
+    embed_fields.pop(field_index)
+    embed['fields'] = embed_fields
+    return discord.Embed.from_dict(embed)
