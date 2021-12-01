@@ -74,13 +74,10 @@ class General(Cog):
                 await embeds.error_message(ctx=ctx, description="That message is not accessible or doesn't exist!")
                 return
                 
-
         if not message:
             messages = await ctx.channel.history(limit=2).flatten()
             message = messages[1]
         
-        
-
         await message.add_reaction(":yes:778724405333196851")
         await message.add_reaction(":no:778724416230129705")
 
