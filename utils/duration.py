@@ -4,17 +4,20 @@ import re
 
 def get_duration(duration):
     # Recycled RegEx from https://github.com/r-smashbros/setsudo/
-    regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
+    regex = r"(?:(\d+)\s*y(?:ears)?)?\s*(?:(\d+)\s*mo(?:nths)?)?\s*(?:(\d+)\s*w(?:eeks)?)?\s*(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?"
 
     # Attempt to parse the message argument with the Setsudo RegEx
     match_list = re.findall(regex, duration)[0]
 
     # Assign the arguments from the parsed message into variables.
     duration = dict(
-        days=match_list[1],
-        hours=match_list[2],
-        minutes=match_list[3],
-        seconds=match_list[4]
+        years=match_list[1],
+        months=match_list[2],
+        weeks=match_list[3],
+        days=match_list[4],
+        hours=match_list[5],
+        minutes=match_list[6],
+        seconds=match_list[7]
     )
 
     # String that will store the duration in a more digestible format.
@@ -35,6 +38,9 @@ def get_duration(duration):
     # Adds the timedelta of the ban length to the current time to get the mod command end datetime.
     end_time = datetime.datetime.timestamp(
         datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
+            years=duration["years"],
+            months=duration["months"],
+            weeks=duration["weeks"],
             days=duration["days"],
             hours=duration["hours"],
             minutes=duration["minutes"],
