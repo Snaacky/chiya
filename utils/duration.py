@@ -4,7 +4,7 @@ import re
 
 def get_duration(duration):
     # Recycled RegEx from https://github.com/r-smashbros/setsudo/
-    regex = r"(?:(\d+)\s*y(?:ears)?)?\s*(?:(\d+)\s*mo(?:nths)?)?\s*(?:(\d+)\s*w(?:eeks)?)?\s*(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?"
+    regex = r"((?:(\d+)\s*y(?:ears)?)?\s*(?:(\d+)\s*mo(?:nths)?)?\s*(?:(\d+)\s*w(?:eeks)?)?\s*(?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
 
     # Attempt to parse the message argument with the Setsudo RegEx
     match_list = re.findall(regex, duration)[0]
