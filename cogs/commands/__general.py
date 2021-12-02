@@ -38,9 +38,9 @@ class General(Cog):
 
         if user:
             embed = embeds.make_embed()
-            embed.set_author(icon_url=user.avatar_url, name=str(user))
+            embed.set_author(icon_url=user.avatar, name=str(user))
 
-        embed.set_image(url=user.avatar_url)
+        embed.set_image(url=user.avatar)
         await ctx.send(embed=embed)
 
     @cog_ext.cog_slash(

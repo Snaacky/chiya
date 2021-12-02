@@ -88,7 +88,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/NlXwNqW.gif")
             return await channel.send(embed=embed)
-        except discord.errors.Forbidden:
+        except discord.Forbidden:
             return False
 
     async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> bool:
@@ -107,7 +107,7 @@ class RestrictCog(Cog):
             embed.add_field(name="Reason:", value=reason, inline=False)
             embed.set_image(url="https://i.imgur.com/rvvnpV2.gif")
             return await channel.send(embed=embed)
-        except discord.errors.Forbidden:
+        except discord.Forbidden:
             return False
 
     @cog_ext.cog_slash(

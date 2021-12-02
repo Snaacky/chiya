@@ -2,10 +2,8 @@ import logging
 import time
 
 import discord
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord.ext import commands
+from discord.commands import Option, permissions, slash_command, context
 
 from utils import database, embeds
 from utils.config import config
@@ -15,48 +13,29 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class KickCog(Cog):
+class Kicks(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(
-        name="kick",
-        description="Kicks the member from the server",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="member",
-                description="The member that will be kicked",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being kicked",
-                option_type=3,
-                required=True
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def kick_member(self, ctx: SlashContext, member: discord.Member, reason: str):
+    @slash_command(guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def kick(
+        self,
+        ctx: context.ApplicationContext,
+        member: Option(discord.Member, description="The member that will be kicked", required=True),
+        reason: Option(str, description="The reason why the member is being kicked", required=True)
+    ):
         """
         Slash command for kicking users from the server.
 
         Args:
-            ctx (SlashContext): The context of the slash command.
-            member (discord.Member): The user to ban from the server.
-            reason (str): The reason provided by the staff member issuing the ban.
+            ctx (): The context of the slash command.
+            member (): The user to ban from the server.
+            reason (): The reason provided by the staff member issuing the ban.
 
         Raises:
-            discord.errors.Forbidden: Unable to message the user due to privacy settings,
+            discord.Forbidden: Unable to message the user due to privacy settings,
             not being in the server, or having the bot blocked.
         """
         await ctx.defer()
@@ -91,7 +70,7 @@ class KickCog(Cog):
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             await channel.send(embed=dm_embed)
-        except discord.errors.Forbidden:
+        except discord.Forbidden:
             embed.add_field(
                 name="Notice:",
                 value=(
@@ -112,6 +91,6 @@ class KickCog(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(KickCog(bot))
+def setup(bot: commands.Bot) -> None:
+    bot.add_cog(Kicks(bot))
     log.info("Commands loaded: kicks")

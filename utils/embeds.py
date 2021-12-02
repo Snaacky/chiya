@@ -42,7 +42,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
 
     # Setting the author field and setting their profile pic as the image.
     if author and ctx is not None:
-        embed.set_author(icon_url=ctx.author.avatar_url, name=str(ctx.author))
+        embed.set_author(icon_url=ctx.author.avatar, name=str(ctx.author))
 
     # Setting the embed side image if a url was given.
     if thumbnail_url:

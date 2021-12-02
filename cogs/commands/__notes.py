@@ -196,7 +196,7 @@ class NotesCog(Cog):
         db.close()
 
         embed = embeds.make_embed(title="Mod Actions")
-        embed.set_author(name=user, icon_url=user.avatar_url)
+        embed.set_author(name=user, icon_url=user.avatar)
 
         # paginating through the results
         await LinePaginator.paginate(

@@ -2,10 +2,8 @@ import logging
 import time
 
 import discord
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord.ext import commands
+from discord.commands import Option, permissions, slash_command, context
 
 from utils import database, embeds
 from utils.config import config
@@ -15,12 +13,12 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class BanCog(Cog):
+class Bans(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_banned(self, ctx: SlashContext, user: discord.User) -> bool:
+    async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
         """
         Checks if the user if the user is banned.
 
@@ -39,53 +37,29 @@ class BanCog(Cog):
         except discord.NotFound:
             return False
 
-    @cog_ext.cog_slash(
-        name="ban",
-        description="Bans the user from the server",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="user",
-                description="The member that will be banned",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being banned",
-                option_type=3,
-                required=True
-            ),
-            create_option(
-                name="daystodelete",
-                description="The number of days of messages to delete from the member, up to 7",
-                option_type=4,
-                required=False
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def ban(self, ctx: SlashContext, user: discord.User, reason: str, daystodelete: int = 0):
+    @slash_command(guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def ban(
+        self,
+        ctx: context.ApplicationContext,
+        user: Option(discord.User, description="The member that will be banned", required=True),
+        reason: Option(str, description="The reason why the member is being banned", required=True),
+        daystodelete: Option(int, description="The number of days of messages to delete from the member, up to 7", required=False),
+    ):
         """
         Slash command for banning users from the server.
 
         Args:
-            ctx (SlashContext): The context of the slash command.
-            user (discord.User): The user to ban from the server.
-            reason (str): The reason provided by the staff member issuing the ban.
-            daystodelete (int): The days of messages to delete from the banned user.
+            ctx (): The context of the slash command.
+            user (): The user to ban from the server.
+            reason (): The reason provided by the staff member issuing the ban.
+            daystodelete (): The days of messages to delete from the banned user.
 
         Notes:
             delete_message_days is capped at 7 days maximum, this is a Discord API limitation.
 
         Raises:
-            discord.errors.Forbidden: Raised when unable to message the banned user due to
+            discord.Forbidden: Raised when unable to message the banned user due to
             them having privacy settings enabled, not being in the server, or having the bot
             blocked.
         """
@@ -128,7 +102,7 @@ class BanCog(Cog):
             dm_embed.add_field(name="Reason:", value=reason, inline=False)
             dm_embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
             await channel.send(embed=dm_embed)
-        except discord.errors.Forbidden:
+        except discord.Forbidden:
             embed.add_field(
                 name="Notice:",
                 value=(
@@ -149,40 +123,20 @@ class BanCog(Cog):
 
         await ctx.send(embed=embed)
 
-    @cog_ext.cog_slash(
-        name="unban",
-        description="Unbans the user from the server",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="user",
-                description="The user that will be unbanned",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the user is being unbanned",
-                option_type=3,
-                required=True
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def unban(self, ctx: SlashContext, user: discord.User, reason: str):
+    @slash_command(guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def unban(
+        self,
+        ctx: context.ApplicationContext,
+        user: Option(discord.Member, description="The user that will be unbanned", required=True),
+        reason: Option(str, description="The reason why the user is being unbanned", required=True),
+    ):
         """
         Slash command for unbanning users from the server.
-
         Args:
-            ctx (SlashContext): The context of the slash command.
-            user (discord.User): The user to unban from the server.
-            reason (str): The reason provided by the staff member issuing the unban.
+            ctx (): The context of the slash command.
+            user (): The user to unban from the server.
+            reason (): The reason provided by the staff member issuing the unban.
         """
         await ctx.defer()
 
@@ -230,6 +184,6 @@ class BanCog(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(BanCog(bot))
+def setup(bot: commands.Bot) -> None:
+    bot.add_cog(Bans(bot))
     log.info("Commands loaded: bans")

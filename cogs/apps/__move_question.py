@@ -57,7 +57,7 @@ class MoveQuestionCog(Cog):
         await webhook.send(
             str(ctx.target_message.clean_content),
             username=ctx.target_message.author.name,
-            avatar_url=ctx.target_message.author.avatar_url
+            avatar_url=ctx.target_message.authoravatar
         )
         await webhook.delete()
         await ctx.target_message.delete()

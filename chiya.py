@@ -3,7 +3,6 @@ import logging
 
 import discord
 from discord.ext import commands
-from discord_slash import SlashCommand
 
 import __init__  # noqa
 import utils.database
@@ -22,12 +21,6 @@ bot = commands.Bot(
     ),
     case_insensitive=config["bot"]["case_insensitive"],
     help_command=None
-)
-
-slash = SlashCommand(
-    bot,
-    sync_commands=config["bot"]["sync_commands"],
-    sync_on_cog_reload=config["bot"]["sync_on_cog_reload"],
 )
 
 
