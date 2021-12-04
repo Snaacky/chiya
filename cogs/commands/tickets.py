@@ -4,11 +4,7 @@ import time
 import discord
 import privatebinapi
 from discord.ext import commands
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext, ComponentContext
-from discord_slash.model import SlashCommandPermissionType, ButtonStyle
-from discord_slash.utils.manage_commands import create_option, create_permission
-from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
+from discord.commands import Option, permissions, slash_command, context
 
 from utils import database, embeds
 from utils.config import config
@@ -17,25 +13,18 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class TicketCog(Cog):
+class Tickets(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(
-        name="ticket",
-        description="Opens a new modmail ticket",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="topic",
-                description="A brief summary of the topic you would like to discuss",
-                option_type=3,
-                required=True,
-            )
-        ],
-    )
-    async def open(self, ctx: SlashContext, topic: str):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Opens a new modmail ticket")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def open(
+        self,
+        ctx: context.ApplicationContext,
+        topic: Option(str, description="A brief summary of the topic you would like to discuss", required=True),
+    ):
         """Opens a new modmail ticket."""
         await ctx.defer(hidden=True)
 
@@ -58,8 +47,7 @@ class TicketCog(Cog):
             return await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
 
         permissions = {
-            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]): discord.PermissionOverwrite(read_messages=True),
-            discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["privileged"]["staff"]): discord.PermissionOverwrite(read_messages=True),
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
@@ -106,27 +94,12 @@ class TicketCog(Cog):
         )
         await ctx.send(embed=embed, hidden=True)
 
-    @cog_ext.cog_slash(
-        name="close",
-        description="Closes a ticket when sent in the ticket channel",
-        guild_ids=[config["guild_id"]],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(
-                    config["roles"]["staff"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    config["roles"]["trial_mod"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-            ]
-        },
-    )
-    async def close(self, ctx: SlashContext):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Closes a ticket channel")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def close(
+        self,
+        ctx: context.ApplicationContext
+    ):
         """Closes the modmail ticket."""
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
         await ctx.defer()
@@ -236,6 +209,6 @@ class TicketCog(Cog):
         await ctx.channel.delete()
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(TicketCog(bot))
+def setup(bot: commands.Bot) -> None:
+    bot.add_cog(Tickets(bot))
     log.info("Commands loaded: tickets")
