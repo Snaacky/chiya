@@ -2,10 +2,8 @@ import logging
 import time
 
 import discord
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord.ext import commands
+from discord.commands import Option, permissions, slash_command, context
 
 from utils import database
 from utils import embeds
@@ -15,38 +13,19 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class WarnsCog(Cog):
+class Warns(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(
-        name="warn",
-        description="Warn the member",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="member",
-                description="The member that will be warned",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being warned",
-                option_type=3,
-                required=True
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def warn(self, ctx: SlashContext, member: discord.User, reason: str):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Warn the member")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def warn(
+        self,
+        ctx: context.ApplicationContext,
+        member: Option(discord.Member, description="The member that will be warned", required=True),
+        reason: Option(str, description="The reason why the member is being warned", required=True),
+    ):
         """ Sends member a warning DM and logs to database. """
         await ctx.defer()
 
@@ -109,6 +88,6 @@ class WarnsCog(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(WarnsCog(bot))
+def setup(bot: commands.Bot) -> None:
+    bot.add_cog(Warns(bot))
     log.info("Commands loaded: warns")
