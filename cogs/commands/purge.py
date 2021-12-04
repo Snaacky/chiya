@@ -1,15 +1,14 @@
 import logging
 
-import discord
-from discord.commands import Option, context, permissions, slash_command
-from discord.ext import commands
+from discord.commands import Bot, Cog, Option, context, permissions, slash_command
+
 from utils import embeds
 from utils.config import config
 
 log = logging.getLogger(__name__)
 
 
-class Purge(commands.Cog):
+class Purge(Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -99,6 +98,6 @@ class Purge(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(Purge(bot))
     log.info("Commands loaded: purge")

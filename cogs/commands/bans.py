@@ -2,8 +2,7 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
-from discord.commands import Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Option, permissions, slash_command, context
 
 from utils import database, embeds
 from utils.config import config
@@ -13,7 +12,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Bans(commands.Cog):
+class Bans(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -184,6 +183,6 @@ class Bans(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(Bans(bot))
     log.info("Commands loaded: bans")

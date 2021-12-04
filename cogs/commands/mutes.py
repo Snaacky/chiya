@@ -4,8 +4,7 @@ import time
 
 import discord
 import privatebinapi
-from discord.ext import commands
-from discord.commands import Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Option, permissions, slash_command, context
 
 import utils.duration
 from utils import database
@@ -17,7 +16,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Mutes(commands.Cog):
+class Mutes(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -454,6 +453,6 @@ class Mutes(commands.Cog):
             pass
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(Mutes(bot))
     log.info("Commands loaded: mutes")

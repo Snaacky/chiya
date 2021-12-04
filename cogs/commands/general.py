@@ -1,8 +1,7 @@
 import logging
 
 import discord
-from discord.ext import commands
-from discord.commands import Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Option, permissions, slash_command, context
 
 from utils import embeds
 from utils.config import config
@@ -11,7 +10,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class General(commands.Cog):
+class General(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -66,6 +65,6 @@ class General(commands.Cog):
         await delete.delete()
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")

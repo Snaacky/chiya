@@ -3,8 +3,7 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
-from discord.commands import Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Option, permissions, slash_command, context
 
 import utils.duration
 from utils import database, embeds
@@ -15,7 +14,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Restricts(commands.Cog):
+class Restricts(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -215,6 +214,6 @@ class Restricts(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(Restricts(bot))
     log.info("Commands loaded: restricts")

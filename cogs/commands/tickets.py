@@ -3,8 +3,7 @@ import time
 
 import discord
 import privatebinapi
-from discord.ext import commands
-from discord.commands import Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Option, permissions, slash_command, context
 
 from utils import database, embeds
 from utils.config import config
@@ -13,7 +12,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Tickets(commands.Cog):
+class Tickets(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -209,6 +208,6 @@ class Tickets(commands.Cog):
         await ctx.channel.delete()
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(Tickets(bot))
     log.info("Commands loaded: tickets")

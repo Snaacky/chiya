@@ -1,7 +1,6 @@
 import logging
 
-from discord.ext import commands
-from discord.commands import permissions, slash_command, context
+from discord.commands import Bot, Cog, permissions, slash_command, context
 
 from utils.config import config
 from utils import embeds
@@ -10,7 +9,7 @@ from utils import embeds
 log = logging.getLogger(__name__)
 
 
-class Boosters(commands.Cog):
+class Boosters(Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -38,6 +37,6 @@ class Boosters(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot) -> None:
+def setup(bot: Bot) -> None:
     bot.add_cog(Boosters(bot))
     log.info("Commands loaded: boosters")
