@@ -3,10 +3,8 @@ import logging
 import time
 
 import discord
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord.ext import commands
+from discord.commands import Option, permissions, slash_command, context
 
 import utils.duration
 from utils import database, embeds
@@ -17,17 +15,17 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class RestrictCog(Cog):
+class Restricts(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_restricted(self, ctx: SlashContext, member: discord.Member) -> bool:
+    async def is_user_restricted(self, ctx: context.ApplicationContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]) in member.roles:
             return True
         return False
 
-    async def restrict_member(self, ctx: SlashContext, member: discord.Member, reason: str, end_time: float = None) -> None:
+    async def restrict_member(self, ctx: context.ApplicationContext, member: discord.Member, reason: str, end_time: float = None) -> None:
         await member.add_roles(discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]), reason=reason)
 
         db = database.Database().get()
@@ -52,7 +50,7 @@ class RestrictCog(Cog):
         db.commit()
         db.close()
 
-    async def unrestrict_member(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> None:
+    async def unrestrict_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
         guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         moderator = ctx.author if ctx else self.bot.user
         await member.remove_roles(discord.utils.get(guild.roles, id=config["roles"]["restricted"]), reason=reason)
@@ -73,7 +71,7 @@ class RestrictCog(Cog):
         db.commit()
         db.close()
 
-    async def send_restricted_dm_embed(self, ctx: SlashContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
+    async def send_restricted_dm_embed(self, ctx: context.ApplicationContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
         try:
             channel = await member.create_dm()
             embed = embeds.make_embed(
@@ -91,7 +89,7 @@ class RestrictCog(Cog):
         except discord.Forbidden:
             return False
 
-    async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> bool:
+    async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
         try:
@@ -110,39 +108,15 @@ class RestrictCog(Cog):
         except discord.Forbidden:
             return False
 
-    @cog_ext.cog_slash(
-        name="restrict",
-        description="Restricts message permissions from the member for the specified length of time",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="member",
-                description="The member that will be restricted",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being restricted",
-                option_type=3,
-                required=True
-            ),
-            create_option(
-                name="duration",
-                description="The length of time the user will be restricted for",
-                option_type=3,
-                required=False
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def restrict(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Restricts message permissions from the member for the specified length of time")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def restrict(
+        self,
+        ctx: context.ApplicationContext,
+        member: Option(discord.User, description="The member that will be restricted", required=True),
+        reason: Option(str, description="The reason why the member is being restricted", required=True),
+        duration: Option(str, description="The length of time the user will be restricted for", required=False),
+    ):
         """ Temporarily restrict member in guild. """
         await ctx.defer()
 
@@ -196,33 +170,14 @@ class RestrictCog(Cog):
         await self.restrict_member(ctx=ctx, member=member, reason=reason, end_time=restrict_end_time)
         return await ctx.send(embed=embed)
 
-    @cog_ext.cog_slash(
-        name="unrestrict",
-        description="Unrestricts the member",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="member",
-                description="The member that will be unrestricted",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being unrestricted",
-                option_type=3,
-                required=True
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def unrestrict(self, ctx: SlashContext, member: discord.Member, reason: str = None):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Unrestricts the member")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def unrestrict(
+        self,
+        ctx: context.ApplicationContext,
+        member: Option(discord.User, description="The member that will be restricted", required=True),
+        reason: Option(str, description="The reason why the member is being restricted", required=True),
+    ):
         """ Unrestricts member in guild. """
         await ctx.defer()
 
@@ -260,6 +215,6 @@ class RestrictCog(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(RestrictCog(bot))
+def setup(bot: commands.Bot) -> None:
+    bot.add_cog(Restricts(bot))
     log.info("Commands loaded: restricts")
