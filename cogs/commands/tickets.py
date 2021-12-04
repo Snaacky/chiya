@@ -29,7 +29,7 @@ class Tickets(commands.Cog):
         await ctx.defer(hidden=True)
 
         if len(topic) > 1024:
-            return await ctx.send(
+            return await ctx.respond(
                 embed=embeds.error_message(
                     description=(
                         "Your ticket topic exceeded 1024 characters. "
@@ -44,7 +44,7 @@ class Tickets(commands.Cog):
 
         if ticket:
             logging.info(f"{ctx.author} tried to create a new ticket but already had one open: {ticket}")
-            return await ctx.send(f"You already have a ticket open! {ticket.mention}", hidden=True)
+            return await ctx.respond(f"You already have a ticket open! {ticket.mention}", hidden=True)
 
         permissions = {
             discord.utils.get(ctx.guild.roles, id=config["roles"]["privileged"]["staff"]): discord.PermissionOverwrite(read_messages=True),
@@ -92,7 +92,7 @@ class Tickets(commands.Cog):
             title="Created a ticket",
             description=f"Opened a ticket: {channel.mention} for: {topic}.",
         )
-        await ctx.send(embed=embed, hidden=True)
+        await ctx.respond(embed=embed, hidden=True)
 
     @slash_command(guild_id=config["guild_id"], default_permission=False, description="Closes a ticket channel")
     @permissions.has_role(config["roles"]["privileged"]["staff"])

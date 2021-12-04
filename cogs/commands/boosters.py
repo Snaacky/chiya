@@ -36,7 +36,7 @@ class Boosters(commands.Cog):
         )
         embed.description = "\n".join(user.mention for user in ctx.guild.premium_subscribers)
         embed.set_footer(text=f"Total boosters: {len(ctx.guild.premium_subscribers)}")
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 def setup(bot: discord.Bot) -> None:

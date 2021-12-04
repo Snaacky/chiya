@@ -88,7 +88,7 @@ class Kicks(commands.Cog):
         ))
         db.commit()
         db.close()
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 def setup(bot: discord.Bot) -> None:

@@ -35,7 +35,7 @@ class General(commands.Cog):
             embed.set_author(icon_url=user.avatar, name=str(user))
 
         embed.set_image(url=user.avatar)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
     @slash_command(guild_id=config["guild_id"], default_permission=False)
     @permissions.has_role(config["roles"]["privileged"]["staff"])
@@ -58,7 +58,7 @@ class General(commands.Cog):
         await message.add_reaction(":no:778724416230129705")
 
         # We need to send *something* so the bot doesn't return "This interaction failed"
-        delete = await ctx.send("** **")
+        delete = await ctx.respond("** **")
         await delete.delete()
 
 

@@ -97,7 +97,7 @@ class Purge(commands.Cog):
             color="soft_red",
         )
         embed.add_field(name="Reason:", value=reason, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 def setup(bot: discord.Bot) -> None:

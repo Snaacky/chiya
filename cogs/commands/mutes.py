@@ -341,7 +341,7 @@ class Mutes(commands.Cog):
 
             # Mutes the user and returns the embed letting the moderator know they were successfully muted.
             await self.mute_member(ctx=ctx, member=member, reason=reason)
-            return await ctx.send(embed=embed)
+            return await ctx.respond(embed=embed)
 
         # Get the duration string for embed and mute end time for the specified duration.
         duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
@@ -393,7 +393,7 @@ class Mutes(commands.Cog):
             temporary=True,
             end_time=mute_end_time
         )
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
     @slash_command(guild_id=config["guild_id"], default_permission=False, description="Unmutes a member in the server")
     @permissions.has_role(config["roles"]["privileged"]["staff"])
@@ -449,7 +449,7 @@ class Mutes(commands.Cog):
         # If the mod sent the /unmute in the mute channel, this will cause a errors.NotFound 404.
         # We cannot send the embed and then archive the channel because that will cause a error.AlreadyResponded.
         try:
-            await ctx.send(embed=embed)
+            await ctx.respond(embed=embed)
         except discord.HTTPException:
             pass
 

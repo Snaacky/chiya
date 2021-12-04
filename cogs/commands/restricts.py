@@ -168,7 +168,7 @@ class Restricts(commands.Cog):
             )
 
         await self.restrict_member(ctx=ctx, member=member, reason=reason, end_time=restrict_end_time)
-        return await ctx.send(embed=embed)
+        return await ctx.respond(embed=embed)
 
     @slash_command(guild_id=config["guild_id"], default_permission=False, description="Unrestricts the member")
     @permissions.has_role(config["roles"]["privileged"]["staff"])
@@ -212,7 +212,7 @@ class Restricts(commands.Cog):
             )
 
         await self.unrestrict_member(ctx=ctx, member=member, reason=reason)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
 
 def setup(bot: discord.Bot) -> None:
