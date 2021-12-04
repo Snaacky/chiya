@@ -3,7 +3,7 @@ import logging
 import time
 
 import discord
-from discord.commands import Bot, Cog, Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Context, Option, permissions, slash_command, context
 
 import utils.duration
 from utils import database, embeds
@@ -19,12 +19,12 @@ class Restricts(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_restricted(self, ctx: context.ApplicationContext, member: discord.Member) -> bool:
+    async def is_user_restricted(self, ctx: Context, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]) in member.roles:
             return True
         return False
 
-    async def restrict_member(self, ctx: context.ApplicationContext, member: discord.Member, reason: str, end_time: float = None) -> None:
+    async def restrict_member(self, ctx: Context, member: discord.Member, reason: str, end_time: float = None) -> None:
         await member.add_roles(discord.utils.get(ctx.guild.roles, id=config["roles"]["restricted"]), reason=reason)
 
         db = database.Database().get()
@@ -49,7 +49,7 @@ class Restricts(Cog):
         db.commit()
         db.close()
 
-    async def unrestrict_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
+    async def unrestrict_member(self, member: discord.Member, reason: str, ctx: Context = None) -> None:
         guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         moderator = ctx.author if ctx else self.bot.user
         await member.remove_roles(discord.utils.get(guild.roles, id=config["roles"]["restricted"]), reason=reason)
@@ -70,7 +70,7 @@ class Restricts(Cog):
         db.commit()
         db.close()
 
-    async def send_restricted_dm_embed(self, ctx: context.ApplicationContext, member: discord.Member, reason: str = None, duration: str = None) -> bool:
+    async def send_restricted_dm_embed(self, ctx: Context, member: discord.Member, reason: str = None, duration: str = None) -> bool:
         try:
             channel = await member.create_dm()
             embed = embeds.make_embed(
@@ -88,7 +88,7 @@ class Restricts(Cog):
         except discord.Forbidden:
             return False
 
-    async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> bool:
+    async def send_unrestricted_dm_embed(self, member: discord.Member, reason: str, ctx: Context = None) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
         try:
@@ -111,7 +111,7 @@ class Restricts(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def restrict(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: Option(discord.User, description="The member that will be restricted", required=True),
         reason: Option(str, description="The reason why the member is being restricted", required=True),
         duration: Option(str, description="The length of time the user will be restricted for", required=False),
@@ -173,7 +173,7 @@ class Restricts(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def unrestrict(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: Option(discord.User, description="The member that will be restricted", required=True),
         reason: Option(str, description="The reason why the member is being restricted", required=True),
     ):

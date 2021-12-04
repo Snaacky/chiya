@@ -3,7 +3,7 @@ import time
 
 import discord
 import privatebinapi
-from discord.commands import Bot, Cog, Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
 
 from utils import database, embeds
 from utils.config import config
@@ -21,7 +21,7 @@ class Tickets(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def open(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         topic: Option(str, description="A brief summary of the topic you would like to discuss", required=True),
     ):
         """Opens a new modmail ticket."""
@@ -95,10 +95,7 @@ class Tickets(Cog):
 
     @slash_command(guild_id=config["guild_id"], default_permission=False, description="Closes a ticket channel")
     @permissions.has_role(config["roles"]["privileged"]["staff"])
-    async def close(
-        self,
-        ctx: context.ApplicationContext
-    ):
+    async def close(self, ctx: Context):
         """Closes the modmail ticket."""
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
         await ctx.defer()

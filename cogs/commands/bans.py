@@ -2,7 +2,7 @@ import logging
 import time
 
 import discord
-from discord.commands import Bot, Cog, Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
 
 from utils import database, embeds
 from utils.config import config
@@ -17,7 +17,7 @@ class Bans(Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
+    async def is_user_banned(self, ctx: Context, user: discord.User) -> bool:
         """
         Checks if the user if the user is banned.
 
@@ -40,7 +40,7 @@ class Bans(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def ban(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         user: Option(discord.User, description="The member that will be banned", required=True),
         reason: Option(str, description="The reason why the member is being banned", required=True),
         daystodelete: Option(int, description="The number of days of messages to delete from the member, up to 7", required=False),
@@ -126,7 +126,7 @@ class Bans(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def unban(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         user: Option(discord.Member, description="The user that will be unbanned", required=True),
         reason: Option(str, description="The reason why the user is being unbanned", required=True),
     ):

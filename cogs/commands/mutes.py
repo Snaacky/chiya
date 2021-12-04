@@ -4,7 +4,7 @@ import time
 
 import discord
 import privatebinapi
-from discord.commands import Bot, Cog, Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
 
 import utils.duration
 from utils import database
@@ -23,7 +23,7 @@ class Mutes(Cog):
 
     async def mute_member(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: discord.Member,
         reason: str,
         temporary: bool = False,
@@ -56,7 +56,7 @@ class Mutes(Cog):
         db.commit()
         db.close()
 
-    async def unmute_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
+    async def unmute_member(self, member: discord.Member, reason: str, ctx: Context = None) -> None:
         guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         moderator = ctx.author if ctx else self.bot.user
 
@@ -79,14 +79,14 @@ class Mutes(Cog):
         db.commit()
         db.close()
 
-    async def is_user_muted(self, ctx: context.ApplicationContext, member: discord.Member) -> bool:
+    async def is_user_muted(self, ctx: Context, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"]) in member.roles:
             return True
         return False
 
     async def send_muted_dm_embed(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: discord.Member,
         channel: discord.TextChannel,
         reason: str = None,
@@ -114,7 +114,7 @@ class Mutes(Cog):
         self,
         member: discord.Member,
         reason: str,
-        ctx: context.ApplicationContext = None
+        ctx: Context = None
     ) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
@@ -137,7 +137,7 @@ class Mutes(Cog):
 
     async def create_mute_channel(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: discord.Member,
         reason: str,
         duration: str = None
@@ -177,7 +177,7 @@ class Mutes(Cog):
 
         return channel
 
-    async def archive_mute_channel(self, user_id: int, reason: str, ctx: context.ApplicationContext = None):
+    async def archive_mute_channel(self, user_id: int, reason: str, ctx: Context = None):
         guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
@@ -289,7 +289,7 @@ class Mutes(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def mute(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: Option(discord.Member, description="The member that will be kicked", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
         duration: Option(int, description="The length of time the user will be muted for", required=False)
@@ -398,7 +398,7 @@ class Mutes(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def unmute(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: Option(discord.Member, description="The member that will be unmuted", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
     ):

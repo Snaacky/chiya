@@ -2,7 +2,7 @@ import logging
 import time
 
 import discord
-from discord.commands import Bot, Cog, Option, permissions, slash_command, context
+from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
 
 from utils import database, embeds
 from utils.config import config
@@ -21,7 +21,7 @@ class Kicks(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def kick(
         self,
-        ctx: context.ApplicationContext,
+        ctx: Context,
         member: Option(discord.Member, description="The member that will be kicked", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True)
     ):

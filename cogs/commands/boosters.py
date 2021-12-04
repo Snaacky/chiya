@@ -1,6 +1,6 @@
 import logging
 
-from discord.commands import Bot, Cog, permissions, slash_command, context
+from discord.commands import Bot, Cog, Context, permissions, slash_command
 
 from utils.config import config
 from utils import embeds
@@ -16,12 +16,12 @@ class Boosters(Cog):
 
     @slash_command(guild_id=config["guild_id"], default_permission=False, description="List all the server boosters")
     @permissions.has_role(config["roles"]["privileged"]["staff"])
-    async def boosters(self, ctx: context.ApplicationContext):
+    async def boosters(self, ctx: Context):
         """
         Slash command for getting the current list of server boosters.
 
         Args:
-            ctx (context.ApplicationContext): The context of the slash command.
+            ctx (Context): The context of the slash command.
         """
         await ctx.defer()
 
