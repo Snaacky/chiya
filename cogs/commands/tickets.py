@@ -206,6 +206,6 @@ class Tickets(commands.Cog):
         await ctx.channel.delete()
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Tickets(bot))
     log.info("Commands loaded: tickets")

@@ -1,6 +1,5 @@
 import logging
 
-import discord
 from discord.commands import context, permissions, slash_command
 from discord.ext import commands
 
@@ -39,6 +38,6 @@ class Boosters(commands.Cog):
         await ctx.respond(embed=embed)
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Boosters(bot))
     log.info("Commands loaded: boosters")

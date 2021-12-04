@@ -454,6 +454,6 @@ class Mutes(commands.Cog):
             pass
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Mutes(bot))
     log.info("Commands loaded: mutes")

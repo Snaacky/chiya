@@ -89,6 +89,6 @@ class Reddit(commands.Cog):
             log.error(e)
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Reddit(bot))
     log.info("Task loaded: reddit")

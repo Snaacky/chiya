@@ -62,6 +62,6 @@ class General(commands.Cog):
         await delete.delete()
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")

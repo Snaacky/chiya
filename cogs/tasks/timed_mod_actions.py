@@ -1,8 +1,7 @@
 import logging
 from datetime import datetime, timezone
 
-from discord.ext import tasks
-from discord.ext.commands import Bot, Cog, Context
+from discord.ext import commands, tasks
 
 from utils import database, embeds
 from utils.config import config
@@ -11,13 +10,13 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class TimedModActionsTask(Cog):
+class TimedModActions(commands.Cog):
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: commands.bot) -> None:
         self.bot = bot
         self.check_for_pending_mod_actions.start()
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.check_for_pending_mod_actions.cancel()
 
     @tasks.loop(seconds=3.0)
@@ -90,6 +89,6 @@ class TimedModActionsTask(Cog):
         db.close()
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(TimedModActionsTask(bot))
-    log.info("Cog loaded: timed_mod_actions_task")
+def setup(bot: commands.bot.Bot) -> None:
+    bot.add_cog(TimedModActions(bot))
+    log.info("Cog loaded: timed_mod_actions")

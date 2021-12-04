@@ -184,6 +184,6 @@ class Bans(commands.Cog):
         await ctx.respond(embed=embed)
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Bans(bot))
     log.info("Commands loaded: bans")

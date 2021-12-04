@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 class Reminders(commands.Cog):
 
-    def __init__(self, bot: discord.Bot) -> None:
+    def __init__(self, bot: commands.bot.Bot) -> None:
         self.bot = bot
         self.check_for_reminder.start()
 
@@ -53,6 +53,6 @@ class Reminders(commands.Cog):
         db.close()
 
 
-def setup(bot: discord.Bot) -> None:
+def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Reminders(bot))
     log.info("Task loaded: reminder")
