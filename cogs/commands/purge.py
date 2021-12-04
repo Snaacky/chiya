@@ -9,7 +9,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class PurgeCog(commands.Cog):
+class Purge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -100,5 +100,5 @@ class PurgeCog(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(PurgeCog(bot))
+    bot.add_cog(Purge(bot))
     log.info("Commands loaded: purge")
