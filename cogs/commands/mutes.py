@@ -4,10 +4,8 @@ import time
 
 import discord
 import privatebinapi
-from discord.ext.commands import Cog, Bot
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord.ext import commands
+from discord.commands import Option, permissions, slash_command, context
 
 import utils.duration
 from utils import database
@@ -19,12 +17,19 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class MuteCog(Cog):
+class Mutes(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    async def mute_member(self, ctx: SlashContext, member: discord.Member, reason: str, temporary: bool = False, end_time: float = None) -> None:
+    async def mute_member(
+        self,
+        ctx: context.ApplicationContext,
+        member: discord.Member,
+        reason: str,
+        temporary: bool = False,
+        end_time: float = None
+    ) -> None:
         role = discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"])
         await member.add_roles(role, reason=reason)
 
@@ -52,7 +57,7 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    async def unmute_member(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> None:
+    async def unmute_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
         guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         moderator = ctx.author if ctx else self.bot.user
 
@@ -75,12 +80,19 @@ class MuteCog(Cog):
         db.commit()
         db.close()
 
-    async def is_user_muted(self, ctx: SlashContext, member: discord.Member) -> bool:
+    async def is_user_muted(self, ctx: context.ApplicationContext, member: discord.Member) -> bool:
         if discord.utils.get(ctx.guild.roles, id=config["roles"]["muted"]) in member.roles:
             return True
         return False
 
-    async def send_muted_dm_embed(self, ctx: SlashContext, member: discord.Member, channel: discord.TextChannel, reason: str = None, duration: str = None) -> bool:
+    async def send_muted_dm_embed(
+        self,
+        ctx: context.ApplicationContext,
+        member: discord.Member,
+        channel: discord.TextChannel,
+        reason: str = None,
+        duration: str = None
+    ) -> bool:
         try:
             dm_channel = await member.create_dm()
             embed = embeds.make_embed(
@@ -99,7 +111,12 @@ class MuteCog(Cog):
         except discord.HTTPException:
             return False
 
-    async def send_unmuted_dm_embed(self, member: discord.Member, reason: str, ctx: SlashContext = None) -> bool:
+    async def send_unmuted_dm_embed(
+        self,
+        member: discord.Member,
+        reason: str,
+        ctx: context.ApplicationContext = None
+    ) -> bool:
         moderator = ctx.author if ctx else self.bot.user
 
         # Send member message telling them that they were unmuted and why.
@@ -119,7 +136,13 @@ class MuteCog(Cog):
         except discord.HTTPException:
             return False
 
-    async def create_mute_channel(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
+    async def create_mute_channel(
+        self,
+        ctx: context.ApplicationContext,
+        member: discord.Member,
+        reason: str,
+        duration: str = None
+    ):
         if not duration:
             duration = "Indefinite"
 
@@ -155,7 +178,7 @@ class MuteCog(Cog):
 
         return channel
 
-    async def archive_mute_channel(self, user_id: int, reason: str, ctx: SlashContext = None):
+    async def archive_mute_channel(self, user_id: int, reason: str, ctx: context.ApplicationContext = None):
         guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
         category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
@@ -263,39 +286,15 @@ class MuteCog(Cog):
         # Delete the mute channel.
         await mute_channel.delete()
 
-    @cog_ext.cog_slash(
-        name="mute",
-        description="Mutes a member in the server",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="member",
-                description="The member that will be muted",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being muted",
-                option_type=3,
-                required=True
-            ),
-            create_option(
-                name="duration",
-                description="The length of time the user will be muted for",
-                option_type=3,
-                required=False
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def mute(self, ctx: SlashContext, member: discord.Member, reason: str, duration: str = None):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Mutes a member in the server")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def mute(
+        self,
+        ctx: context.ApplicationContext,
+        member: Option(discord.Member, description="The member that will be kicked", required=True),
+        reason: Option(str, description="The reason why the member is being kicked", required=True),
+        duration: Option(int, description="The length of time the user will be muted for", required=False)
+    ):
         """ Mutes member in guild. """
         await ctx.defer()
 
@@ -396,33 +395,14 @@ class MuteCog(Cog):
         )
         await ctx.send(embed=embed)
 
-    @cog_ext.cog_slash(
-        name="unmute",
-        description="Unmutes a member in the server",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="member",
-                description="The member that will be unmuted",
-                option_type=6,
-                required=True
-            ),
-            create_option(
-                name="reason",
-                description="The reason why the member is being unmuted",
-                option_type=3,
-                required=True
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def unmute(self, ctx: SlashContext, member: discord.Member, reason: str):
+    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Unmutes a member in the server")
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def unmute(
+        self,
+        ctx: context.ApplicationContext,
+        member: Option(discord.Member, description="The member that will be unmuted", required=True),
+        reason: Option(str, description="The reason why the member is being kicked", required=True),
+    ):
         """ Unmutes member in guild. """
         await ctx.defer()
 
@@ -474,6 +454,6 @@ class MuteCog(Cog):
             pass
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(MuteCog(bot))
+def setup(bot: commands.Bot) -> None:
+    bot.add_cog(Mutes(bot))
     log.info("Commands loaded: mutes")
