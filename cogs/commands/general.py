@@ -1,10 +1,8 @@
 import logging
 
 import discord
-from discord.ext.commands import Bot, Cog
-from discord_slash import cog_ext, SlashContext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord.ext import commands
+from discord.commands import Option, permissions, slash_command, context
 
 from utils import embeds
 from utils.config import config
@@ -13,17 +11,17 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class General(Cog):
+class General(commands.Cog):
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(
-        name="pfp",
-        description="Gets the members profile picture",
-        guild_ids=[config["guild_id"]]
-    )
-    async def pfp(self, ctx: SlashContext, user: discord.User = None):
+    @slash_command(guild_id=config["guild_id"], description="Gets the members profile picture")
+    async def pfp(
+        self,
+        ctx: context.ApplicationContext,
+        user: Option(discord.User, required=True)
+    ):
         """ Returns the profile picture of the invoker or the mentioned user. """
         await ctx.defer()
 
@@ -43,27 +41,13 @@ class General(Cog):
         embed.set_image(url=user.avatar)
         await ctx.send(embed=embed)
 
-    @cog_ext.cog_slash(
-        name="vote",
-        description="Adds the vote reactions to a message",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="message",
-                description="The ID for the target message",
-                option_type=3,
-                required=True
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(config["roles"]["staff"], SlashCommandPermissionType.ROLE, True),
-                create_permission(config["roles"]["trial_mod"], SlashCommandPermissionType.ROLE, True)
-            ]
-        }
-    )
-    async def vote(self, ctx, message: discord.Message = None):
+    @slash_command(guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def vote(
+        self,
+        ctx,
+        message: Option(discord.User, description="The ID for the target message", required=True)
+    ):
         """ Add vote reactions to a message. """
         await ctx.defer()
 
@@ -82,6 +66,6 @@ class General(Cog):
         await delete.delete()
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")
