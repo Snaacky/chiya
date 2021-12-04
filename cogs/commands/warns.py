@@ -2,7 +2,8 @@ import logging
 import time
 
 import discord
-from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
+from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import database
 from utils import embeds
@@ -12,7 +13,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Warns(Cog):
+class Warns(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -21,7 +22,7 @@ class Warns(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def warn(
         self,
-        ctx: Context,
+        ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be warned", required=True),
         reason: Option(str, description="The reason why the member is being warned", required=True),
     ):
@@ -87,6 +88,6 @@ class Warns(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: discord.Bot) -> None:
     bot.add_cog(Warns(bot))
     log.info("Commands loaded: warns")

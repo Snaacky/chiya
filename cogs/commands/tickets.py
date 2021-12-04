@@ -3,7 +3,8 @@ import time
 
 import discord
 import privatebinapi
-from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
+from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import database, embeds
 from utils.config import config
@@ -12,7 +13,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Tickets(Cog):
+class Tickets(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -21,7 +22,7 @@ class Tickets(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def open(
         self,
-        ctx: Context,
+        ctx: context.ApplicationContext,
         topic: Option(str, description="A brief summary of the topic you would like to discuss", required=True),
     ):
         """Opens a new modmail ticket."""
@@ -95,7 +96,7 @@ class Tickets(Cog):
 
     @slash_command(guild_id=config["guild_id"], default_permission=False, description="Closes a ticket channel")
     @permissions.has_role(config["roles"]["privileged"]["staff"])
-    async def close(self, ctx: Context):
+    async def close(self, ctx: context.ApplicationContext):
         """Closes the modmail ticket."""
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
         await ctx.defer()
@@ -205,6 +206,6 @@ class Tickets(Cog):
         await ctx.channel.delete()
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: discord.Bot) -> None:
     bot.add_cog(Tickets(bot))
     log.info("Commands loaded: tickets")

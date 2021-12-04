@@ -3,7 +3,7 @@ import time
 
 import asyncpraw
 import discord
-from discord.ext import tasks, commands
+from discord.ext import commands, tasks
 
 from utils.config import config
 
@@ -11,9 +11,9 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class RedditTask(commands.Cog):
+class Reddit(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
         self.bot_started_at = time.time()
         self.cache = []
@@ -36,11 +36,11 @@ class RedditTask(commands.Cog):
         log.info("Starting reddit functionality background task")
         self.check_for_posts.start()
 
-    def cog_unload(self):
+    def cog_unload(self) -> None:
         self.check_for_posts.cancel()
 
     @tasks.loop(seconds=5)
-    async def check_for_posts(self):
+    async def check_for_posts(self) -> None:
         """ Posts new reddit submissions to channel specified in config """
         # Needed to fix bot crashes when reddit is down during startup.
         await self.bot.wait_until_ready()
@@ -84,11 +84,11 @@ class RedditTask(commands.Cog):
                 await self.channel.send(embed=embed)
                 self.cache.append(submission.id)
 
-        # Catch all exceptions to avoid crashing when reddit has downtime.
+        # Catch all to avoid crashing when reddit has issues.
         except Exception as e:
             log.error(e)
 
 
-def setup(bot) -> None:
-    bot.add_cog(RedditTask(bot))
+def setup(bot: discord.Bot) -> None:
+    bot.add_cog(Reddit(bot))
     log.info("Task loaded: reddit")

@@ -1,6 +1,8 @@
 import logging
 
-from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
+import discord
+from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import embeds
 from utils.config import config
@@ -8,11 +10,11 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Purge(Cog):
+class Purge(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_purge_messages(self, ctx: Context):
+    async def can_purge_messages(self, ctx: context.ApplicationContext):
         """
         Checks if messages can be purged based on the context.
 
@@ -43,7 +45,7 @@ class Purge(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def purge(
         self,
-        ctx: Context,
+        ctx: context.ApplicationContext,
         amount: Option(
             int,
             description="The amount of messages to be purged (100 message maximum cap)",
@@ -98,6 +100,6 @@ class Purge(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: discord.Bot) -> None:
     bot.add_cog(Purge(bot))
     log.info("Commands loaded: purge")

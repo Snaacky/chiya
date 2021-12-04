@@ -2,7 +2,8 @@ import logging
 import time
 
 import discord
-from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
+from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import database, embeds
 from utils.config import config
@@ -12,7 +13,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Kicks(Cog):
+class Kicks(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -21,7 +22,7 @@ class Kicks(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def kick(
         self,
-        ctx: Context,
+        ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be kicked", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True)
     ):
@@ -90,6 +91,6 @@ class Kicks(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: discord.Bot) -> None:
     bot.add_cog(Kicks(bot))
     log.info("Commands loaded: kicks")

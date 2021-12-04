@@ -1,7 +1,8 @@
 import logging
 
 import discord
-from discord.commands import Bot, Cog, Context, Option, permissions, slash_command
+from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import embeds
 from utils.config import config
@@ -10,13 +11,13 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class General(Cog):
+class General(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
     @slash_command(guild_id=config["guild_id"], description="Gets the members profile picture")
-    async def pfp(self, ctx: Context, user: Option(discord.User, required=True)):
+    async def pfp(self, ctx: context.ApplicationContext, user: Option(discord.User, required=True)):
         """ Returns the profile picture of the invoker or the mentioned user. """
         await ctx.defer()
 
@@ -40,7 +41,7 @@ class General(Cog):
     @permissions.has_role(config["roles"]["privileged"]["staff"])
     async def vote(
         self,
-        ctx: Context,
+        ctx: context.ApplicationContext,
         message: Option(discord.User, description="The ID for the target message", required=True)
     ):
         """ Add vote reactions to a message. """
@@ -61,6 +62,6 @@ class General(Cog):
         await delete.delete()
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: discord.Bot) -> None:
     bot.add_cog(General(bot))
     log.info("Commands loaded: general")
