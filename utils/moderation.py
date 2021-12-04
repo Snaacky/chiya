@@ -1,10 +1,10 @@
 import discord
-from discord_slash import SlashContext
+from discord.commands import context
 
 from utils.config import config
 
 
-async def can_action_member(ctx: SlashContext, member: discord.Member) -> bool:
+async def can_action_member(ctx: context.ApplicationContext, member: discord.Member) -> bool:
     # Stop mods from actioning on the bot.
     if member.bot:
         return False

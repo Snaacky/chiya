@@ -1,10 +1,10 @@
 import datetime
 
 import discord
-from discord_slash import SlashContext
+from discord.commands import context
 
 
-def make_embed(ctx: SlashContext = None, title: str = "", description: str = "", color="default", title_url: str = None, thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
+def make_embed(ctx: context.ApplicationContext = None, title: str = "", description: str = "", color="default", title_url: str = None, thumbnail_url: str = None, image_url: str = None, author=True) -> discord.Embed:
     """General embed template
 
     Args:
@@ -61,7 +61,7 @@ def make_embed(ctx: SlashContext = None, title: str = "", description: str = "",
     return embed
 
 
-async def success_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+async def success_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
     """Send basic sucess message
 
     Note:
@@ -77,7 +77,7 @@ async def success_message(ctx: SlashContext, description: str, title: str = None
     await ctx.send(embed=embed, delete_after=30)
 
 
-async def error_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+async def error_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
     """Send basic error message
 
     Note:
@@ -93,7 +93,7 @@ async def error_message(ctx: SlashContext, description: str, title: str = None, 
     await ctx.send(embed=embed, delete_after=30)
 
 
-async def warning_message(ctx: SlashContext, description: str, title: str = None, author: bool = True):
+async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
     """ Send a basic warning message
 
     Note:
@@ -117,7 +117,7 @@ async def warning_message(ctx: SlashContext, description: str, title: str = None
     )
 
 
-def error_embed(ctx: SlashContext, title: str, description: str, author: bool = True) -> discord.Embed:
+def error_embed(ctx: context.ApplicationContext, title: str, description: str, author: bool = True) -> discord.Embed:
     """ Make a basic error message embed
 
     Args:
