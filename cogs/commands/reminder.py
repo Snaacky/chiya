@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime
 
-from discord.ext.commands import Bot, Cog
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
+import discord
+from discord.ext import commands
+from discord.commands import Option, slash_command, context, SlashCommandGroup
 
 import utils.duration
 from utils import database, embeds
@@ -12,33 +12,21 @@ from utils.pagination import LinePaginator
 
 
 log = logging.getLogger(__name__)
+reminder = SlashCommandGroup(name="reminder", description="Sets a reminder note to be sent at a future date")
 
+class Reminder(commands.Cog):
 
-class Reminder(Cog):
-
-    def __init__(self, bot: Bot):
+    
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
-
-    @cog_ext.cog_slash(
-        name="remindme",
-        description="Sets a reminder note to be sent at a future date",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="duration",
-                description="How long until you want the reminder to be sent",
-                option_type=3,
-                required=True
-            ),
-            create_option(
-                name="message",
-                description="The message that you want to be reminded of",
-                option_type=3,
-                required=True
-            ),
-        ]
-    )
-    async def remind(self, ctx: SlashContext, duration: str, message: str):
+        
+    @slash_command(guild_id=config["guild_id"], description="Sets a reminder note to be sent at a future date")
+    async def remindme(
+        self,
+        ctx: context.ApplicationContext,
+        duration: Option(str, description="How long until you want the reminder to be sent", required=True),
+        message: Option(str, description="The message that you want to be reminded of", required=True)    
+    ):
         """ Sets a reminder message. """
         await ctx.defer()
 
@@ -78,29 +66,14 @@ class Reminder(Cog):
         )
         embed.add_field(name="ID: ", value=remind_id, inline=False)
         embed.add_field(name="Message:", value=message, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
-    @cog_ext.cog_subcommand(
-        base="reminder",
-        name="edit",
-        description="Edit an existing reminder",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="reminder_id",
-                description="The ID of the reminder to be updated",
-                option_type=3,
-                required=True
-            ),
-            create_option(
-                name="new_message",
-                description="The updated message for the reminder",
-                option_type=3,
-                required=True
-            ),
-        ]
-    )
-    async def edit_reminder(self, ctx: SlashContext, reminder_id: int, new_message: str):
+    @reminder.command(name="edit", descrption="Edit an existing reminder", guild_id = config['guild_id'])
+    async def edit(
+        ctx: context.ApplicationContext,
+        reminder_id: Option(int, description="The ID of the reminder to be updated", required=True),
+        new_message: Option(str, description="The updated message for the reminder", required=True)
+    ):
         """ Edit a reminder message. """
         await ctx.defer()
 
@@ -134,15 +107,12 @@ class Reminder(Cog):
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
         embed.add_field(name="Old Message: ", value=old_message, inline=False)
         embed.add_field(name="New Message: ", value=new_message, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
-    @cog_ext.cog_subcommand(
-        base="reminder",
-        name="list",
-        description="List your existing reminders",
-        guild_ids=[config["guild_id"]],
-    )
-    async def list_reminders(self, ctx: SlashContext):
+    @reminder.command(name="list", description="List your existing reminders", guild_id=config['guild_id'])
+    async def list(
+        ctx: context.ApplicationContext,
+    ):
         """ List your reminders. """
         await ctx.defer()
 
@@ -178,21 +148,12 @@ class Reminder(Cog):
         await LinePaginator.paginate(reminders, ctx=ctx, embed=embed, max_lines=5,
                                      max_size=2000, restrict_to_user=ctx.author)
 
-    @cog_ext.cog_subcommand(
-        base="reminder",
-        name="delete",
-        description="Delete an existing reminder",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="reminder_id",
-                description="The ID of the reminder deleted",
-                option_type=4,
-                required=True
-            ),
-        ]
-    )
-    async def delete_reminder(self, ctx: SlashContext, reminder_id: int):
+    @reminder.command(name="delete", description="Delete an existing reminder", guild_ids = [config['guild_id']])
+    async def delete(
+        ctx: context.ApplicationContext,
+        reminder_id: Option(int, description="The ID of the reminder to be deleted", required=True)
+    ):
+    
         """ Delete Reminders. User `reminder list` to find ID """
         await ctx.defer()
 
@@ -229,15 +190,12 @@ class Reminder(Cog):
         )
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
         embed.add_field(name="Message: ", value=reminder["message"], inline=False)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
-    @cog_ext.cog_subcommand(
-        base="reminder",
-        name="clear",
-        description="Clears all of your existing reminders",
-        guild_ids=[config["guild_id"]]
-    )
-    async def clear_reminders(self, ctx: SlashContext):
+    @reminder.command(name="clear", description="Clears all of your existing reminders", guild_id=config['guild_id'])
+    async def clear(
+        ctx: context.ApplicationContext
+    ):
         """ Clears all reminders. """
         await ctx.defer()
 
@@ -254,9 +212,10 @@ class Reminder(Cog):
         db.commit()
         db.close()
 
-        await ctx.send("All your reminders have been cleared.")
+        await ctx.respond("All your reminders have been cleared.")
 
 
-def setup(bot: Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(Reminder(bot))
+    bot.add_application_command(reminder)
     log.info("Commands loaded: reminder")
