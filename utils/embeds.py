@@ -74,7 +74,7 @@ async def success_message(ctx: context.ApplicationContext, description: str, tit
     """
     title = "Success:" if not title else title
     embed = make_embed(title="Success:", description=description, color="soft_green", author=False)
-    await ctx.send(embed=embed, delete_after=30)
+    await ctx.respond(embed=embed, delete_after=30)
 
 
 async def error_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
@@ -90,7 +90,7 @@ async def error_message(ctx: context.ApplicationContext, description: str, title
     """
     title = "Error:" if not title else title
     embed = make_embed(title=title, description=description, color="soft_red", author=False)
-    await ctx.send(embed=embed, delete_after=30)
+    await ctx.respond(embed=embed, delete_after=30)
 
 
 async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
@@ -106,7 +106,7 @@ async def warning_message(ctx: context.ApplicationContext, description: str, tit
         author (bool, optional): Whether or not you wish to set the author of embed. Defaults to True.
     """
     title = "Warning:" if not title else title
-    await ctx.send(embed=make_embed(
+    await ctx.respond(embed=make_embed(
         title=title,
         description=description,
         ctx=ctx,
