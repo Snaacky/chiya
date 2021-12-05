@@ -23,7 +23,6 @@ bot = commands.Bot(
     help_command=None
 )
 
-
 @bot.event
 async def on_ready():
     """Called when the client is done preparing the data received from Discord.
@@ -40,6 +39,7 @@ async def on_ready():
             name="your command!"
         )
     )
+    await bot.register_commands()
 
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
