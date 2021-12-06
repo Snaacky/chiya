@@ -3,14 +3,8 @@ import time
 from datetime import datetime
 
 import discord
-from discord.ext.commands import Bot, Cog
-from discord_slash import SlashContext, cog_ext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import (
-    create_choice,
-    create_option,
-    create_permission,
-)
+from discord.ext import commands
+from discord.commands import Option, context, permissions, slash_command
 
 from utils import database, embeds
 from utils.config import config
@@ -20,46 +14,19 @@ from utils.pagination import LinePaginator
 log = logging.getLogger(__name__)
 
 
-class NotesCog(Cog):
+class Notes(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @cog_ext.cog_slash(
-        name="addnote",
-        description="Add a note to a user",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="user",
-                description="The user to add the note to",
-                option_type=6,
-                required=True,
-            ),
-            create_option(
-                name="note",
-                description="The note to leave on the user",
-                option_type=3,
-                required=True,
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(
-                    config["roles"]["staff"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    config["roles"]["trial_mod"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-            ]
-        },
-    )
-    async def add_note(self, ctx: SlashContext, user: discord.User, note: str):
+    @slash_command(name="addnote", guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def add_note(
+        self,
+        ctx: context.ApplicationContext,
+        user: Option(discord.Member, description="The user to add the note to", required=True),
+        note: Option(str, description="The note to leave on the user", required=True),
+    ):
         """Adds a moderator note to a user."""
         await ctx.defer()
 
@@ -96,52 +63,19 @@ class NotesCog(Cog):
         db.commit()
         db.close()
 
-    @cog_ext.cog_slash(
-        name="search",
-        description="View users notes and mod actions history",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="user",
-                description="The user to lookup",
-                option_type=6,
-                required=True,
-            ),
-            create_option(
-                name="action",
-                description="Filter specific actions",
-                option_type=3,
-                choices=[
-                    create_choice(value="ban", name="Ban"),
-                    create_choice(value="unban", name="Unban"),
-                    create_choice(value="mute", name="Mute"),
-                    create_choice(value="unmute", name="Unmute"),
-                    create_choice(value="kick", name="Kick"),
-                    create_choice(value="restrict", name="Restrict"),
-                    create_choice(value="unrestrict", name="Unrestrict"),
-                    create_choice(value="warn", name="Warn"),
-                    create_choice(value="note", name="Note"),
-                ],
-                required=False,
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(
-                    config["roles"]["staff"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    config["roles"]["trial_mod"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-            ]
-        },
-    )
-    async def search_mod_actions(self, ctx: SlashContext, user: discord.User, action: str = None):
+    @slash_command(name="search", guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def search_mod_actions(
+        self,
+        ctx: context.ApplicationContext,
+        user: Option(discord.User, description="The user to lookup", required=True),
+        action: Option(
+            str,
+            description="Filter specific actions",
+            choices=["ban", "unban", "mute", "unmute", "kick", "restrict", "unrestrict", "warn", "note"],
+            required=False
+        )
+    ):
         """Searches for mod actions on a user"""
         await ctx.defer()
 
@@ -209,41 +143,14 @@ class NotesCog(Cog):
             timeout=120,
         )
 
-    @cog_ext.cog_slash(
-        name="editlog",
-        description="Edits an existing log or note for a user",
-        guild_ids=[config["guild_id"]],
-        options=[
-            create_option(
-                name="id",
-                description="The ID of the log or note to be edited",
-                option_type=4,
-                required=True,
-            ),
-            create_option(
-                name="note",
-                description="The updated message for the log or note",
-                option_type=3,
-                required=True,
-            ),
-        ],
-        default_permission=False,
-        permissions={
-            config["guild_id"]: [
-                create_permission(
-                    config["roles"]["staff"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-                create_permission(
-                    config["roles"]["trial_mod"],
-                    SlashCommandPermissionType.ROLE,
-                    True,
-                ),
-            ]
-        },
-    )
-    async def edit_log(self, ctx: SlashContext, id: int, note: str):
+    @slash_command(name="editlog", guild_id=config["guild_id"], default_permission=False)
+    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    async def edit_log(
+        self,
+        ctx: context.ApplicationContext,
+        id: Option(int, description="The ID of the log or note to be edited", required=True),
+        note: Option(str, description="The updated message for the log or note", required=True),
+    ):
         await ctx.defer()
 
         # Open a connection to the database.
@@ -278,6 +185,6 @@ class NotesCog(Cog):
         db.close()
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(NotesCog(bot))
+def setup(bot: commands.bot.Bot) -> None:
+    bot.add_cog(Notes(bot))
     log.info("Commands loaded: notes")
