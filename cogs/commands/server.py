@@ -7,8 +7,7 @@ from discord.commands import (
     Option,
     SlashCommandGroup,
     context,
-    permissions,
-    slash_command,
+    permissions
 )
 from discord.ext import commands
 from utils import embeds
