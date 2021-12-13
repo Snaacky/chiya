@@ -45,7 +45,7 @@ class MoveQuestionApps(commands.Cog):
                 description="You do not have permissions to use this command in this category."
             )
 
-        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["bot_testing"])
+        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["public"]["questions_and_help"])
         webhook = await channel.create_webhook(name=ctx.author.name)
 
         await webhook.send(
