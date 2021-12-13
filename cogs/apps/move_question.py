@@ -22,7 +22,7 @@ class MoveQuestionApps(commands.Cog):
 
         Args:
             ctx (ApplicationContext): The context of the context menu.
-            message (discord.Message):
+            message (discord.Message): The content of the interacted message.
 
         TODO:
             Fix "Deferred response might not be what you set it to!" warning.
