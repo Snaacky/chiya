@@ -11,7 +11,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Reddit(commands.Cog):
+class RedditTask(commands.Cog):
 
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -90,5 +90,5 @@ class Reddit(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Reddit(bot))
+    bot.add_cog(RedditTask(bot))
     log.info("Task loaded: reddit")

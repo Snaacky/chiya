@@ -10,7 +10,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class AutoResponders(commands.Cog):
+class AutoresponderListener(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -22,7 +22,7 @@ class AutoResponders(commands.Cog):
 
         staff = [x for x in message.author.roles
                  if x.id == config["roles"]["staff"]
-                 or x.id == config["roles"]["trial_mod"]]
+                 or x.id == config["roles"]["trial"]]
         if not staff:
             return
 
@@ -173,5 +173,5 @@ class AutoResponders(commands.Cog):
 
 
 def setup(bot) -> None:
-    bot.add_cog(AutoResponders(bot))
-    log.info("Listener Loaded: autoresponders")
+    bot.add_cog(AutoresponderListener(bot))
+    log.info("Listener Loaded: autoresponder")

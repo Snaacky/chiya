@@ -9,7 +9,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Purge(commands.Cog):
+class PurgeCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -37,11 +37,11 @@ class Purge(commands.Cog):
         return True
 
     @slash_command(
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
         default_permission=False,
         description="Purges the last X amount of messages",
     )
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @permissions.has_role(config["roles"]["staff"])
     async def purge(
         self,
         ctx: context.ApplicationContext,
@@ -100,5 +100,5 @@ class Purge(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Purge(bot))
+    bot.add_cog(PurgeCommands(bot))
     log.info("Commands loaded: purge")

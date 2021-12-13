@@ -15,7 +15,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Restricts(commands.Cog):
+class RestrictCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -51,7 +51,7 @@ class Restricts(commands.Cog):
         db.close()
 
     async def unrestrict_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
-        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"])
         moderator = ctx.author if ctx else self.bot.user
         await member.remove_roles(discord.utils.get(guild.roles, id=config["roles"]["restricted"]), reason=reason)
 
@@ -108,8 +108,8 @@ class Restricts(commands.Cog):
         except discord.Forbidden:
             return False
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Restricts message permissions from the member for the specified length of time")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Restricts message permissions from the member for the specified length of time")
+    @permissions.has_role(config["roles"]["staff"])
     async def restrict(
         self,
         ctx: context.ApplicationContext,
@@ -170,8 +170,8 @@ class Restricts(commands.Cog):
         await self.restrict_member(ctx=ctx, member=member, reason=reason, end_time=restrict_end_time)
         return await ctx.respond(embed=embed)
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Unrestricts the member")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unrestricts the member")
+    @permissions.has_role(config["roles"]["staff"])
     async def unrestrict(
         self,
         ctx: context.ApplicationContext,
@@ -216,5 +216,5 @@ class Restricts(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Restricts(bot))
-    log.info("Commands loaded: restricts")
+    bot.add_cog(RestrictCommands(bot))
+    log.info("Commands loaded: restrict")

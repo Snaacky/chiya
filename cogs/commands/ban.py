@@ -13,7 +13,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Bans(commands.Cog):
+class BansCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -37,8 +37,8 @@ class Bans(commands.Cog):
         except discord.NotFound:
             return False
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False)
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False)
+    @permissions.has_role(config["roles"]["staff"])
     async def ban(
         self,
         ctx: context.ApplicationContext,
@@ -123,8 +123,8 @@ class Bans(commands.Cog):
 
         await ctx.respond(embed=embed)
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False)
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False)
+    @permissions.has_role(config["roles"]["staff"])
     async def unban(
         self,
         ctx: context.ApplicationContext,
@@ -185,5 +185,5 @@ class Bans(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Bans(bot))
-    log.info("Commands loaded: bans")
+    bot.add_cog(BansCommands(bot))
+    log.info("Commands loaded: ban")

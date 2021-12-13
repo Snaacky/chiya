@@ -10,7 +10,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class TimedModActions(commands.Cog):
+class TimedModActionTask(commands.Cog):
 
     def __init__(self, bot: commands.bot) -> None:
         self.bot = bot
@@ -31,7 +31,7 @@ class TimedModActions(commands.Cog):
         )
 
         for action in results:
-            guild = self.bot.get_guild(config["guild_id"])
+            guild = self.bot.get_guild(config["guild_ids"])
             channel = guild.get_channel(config["channels"]["moderation"])
             member = guild.get_member(action["user_id"])
 
@@ -45,7 +45,7 @@ class TimedModActions(commands.Cog):
                     color="soft_green"
                 )
 
-                mutes = self.bot.get_cog("MuteCog")
+                mutes = self.bot.get_cog("MuteCommands")
 
                 if not await mutes.send_unmuted_dm_embed(member=member, reason="Timed mute lapsed."):
                     embed.add_field(
@@ -71,7 +71,7 @@ class TimedModActions(commands.Cog):
                     color="soft_green"
                 )
 
-                restricts = self.bot.get_cog("RestrictCog")
+                restricts = self.bot.get_cog("RestrictCommands")
                 if not await restricts.send_unrestricted_dm_embed(member=member, reason="Timed restriction lapsed."):
                     embed.add_field(
                         name="Notice:",
@@ -90,5 +90,5 @@ class TimedModActions(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(TimedModActions(bot))
-    log.info("Cog loaded: timed_mod_actions")
+    bot.add_cog(TimedModActionTask(bot))
+    log.info("Task loaded: timed_mod_action")

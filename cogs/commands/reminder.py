@@ -1,13 +1,14 @@
 import logging
 from datetime import datetime
 
-import discord
-import utils.duration
 from discord.commands import Option, SlashCommandGroup, context, slash_command
 from discord.ext import commands
+
+import utils.duration
 from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
+
 
 log = logging.getLogger(__name__)
 reminder = SlashCommandGroup(
@@ -15,12 +16,12 @@ reminder = SlashCommandGroup(
 )
 
 
-class Reminder(commands.Cog):
+class ReminderCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @slash_command(
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
         description="Sets a reminder note to be sent at a future date",
     )
     async def remindme(
@@ -81,7 +82,7 @@ class Reminder(commands.Cog):
         await ctx.respond(embed=embed)
 
     @reminder.command(
-        name="edit", descrption="Edit an existing reminder", guild_id=config["guild_id"]
+        name="edit", descrption="Edit an existing reminder", guild_ids=config["guild_ids"]
     )
     async def edit(
         ctx: context.ApplicationContext,
@@ -132,7 +133,7 @@ class Reminder(commands.Cog):
     @reminder.command(
         name="list",
         description="List your existing reminders",
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
     )
     async def list(
         ctx: context.ApplicationContext,
@@ -183,7 +184,7 @@ class Reminder(commands.Cog):
     @reminder.command(
         name="delete",
         description="Delete an existing reminder",
-        guild_ids=[config["guild_id"]],
+        guild_ids=config["guild_ids"],
     )
     async def delete(
         ctx: context.ApplicationContext,
@@ -237,7 +238,7 @@ class Reminder(commands.Cog):
     @reminder.command(
         name="clear",
         description="Clears all of your existing reminders",
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
     )
     async def clear(ctx: context.ApplicationContext):
         """Clears all reminders."""
@@ -260,6 +261,6 @@ class Reminder(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(Reminder(bot))
+    bot.add_cog(ReminderCommands(bot))
     bot.add_application_command(reminder)
     log.info("Commands loaded: reminder")

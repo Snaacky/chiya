@@ -10,7 +10,7 @@ from utils import database, embeds
 log = logging.getLogger(__name__)
 
 
-class Reminders(commands.Cog):
+class ReminderTask(commands.Cog):
 
     def __init__(self, bot: commands.bot.Bot) -> None:
         self.bot = bot
@@ -54,5 +54,5 @@ class Reminders(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Reminders(bot))
+    bot.add_cog(ReminderTask(bot))
     log.info("Task loaded: reminder")

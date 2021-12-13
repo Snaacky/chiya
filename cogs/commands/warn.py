@@ -13,13 +13,13 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Warns(commands.Cog):
+class WarnComamnds(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Warn the member")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Warn the member")
+    @permissions.has_role(config["roles"]["staff"])
     async def warn(
         self,
         ctx: context.ApplicationContext,
@@ -89,5 +89,5 @@ class Warns(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Warns(bot))
-    log.info("Commands loaded: warns")
+    bot.add_cog(WarnComamnds(bot))
+    log.info("Commands loaded: warn")

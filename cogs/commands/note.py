@@ -14,13 +14,13 @@ from utils.pagination import LinePaginator
 log = logging.getLogger(__name__)
 
 
-class Notes(commands.Cog):
+class NoteCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(name="addnote", guild_id=config["guild_id"], default_permission=False)
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(name="addnote", guild_ids=config["guild_ids"], default_permission=False)
+    @permissions.has_role(config["roles"]["staff"])
     async def add_note(
         self,
         ctx: context.ApplicationContext,
@@ -63,8 +63,8 @@ class Notes(commands.Cog):
         db.commit()
         db.close()
 
-    @slash_command(name="search", guild_id=config["guild_id"], default_permission=False)
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(name="search", guild_ids=config["guild_ids"], default_permission=False)
+    @permissions.has_role(config["roles"]["staff"])
     async def search_mod_actions(
         self,
         ctx: context.ApplicationContext,
@@ -143,8 +143,8 @@ class Notes(commands.Cog):
             timeout=120,
         )
 
-    @slash_command(name="editlog", guild_id=config["guild_id"], default_permission=False)
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(name="editlog", guild_ids=config["guild_ids"], default_permission=False)
+    @permissions.has_role(config["roles"]["staff"])
     async def edit_log(
         self,
         ctx: context.ApplicationContext,
@@ -186,5 +186,5 @@ class Notes(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Notes(bot))
-    log.info("Commands loaded: notes")
+    bot.add_cog(NoteCommands(bot))
+    log.info("Commands loaded: note")

@@ -13,13 +13,13 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class Tickets(commands.Cog):
+class TicketCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Opens a new modmail ticket")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Opens a new modmail ticket")
+    @permissions.has_role(config["roles"]["staff"])
     async def open(
         self,
         ctx: context.ApplicationContext,
@@ -47,7 +47,7 @@ class Tickets(commands.Cog):
             return await ctx.respond(f"You already have a ticket open! {ticket.mention}", hidden=True)
 
         permissions = {
-            discord.utils.get(ctx.guild.roles, id=config["roles"]["privileged"]["staff"]): discord.PermissionOverwrite(read_messages=True),
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
             ctx.author: discord.PermissionOverwrite(read_messages=True),
         }
@@ -94,8 +94,8 @@ class Tickets(commands.Cog):
         )
         await ctx.respond(embed=embed, hidden=True)
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Closes a ticket channel")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Closes a ticket channel")
+    @permissions.has_role(config["roles"]["staff"])
     async def close(self, ctx: context.ApplicationContext):
         """Closes the modmail ticket."""
         # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
@@ -127,7 +127,7 @@ class Tickets(commands.Cog):
 
         # Fetch the staff and trial mod role.
         role_staff = discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"])
-        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"])
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config["roles"]["trial"])
 
         # Loop through all messages in the ticket from old to new.
         async for message in ctx.channel.history(oldest_first=True):
@@ -207,5 +207,5 @@ class Tickets(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Tickets(bot))
-    log.info("Commands loaded: tickets")
+    bot.add_cog(TicketCommands(bot))
+    log.info("Commands loaded: ticket")

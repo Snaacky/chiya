@@ -17,7 +17,7 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Mutes(commands.Cog):
+class MuteCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -58,7 +58,7 @@ class Mutes(commands.Cog):
         db.close()
 
     async def unmute_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
-        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"])
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Muted" role from member.
@@ -152,7 +152,7 @@ class Mutes(commands.Cog):
 
         # Give both the staff and the user perms to access the channel.
         await channel.set_permissions(
-            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]),
+            discord.utils.get(ctx.guild.roles, id=config["roles"]["trial"]),
             read_messages=True
         )
         await channel.set_permissions(
@@ -179,7 +179,7 @@ class Mutes(commands.Cog):
         return channel
 
     async def archive_mute_channel(self, user_id: int, reason: str, ctx: context.ApplicationContext = None):
-        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_id"])
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"])
         category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
@@ -214,7 +214,7 @@ class Mutes(commands.Cog):
 
         # Fetch the staff and trial mod role.
         role_staff = discord.utils.get(guild.roles, id=config["roles"]["staff"])
-        role_trial_mod = discord.utils.get(guild.roles, id=config["roles"]["trial_mod"])
+        role_trial_mod = discord.utils.get(guild.roles, id=config["roles"]["trial"])
 
         # TODO: Implement so it gets the channel when the moderator is the bot
         # Loop through all messages in the ticket from old to new.
@@ -286,8 +286,8 @@ class Mutes(commands.Cog):
         # Delete the mute channel.
         await mute_channel.delete()
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Mutes a member in the server")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Mutes a member in the server")
+    @permissions.has_role(config["roles"]["staff"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
@@ -395,8 +395,8 @@ class Mutes(commands.Cog):
         )
         await ctx.respond(embed=embed)
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False, description="Unmutes a member in the server")
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmutes a member in the server")
+    @permissions.has_role(config["roles"]["staff"])
     async def unmute(
         self,
         ctx: context.ApplicationContext,
@@ -455,5 +455,5 @@ class Mutes(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Mutes(bot))
-    log.info("Commands loaded: mutes")
+    bot.add_cog(MuteCommands(bot))
+    log.info("Commands loaded: mute")

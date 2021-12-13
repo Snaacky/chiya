@@ -10,7 +10,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class BoostsHandler(commands.Cog):
+class BoostListener(commands.Cog):
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -101,6 +101,5 @@ class BoostsHandler(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    """Load the BoostsHandler cog."""
-    bot.add_cog(BoostsHandler(bot))
-    log.info("Listener loaded: boosts")
+    bot.add_cog(BoostListener(bot))
+    log.info("Listener loaded: boost")

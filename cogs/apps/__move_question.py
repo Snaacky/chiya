@@ -21,7 +21,7 @@ class MoveQuestionCog(Cog):
     @cog_ext.cog_context_menu(
         target=ContextMenuType.MESSAGE,
         name="Move question",
-        guild_ids=[config["guild_id"]]
+        guild_ids=config["guild_ids"]
     )
     async def move_question(self, ctx: MenuContext):
         """
@@ -37,7 +37,7 @@ class MoveQuestionCog(Cog):
 
         staff = [x for x in ctx.author.roles
                  if x.id == config["roles"]["staff"]
-                 or x.id == config["roles"]["trial_mod"]]
+                 or x.id == config["roles"]["trial"]]
         if not staff:
             return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
 

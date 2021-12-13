@@ -20,7 +20,7 @@ server = SlashCommandGroup(
 )
 
 
-class Server(commands.Cog):
+class ServerCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -28,9 +28,9 @@ class Server(commands.Cog):
         name="pop",
         description="Gets the current server population",
         default_permission=False,
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
     )
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @permissions.has_role(config["roles"]["staff"])
     async def pop(ctx: context.ApplicationContext):
         """
         Slash command for getting the current population of the server.
@@ -45,9 +45,9 @@ class Server(commands.Cog):
         name="banner",
         description="Sets the banner to the image provided",
         default_permission=False,
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
     )
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @permissions.has_role(config["roles"]["staff"])
     async def banner(
         ctx: context.ApplicationContext,
         link: Option(str, description="The link to the image to be set", required=True),
@@ -88,14 +88,12 @@ class Server(commands.Cog):
         name="pingable",
         description="Makes a role pingable for 10 seconds",
         default_permission=False,
-        guild_id=config["guild_id"],
+        guild_ids=config["guild_ids"],
     )
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @permissions.has_role(config["roles"]["staff"])
     async def pingable(
         ctx: context.ApplicationContext,
-        role: Option(
-            discord.Role, description="The role to make pingable", required=True
-        ),
+        role: Option(discord.Role, description="The role to make pingable", required=True)
     ):
         """
         Slash command for making server roles temporarily pingable.
@@ -118,8 +116,30 @@ class Server(commands.Cog):
         await asyncio.sleep(10)
         await role.edit(mentionable=False)
 
+    @server.command(guild_ids=config["guild_ids"], default_permission=False, description="List all the server boosters")
+    @permissions.has_role(config["roles"]["staff"])
+    async def boosters(self, ctx: context.ApplicationContext):
+        """
+        Slash command for getting the current list of server boosters.
+
+        Args:
+            ctx (Context): The context of the slash command.
+        """
+        await ctx.defer()
+
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title=f"Total boosts: {ctx.guild.premium_subscription_count}",
+            thumbnail_url="https://i.imgur.com/22ZZG7h.png",
+            color="nitro_pink",
+            author=False
+        )
+        embed.description = "\n".join(user.mention for user in ctx.guild.premium_subscribers)
+        embed.set_footer(text=f"Total boosters: {len(ctx.guild.premium_subscribers)}")
+        await ctx.respond(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(Server(bot))
+    bot.add_cog(ServerCommands(bot))
     bot.add_application_command(server)
     log.info("Commands loaded: server")

@@ -22,7 +22,7 @@ class ReportMessageCog(Cog):
     @cog_ext.cog_context_menu(
         target=ContextMenuType.MESSAGE,
         name="Report message",
-        guild_ids=[config["guild_id"]]
+        guild_ids=config["guild_ids"]
     )
     async def report_message(self, ctx: MenuContext):
         """
@@ -101,7 +101,7 @@ class ReportMessageCog(Cog):
                     name=f"report-{ctx.target_message.id + ctx.author.id}",
                     category=category,
                     overwrites={
-                        discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"]): discord.PermissionOverwrite(read_messages=True),
+                        discord.utils.get(ctx.guild.roles, id=config["roles"]["trial"]): discord.PermissionOverwrite(read_messages=True),
                         discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
                         ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                         ctx.author: discord.PermissionOverwrite(read_messages=True),

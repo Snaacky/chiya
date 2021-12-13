@@ -47,7 +47,7 @@ class AdministrationCog(Cog):
     @commands.is_owner()
     @utilities.command(name="removecmds")
     async def removecmds(self, ctx):
-        await remove_all_commands(bot_id=self.bot.user.id, bot_token=config["bot"]["token"], guild_ids=[config["guild_id"]])
+        await remove_all_commands(bot_id=self.bot.user.id, bot_token=config["bot"]["token"], guild_ids=config["guild_ids"])
 
     @commands.is_owner()
     @utilities.command(name="say")

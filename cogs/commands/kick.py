@@ -13,13 +13,13 @@ from utils.moderation import can_action_member
 log = logging.getLogger(__name__)
 
 
-class Kicks(commands.Cog):
+class KickCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(guild_id=config["guild_id"], default_permission=False)
-    @permissions.has_role(config["roles"]["privileged"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False)
+    @permissions.has_role(config["roles"]["staff"])
     async def kick(
         self,
         ctx: context.ApplicationContext,
@@ -92,5 +92,5 @@ class Kicks(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Kicks(bot))
-    log.info("Commands loaded: kicks")
+    bot.add_cog(KickCommands(bot))
+    log.info("Commands loaded: kick")
