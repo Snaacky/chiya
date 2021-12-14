@@ -29,23 +29,23 @@ class MoveQuestionApps(commands.Cog):
         """
         await ctx.defer(ephemeral=True)
 
-        # staff = [x for x in ctx.author.roles
-        #          if x.id == config["roles"]["staff"]
-        #          or x.id == config["roles"]["trial"]]
-        # if not staff:
-        #     return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
-        #
-        # if ctx.channel.category_id in [
-        #         config["categories"]["moderation"],
-        #         config["categories"]["development"],
-        #         config["categories"]["logs"],
-        #         config["categories"]["tickets"]]:
-        #     return await embeds.error_message(
-        #         ctx=ctx,
-        #         description="You do not have permissions to use this command in this category."
-        #     )
+        staff = [x for x in ctx.author.roles
+                 if x.id == config["roles"]["staff"]
+                 or x.id == config["roles"]["trial"]]
+        if not staff:
+            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
 
-        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["bot_testing"])
+        if ctx.channel.category_id in [
+                config["categories"]["moderation"],
+                config["categories"]["development"],
+                config["categories"]["logs"],
+                config["categories"]["tickets"]]:
+            return await embeds.error_message(
+                ctx=ctx,
+                description="You do not have permissions to use this command in this category."
+            )
+
+        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["public"]["questions_and_help"])
         webhook = await channel.create_webhook(name=ctx.author.name)
 
         await webhook.send(
