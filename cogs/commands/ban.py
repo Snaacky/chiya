@@ -112,7 +112,7 @@ class BansCommands(commands.Cog):
                 )
             )
 
-        await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete)
+        await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete if daystodelete else 0)
 
         db = database.Database().get()
         db["mod_logs"].insert(dict(
