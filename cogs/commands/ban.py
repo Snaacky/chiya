@@ -2,19 +2,17 @@ import logging
 import time
 
 import discord
-from discord.ext import commands
 from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import database, embeds
 from utils.config import config
 from utils.moderation import can_action_member
 
-
 log = logging.getLogger(__name__)
 
 
 class BansCommands(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 
@@ -82,7 +80,7 @@ class BansCommands(commands.Cog):
             title=f"Banning user: {user}",
             description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/l0jyxkz.png",
-            color="soft_red"
+            color="soft_red",
         )
 
         try:
@@ -94,7 +92,7 @@ class BansCommands(commands.Cog):
                     "You can submit a ban appeal on our subreddit [here]"
                     "(https://www.reddit.com/message/compose/?to=/r/animepiracy)."
                 ),
-                color=0xc2bac0
+                color=0xC2BAC0,
             )
             dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
             dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
@@ -109,14 +107,21 @@ class BansCommands(commands.Cog):
                     f"Unable to message {user.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                )
+                ),
             )
 
-        await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete if daystodelete else 0)
+        await ctx.guild.ban(
+            user=user,
+            reason=reason,
+            delete_message_days=daystodelete if daystodelete else 0
+        )
 
         db = database.Database().get()
         db["mod_logs"].insert(dict(
-            user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="ban"
+            user_id=user.id,
+            mod_id=ctx.author.id,
+            timestamp=int(time.time()),
+            reason=reason, type="ban"
         ))
         db.commit()
         db.close()
@@ -154,15 +159,12 @@ class BansCommands(commands.Cog):
             title=f"Unbanning user: {user}",
             description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/4H0IYJH.png",
-            color="soft_green"
+            color="soft_green",
         )
 
         embed.add_field(
             name="Notice:",
-            value=(
-                f"Unable to message {user.mention} about this action "
-                "because they are not in the server."
-            )
+            value=f"Unable to message {user.mention} about this action " "because they are not in the server.",
         )
 
         try:
@@ -176,7 +178,7 @@ class BansCommands(commands.Cog):
             mod_id=ctx.author.id,
             timestamp=int(time.time()),
             reason=reason,
-            type="unban"
+            type="unban",
         ))
         db.commit()
         db.close()
