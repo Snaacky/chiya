@@ -11,7 +11,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class MoveQuestionApps(commands.Cog):
+class MoveQuestionApp(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -72,5 +72,5 @@ class MoveQuestionApps(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(MoveQuestionApps(bot))
+    bot.add_cog(MoveQuestionApp(bot))
     log.info("App loaded: move_question")
