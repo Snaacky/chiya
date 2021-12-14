@@ -27,25 +27,25 @@ class MoveQuestionApps(commands.Cog):
         TODO:
             Fix "Deferred response might not be what you set it to!" warning.
         """
-        await ctx.defer()
+        await ctx.defer(ephemeral=True)
 
-        staff = [x for x in ctx.author.roles
-                 if x.id == config["roles"]["staff"]
-                 or x.id == config["roles"]["trial"]]
-        if not staff:
-            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
+        # staff = [x for x in ctx.author.roles
+        #          if x.id == config["roles"]["staff"]
+        #          or x.id == config["roles"]["trial"]]
+        # if not staff:
+        #     return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
+        #
+        # if ctx.channel.category_id in [
+        #         config["categories"]["moderation"],
+        #         config["categories"]["development"],
+        #         config["categories"]["logs"],
+        #         config["categories"]["tickets"]]:
+        #     return await embeds.error_message(
+        #         ctx=ctx,
+        #         description="You do not have permissions to use this command in this category."
+        #     )
 
-        if ctx.channel.category_id in [
-                config["categories"]["moderation"],
-                config["categories"]["development"],
-                config["categories"]["logs"],
-                config["categories"]["tickets"]]:
-            return await embeds.error_message(
-                ctx=ctx,
-                description="You do not have permissions to use this command in this category."
-            )
-
-        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["public"]["questions_and_help"])
+        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["bot_testing"])
         webhook = await channel.create_webhook(name=ctx.author.name)
 
         await webhook.send(
@@ -53,9 +53,8 @@ class MoveQuestionApps(commands.Cog):
             username=ctx.author.name,
             avatar_url=ctx.author.avatar
         )
-
         await webhook.delete()
-        await ctx.delete()
+        await message.delete()
 
         await embeds.success_message(ctx=ctx, description=f"Successfully moved message to: {channel.mention}")
         await embeds.warning_message(
