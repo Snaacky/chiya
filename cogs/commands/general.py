@@ -32,9 +32,9 @@ class GeneralCommands(commands.Cog):
 
         if user:
             embed = embeds.make_embed()
-            embed.set_author(icon_url=user.avatar, name=str(user))
+            embed.set_author(icon_url=user.avatar.url, name=str(user))
 
-        embed.set_image(url=user.avatar)
+        embed.set_image(url=user.avatar.url)
         await ctx.respond(embed=embed)
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False)
