@@ -42,17 +42,21 @@ class GeneralCommands(commands.Cog):
     async def vote(
         self,
         ctx: context.ApplicationContext,
-        message: Option(discord.User, description="The ID for the target message", required=True)
+        message: Option(str, description="The ID for the target message", required=False)
     ):
         """ Add vote reactions to a message. """
         await ctx.defer()
 
         if message:
-            message = await ctx.channel.fetch_message(message)
+            try:
+                message = await ctx.channel.fetch_message(message)
+            except discord.NotFound:
+                messages = await ctx.channel.history(limit=2).flatten()
+                message = messages[1]
 
         if not message:
-            messages = await ctx.channel.history(limit=1).flatten()
-            message = messages[0]
+            messages = await ctx.channel.history(limit=2).flatten()
+            message = messages[1]
 
         await message.add_reaction(":yes:778724405333196851")
         await message.add_reaction(":no:778724416230129705")
