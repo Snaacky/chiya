@@ -235,7 +235,7 @@ class MuteCommands(commands.Cog):
         url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
 
         # Get the amount of time elapsed since the user was muted.
-        time_delta = datetime.datetime.utcnow() - mute_channel.created_at
+        time_delta = datetime.datetime.utcnow() - mute_channel.created_at.replace(tzinfo=None)
         days = time_delta.days
 
         # Hours are the time delta in seconds divided by 3600.
