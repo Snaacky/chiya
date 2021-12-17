@@ -58,7 +58,7 @@ class MuteCommands(commands.Cog):
         db.close()
 
     async def unmute_member(self, member: discord.Member, reason: str, ctx: context.ApplicationContext = None) -> None:
-        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"])
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"][0])
         moderator = ctx.author if ctx else self.bot.user
 
         # Removes "Muted" role from member.
@@ -179,7 +179,7 @@ class MuteCommands(commands.Cog):
         return channel
 
     async def archive_mute_channel(self, user_id: int, reason: str, ctx: context.ApplicationContext = None):
-        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"])
+        guild = ctx.guild if ctx else self.bot.get_guild(config["guild_ids"][0])
         category = discord.utils.get(guild.categories, id=config["categories"]["tickets"])
         mute_channel = discord.utils.get(category.channels, name=f"mute-{user_id}")
 
