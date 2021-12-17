@@ -431,10 +431,6 @@ class MuteCommands(commands.Cog):
         )
         embed.description = f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}"
 
-        # Execution order is important here, otherwise the wrong unmuter will be used in the embed.
-        await self.unmute_member(ctx=ctx, member=member, reason=reason)
-        await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
-
         # Attempt to DM the user to let them and the mods know they were unmuted.
         if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
             embed.add_field(
@@ -446,12 +442,9 @@ class MuteCommands(commands.Cog):
                 )
             )
 
-        # If the mod sent the /unmute in the mute channel, this will cause a errors.NotFound 404.
-        # We cannot send the embed and then archive the channel because that will cause a error.AlreadyResponded.
-        try:
-            await ctx.respond(embed=embed)
-        except discord.HTTPException:
-            pass
+        await ctx.respond(embed=embed)
+        await self.unmute_member(ctx=ctx, member=member, reason=reason)
+        await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 
 
 def setup(bot: commands.bot.Bot) -> None:
