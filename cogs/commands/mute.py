@@ -280,7 +280,7 @@ class MuteCommands(commands.Cog):
         embed.add_field(name="Mute Log: ", value=url, inline=False)
 
         # Send the embed to #mute-log.
-        mute_log = discord.utils.get(guild.channels, id=config["channels"]["mute_log"])
+        mute_log = discord.utils.get(guild.channels, id=config["channels"]["logs"]["mute_log"])
         await mute_log.send(embed=embed)
 
         # Delete the mute channel.
