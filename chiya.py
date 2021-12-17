@@ -52,9 +52,6 @@ async def shutdown():
     
     log.debug("All commands were removed.")
     
-    
-    
-
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
     utils.database.Database().setup()
