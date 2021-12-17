@@ -293,7 +293,7 @@ class MuteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be kicked", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
-        duration: Option(int, description="The length of time the user will be muted for", required=False)
+        duration: Option(str, description="The length of time the user will be muted for", required=False)
     ):
         """ Mutes member in guild. """
         await ctx.defer()
