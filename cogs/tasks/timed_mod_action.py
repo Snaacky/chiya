@@ -31,8 +31,8 @@ class TimedModActionTask(commands.Cog):
         )
 
         for action in results:
-            guild = self.bot.get_guild(config["guild_ids"])
-            channel = guild.get_channel(config["channels"]["moderation"])
+            guild = self.bot.get_guild(config["guild_ids"][0])
+            channel = guild.get_channel(config["channels"]["mod"]["moderation"])
             member = guild.get_member(action["user_id"])
 
             if action["action_type"] == "mute":
