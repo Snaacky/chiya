@@ -130,7 +130,7 @@ class NoteCommands(commands.Cog):
         db.close()
 
         embed = embeds.make_embed(title="Mod Actions")
-        embed.set_author(name=user, icon_url=user.avatar)
+        embed.set_author(name=user, icon_url=user.avatar.url)
 
         # paginating through the results
         await LinePaginator.paginate(
