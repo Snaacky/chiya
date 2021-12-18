@@ -57,7 +57,7 @@ class NoteCommands(commands.Cog):
         )
         embed.add_field(name="ID: ", value=note_id, inline=False)
         embed.add_field(name="Note: ", value=note, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
         # Commit the changes to the database and close the connection.
         db.commit()
