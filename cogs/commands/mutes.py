@@ -195,7 +195,7 @@ class MuteCog(Cog):
 
         # TODO: Implement so it gets the channel when the moderator is the bot
         # Loop through all messages in the ticket from old to new.
-        async for message in mute_channel.history(oldest_first=True):
+        async for message in mute_channel.history(oldest_first=True, limit=None):
             # Ignore the bot replies.
             if not message.author.bot:
                 # Pretty print the time tag into a more digestible format.
