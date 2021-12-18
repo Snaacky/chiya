@@ -175,7 +175,7 @@ class NoteCommands(commands.Cog):
         )
         embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
         embed.add_field(name="After:", value=note, inline=False)
-        await ctx.send(embed=embed)
+        await ctx.respond(embed=embed)
 
         mod_log["reason"] = note
         table.update(mod_log, ["id"])
