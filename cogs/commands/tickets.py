@@ -160,7 +160,7 @@ class TicketCog(Cog):
         role_trial_mod = discord.utils.get(ctx.guild.roles, id=config["roles"]["trial_mod"])
 
         # Loop through all messages in the ticket from old to new.
-        async for message in ctx.channel.history(oldest_first=True):
+        async for message in ctx.channel.history(oldest_first=True, limit=None):
             # Ignore the bot replies.
             if not message.author.bot:
                 # Pretty print the time tag into a more digestible format.
