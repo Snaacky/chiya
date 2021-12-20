@@ -12,7 +12,7 @@ from utils.pagination import LinePaginator
 
 log = logging.getLogger(__name__)
 reminder = SlashCommandGroup(
-    name="reminder", description="Sets a reminder note to be sent at a future date"
+    name="reminder", description="Sets a reminder note to be sent at a future date", guild_ids=[config['guild_id']]
 )
 
 
