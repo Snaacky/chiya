@@ -17,11 +17,12 @@ bot = commands.Bot(
         guilds=config["bot"]["intents"]["guilds"],
         members=config["bot"]["intents"]["members"],
         bans=config["bot"]["intents"]["bans"],
-        reactions=config["bot"]["intents"]["reactions"]
+        reactions=config["bot"]["intents"]["reactions"],
     ),
     case_insensitive=config["bot"]["case_insensitive"],
-    help_command=None
+    help_command=None,
 )
+
 
 @bot.event
 async def on_ready():
@@ -35,24 +36,27 @@ async def on_ready():
     # Adding in a activity message when the bot begins.
     await bot.change_presence(
         activity=discord.Activity(
-            type=discord.ActivityType.listening,
-            name="your command!"
+            type=discord.ActivityType.listening, name="your command!"
         )
     )
     await bot.register_commands()
 
+
 async def shutdown():
-    log.info("Termination signal recieved. Bot is going down for shutdown NOW.")  
+    log.info("Termination signal recieved. Bot is going down for shutdown NOW.")
     # get all the commands registered for the guild from discord.
-    app_cmds_guild = await bot.http.get_guild_commands(bot.user.id, config['guild_id'])
+    app_cmds_guild = await bot.http.get_guild_commands(bot.user.id, config["guild_id"])
+
     for command in app_cmds_guild:
         log.debug(f"Removed guild command: {command['name']}")
-        # BUG: Commands under a command group aren't removed
-        await bot.http.delete_guild_command(bot.user.id, config['guild_id'], command['id'])
-    
+        await bot.http.delete_guild_command(
+            bot.user.id, config["guild_id"], command["id"]
+        )
+
     log.debug("All commands were removed.")
-    
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     # Attempt to create the db, tables, and columns for Chiya.
     utils.database.Database().setup()
 
@@ -64,9 +68,9 @@ if __name__ == '__main__':
         else:  # Fix pathing on Linux.
             bot.load_extension(cog.replace("/", ".")[:-3])
 
-    try:      
+    try:
         # bot loops give more control over bot run
-        bot.loop.run_until_complete(bot.start(config['bot']['token']))
+        bot.loop.run_until_complete(bot.start(config["bot"]["token"]))
     finally:
         # running the bot shutdown coroutine
         bot.loop.run_until_complete(shutdown())
