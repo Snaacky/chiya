@@ -33,7 +33,7 @@ async def on_ready():
     """
     log.info(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
 
-    # Adding in a activity message when the bot begins.
+    # Adding in an activity message when the bot begins.
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
@@ -44,15 +44,13 @@ async def on_ready():
 
 
 async def shutdown():
-    log.info("Termination signal recieved. Bot is going down for shutdown NOW.")
-    # get all the commands registered for the guild from discord.
+    log.info("Termination signal received. Bot is going down for shutdown NOW.")
+    # Get all the commands registered for the guild from Discord.
     app_cmds_guild = await bot.http.get_guild_commands(bot.user.id, config["guild_ids"][0])
 
     for command in app_cmds_guild:
         log.debug(f"Removed guild command: {command['name']}")
-        await bot.http.delete_guild_command(
-            bot.user.id, config["guild_ids"][0], command["id"]
-        )
+        await bot.http.delete_guild_command(bot.user.id, config["guild_ids"][0], command["id"])
 
     log.debug("All commands were removed.")
 
