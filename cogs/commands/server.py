@@ -16,7 +16,10 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 server = SlashCommandGroup(
-    name="server", description="Server management commands", default_permission=False, guild_ids=[config['guild_id']]
+    name="server",
+    description="Server management commands",
+    default_permission=False,
+    guild_ids=config["guild_ids"]
 )
 
 
