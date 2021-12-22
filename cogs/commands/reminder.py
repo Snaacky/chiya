@@ -231,17 +231,47 @@ class ReminderCommands(commands.Cog):
         # Open a connection to the database.
         db = database.Database().get()
 
+        confirm_embed = embeds.make_embed(
+            description=f"{ctx.author.mention}, clear all your reminders? (yes/no/y/n)",
+            color="green"
+        )
+
+        await ctx.respond(embed=confirm_embed)
+
+        def check(message):
+            return (
+                message.author == ctx.author
+                and message.channel == ctx.channel
+                and message.content.lower() in ("yes", "no", "y", "n")
+            )
+
+        try:
+            msg = await self.bot.wait_for("message", timeout=60, check=check)
+            if msg.content.lower() in ("no", "n"):
+                db.close()
+                embed = embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has been canceled.")
+                return await ctx.respond(embed=embed)
+        except asyncio.TimeoutError:
+            db.close()
+            embed = embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has timed out.")
+            return await ctx.respond(embed=embed)
+
         remind_me = db["remind_me"]
         results = remind_me.find(author_id=ctx.author.id, sent=False)
         for result in results:
             updated_data = dict(id=result["id"], sent=True)
             remind_me.update(updated_data, ["id"])
 
+        embed = embeds.make_embed(
+            description=f"{ctx.author.mention}, all your reminders have been cleared.",
+            color="soft_green",
+        )
+
+        await ctx.respond(embed=embed)
+
         # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
-
-        await ctx.respond("All your reminders have been cleared.")
 
 
 def setup(bot: commands.Bot) -> None:
