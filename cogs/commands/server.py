@@ -15,23 +15,21 @@ from utils.config import config
 
 log = logging.getLogger(__name__)
 
-server = SlashCommandGroup(
-    name="server", description="Server management commands", default_permission=False
-)
-
 
 class ServerCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @server.command(
-        name="pop",
-        description="Gets the current server population",
-        default_permission=False,
+    server = SlashCommandGroup(
+        "server",
+        "Server management commands",
         guild_ids=config["guild_ids"],
+        default_permission=False
     )
+
+    @server.command(name="pop", description="Gets the current server population")
     @permissions.has_role(config["roles"]["staff"])
-    async def pop(ctx: context.ApplicationContext):
+    async def pop(self, ctx: context.ApplicationContext):
         """
         Slash command for getting the current population of the server.
 
@@ -41,14 +39,10 @@ class ServerCommands(commands.Cog):
         await ctx.defer()
         await ctx.respond(ctx.guild.member_count)
 
-    @server.command(
-        name="banner",
-        description="Sets the banner to the image provided",
-        default_permission=False,
-        guild_ids=config["guild_ids"],
-    )
+    @server.command(name="banner", description="Sets the banner to the image provided")
     @permissions.has_role(config["roles"]["staff"])
     async def banner(
+        self,
         ctx: context.ApplicationContext,
         link: Option(str, description="The link to the image to be set", required=True),
     ):
@@ -84,14 +78,10 @@ class ServerCommands(commands.Cog):
             )
         )
 
-    @server.command(
-        name="pingable",
-        description="Makes a role pingable for 10 seconds",
-        default_permission=False,
-        guild_ids=config["guild_ids"],
-    )
+    @server.command(name="pingable", description="Makes a role pingable for 10 seconds")
     @permissions.has_role(config["roles"]["staff"])
     async def pingable(
+        self,
         ctx: context.ApplicationContext,
         role: Option(discord.Role, description="The role to make pingable", required=True)
     ):
@@ -116,7 +106,7 @@ class ServerCommands(commands.Cog):
         await asyncio.sleep(10)
         await role.edit(mentionable=False)
 
-    @server.command(guild_ids=config["guild_ids"], default_permission=False, description="List all the server boosters")
+    @server.command(name="boosters", description="List all the server boosters")
     @permissions.has_role(config["roles"]["staff"])
     async def boosters(self, ctx: context.ApplicationContext):
         """
@@ -141,5 +131,4 @@ class ServerCommands(commands.Cog):
 
 def setup(bot: commands.Bot) -> None:
     bot.add_cog(ServerCommands(bot))
-    bot.add_application_command(server)
     log.info("Commands loaded: server")
