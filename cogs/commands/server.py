@@ -63,7 +63,7 @@ class ServerCommands(commands.Cog):
 
         try:
             await ctx.guild.edit(banner=r.content)
-        except discord.errors.InvalidArgument:
+        except discord.InvalidArgument:
             return await embeds.error_message(
                 ctx=ctx, description="Unable to set banner, verify the link is correct."
             )
