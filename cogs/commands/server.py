@@ -24,11 +24,11 @@ class ServerCommands(commands.Cog):
         "server",
         "Server management commands",
         guild_ids=config["guild_ids"],
-        default_permission=False
+        default_permission=False,
+        permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],  # Type 1 is role, 2 is user.
     )
 
     @server.command(name="pop", description="Gets the current server population")
-    @permissions.has_role(config["roles"]["staff"])
     async def pop(self, ctx: context.ApplicationContext):
         """
         Slash command for getting the current population of the server.
@@ -40,7 +40,6 @@ class ServerCommands(commands.Cog):
         await ctx.respond(ctx.guild.member_count)
 
     @server.command(name="banner", description="Sets the banner to the image provided")
-    @permissions.has_role(config["roles"]["staff"])
     async def banner(
         self,
         ctx: context.ApplicationContext,
@@ -79,7 +78,6 @@ class ServerCommands(commands.Cog):
         )
 
     @server.command(name="pingable", description="Makes a role pingable for 10 seconds")
-    @permissions.has_role(config["roles"]["staff"])
     async def pingable(
         self,
         ctx: context.ApplicationContext,
@@ -107,7 +105,6 @@ class ServerCommands(commands.Cog):
         await role.edit(mentionable=False)
 
     @server.command(name="boosters", description="List all the server boosters")
-    @permissions.has_role(config["roles"]["staff"])
     async def boosters(self, ctx: context.ApplicationContext):
         """
         Slash command for getting the current list of server boosters.
