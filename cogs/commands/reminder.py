@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from datetime import datetime
 
@@ -97,7 +98,7 @@ class ReminderCommands(commands.Cog):
 
         remind_me = db["remind_me"]
         result = remind_me.find_one(id=reminder_id)
-        old_message = reminder["message"]
+        old_message = result["message"]
 
         if result["author_id"] != ctx.author.id:
             return await embeds.error_message(
@@ -187,7 +188,7 @@ class ReminderCommands(commands.Cog):
         table = db["remind_me"]
         result = table.find_one(id=reminder_id)
 
-        if not reminder:
+        if not result:
             return await embeds.error_message(ctx=ctx, description="Invalid ID.")
 
         if result["author_id"] != ctx.author.id:
