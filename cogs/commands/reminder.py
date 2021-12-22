@@ -10,7 +10,6 @@ from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
 
-
 log = logging.getLogger(__name__)
 
 
@@ -103,9 +102,7 @@ class ReminderCommands(commands.Cog):
         old_message = result["message"]
 
         if result["author_id"] != ctx.author.id:
-            return await embeds.error_message(
-                ctx, "That reminder isn't yours, so you can't edit it."
-            )
+            return await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
 
         if result["sent"]:
             return await embeds.error_message(ctx, "That reminder doesn't exist.")
@@ -195,14 +192,10 @@ class ReminderCommands(commands.Cog):
             return await embeds.error_message(ctx=ctx, description="Invalid ID.")
 
         if result["author_id"] != ctx.author.id:
-            return await embeds.error_message(
-                ctx=ctx, description="This reminder is not yours."
-            )
+            return await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
 
         if result["sent"]:
-            return await embeds.error_message(
-                ctx=ctx, description="This reminder has already been deleted."
-            )
+            return await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
 
         # All the checks should be done.
         data = dict(id=reminder_id, sent=True)
@@ -233,7 +226,7 @@ class ReminderCommands(commands.Cog):
 
         confirm_embed = embeds.make_embed(
             description=f"{ctx.author.mention}, clear all your reminders? (yes/no/y/n)",
-            color="green"
+            color="soft_green",
         )
 
         await ctx.respond(embed=confirm_embed)
