@@ -97,12 +97,15 @@ class ServerCommands(commands.Cog):
                 ctx, description="That role is already mentionable."
             )
 
-        await role.edit(mentionable=True)
-        await embeds.success_message(
-            ctx, description="You have 10 seconds to ping the role."
-        )
-        await asyncio.sleep(10)
-        await role.edit(mentionable=False)
+        try:
+            await role.edit(mentionable=True)
+            await embeds.success_message(
+                ctx, description="You have 10 seconds to ping the role."
+            )
+            await asyncio.sleep(10)
+            await role.edit(mentionable=False)
+        except discord.Forbidden:
+            await embeds.error_message(ctx, description="The bot does not have permission to edit this role.")
 
     @server.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: context.ApplicationContext):
