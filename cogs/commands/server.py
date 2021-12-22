@@ -3,13 +3,9 @@ import logging
 
 import discord
 import requests
-from discord.commands import (
-    Option,
-    SlashCommandGroup,
-    context,
-    permissions
-)
+from discord.commands import Option, SlashCommandGroup, context, permissions
 from discord.ext import commands
+
 from utils import embeds
 from utils.config import config
 
@@ -81,7 +77,7 @@ class ServerCommands(commands.Cog):
     async def pingable(
         self,
         ctx: context.ApplicationContext,
-        role: Option(discord.Role, description="The role to make pingable", required=True)
+        role: Option(discord.Role, description="The role to make pingable", required=True),
     ):
         """
         Slash command for making server roles temporarily pingable.
@@ -122,7 +118,7 @@ class ServerCommands(commands.Cog):
             title=f"Total boosts: {ctx.guild.premium_subscription_count}",
             thumbnail_url="https://i.imgur.com/22ZZG7h.png",
             color="nitro_pink",
-            author=False
+            author=False,
         )
         embed.description = "\n".join(user.mention for user in ctx.guild.premium_subscribers)
         embed.set_footer(text=f"Total boosters: {len(ctx.guild.premium_subscribers)}")
