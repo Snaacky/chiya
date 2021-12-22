@@ -12,16 +12,17 @@ from utils.pagination import LinePaginator
 
 
 log = logging.getLogger(__name__)
-reminder = SlashCommandGroup(
-    name="reminder",
-    description="Sets a reminder note to be sent at a future date",
-    guild_ids=config["guild_ids"],
-)
 
 
 class ReminderCommands(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+
+    reminder = SlashCommandGroup(
+        "reminder",
+        "Sets a reminder note to be sent at a future date",
+        guild_ids=config["guild_ids"],
+    )
 
     @slash_command(
         guild_ids=config["guild_ids"],
@@ -86,6 +87,7 @@ class ReminderCommands(commands.Cog):
 
     @reminder.command(name="edit", descrption="Edit an existing reminder")
     async def edit(
+        self,
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be updated", required=True),
         new_message: Option(str, description="The updated message for the reminder", required=True),
@@ -128,7 +130,7 @@ class ReminderCommands(commands.Cog):
         await ctx.respond(embed=embed)
 
     @reminder.command(name="list", description="List your existing reminders")
-    async def list(ctx: context.ApplicationContext):
+    async def list(self, ctx: context.ApplicationContext):
         """List your reminders."""
         await ctx.defer()
 
@@ -174,6 +176,7 @@ class ReminderCommands(commands.Cog):
 
     @reminder.command(name="delete", description="Delete an existing reminder")
     async def delete(
+        self,
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be deleted", required=True),
     ):
@@ -221,7 +224,7 @@ class ReminderCommands(commands.Cog):
         await ctx.respond(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
-    async def clear(ctx: context.ApplicationContext):
+    async def clear(self, ctx: context.ApplicationContext):
         """Clears all reminders."""
         await ctx.defer()
 
@@ -243,5 +246,4 @@ class ReminderCommands(commands.Cog):
 
 def setup(bot: commands.Bot) -> None:
     bot.add_cog(ReminderCommands(bot))
-    bot.add_application_command(reminder)
     log.info("Commands loaded: reminder")
