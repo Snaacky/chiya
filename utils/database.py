@@ -76,7 +76,6 @@ class Database:
             tickets.create_column("status", db.types.text)
             tickets.create_column("guild", db.types.bigint)
             tickets.create_column("timestamp", db.types.bigint)
-            tickets.create_column("ticket_topic", db.types.text)
             tickets.create_column("log_url", db.types.text)
             log.info("Created missing table: tickets")
 

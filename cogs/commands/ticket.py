@@ -3,175 +3,221 @@ import time
 
 import discord
 import privatebinapi
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import context, permissions, slash_command
 from discord.ext import commands
 
 from utils import database, embeds
 from utils.config import config
 
-
 log = logging.getLogger(__name__)
 
 
 class TicketCommands(commands.Cog):
-
     def __init__(self, bot):
         self.bot = bot
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Opens a new modmail ticket")
-    @permissions.has_role(config["roles"]["staff"])
-    async def open(
-        self,
-        ctx: context.ApplicationContext,
-        topic: Option(str, description="A brief summary of the topic you would like to discuss", required=True),
-    ):
-        """Opens a new modmail ticket."""
-        await ctx.defer(hidden=True)
+    @commands.Cog.listener()
+    async def on_ready(self):
+        """Register the embed button that persists between bot restarts."""
+        self.bot.add_view(TicketCreateButton())
 
-        if len(topic) > 1024:
-            return await ctx.respond(
-                embed=embeds.error_message(
-                    description=(
-                        "Your ticket topic exceeded 1024 characters. "
-                        "Please keep the topic concise and further elaborate it in the ticket instead."
-                    )
-                ),
-                hidden=True
+    @slash_command(
+        guild_ids=config["guild_ids"],
+        description="Create the embed ticket",
+        default_permission=False,
+        permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],
+    )
+    async def ticket(self, ctx: context.ApplicationContext):
+        """
+        Create the ticket embed.
+
+        Args:
+            ctx (context.ApplicationContext): The context of the slash command.
+
+        Notes:
+            In the decorator, type 1 is role and type 2 is user.
+        """
+        await ctx.defer()
+
+        embed = embeds.make_embed(
+            color="blurple",
+            title="📫  Open a ticket",
+            description="To create a ticket, click on the button below.",
+        )
+        embed.set_footer(text="Abusing will result in a ban. Only use this feature for serious inquiries.")
+        await ctx.respond(embed=embed, view=TicketCreateButton())
+
+
+class TicketCreateButton(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
+    async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction):
+        """
+        The create ticket button of the ticket embed.
+
+        Args:
+            button (discord.ui.Button): Required positional argument that represents the button.
+            interaction (discord.Interaction): The context of the interaction.
+        """
+        embed = embeds.make_embed(
+            description=f"{interaction.user.mention}, are you sure that you want to open a ticket?",
+            color="blurple",
+        )
+        await interaction.response.send_message(embed=embed, view=TicketConfirmButtons(), ephemeral=True)
+
+
+class TicketConfirmButtons(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.primary, custom_id="confirm_ticket")
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+        """
+        The confirm button to open a ticket.
+
+        Args:
+            button (discord.ui.Button): Required positional argument that represents the button.
+            interaction (discord.Interaction): The context of the interaction.
+        """
+        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
+        ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
+
+        # Return if they already have a ticket open.
+        if ticket:
+            return await interaction.response.edit_message(
+                f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}"
             )
 
-        category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
-        ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.author.id}")
-
-        if ticket:
-            logging.info(f"{ctx.author} tried to create a new ticket but already had one open: {ticket}")
-            return await ctx.respond(f"You already have a ticket open! {ticket.mention}", hidden=True)
-
-        permissions = {
-            discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            ctx.author: discord.PermissionOverwrite(read_messages=True),
+        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
+        permission = {
+            role_staff: discord.PermissionOverwrite(read_messages=True),
+            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            interaction.user: discord.PermissionOverwrite(read_messages=True),
         }
 
-        channel = await ctx.guild.create_text_channel(
-            name=f"ticket-{ctx.author.id}",
+        channel = await interaction.guild.create_text_channel(
+            name=f"ticket-{interaction.user.id}",
             category=category,
-            overwrites=permissions,
-            topic=topic,
+            overwrites=permission,
         )
 
-        if any(role.id == config["roles"]["vip"] for role in ctx.author.roles):
+        # Ping staff if the ticket opener is a VIP.
+        if any(role.id == config["roles"]["vip"] for role in interaction.user.roles):
             await channel.send(f"<@&{config['roles']['staff']}>")
 
         embed = embeds.make_embed(
+            color="blurple",
             title="🎫  Ticket created",
-            description="Please remain patient for a staff member to assist you.",
-            color="default",
+            description=(
+                f"{interaction.user.mention}, please remain patient for a staff member to assist you. "
+                "In the mean time, please briefly describe what we can help you with."
+            ),
         )
-        embed.add_field(name="Ticket Creator:", value=ctx.author.mention, inline=False)
-        embed.add_field(name="Ticket Topic:", value=topic, inline=False)
-        await channel.send(embed=embed)
-
-        db = database.Database().get()
-        db["tickets"].insert(dict(
-            user_id=ctx.author.id,
-            status="in-progress",
-            guild=ctx.guild.id,
-            timestamp=int(time.time()),
-            ticket_topic=topic,
-            log_url=None,
-        ))
-        db.commit()
-        db.close()
+        embed.add_field(name="Ticket Creator:", value=interaction.user.mention, inline=False)
+        await channel.send(embed=embed, view=TicketCloseButton())
 
         # Send the user a ping and then immediately delete it because mentions via embeds do not ping.
-        ping = await channel.send(ctx.author.mention)
+        ping = await channel.send(interaction.user.mention)
         await ping.delete()
 
         embed = embeds.make_embed(
-            ctx=ctx,
             title="Created a ticket",
-            description=f"Opened a ticket: {channel.mention} for: {topic}.",
+            description=f"Successfully opened a ticket: {channel.mention}",
+            color="blurple",
         )
-        await ctx.respond(embed=embed, hidden=True)
-
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Closes a ticket channel")
-    @permissions.has_role(config["roles"]["staff"])
-    async def close(self, ctx: context.ApplicationContext):
-        """Closes the modmail ticket."""
-        # Needed for commands that take longer than 3 seconds to respond to avoid "This interaction failed".
-        await ctx.defer()
-
-        # Warns if the ticket close command is called outside of the current active ticket channel.
-        if not ctx.channel.category_id == config["categories"]["tickets"] or "ticket" not in ctx.channel.name:
-            return await embeds.error_message(
-                ctx=ctx,
-                description="You can only run this command in active ticket channels.",
-            )
+        await interaction.response.edit_message(embed=embed, view=None)
 
         db = database.Database().get()
+        db["tickets"].insert(dict(
+            user_id=interaction.user.id,
+            status="in-progress",
+            guild=interaction.guild.id,
+            timestamp=int(time.time()),
+            log_url=None,
+        ))
+
+        db.commit()
+        db.close()
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, custom_id="cancel_ticket")
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+        """
+        The cancel button to cancel the ticket creation attempt.
+
+        Args:
+            button (discord.ui.Button): Required positional argument that represents the button.
+            interaction (discord.Interaction): The context of the interaction.
+        """
+        embed = embeds.make_embed(description="Your ticket creation request has been canceled.", color="soft_red")
+        await interaction.response.edit_message(embed=embed, view=None)
+
+
+class TicketCloseButton(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+
+    @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")
+    async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
+        """
+        The close button to close and archive an existing ticket.
+
+        Args:
+            button (discord.ui.Button): Required positional argument that represents the button.
+            interaction (discord.Interaction): The context of the interaction.
+        """
+        close_embed = embeds.make_embed(color="blurple", description="The ticket will be closed shortly...")
+        await interaction.response.send_message(embed=close_embed)
+
+        # Fetch the ticket in progress and the ticket author.
+        db = database.Database().get()
         table = db["tickets"]
-        ticket = table.find_one(user_id=int(ctx.channel.name.replace("ticket-", "")), status="in-progress")
+        ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status="in-progress")
+        ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
+        member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
 
-        # Get the ticket topic and ticket creator's ID from channel name.
-        ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
-        ticket_topic = ctx.channel.topic
+        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
+        role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
 
-        # Get the member object of the ticket creator.
-        member = await self.bot.fetch_user(ticket_creator_id)
-
-        # Initialize the PrivateBin message log string.
-        message_log = f"Ticket Creator: {member}\n" f"User ID: {member.id}\n" f"Ticket Topic: {ticket_topic}\n\n"
-
-        # Initialize a list of moderator IDs as a set for no duplicates.
+        # Store the moderators who participated in the ticket.
         mod_list = set()
 
-        # Fetch the staff and trial mod role.
-        role_staff = discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"])
-        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config["roles"]["trial"])
+        # Initialize the message log.
+        message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\n\n"
 
-        # Loop through all messages in the ticket from old to new.
-        async for message in ctx.channel.history(oldest_first=True):
-            # Ignore the bot replies.
+        # Iterate through all messages in the ticket from old to new while ignoring bot messages.
+        async for message in interaction.channel.history(oldest_first=True, limit=None):
             if not message.author.bot:
-                # Pretty print the time tag into a more digestible format.
                 formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
-                # Append the new messages to the current log as we loop.
                 message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
-                # Iterates only through members that is still in the server.
+                # Check if ticket participant is still in the server and add to the mod_list if it's staff.
                 if isinstance(message.author, discord.Member):
-                    # If the messenger has either staff role or trial mod role, add their ID to the mod_list set.
                     if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                         mod_list.add(message.author)
 
-        # An empty embed field will raise an HTTPException.
-        if len(mod_list) == 0:
-            mod_list.add(self.bot.user)
+        # Set the mod list field to "None" if no mod participated.
+        if len(mod_list) > 0:
+            value = " ".join(mod.mention for mod in mod_list)
+        else:
+            value = mod_list.add("None")
 
-        # Gets the paste URL from the PrivateBin POST.
+        # Get the paste URL after posting to PrivateBin.
         url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
 
         # Create the embed in #ticket-log.
-        embed = embeds.make_embed(
-            ctx=ctx,
+        log_embed = embeds.make_embed(
             author=False,
-            title=f"{ctx.channel.name} archived",
+            title=f"{interaction.channel.name} archived",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=0x00FFDF,
         )
-
-        embed.add_field(name="Ticket Creator:", value=member.mention, inline=True)
-        embed.add_field(name="Closed By:", value=ctx.author.mention, inline=True)
-        embed.add_field(name="Ticket Topic:", value=ticket_topic, inline=False)
-        embed.add_field(
-            name="Participating Moderators:",
-            value=" ".join(mod.mention for mod in mod_list),
-            inline=False,
-        )
-        embed.add_field(name="Ticket Log: ", value=url, inline=False)
-
-        # Send the embed to #ticket-log.
-        ticket_log = discord.utils.get(ctx.guild.channels, id=config["channels"]["ticket_log"])
-        await ticket_log.send(embed=embed)
+        log_embed.add_field(name="Ticket Creator:", value=member.mention, inline=True)
+        log_embed.add_field(name="Closed By:", value=interaction.user.mention, inline=True)
+        log_embed.add_field(name="Participating Moderators:", value=value, inline=False)
+        log_embed.add_field(name="Ticket Log: ", value=url, inline=False)
+        ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["mod"]["bot_testing"])
+        await ticket_log.send(embed=log_embed)
 
         # DM the user that their ticket was closed.
         try:
@@ -182,11 +228,11 @@ class TicketCommands(commands.Cog):
                 description=(
                     "Your ticket was closed. "
                     "Please feel free to create a new ticket should you have any further inquiries."
-                )
+                ),
             )
             embed.add_field(
                 name="Server:",
-                value=f"[{ctx.guild}](https://discord.gg/piracy)",
+                value=f"[{interaction.guild.name}](https://discord.gg/piracy)",
                 inline=False,
             )
             embed.add_field(name="Ticket Log:", value=url, inline=False)
@@ -195,15 +241,13 @@ class TicketCommands(commands.Cog):
         except discord.HTTPException:
             logging.info(f"Attempted to send ticket log DM to {member} but they are not accepting DMs.")
 
+        # Update the ticket in the db, close the connection, and delete the ticket channel.
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])
-
         db.commit()
         db.close()
-
-        # Delete the channel.
-        await ctx.channel.delete()
+        await interaction.channel.delete()
 
 
 def setup(bot: commands.bot.Bot) -> None:
