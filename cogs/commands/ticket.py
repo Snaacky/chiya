@@ -110,13 +110,15 @@ class TicketConfirmButtons(discord.ui.View):
         if any(role.id == config["roles"]["vip"] for role in interaction.user.roles):
             await channel.send(f"<@&{config['roles']['staff']}>")
 
+        # Create the embed with the close button and pin the message.
         embed = embeds.make_embed(
             color="blurple",
             title="🎫  Ticket created",
             description="Please wait patiently until a staff member is able to assist you. In the meantime, briefly describe what you need help with.",
         )
         embed.add_field(name="Ticket Creator:", value=interaction.user.mention, inline=False)
-        await channel.send(embed=embed, view=TicketCloseButton())
+        message = await channel.send(embed=embed, view=TicketCloseButton())
+        await message.pin()
 
         # Send the user a ping and then immediately delete it because mentions via embeds do not ping.
         ping = await channel.send(interaction.user.mention)
