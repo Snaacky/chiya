@@ -219,7 +219,7 @@ class TicketCloseButton(discord.ui.View):
         log_embed.add_field(name="Closed By:", value=interaction.user.mention, inline=True)
         log_embed.add_field(name="Participating Moderators:", value=value, inline=False)
         log_embed.add_field(name="Ticket Log: ", value=url, inline=False)
-        ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["mod"]["bot_testing"])
+        ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["logs"]["ticket_log"])
         await ticket_log.send(embed=log_embed)
 
         # DM the user that their ticket was closed.
