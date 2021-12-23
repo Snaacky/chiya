@@ -91,7 +91,7 @@ class TicketConfirmButtons(discord.ui.View):
                 color="blurple",
                 description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}"
             )
-            return await interaction.response.edit_message(embed=embed)
+            return await interaction.response.edit_message(embed=embed, view=None)
 
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         permission = {
@@ -122,6 +122,7 @@ class TicketConfirmButtons(discord.ui.View):
         ping = await channel.send(interaction.user.mention)
         await ping.delete()
 
+        # Edit the original message on click.
         embed = embeds.make_embed(
             title="Created a ticket",
             description=f"Successfully opened a ticket: {channel.mention}",
