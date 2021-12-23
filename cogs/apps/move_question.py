@@ -1,7 +1,7 @@
 import logging
 
 import discord
-from discord import message_command, ApplicationContext
+from discord import message_command
 from discord.commands import context
 from discord.ext import commands
 
@@ -36,10 +36,11 @@ class MoveQuestionApp(commands.Cog):
             return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
 
         if ctx.channel.category_id in [
-                config["categories"]["moderation"],
-                config["categories"]["development"],
-                config["categories"]["logs"],
-                config["categories"]["tickets"]]:
+            config["categories"]["moderation"],
+            config["categories"]["development"],
+            config["categories"]["logs"],
+            config["categories"]["tickets"],
+        ]:
             return await embeds.error_message(
                 ctx=ctx,
                 description="You do not have permissions to use this command in this category."
@@ -58,15 +59,14 @@ class MoveQuestionApp(commands.Cog):
 
         await embeds.success_message(ctx=ctx, description=f"Successfully moved message to: {channel.mention}")
         await embeds.warning_message(
+            author=False,
             ctx=ctx,
             title="Warning: Your question was moved",
             description=(
                 f"{ctx.author.mention}, your message was moved to {channel.mention} "
                 "which is the more appropriate channel for help, questions, and support type "
                 "topics. Please continue your conversation in that channel."
-            ),
-            author=False
-        )
+            ))
         ping = await channel.send(ctx.author.mention)
         await ping.delete()
 
