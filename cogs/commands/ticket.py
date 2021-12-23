@@ -18,8 +18,9 @@ class TicketCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        """Register the embed button that persists between bot restarts."""
+        """Register the embed button and ticket close button that persists between bot restarts."""
         self.bot.add_view(TicketCreateButton())
+        self.bot.add_view(TicketCloseButton())
 
     @slash_command(
         guild_ids=config["guild_ids"],
@@ -86,9 +87,11 @@ class TicketConfirmButtons(discord.ui.View):
 
         # Return if they already have a ticket open.
         if ticket:
-            return await interaction.response.edit_message(
-                f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}"
+            embed = embeds.make_embed(
+                color="blurple",
+                description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}"
             )
+            return await interaction.response.edit_message(embed=embed)
 
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         permission = {
@@ -110,10 +113,7 @@ class TicketConfirmButtons(discord.ui.View):
         embed = embeds.make_embed(
             color="blurple",
             title="🎫  Ticket created",
-            description=(
-                f"{interaction.user.mention}, please remain patient for a staff member to assist you. "
-                "In the mean time, please briefly describe what we can help you with."
-            ),
+            description="Please wait patiently until a staff member is able to assist you. In the meantime, briefly describe what you need help with.",
         )
         embed.add_field(name="Ticket Creator:", value=interaction.user.mention, inline=False)
         await channel.send(embed=embed, view=TicketCloseButton())
@@ -156,7 +156,7 @@ class TicketConfirmButtons(discord.ui.View):
 
 class TicketCloseButton(discord.ui.View):
     def __init__(self):
-        super().__init__()
+        super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")
     async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
@@ -245,8 +245,10 @@ class TicketCloseButton(discord.ui.View):
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])
+
         db.commit()
         db.close()
+
         await interaction.channel.delete()
 
 
