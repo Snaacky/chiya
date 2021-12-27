@@ -85,7 +85,6 @@ class TicketConfirmButtons(discord.ui.View):
         category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
 
-        # Return if they already have a ticket open.
         if ticket:
             embed = embeds.make_embed(
                 color="blurple",
@@ -106,11 +105,9 @@ class TicketConfirmButtons(discord.ui.View):
             overwrites=permission,
         )
 
-        # Ping staff if the ticket opener is a VIP.
         if any(role.id == config["roles"]["vip"] for role in interaction.user.roles):
             await channel.send(f"<@&{config['roles']['staff']}>")
 
-        # Create the embed with the close button and pin the message.
         embed = embeds.make_embed(
             color="blurple",
             title="🎫  Ticket created",
@@ -120,11 +117,9 @@ class TicketConfirmButtons(discord.ui.View):
         message = await channel.send(embed=embed, view=TicketCloseButton())
         await message.pin()
 
-        # Send the user a ping and then immediately delete it because mentions via embeds do not ping.
         ping = await channel.send(interaction.user.mention)
         await ping.delete()
 
-        # Edit the original message on click.
         embed = embeds.make_embed(
             title="Created a ticket",
             description=f"Successfully opened a ticket: {channel.mention}",
@@ -173,23 +168,17 @@ class TicketCloseButton(discord.ui.View):
         close_embed = embeds.make_embed(color="blurple", description="The ticket will be closed shortly...")
         await interaction.response.send_message(embed=close_embed)
 
-        # Fetch the ticket in progress and the ticket author.
         db = database.Database().get()
         table = db["tickets"]
         ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status="in-progress")
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
         member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
-
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
 
-        # Store the moderators who participated in the ticket.
         mod_list = set()
-
-        # Initialize the message log.
         message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\n\n"
 
-        # Iterate through all messages in the ticket from old to new while ignoring bot messages.
         async for message in interaction.channel.history(oldest_first=True, limit=None):
             if not message.author.bot:
                 formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
@@ -199,16 +188,13 @@ class TicketCloseButton(discord.ui.View):
                     if role_staff in message.author.roles or role_trial_mod in message.author.roles:
                         mod_list.add(message.author)
 
-        # Set the mod list field to "None" if no mod participated.
         if len(mod_list) > 0:
             value = " ".join(mod.mention for mod in mod_list)
         else:
             value = mod_list.add("None")
 
-        # Get the paste URL after posting to PrivateBin.
         url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
 
-        # Create the embed in #ticket-log.
         log_embed = embeds.make_embed(
             author=False,
             title=f"{interaction.channel.name} archived",
@@ -222,7 +208,6 @@ class TicketCloseButton(discord.ui.View):
         ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["logs"]["ticket_log"])
         await ticket_log.send(embed=log_embed)
 
-        # DM the user that their ticket was closed.
         try:
             embed = embeds.make_embed(
                 author=False,
@@ -242,9 +227,8 @@ class TicketCloseButton(discord.ui.View):
             embed.set_image(url="https://i.imgur.com/21nJqGC.gif")
             await member.send(embed=embed)
         except discord.HTTPException:
-            logging.info(f"Attempted to send ticket log DM to {member} but they are not accepting DMs.")
+            logging.info(f"Unable to send ticket log to {member} because their DM is closed")
 
-        # Update the ticket in the db, close the connection, and delete the ticket channel.
         ticket["status"] = "completed"
         ticket["log_url"] = url
         table.update(ticket, ["id"])
