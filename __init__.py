@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from logging import Logger, handlers
+from logging import handlers
 from pathlib import Path
 
 import coloredlogs
