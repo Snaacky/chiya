@@ -1,6 +1,6 @@
 import logging
 
-from discord import Message
+import discord
 from discord.ext import commands
 
 from utils import embeds
@@ -16,7 +16,15 @@ class AutoresponderListener(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message: Message):
+    async def on_message(self, message: discord.Message):
+        """
+        Scan incoming messages for autoresponder invokes (case-insensitive) and replies
+        with the appopriate embed. Currently only when invoked by a staff member.
+
+        Args:
+            message: The current message.
+        """
+
         if message.author.bot:
             return
 
