@@ -51,8 +51,7 @@ class GeneralCommands(commands.Cog):
             try:
                 message = await ctx.channel.fetch_message(message)
             except discord.NotFound:
-                messages = await ctx.channel.history(limit=2).flatten()
-                message = messages[1]
+                return await embeds.error_message(ctx=ctx, description="Invalid message ID.")
 
         if not message:
             messages = await ctx.channel.history(limit=2).flatten()
