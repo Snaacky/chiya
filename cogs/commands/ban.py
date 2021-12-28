@@ -21,7 +21,7 @@ class BansCommands(commands.Cog):
         Checks if the user if the user is banned.
 
         Args:
-            ctx (SlashContext): The context of the slash command.
+            ctx (context.ApplicationContext): The context of the slash command.
             user (discord.User): The user to be checked.
 
         Returns:
@@ -138,10 +138,11 @@ class BansCommands(commands.Cog):
     ):
         """
         Slash command for unbanning users from the server.
+        
         Args:
-            ctx (): The context of the slash command.
-            user (): The user to unban from the server.
-            reason (): The reason provided by the staff member issuing the unban.
+            ctx (context.ApplicationContext): The context of the slash command.
+            user (discord.Member): The user to unban from the server.
+            reason (str): The reason provided by the staff member issuing the unban.
         """
         await ctx.defer()
 
