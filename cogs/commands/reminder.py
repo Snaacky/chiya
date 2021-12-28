@@ -82,7 +82,7 @@ class ReminderCommands(commands.Cog):
         )
         embed.add_field(name="ID: ", value=remind_id, inline=False)
         embed.add_field(name="Message:", value=message, inline=False)
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @reminder.command(name="edit", descrption="Edit an existing reminder")
     async def edit(
@@ -124,7 +124,7 @@ class ReminderCommands(commands.Cog):
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
         embed.add_field(name="Old Message: ", value=old_message, inline=False)
         embed.add_field(name="New Message: ", value=new_message, inline=False)
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @reminder.command(name="list", description="List your existing reminders")
     async def list(self, ctx: context.ApplicationContext):
@@ -214,7 +214,7 @@ class ReminderCommands(commands.Cog):
         )
         embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
         embed.add_field(name="Message: ", value=result["message"], inline=False)
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
     async def clear(self, ctx: context.ApplicationContext):
@@ -229,7 +229,7 @@ class ReminderCommands(commands.Cog):
             color="soft_green",
         )
 
-        await ctx.respond(embed=confirm_embed)
+        await ctx.send_followup(embed=confirm_embed)
 
         def check(message):
             return (
@@ -243,11 +243,11 @@ class ReminderCommands(commands.Cog):
             if msg.content.lower() in ("no", "n"):
                 db.close()
                 embed = embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has been canceled.")
-                return await ctx.respond(embed=embed)
+                return await ctx.send_followup(embed=embed)
         except asyncio.TimeoutError:
             db.close()
             embed = embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has timed out.")
-            return await ctx.respond(embed=embed)
+            return await ctx.send_followup(embed=embed)
 
         remind_me = db["remind_me"]
         results = remind_me.find(author_id=ctx.author.id, sent=False)
@@ -260,7 +260,7 @@ class ReminderCommands(commands.Cog):
             color="soft_green",
         )
 
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
         # Commit the changes to the database and close the connection.
         db.commit()

@@ -33,7 +33,7 @@ class ServerCommands(commands.Cog):
             ctx (): The context of the slash command.
         """
         await ctx.defer()
-        await ctx.respond(ctx.guild.member_count)
+        await ctx.send_followup(ctx.guild.member_count)
 
     @server.command(name="banner", description="Sets the banner to the image provided")
     async def banner(
@@ -64,7 +64,7 @@ class ServerCommands(commands.Cog):
                 ctx=ctx, description="Unable to set banner, verify the link is correct."
             )
 
-        await ctx.respond(
+        await ctx.send_followup(
             embed=embeds.make_embed(
                 ctx=ctx,
                 title="Banner updated",
@@ -122,7 +122,7 @@ class ServerCommands(commands.Cog):
         )
         embed.description = "\n".join(user.mention for user in ctx.guild.premium_subscribers)
         embed.set_footer(text=f"Total boosters: {len(ctx.guild.premium_subscribers)}")
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:

@@ -341,7 +341,7 @@ class MuteCommands(commands.Cog):
 
             # Mutes the user and returns the embed letting the moderator know they were successfully muted.
             await self.mute_member(ctx=ctx, member=member, reason=reason)
-            return await ctx.respond(embed=embed)
+            return await ctx.send_followup(embed=embed)
 
         # Get the duration string for embed and mute end time for the specified duration.
         duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
@@ -393,7 +393,7 @@ class MuteCommands(commands.Cog):
             temporary=True,
             end_time=mute_end_time
         )
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmutes a member in the server")
     @permissions.has_role(config["roles"]["staff"])
@@ -442,7 +442,7 @@ class MuteCommands(commands.Cog):
                 )
             )
 
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
         await self.unmute_member(ctx=ctx, member=member, reason=reason)
         await self.archive_mute_channel(ctx=ctx, user_id=member.id, reason=reason)
 

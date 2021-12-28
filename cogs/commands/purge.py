@@ -96,7 +96,7 @@ class PurgeCommands(commands.Cog):
             color="soft_red",
         )
         embed.add_field(name="Reason:", value=reason, inline=False)
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
 
 def setup(bot: commands.bot.Bot) -> None:

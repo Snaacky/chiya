@@ -126,7 +126,7 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
@@ -183,7 +183,7 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.respond(embed=embed)
+        await ctx.send_followup(embed=embed)
 
 
 def setup(bot: commands.bot.Bot) -> None:

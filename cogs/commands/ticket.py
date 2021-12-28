@@ -46,7 +46,7 @@ class TicketCommands(commands.Cog):
             description="To create a ticket, click on the button below.",
         )
         embed.set_footer(text="Abusing will result in a ban. Only use this feature for serious inquiries.")
-        await ctx.respond(embed=embed, view=TicketCreateButton())
+        await ctx.send_followup(embed=embed, view=TicketCreateButton())
 
 
 class TicketCreateButton(discord.ui.View):

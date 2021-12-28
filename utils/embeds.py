@@ -42,7 +42,7 @@ def make_embed(ctx: context.ApplicationContext = None, title: str = "", descript
 
     # Setting the author field and setting their profile pic as the image.
     if author and ctx is not None:
-        embed.set_author(icon_url=ctx.author.avatar, name=str(ctx.author))
+        embed.set_author(icon_url=ctx.author.avatar.url, name=str(ctx.author))
 
     # Setting the embed side image if a url was given.
     if thumbnail_url:
@@ -74,7 +74,7 @@ async def success_message(ctx: context.ApplicationContext, description: str, tit
     """
     title = "Success:" if not title else title
     embed = make_embed(title="Success:", description=description, color="soft_green", author=False)
-    await ctx.respond(embed=embed, delete_after=30)
+    await ctx.send_followup(embed=embed, delete_after=30)
 
 
 async def error_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
@@ -90,7 +90,7 @@ async def error_message(ctx: context.ApplicationContext, description: str, title
     """
     title = "Error:" if not title else title
     embed = make_embed(title=title, description=description, color="soft_red", author=False)
-    await ctx.respond(embed=embed, delete_after=30)
+    await ctx.send_followup(embed=embed, delete_after=30)
 
 
 async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None, author: bool = True):
