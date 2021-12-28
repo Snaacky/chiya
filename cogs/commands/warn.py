@@ -13,7 +13,7 @@ from utils.config import config
 log = logging.getLogger(__name__)
 
 
-class WarnComamnds(commands.Cog):
+class WarnCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -26,10 +26,16 @@ class WarnComamnds(commands.Cog):
         member: Option(discord.Member, description="The member that will be warned", required=True),
         reason: Option(str, description="The reason why the member is being warned", required=True),
     ):
-        """ Sends member a warning DM and logs to database. """
+        """
+        Sends member a warning DM and logs to database.
+
+        Args:
+            ctx (context.ApplicationContext): The context of the slash command.
+            member (discord.Member): The user to be warned.
+            reason (str): The reason provided by the staff member issuing the warning.
+        """
         await ctx.defer()
 
-        # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
@@ -45,8 +51,7 @@ class WarnComamnds(commands.Cog):
 
         embed.description = f"{member.mention} was warned by {ctx.author.mention} for: {reason}"
 
-        # Send member message telling them that they were warned and why.
-        try:  # In case user has DMs blocked.
+        try:
             channel = await member.create_dm()
             warn_embed = embeds.make_embed(
                 author=False,
@@ -66,22 +71,17 @@ class WarnComamnds(commands.Cog):
                     f"Unable to message {member.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                )
-            )
+                ))
 
-        # Open a connection to the database.
         db = database.Database().get()
-
-        # Add the warning to the mod_log database.
         db["mod_logs"].insert(dict(
             user_id=member.id,
             mod_id=ctx.author.id,
             timestamp=int(time.time()),
             reason=reason,
-            type="warn"
+            type="warn",
         ))
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
 
@@ -89,5 +89,5 @@ class WarnComamnds(commands.Cog):
 
 
 def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(WarnComamnds(bot))
+    bot.add_cog(WarnCommands(bot))
     log.info("Commands loaded: warn")
