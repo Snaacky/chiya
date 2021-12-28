@@ -30,9 +30,9 @@ class KickCommands(commands.Cog):
         Slash command for kicking users from the server.
 
         Args:
-            ctx (): The context of the slash command.
-            member (): The user to ban from the server.
-            reason (): The reason provided by the staff member issuing the ban.
+            ctx (context.ApplicationContext): The context of the slash command.
+            member (discord.Member): The user to ban from the server.
+            reason (str): The reason provided by the staff member issuing the ban.
 
         Raises:
             discord.Forbidden: Unable to message the user due to privacy settings,
