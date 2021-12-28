@@ -48,10 +48,10 @@ class BansCommands(commands.Cog):
         Slash command for banning users from the server.
 
         Args:
-            ctx (): The context of the slash command.
-            user (): The user to ban from the server.
-            reason (): The reason provided by the staff member issuing the ban.
-            daystodelete (): The days of messages to delete from the banned user.
+            ctx (context.ApplicationContext): The context of the slash command.
+            user (discord.User): The user to ban from the server.
+            reason (str): The reason provided by the staff member issuing the ban.
+            daystodelete (int): The days of messages to delete from the banned user.
 
         Notes:
             delete_message_days is capped at 7 days maximum, this is a Discord API limitation.
