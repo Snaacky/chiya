@@ -18,12 +18,17 @@ class GeneralCommands(commands.Cog):
 
     @slash_command(guild_ids=config["guild_ids"], description="Gets the members profile picture")
     async def pfp(self, ctx: context.ApplicationContext, user: Option(discord.User, required=True)):
-        """ Returns the profile picture of the invoker or the mentioned user. """
+        """
+        Returns the profile picture of the invoker or the mentioned user.
+
+        Args:
+            ctx (context.ApplicationContext): The context of the slash command.
+            user (discord.User): The user to load the pfp from.
+        """
         await ctx.defer()
 
         user = user or ctx.author
 
-        # If we received an int instead of a discord.Member, the user is not in the server.
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
 
@@ -44,7 +49,16 @@ class GeneralCommands(commands.Cog):
         ctx: context.ApplicationContext,
         message: Option(str, description="The ID for the target message", required=False)
     ):
-        """ Add vote reactions to a message. """
+        """
+        Add vote reactions to a message.
+
+        Args:
+            ctx (context.ApplicationContext): The context of the slash command.
+            message (str): The message ID to be voted.
+
+        Raises:
+            discord.NotFound: The entered string does not match any message ID.
+        """
         await ctx.defer()
 
         if message:
@@ -60,7 +74,7 @@ class GeneralCommands(commands.Cog):
         await message.add_reaction(":yes:778724405333196851")
         await message.add_reaction(":no:778724416230129705")
 
-        # We need to send *something* so the bot doesn't return "This interaction failed"
+        # We need to send something so the bot doesn't return "This interaction failed".
         delete = await ctx.send_followup("** **")
         await delete.delete()
 
