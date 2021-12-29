@@ -17,8 +17,8 @@ class ServerCommands(commands.Cog):
         self.bot = bot
 
     server = SlashCommandGroup(
-        name="server",
-        description="Server management commands",
+        "server",
+        "Server management commands",
         guild_ids=config["guild_ids"],
         default_permission=False,
         permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],  # Type 1 is role, 2 is user.
