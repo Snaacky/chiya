@@ -13,7 +13,11 @@ class PurgeCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def can_purge_messages(self, ctx: context.ApplicationContext):
+    async def can_purge_messages(self, ctx: context.ApplicationContext) -> bool:
+        """
+        Check used by purge function to make sure that the moderation, development,
+        logs, and tickets categories can't be purged for security reasons.
+        """
         if ctx.author.id == ctx.guild.owner.id:
             return True
 
@@ -47,6 +51,15 @@ class PurgeCommands(commands.Cog):
             required=True,
         ),
     ):
+        """
+        Removes the last X amount of messages in bulk.
+
+        Capped at a maximum of 100 messages per command invoke to avoid accidents
+        wiping out large chunks of messages.
+
+        Cannot be used in the moderation, development, logs, or archive categories
+        for security reasons.
+        """
         await ctx.defer()
 
         if not await self.can_purge_messages(ctx):
@@ -55,15 +68,10 @@ class PurgeCommands(commands.Cog):
             )
 
         if len(reason) > 512:
-            return await embeds.error_message(
-                ctx=ctx, description="Reason must be less than 512 characters."
-            )
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         amount = 100 if amount > 100 else amount
 
-        await ctx.channel.purge(
-            limit=amount, before=ctx.channel.last_message.created_at, bulk=True
-        )
         embed = embeds.make_embed(
             ctx=ctx,
             title="Purged messages",
@@ -72,6 +80,7 @@ class PurgeCommands(commands.Cog):
             color="soft_red",
         )
         embed.add_field(name="Reason:", value=reason, inline=False)
+        await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
         await ctx.send_followup(embed=embed)
 
 

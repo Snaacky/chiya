@@ -1,6 +1,7 @@
 import datetime
 import logging
 import time
+from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -26,23 +27,14 @@ class MuteCommands(commands.Cog):
         member: Option(discord.Member, description="The member that will be kicked", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
         duration: Option(str, description="The length of time the user will be muted for", required=True)
-    ) -> bool:
+    ) -> Optional[discord.Embed]:
         """
-        Mute the user from the server. Attempt to alert them of their mute via direct message.
+        Mute the user, log the action to the database, and attempt to send them a direct message
+        alerting them of their mute.
 
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            member (discord.Member): Member to mute from the server.
-            reason (str): Reason why the user is being muted.
-            duration (int): Length of time the user will be muted for.
-
-        Returns:
-            True (bool): User was successfully muted from the server.
-            False (bool): User is not in the server.
-            False (bool): Invoking mod cannot action the user specified due to permissions.
-            False (bool): User is already muted from the server.
-            False (bool): Reason parameter was more than 512 characters.
-            False (bool): Incorrect syntax for duration parameter.
+        If the user isn't in the server, has privacy settings enabled, or has the
+        bot blocked they will be unable to receive the ban notification. The bot will let
+        the invoking mod know if this is the case.
         """
         await ctx.defer()
 
@@ -75,7 +67,7 @@ class MuteCommands(commands.Cog):
             color="soft_red"
         )
         mute_embed.add_field(name="Duration:", value=duration_string, inline=False)
-        
+
         try:
             dm_embed = embeds.make_embed(
                 author=False,
@@ -123,21 +115,13 @@ class MuteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be unmuted", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
-    ):
+    ) -> Optional[discord.Embed]:
         """
-        Unmute the user from the server. Attempt to alert them of their mute via direct message.
+        Unmute the user, log the action to the database, and attempt to send them a direct message
+        alerting them of their mute.
 
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            member (discord.Member): Member to mute from the server.
-            reason (str): Reason why the user is being muted.
-
-        Returns:
-            True (bool): User was successfully unmuted from the server.
-            False (bool): User is not in the server.
-            False (bool): Invoking mod cannot action the user specified due to permissions.
-            False (bool): User is not muted from the server.
-            False (bool): Reason parameter was more than 512 characters.
+        If the user has privacy settings enabled or has the bot blocked they will be unable to 
+        receive the ban notification. The bot will let the invoking mod know if this is the case.
         """
         await ctx.defer()
 
