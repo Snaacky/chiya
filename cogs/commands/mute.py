@@ -69,27 +69,15 @@ class MuteCommands(commands.Cog):
                 description=(
                     "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
                     "You can specify up to all four but you only need one."
-<<<<<<< Updated upstream
-                ))
-=======
                 )
             )
             return False
->>>>>>> Stashed changes
 
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Muting member: {member}",
             description=f"{member.mention} was muted by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/rHtYWIt.png",
-<<<<<<< Updated upstream
-            color="soft_red",
-        )
-        embed.add_field(name="Duration:", value=duration_string, inline=False)
-
-        if not await self.send_muted_dm_embed(ctx=ctx, member=member, reason=reason, duration=duration_string):
-            embed.add_field(
-=======
             color="soft_red"
         )
         embed.add_field(name="Duration:", value=duration_string, inline=False)
@@ -110,7 +98,6 @@ class MuteCommands(commands.Cog):
             dm_channel = await member.create_dm()
         except discord.HTTPException:
             dm_embed.add_field(
->>>>>>> Stashed changes
                 name="Notice:",
                 value=(
                     f"Unable to message {member.mention} about this action. "
@@ -118,9 +105,6 @@ class MuteCommands(commands.Cog):
                     "having DMs disabled, or having the bot blocked."
                 ))
 
-<<<<<<< Updated upstream
-        await self.mute_member(ctx=ctx, member=member, reason=reason, end_time=mute_end_time)
-=======
         db = database.Database().get()
         db["mod_logs"].insert(
             dict(
@@ -137,33 +121,12 @@ class MuteCommands(commands.Cog):
         await dm_channel.send(embed=dm_embed)
         # TODO: what happens if the user doesn't have permission for timeouts?
         await member.timeout(until=datetime.datetime.utcfromtimestamp(mute_end_time), reason=reason)
->>>>>>> Stashed changes
         await ctx.send_followup(embed=embed)
         return True
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmutes a member in the server")
     @permissions.has_role(config["roles"]["staff"])
     async def unmute(
-<<<<<<< Updated upstream
-            self,
-            ctx: context.ApplicationContext,
-            member: Option(discord.Member, description="The member that will be unmuted", required=True),
-            reason: Option(str, description="The reason why the member is being kicked", required=True),
-    ):
-        await ctx.defer()
-
-        if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
-
-        if not await can_action_member(ctx=ctx, member=member):
-            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
-
-        if not member.timed_out:
-            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
-
-        if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-=======
         self,
         ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be unmuted", required=True),
@@ -201,16 +164,11 @@ class MuteCommands(commands.Cog):
         if len(reason) > 512:
             await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
             return False
->>>>>>> Stashed changes
 
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unmuting member: {member.name}",
             description=f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}",
-<<<<<<< Updated upstream
-            thumbnail_url="https://i.imgur.com/W7DpUHC.png",
-            color="soft_green",
-=======
             color="soft_green",
             thumbnail_url="https://i.imgur.com/W7DpUHC.png",
         )
@@ -221,21 +179,15 @@ class MuteCommands(commands.Cog):
             description="Review our server rules to avoid being actioned again in the future.",
             color=0x8A3AC5,
             image_url="https://i.imgur.com/U5Fvr2Y.gif"
->>>>>>> Stashed changes
         )
         dm_embed.add_field(name="Server:", value="[/r/animepiracy](https://discord.gg/piracy)", inline=True)
         dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
         dm_embed.add_field(name="Reason:", value=reason, inline=False)
 
-<<<<<<< Updated upstream
-        if not await self.send_unmuted_dm_embed(ctx=ctx, member=member, reason=reason):
-            embed.add_field(
-=======
         try:
             channel = await member.create_dm()
         except discord.HTTPException:
             dm_embed.add_field(
->>>>>>> Stashed changes
                 name="Notice:",
                 value=(
                     f"Unable to message {member.mention} about this action. "
