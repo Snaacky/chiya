@@ -17,8 +17,8 @@ class ServerCommands(commands.Cog):
         self.bot = bot
 
     server = SlashCommandGroup(
-        "server",
-        "Server management commands",
+        name="server",
+        description="Server management commands",
         guild_ids=config["guild_ids"],
         default_permission=False,
         permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],  # Type 1 is role, 2 is user.
@@ -26,12 +26,6 @@ class ServerCommands(commands.Cog):
 
     @server.command(name="pop", description="Gets the current server population")
     async def pop(self, ctx: context.ApplicationContext):
-        """
-        Slash command for getting the current population of the server.
-
-        Args:
-            ctx (): The context of the slash command.
-        """
         await ctx.defer()
         await ctx.send_followup(ctx.guild.member_count)
 
@@ -41,13 +35,6 @@ class ServerCommands(commands.Cog):
         ctx: context.ApplicationContext,
         link: Option(str, description="The link to the image to be set", required=True),
     ):
-        """
-        Slash command for updating the server banner.
-
-        Args:
-            ctx (): The context of the slash command.
-            link (): A direct link to the image to use for the update.
-        """
         await ctx.defer()
 
         r = requests.get(url=link)
@@ -79,13 +66,6 @@ class ServerCommands(commands.Cog):
         ctx: context.ApplicationContext,
         role: Option(discord.Role, description="The role to make pingable", required=True),
     ):
-        """
-        Slash command for making server roles temporarily pingable.
-
-        Args:
-            ctx (): The context of the slash command.
-            role (): The role to be made temporarily pingable.
-        """
         await ctx.defer()
 
         if role.mentionable:
@@ -105,12 +85,6 @@ class ServerCommands(commands.Cog):
 
     @server.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: context.ApplicationContext):
-        """
-        Slash command for getting the current list of server boosters.
-
-        Args:
-            ctx (Context): The context of the slash command.
-        """
         await ctx.defer()
 
         embed = embeds.make_embed(
