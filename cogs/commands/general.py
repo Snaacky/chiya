@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -6,7 +7,6 @@ from discord.ext import commands
 
 from utils import embeds
 from utils.config import config
-
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +21,8 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="User whose avatar will be grabbed", required=False),
-        guild_avatar: Option(bool, description="Do you want their server specific avatar", required=False)
-    ) -> bool:
+        server_avatar: Option(bool, description="Whether if their server specific avatar should be used", required=False),
+    ) -> None:
         """
         Grab a user's avatar and return it in a large-sized embed.
 
@@ -37,10 +37,10 @@ class GeneralCommands(commands.Cog):
             user = await self.bot.fetch_user(user)
 
         embed = embeds.make_embed()
-        if guild_avatar and hasattr(user, "guild_avatar"):
-            embed.set_author(icon_url=user.guild_avatar, name=str(user))
-            embed.set_image(url=user.guild_avatar)
-        elif guild_avatar and not hasattr(user, "guild_avatar"):
+        if server_avatar and hasattr(user, "guild_avatar"):
+            embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
+            embed.set_image(url=user.guild_avatar.url)
+        elif server_avatar and not hasattr(user, "guild_avatar"):
             embed.set_author(icon_url=user.avatar.url, name=str(user))
             embed.set_image(url=user.avatar.url)
             embed.set_footer(text="⚠️ Warning: Could not find server avatar, defaulted to global avatar.")
@@ -54,8 +54,8 @@ class GeneralCommands(commands.Cog):
     async def vote(
         self,
         ctx: context.ApplicationContext,
-        message: Option(str, description="The ID for the target message", required=False)
-    ) -> bool:
+        message: Option(str, description="The ID for the target message", required=False),
+    ) -> Optional[discord.Embed]:
         """
         Adds vote emojis (yes and no) reactions to a message.
 
@@ -63,28 +63,22 @@ class GeneralCommands(commands.Cog):
         Otherwise, it will add the reactions to the last message in the channel.
         """
         # TODO: what happens if the user doesn't have permission to add reactions in that channel?
-        await ctx.defer()
+        await ctx.defer(ephemeral=True)
 
         if message:
             try:
                 message = await ctx.channel.fetch_message(message)
             except discord.NotFound:
-                await embeds.error_message(ctx=ctx, description="Invalid message ID.")
-                return False
+                return await embeds.error_message(ctx=ctx, description="Invalid message ID.")
 
         if not message:
-            messages = await ctx.channel.history(limit=2).flatten()
-            message = messages[1]
+            messages = await ctx.channel.history(limit=1).flatten()
+            message = messages[0]
 
         # TODO: replace this with emotes grabbed from config
         await message.add_reaction(":yes:778724405333196851")
         await message.add_reaction(":no:778724416230129705")
-
-        # We need to send something so the bot doesn't return "This interaction failed".
-        # TODO: change this to a hidden success notification instead
-        delete = await ctx.send_followup("** **")
-        await delete.delete()
-        return True
+        await embeds.success_message(ctx=ctx, description=f"Added votes to {message.jump_url}")
 
 
 def setup(bot: commands.bot.Bot) -> None:
