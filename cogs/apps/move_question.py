@@ -17,16 +17,7 @@ class MoveQuestionApp(commands.Cog):
 
     @message_command(guild_ids=config["guild_ids"], name="Move Question")
     async def move_question(self, ctx: context.ApplicationContext, message: discord.Message):
-        """
-        Context menu command for moving questions (messages) to #questions-and-help.
-
-        Args:
-            ctx (ApplicationContext): The context of the context menu.
-            message (discord.Message): The content of the interacted message.
-
-        TODO:
-            Fix "Deferred response might not be what you set it to!" warning.
-        """
+        """ Context menu command for moving questions (messages) to #questions-and-help. """
         await ctx.defer(ephemeral=True)
 
         staff = [x for x in ctx.author.roles
@@ -41,10 +32,7 @@ class MoveQuestionApp(commands.Cog):
             config["categories"]["logs"],
             config["categories"]["tickets"],
         ]:
-            return await embeds.error_message(
-                ctx=ctx,
-                description="You do not have permissions to use this command in this category."
-            )
+            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command in this category.")
 
         channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["public"]["questions_and_help"])
         webhook = await channel.create_webhook(name=ctx.author.name)
@@ -59,7 +47,6 @@ class MoveQuestionApp(commands.Cog):
 
         await embeds.success_message(ctx=ctx, description=f"Successfully moved message to: {channel.mention}")
         await embeds.warning_message(
-            author=False,
             ctx=ctx,
             title="Warning: Your question was moved",
             description=(
