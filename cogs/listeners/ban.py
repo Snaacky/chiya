@@ -19,12 +19,12 @@ class BanListener(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]):
         ban_entry = await guild.fetch_ban(user)
-        logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()[0]
-        if logs.user != self.bot.user:
+        logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
+        if logs[0].user != self.bot.user:
             db = database.Database().get()
             db["mod_logs"].insert(dict(
                 user_id=user.id,
-                mod_id=logs.user.id,
+                mod_id=logs[0].user.id,
                 timestamp=int(time.time()),
                 reason=ban_entry.reason,
                 type="ban"
