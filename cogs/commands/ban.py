@@ -84,7 +84,7 @@ class BansCommands(commands.Cog):
                 image_url="https://i.imgur.com/CglQwK5.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                 ])
             await channel.send(embed=dm_embed)
