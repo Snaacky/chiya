@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 from discord.commands import context
 
@@ -5,7 +7,6 @@ from discord.commands import context
 def make_embed(
         ctx: context.ApplicationContext = None,
         author: bool = None,
-        color=None,
         title: str = "",
         description: str = "",
         title_url: str = None,
@@ -13,11 +14,18 @@ def make_embed(
         image_url: str = None,
         fields: list = None,
         footer: str = None,
+        color=None,
+        timestamp=None,
 ) -> discord.Embed:
-    """ A wrapper for discord.Embed with added support for non-native attributes. """
+    """
+    A wrapper for discord.Embed with added support for non-native attributes.
+
+    `color` can either be of type discord.Color or a hexadecimal value.
+    `timestamp` can either be a unix timestamp or a datetime object.
+    """
 
     if not isinstance(color, (int, discord.colour.Colour)):
-        embed = discord.Embed(title=title, description=description, color=discord.Color.default())
+        embed = discord.Embed(title=title, description=description, color=discord.Color.blurple())
     else:
         embed = discord.Embed(title=title, description=description, color=color)
 
@@ -42,6 +50,11 @@ def make_embed(
 
     if footer:
         embed.set_footer(text=footer)
+
+    if timestamp:
+        if isinstance(timestamp, int):
+            embed.timestamp = datetime.datetime.fromtimestamp(timestamp)
+        embed.timestamp = timestamp
 
     return embed
 
