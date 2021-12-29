@@ -14,9 +14,7 @@ def make_embed(
         fields: list = None,
         footer: str = None,
 ) -> discord.Embed:
-    """
-    A wrapper for discord.Embed with added support for non-native attributes.
-    """
+    """A wrapper for discord.Embed with added support for non-native attributes."""
 
     if not isinstance(color, (int, discord.colour.Colour)):
         embed = discord.Embed(title=title, description=description, color=discord.Color.default())
