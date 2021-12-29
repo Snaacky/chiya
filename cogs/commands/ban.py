@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -36,16 +37,17 @@ class BansCommands(commands.Cog):
             choices=[1, 2, 3, 4, 5, 6, 7],
             required=False
         )
-    ) -> bool:
+    ) -> Optional[discord.Embed]:
         """
-        Ban the user, log the action to the database, and attempt to send them a direct message
-        alerting them of their ban.
+        Ban the user, log the action to the database, and attempt to send them a direct
+        message alerting them of their ban.
 
-        Notes:
-            - daystodelete is limited to a maximum value of 7. This is a Discord API limitation.
-            - If the user isn't in the server, has heavy privacy settings enabled, or has the 
-            bot blocked they will be unable to receive the ban notification. The bot will let 
-            the invoking mod know if this is the case.
+        If the user isn't in the server, has heavy privacy settings enabled, or has the
+        bot blocked they will be unable to receive the ban notification. The bot will let
+        the invoking mod know if this is the case.
+
+        daystodelete is limited to a maximum value of 7. This is a Discord API limitation
+        with the .ban() function.
         """
         await ctx.defer()
 
@@ -116,14 +118,13 @@ class BansCommands(commands.Cog):
         ctx: context.ApplicationContext,
         user: Option(discord.Member, description="User to unban from the server", required=True),
         reason: Option(str, description="Reason why the user is being unbanned", required=True),
-    ) -> bool:
+    ) -> Optional[discord.Embed]:
         """
         Unban the user from the server and log the action to the database.
 
-        Notes:
-            - Unlike when the user is banned, the bot is completely unable to let the user know
-            that they were unbanned because it cannot communicate with users that it does not
-            share a mutual server with.
+        Unlike when the user is banned, the bot is completely unable to let the user know
+        that they were unbanned because it cannot communicate with users that it does not
+        share a mutual server with.
         """
         await ctx.defer()
 

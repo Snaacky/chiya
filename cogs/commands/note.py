@@ -1,6 +1,7 @@
 import logging
 import time
 from datetime import datetime
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -26,21 +27,13 @@ class NoteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="The user to add the note to", required=True),
         note: Option(str, description="The note to leave on the user", required=True)
-    ) -> bool:
+    ) -> None:
         """
         Adds a note to the users profile.
 
         Notes can only be seen by staff via the /search command and do not punish the
         user in anyway. They are merely for staff to log relevant information. Users are
         not alerted when a note is added to them.
-
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            user (discord.User): User to add a note to.
-            note (str): Note to add to the user.
-
-        Returns:
-            True (bool): Note was successfully added to the user.
         """
         await ctx.defer()
 
@@ -71,7 +64,6 @@ class NoteCommands(commands.Cog):
         embed.add_field(name="Note: ", value=note, inline=False)
 
         await ctx.send_followup(embed=embed)
-        return True
 
     @slash_command(name="search", guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
@@ -86,18 +78,7 @@ class NoteCommands(commands.Cog):
             required=False
         )
     ) -> bool:
-        """
-        Search for the mod actions and notes for a user.
-
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            user (discord.User): Member to search mod actions and notes for.
-            action (str, optional): Type to filter mod logs by.
-
-        Returns:
-            True (bool): Mod actions and notes were successfully returned for the user.
-            False (bool): No mod actions or notes exist for the user.
-        """
+        """ Search for the mod actions and notes for a user. """
         await ctx.defer()
 
         if not isinstance(user, discord.Member):
@@ -138,8 +119,7 @@ class NoteCommands(commands.Cog):
             )
 
         if not actions:
-            await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
-            return False
+            return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
 
         embed = embeds.make_embed(title="Mod Actions")
         embed.set_author(name=user, icon_url=user.avatar.url)
@@ -153,7 +133,6 @@ class NoteCommands(commands.Cog):
             linesep="\n",
             timeout=120,
         )
-        return True
 
     @slash_command(name="editlog", guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
@@ -162,19 +141,8 @@ class NoteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         id: Option(int, description="The ID of the log or note to be edited", required=True),
         note: Option(str, description="The updated message for the log or note", required=True),
-    ) -> bool:
-        """
-        Edits a mod action or note description.
-
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            id (int): Log ID to be edited.
-            note (str): Updated message for the log or note.
-
-        Returns:
-            True (bool): Mod action or note was successfully edited.
-            False (bool): No log exists with that ID.
-        """
+    ) -> Optional[discord.Embed]:
+        """ Edit a mod action or note on a users profile. """
         # TODO: we use db["mod_logs"] directly instead of defining a variable, need to fix that here...
         await ctx.defer()
 
@@ -182,8 +150,7 @@ class NoteCommands(commands.Cog):
         table = db["mod_logs"]
         mod_log = table.find_one(id=id)
         if not mod_log:
-            await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
-            return False
+            return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
 
         user = await self.bot.fetch_user(mod_log["user_id"])
         embed = embeds.make_embed(
@@ -202,7 +169,6 @@ class NoteCommands(commands.Cog):
         db.close()
 
         await ctx.send_followup(embed=embed)
-        return True
 
 
 def setup(bot: commands.bot.Bot) -> None:
