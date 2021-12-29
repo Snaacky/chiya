@@ -1,6 +1,5 @@
 import logging
 import time
-from typing import Union
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -17,25 +16,10 @@ class BansCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_banned(
-        self,
-        ctx: context.ApplicationContext,
-        user: discord.User
-    ) -> Union[discord.BanEntry, False]:
-        """
-        Check the guild to see if the user is banned.
-
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            user (discord.User): User that is being checked for a ban.
-
-        Returns:
-            discord.BanEntry: User is banned from the server.
-            False (bool): User is not banned from the server.
-        """
-        # TODO: change this into a true or false return because the BanEntry isn't used
+    async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
+        """ Check if the user is banned from the context invoking guild. """
         try:
-            return await self.bot.get_guild(ctx.guild.id).fetch_ban(user)
+            return await bool(self.bot.get_guild(ctx.guild.id).fetch_ban(user))
         except discord.NotFound:
             return False
 
@@ -46,42 +30,36 @@ class BansCommands(commands.Cog):
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="User to ban from the server", required=True),
         reason: Option(str, description="Reason why the user is being banned", required=True),
-        daystodelete: Option(int, description="Days worth of messages to delete from the user, up to 7", required=False)
+        daystodelete: Option(
+            int,
+            description="Days worth of messages to delete from the user, up to 7",
+            choices=[1, 2, 3, 4, 5, 6, 7],
+            required=False
+        )
     ) -> bool:
         """
-        Ban the user from the server. Attempt to alert them of their ban via direct message.
-
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            user (discord.User): User to ban from the server.
-            reason (str): Reason why the user is being banned.
-            daystodelete (int, optional): Days worth of messages to delete from the user, up to 7.
+        Ban the user, log the action to the database, and attempt to send them a direct message
+        alerting them of their ban.
 
         Notes:
-            daystodelete is limited to a maximum value of 7. This is a Discord API limitation.
-
-        Returns:
-            True (bool): User was successfully banned from the server.
-            False (bool): Invoking mod cannot action the user specified due to permissions.
-            False (bool): User is already banned from the server.
-            False (bool): Reason parameter was more than 512 characters.
+            - daystodelete is limited to a maximum value of 7. This is a Discord API limitation.
+            - If the user isn't in the server, has heavy privacy settings enabled, or has the 
+            bot blocked they will be unable to receive the ban notification. The bot will let 
+            the invoking mod know if this is the case.
         """
         await ctx.defer()
 
         if isinstance(user, discord.Member):
             if not await can_action_member(ctx=ctx, member=user):
-                await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
-                return False
+                return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
         else:  # TODO: is this really the best way to handle this?
             user = await self.bot.fetch_user(user)
 
         if await self.is_user_banned(ctx=ctx, user=user):
-            await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
-            raise False
+            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
 
         if len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return False
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -118,12 +96,6 @@ class BansCommands(commands.Cog):
                 ),
             )
 
-        await ctx.guild.ban(
-            user=user,
-            reason=reason,
-            delete_message_days=daystodelete if daystodelete else 0
-        )
-
         db = database.Database().get()
         db["mod_logs"].insert(dict(
             user_id=user.id,
@@ -134,8 +106,8 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
+        await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
         await ctx.send_followup(embed=embed)
-        return True
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
@@ -146,17 +118,12 @@ class BansCommands(commands.Cog):
         reason: Option(str, description="Reason why the user is being unbanned", required=True),
     ) -> bool:
         """
-        Unban the user from the server.
+        Unban the user from the server and log the action to the database.
 
-        Args:
-            ctx (context.ApplicationContext): Context for the function invoke.
-            user (discord.User): User to unban from the server.
-            reason (str): Reason why the user is being unbanned.
-
-        Returns:
-            True (bool): User was successfully unbanned.
-            False (bool): User is not banned from the server.
-            False (bool): Reason parameter was more than 512 characters.
+        Notes:
+            - Unlike when the user is banned, the bot is completely unable to let the user know
+            that they were unbanned because it cannot communicate with users that it does not
+            share a mutual server with.
         """
         await ctx.defer()
 
@@ -164,12 +131,10 @@ class BansCommands(commands.Cog):
             user = await self.bot.fetch_user(user)
 
         if not await self.is_user_banned(ctx=ctx, user=user):
-            await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
-            return False
+            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
 
         if len(reason) > 512:
-            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
-            return False
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -184,8 +149,6 @@ class BansCommands(commands.Cog):
             value=f"Unable to message {user.mention} about this action because they are not in the server."
         )
 
-        await ctx.guild.unban(user=user, reason=reason)
-
         db = database.Database().get()
         db["mod_logs"].insert(dict(
             user_id=user.id,
@@ -197,8 +160,8 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
+        await ctx.guild.unban(user=user, reason=reason)
         await ctx.send_followup(embed=embed)
-        return True
 
 
 def setup(bot: commands.bot.Bot) -> None:
