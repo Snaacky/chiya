@@ -14,15 +14,6 @@ class PurgeCommands(commands.Cog):
         self.bot = bot
 
     async def can_purge_messages(self, ctx: context.ApplicationContext):
-        """
-        Checks if messages can be purged based on the context.
-
-        Args:
-            ctx (): The context of the slash command.
-
-        Returns:
-            True if able to purge, False otherwise.
-        """
         if ctx.author.id == ctx.guild.owner.id:
             return True
 
@@ -56,21 +47,6 @@ class PurgeCommands(commands.Cog):
             required=True,
         ),
     ):
-        """
-        Slash command for purging messages from a channel.
-
-        Args:
-            ctx (): The context of the slash command.
-            amount (): The number of messages to purge.
-            reason (): The reason provided by the staff member issuing the purge.
-
-        Notes:
-            - The upper limit for amount is 100 messages and any attempts to use a
-            higher number will be capped down to 100.
-            - Uses bulk=True to delete messages faster in one sweep at the cost of
-            being unable to delete messages older than 2 weeks.
-        """
-
         await ctx.defer()
 
         if not await self.can_purge_messages(ctx):
