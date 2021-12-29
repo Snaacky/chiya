@@ -14,7 +14,7 @@ def make_embed(
         fields: list = None,
         footer: str = None,
 ) -> discord.Embed:
-    """A wrapper for discord.Embed with added support for non-native attributes."""
+    """ A wrapper for discord.Embed with added support for non-native attributes. """
 
     if not isinstance(color, (int, discord.colour.Colour)):
         embed = discord.Embed(title=title, description=description, color=discord.Color.default())
@@ -47,7 +47,7 @@ def make_embed(
 
 
 async def success_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
-    """Send a simple, self-destruct success message."""
+    """ Send a simple, self-destruct success message. """
     embed = make_embed(
         title=title if title else "Success:",
         description=description,
@@ -58,18 +58,18 @@ async def success_message(ctx: context.ApplicationContext, description: str, tit
 
 
 async def error_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
-    """Send a simple, self-destruct error message."""
+    """ Send a simple, self-destruct error message. """
     embed = make_embed(
         title=title if title else "Error:",
         description=description,
-        color=discord.Color.green(),
+        color=discord.Color.red(),
     )
 
     await ctx.send_followup(embed=embed, delete_after=30)
 
 
 async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
-    """Send a simple, self-destruct warning message."""
+    """ Send a simple, self-destruct warning message. """
     embed = make_embed(
         title=title if title else "Warning:",
         description=description,
@@ -80,7 +80,7 @@ async def warning_message(ctx: context.ApplicationContext, description: str, tit
 
 
 def error_embed(ctx: context.ApplicationContext, title: str, description: str, author: bool = True) -> discord.Embed:
-    """ Make a basic error message embed."""
+    """ Make a basic error message embed. """
     return make_embed(
         ctx=ctx,
         title=title if title else "Error:",
