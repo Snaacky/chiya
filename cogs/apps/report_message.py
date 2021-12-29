@@ -49,7 +49,8 @@ class ReportMessageButtons(discord.ui.View):
     @discord.ui.button(label="Submit Report", style=discord.ButtonStyle.primary, custom_id="submit_report")
     async def submit(self, button: discord.ui.Button, interaction: discord.Interaction):
         """ Create a View for the report message embed confirmation button. """
-        await interaction.response.edit_message(view=None)
+        embed = embeds.make_embed(description=f"Your report has been submitted.", color=discord.Color.blurple())
+        await interaction.response.edit_message(embed=embed, view=None)
         self.value = True
         self.stop()
 
@@ -147,13 +148,6 @@ class ReportMessageApp(commands.Cog):
 
             await channel.send(ctx.author.mention, delete_after=1)
             await channel.send("@here", delete_after=1)
-
-            success_embed = embeds.make_embed(
-                description=f"Your report has been submitted.",
-                color=discord.Color.blurple(),
-            )
-
-            await ctx.send_followup(embed=success_embed, ephemeral=True)
 
 
 def setup(bot: commands.bot.Bot) -> None:
