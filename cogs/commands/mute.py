@@ -115,7 +115,6 @@ class MuteCommands(commands.Cog):
         # TODO: what happens if the user doesn't have permission for timeouts?
         await member.timeout(until=datetime.datetime.utcfromtimestamp(mute_end_time), reason=reason)
         await ctx.send_followup(embed=mute_embed)
-        return True
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmute a member in the server")
     @permissions.has_role(config["roles"]["staff"])
