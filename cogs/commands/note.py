@@ -24,20 +24,30 @@ class NoteCommands(commands.Cog):
     async def add_note(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.Member, description="The user to add the note to", required=True),
-        note: Option(str, description="The note to leave on the user", required=True),
-    ):
-        """Adds a moderator note to a user."""
+        user: Option(discord.User, description="The user to add the note to", required=True),
+        note: Option(str, description="The note to leave on the user", required=True)
+    ) -> bool:
+        """
+        Adds a note to the users profile.
+
+        Notes can only be seen by staff via the /search command and do not punish the
+        user in anyway. They are merely for staff to log relevant information. Users are
+        not alerted when a note is added to them.
+
+        Args:
+            ctx (context.ApplicationContext): Context for the function invoke.
+            user (discord.User): User to add a note to.
+            note (str): Note to add to the user.
+
+        Returns:
+            True (bool): Note was successfully added to the user.
+        """
         await ctx.defer()
 
-        # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(user, discord.Member):
             user = await self.bot.fetch_user(user)
 
-        # Open a connection to the database.
         db = database.Database().get()
-
-        # Add the note to the mod_logs database.
         note_id = db["mod_logs"].insert(
             dict(
                 user_id=user.id,
@@ -47,6 +57,8 @@ class NoteCommands(commands.Cog):
                 type="note",
             )
         )
+        db.commit()
+        db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -57,11 +69,9 @@ class NoteCommands(commands.Cog):
         )
         embed.add_field(name="ID: ", value=note_id, inline=False)
         embed.add_field(name="Note: ", value=note, inline=False)
-        await ctx.send_followup(embed=embed)
 
-        # Commit the changes to the database and close the connection.
-        db.commit()
-        db.close()
+        await ctx.send_followup(embed=embed)
+        return True
 
     @slash_command(name="search", guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
@@ -75,24 +85,32 @@ class NoteCommands(commands.Cog):
             choices=["ban", "unban", "mute", "unmute", "kick", "restrict", "unrestrict", "warn", "note"],
             required=False
         )
-    ):
-        """Searches for mod actions on a user"""
+    ) -> bool:
+        """
+        Search for the mod actions and notes for a user.
+
+        Args:
+            ctx (context.ApplicationContext): Context for the function invoke.
+            user (discord.User): Member to search mod actions and notes for.
+            action (str, optional): Type to filter mod logs by.
+
+        Returns:
+            True (bool): Mod actions and notes were successfully returned for the user.
+            False (bool): No mod actions or notes exist for the user.
+        """
         await ctx.defer()
 
-        # If we received an int instead of a discord.Member, the user is not in the server.
         if not isinstance(user, discord.Member):
             user = await self.bot.fetch_user(user)
 
-        # Open a connection to the database.
         db = database.Database().get()
-
-        # Querying DB for the list of actions matching the filter criteria (if mentioned).
+        # TODO: can't this be merged into one call because action will return None either way?
         if action:
             results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
         else:
             results = db["mod_logs"].find(user_id=user.id, order_by="-id")
+        db.close()
 
-        # Creating a List to store actions for the paginator.
         actions = []
         for action in results:
             action_emoji = {
@@ -108,9 +126,7 @@ class NoteCommands(commands.Cog):
             }
 
             action_type = action["type"]
-            # Capitalising the first letter of the action type.
             action_type = action_type[0].upper() + action_type[1:]
-            # Adding fluff emoji to action_type.
             action_type = f"{action_emoji[action['type']]} {action_type}"
 
             actions.append(
@@ -122,17 +138,12 @@ class NoteCommands(commands.Cog):
             )
 
         if not actions:
-            return await embeds.error_message(
-                ctx=ctx,
-                description="No mod actions found for that user!"
-            )
-
-        db.close()
+            await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
+            return False
 
         embed = embeds.make_embed(title="Mod Actions")
         embed.set_author(name=user, icon_url=user.avatar.url)
 
-        # paginating through the results
         await LinePaginator.paginate(
             lines=actions,
             ctx=ctx,
@@ -142,6 +153,7 @@ class NoteCommands(commands.Cog):
             linesep="\n",
             timeout=120,
         )
+        return True
 
     @slash_command(name="editlog", guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
@@ -150,20 +162,28 @@ class NoteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         id: Option(int, description="The ID of the log or note to be edited", required=True),
         note: Option(str, description="The updated message for the log or note", required=True),
-    ):
+    ) -> bool:
+        """
+        Edits a mod action or note description.
+
+        Args:
+            ctx (context.ApplicationContext): Context for the function invoke.
+            id (int): Log ID to be edited.
+            note (str): Updated message for the log or note.
+
+        Returns:
+            True (bool): Mod action or note was successfully edited.
+            False (bool): No log exists with that ID.
+        """
+        # TODO: we use db["mod_logs"] directly instead of defining a variable, need to fix that here...
         await ctx.defer()
 
-        # Open a connection to the database.
         db = database.Database().get()
-
         table = db["mod_logs"]
-
         mod_log = table.find_one(id=id)
         if not mod_log:
-            await embeds.error_message(
-                ctx=ctx, description="Could not find a log with that ID!"
-            )
-            return
+            await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
+            return False
 
         user = await self.bot.fetch_user(mod_log["user_id"])
         embed = embeds.make_embed(
@@ -175,14 +195,14 @@ class NoteCommands(commands.Cog):
         )
         embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
         embed.add_field(name="After:", value=note, inline=False)
-        await ctx.send_followup(embed=embed)
 
         mod_log["reason"] = note
         table.update(mod_log, ["id"])
-
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
+
+        await ctx.send_followup(embed=embed)
+        return True
 
 
 def setup(bot: commands.bot.Bot) -> None:

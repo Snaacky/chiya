@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Union
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -16,20 +17,23 @@ class BansCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
+    async def is_user_banned(
+        self,
+        ctx: context.ApplicationContext,
+        user: discord.User
+    ) -> Union[discord.BanEntry, False]:
         """
-        Checks if the user if the user is banned.
+        Check the guild to see if the user is banned.
 
         Args:
-            ctx (context.ApplicationContext): The context of the slash command.
-            user (discord.User): The user to be checked.
+            ctx (context.ApplicationContext): Context for the function invoke.
+            user (discord.User): User that is being checked for a ban.
 
         Returns:
-            True if the user is banned, False otherwise.
-
-        Raises:
-            discord.NotFound: Raised if the user is not found in the ban list.
+            discord.BanEntry: User is banned from the server.
+            False (bool): User is not banned from the server.
         """
+        # TODO: change this into a true or false return because the BanEntry isn't used
         try:
             return await self.bot.get_guild(ctx.guild.id).fetch_ban(user)
         except discord.NotFound:
@@ -40,47 +44,51 @@ class BansCommands(commands.Cog):
     async def ban(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.User, description="The member that will be banned", required=True),
-        reason: Option(str, description="The reason why the member is being banned", required=True),
-        daystodelete: Option(int, description="The number of days of messages to delete from the member, up to 7", required=False),
-    ):
+        user: Option(discord.User, description="User to ban from the server", required=True),
+        reason: Option(str, description="Reason why the user is being banned", required=True),
+        daystodelete: Option(int, description="Days worth of messages to delete from the user, up to 7", required=False)
+    ) -> bool:
         """
-        Slash command for banning users from the server.
+        Ban the user from the server. Attempt to alert them of their ban via direct message.
 
         Args:
-            ctx (context.ApplicationContext): The context of the slash command.
-            user (discord.User): The user to ban from the server.
-            reason (str): The reason provided by the staff member issuing the ban.
-            daystodelete (int): The days of messages to delete from the banned user.
+            ctx (context.ApplicationContext): Context for the function invoke.
+            user (discord.User): User to ban from the server.
+            reason (str): Reason why the user is being banned.
+            daystodelete (int, optional): Days worth of messages to delete from the user, up to 7.
 
         Notes:
-            delete_message_days is capped at 7 days maximum, this is a Discord API limitation.
+            daystodelete is limited to a maximum value of 7. This is a Discord API limitation.
 
-        Raises:
-            discord.Forbidden: Raised when unable to message the banned user due to
-            them having privacy settings enabled, not being in the server, or having the bot
-            blocked.
+        Returns:
+            True (bool): User was successfully banned from the server.
+            False (bool): Invoking mod cannot action the user specified due to permissions.
+            False (bool): User is already banned from the server.
+            False (bool): Reason parameter was more than 512 characters.
         """
         await ctx.defer()
 
         if isinstance(user, discord.Member):
             if not await can_action_member(ctx=ctx, member=user):
-                return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
-        else:
+                await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
+                return False
+        else:  # TODO: is this really the best way to handle this?
             user = await self.bot.fetch_user(user)
 
         if await self.is_user_banned(ctx=ctx, user=user):
-            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
+            await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
+            raise False
 
         if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            return False
 
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Banning user: {user}",
             description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/l0jyxkz.png",
-            color="soft_red",
+            color="soft_red"
         )
 
         try:
@@ -127,22 +135,28 @@ class BansCommands(commands.Cog):
         db.close()
 
         await ctx.send_followup(embed=embed)
+        return True
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False)
     @permissions.has_role(config["roles"]["staff"])
     async def unban(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.Member, description="The user that will be unbanned", required=True),
-        reason: Option(str, description="The reason why the user is being unbanned", required=True),
-    ):
+        user: Option(discord.Member, description="User to unban from the server", required=True),
+        reason: Option(str, description="Reason why the user is being unbanned", required=True),
+    ) -> bool:
         """
-        Slash command for unbanning users from the server.
-        
+        Unban the user from the server.
+
         Args:
-            ctx (context.ApplicationContext): The context of the slash command.
-            user (discord.Member): The user to unban from the server.
-            reason (str): The reason provided by the staff member issuing the unban.
+            ctx (context.ApplicationContext): Context for the function invoke.
+            user (discord.User): User to unban from the server.
+            reason (str): Reason why the user is being unbanned.
+
+        Returns:
+            True (bool): User was successfully unbanned.
+            False (bool): User is not banned from the server.
+            False (bool): Reason parameter was more than 512 characters.
         """
         await ctx.defer()
 
@@ -150,28 +164,27 @@ class BansCommands(commands.Cog):
             user = await self.bot.fetch_user(user)
 
         if not await self.is_user_banned(ctx=ctx, user=user):
-            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
+            await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
+            return False
 
         if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+            return False
 
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unbanning user: {user}",
             description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/4H0IYJH.png",
-            color="soft_green",
+            color="soft_green"
         )
 
         embed.add_field(
             name="Notice:",
-            value=f"Unable to message {user.mention} about this action " "because they are not in the server.",
+            value=f"Unable to message {user.mention} about this action because they are not in the server."
         )
 
-        try:
-            await ctx.guild.unban(user=user, reason=reason)
-        except discord.HTTPException:
-            return
+        await ctx.guild.unban(user=user, reason=reason)
 
         db = database.Database().get()
         db["mod_logs"].insert(dict(
@@ -179,12 +192,13 @@ class BansCommands(commands.Cog):
             mod_id=ctx.author.id,
             timestamp=int(time.time()),
             reason=reason,
-            type="unban",
+            type="unban"
         ))
         db.commit()
         db.close()
 
         await ctx.send_followup(embed=embed)
+        return True
 
 
 def setup(bot: commands.bot.Bot) -> None:
