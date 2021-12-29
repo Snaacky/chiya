@@ -20,7 +20,7 @@ class BansCommands(commands.Cog):
     async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
         """ Check if the user is banned from the context invoking guild. """
         try:
-            return await bool(self.bot.get_guild(ctx.guild.id).fetch_ban(user))
+            return bool(await self.bot.get_guild(ctx.guild.id).fetch_ban(user))
         except discord.NotFound:
             return False
 
@@ -60,15 +60,16 @@ class BansCommands(commands.Cog):
         if await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
 
-        if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+        if len(reason) > 4096:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title=f"Banning user: {user}",
             description=f"{user.mention} was banned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/l0jyxkz.png",
-            color="soft_red"
+            color=discord.Color.red(),
         )
 
         try:
@@ -80,13 +81,12 @@ class BansCommands(commands.Cog):
                     "You can submit a ban appeal on our subreddit [here]"
                     "(https://www.reddit.com/message/compose/?to=/r/animepiracy)."
                 ),
-                color=0xC2BAC0,
-            )
-            dm_embed.add_field(name="Server:", value=f"[{ctx.guild}](https://discord.gg/piracy)", inline=True)
-            dm_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
-            dm_embed.add_field(name="Length:", value="Indefinite", inline=True)
-            dm_embed.add_field(name="Reason:", value=reason, inline=False)
-            dm_embed.set_image(url="https://i.imgur.com/CglQwK5.gif")
+                image_url="https://i.imgur.com/CglQwK5.gif",
+                color=discord.Color.blurple(),
+                fields=[
+                    {"name": "Server:", "value": f"[{ctx.guild}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                ])
             await channel.send(embed=dm_embed)
         except discord.Forbidden:
             embed.add_field(
@@ -95,15 +95,15 @@ class BansCommands(commands.Cog):
                     f"Unable to message {user.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                ),
-            )
+                ))
 
         db = database.Database().get()
         db["mod_logs"].insert(dict(
             user_id=user.id,
             mod_id=ctx.author.id,
             timestamp=int(time.time()),
-            reason=reason, type="ban"
+            reason=reason,
+            type="ban",
         ))
         db.commit()
         db.close()
@@ -134,20 +134,16 @@ class BansCommands(commands.Cog):
         if not await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
 
-        if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+        if len(reason) > 4096:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title=f"Unbanning user: {user}",
             description=f"{user.mention} was unbanned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/4H0IYJH.png",
-            color="soft_green"
-        )
-
-        embed.add_field(
-            name="Notice:",
-            value=f"Unable to message {user.mention} about this action because they are not in the server."
+            color=discord.Color.green(),
         )
 
         db = database.Database().get()
