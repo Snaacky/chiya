@@ -64,7 +64,7 @@ class PurgeCommands(commands.Cog):
             title="Purged messages",
             description=f"{ctx.author.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
-            color="soft_red",
+            color=discord.Color.red(),
             fields=[{"name": "Reason:", "value": reason, "inline": False}]
         )
         await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)

@@ -55,7 +55,7 @@ class NoteCommands(commands.Cog):
             title=f"Noting user: {user.name}",
             description=f"{user.mention} was noted by {ctx.author.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
-            color="blurple",
+            color=discord.Color.blurple(),
             fields=[
                 {"name": "ID:", "value": note_id, "inline": False},
                 {"name": "Note:", "value": note, "inline": False},
@@ -150,7 +150,7 @@ class NoteCommands(commands.Cog):
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
-            color="soft_green",
+            color=discord.Color.green(),
             fields=[
                 {"name": "Before:", "value": mod_log["reason"], "inline": False},
                 {"name": "After:", "value": note, "inline": False}
