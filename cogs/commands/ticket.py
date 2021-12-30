@@ -17,8 +17,8 @@ class TicketCommands(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_ready(self):
-        """Register the embed button and ticket close button that persists between bot restarts."""
+    async def on_ready(self) -> None:
+        """ Register the embed button and ticket close button that persists between bot restarts. """
         self.bot.add_view(TicketCreateButton())
         self.bot.add_view(TicketCloseButton())
 
@@ -28,24 +28,20 @@ class TicketCommands(commands.Cog):
         default_permission=False,
         permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],
     )
-    async def ticket(self, ctx: context.ApplicationContext):
+    async def ticket(self, ctx: context.ApplicationContext) -> None:
         """
-        Create the ticket embed.
+        Command to create an embed that allows creating tickets.
 
-        Args:
-            ctx (context.ApplicationContext): The context of the slash command.
-
-        Notes:
-            In the decorator, type 1 is role and type 2 is user.
+        Permission type 1 is role and type 2 is user.
         """
         await ctx.defer()
 
         embed = embeds.make_embed(
-            color="blurple",
             title="📫  Open a ticket",
             description="To create a ticket, click on the button below.",
+            footer="Abusing will result in a ban. Only use this feature for serious inquiries.",
+            color=discord.Color.blurple(),
         )
-        embed.set_footer(text="Abusing will result in a ban. Only use this feature for serious inquiries.")
         await ctx.send_followup(embed=embed, view=TicketCreateButton())
 
 
@@ -54,17 +50,15 @@ class TicketCreateButton(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
-    async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The create ticket button of the ticket embed.
+        The create ticket button of the ticket embed, that prompts for confirmation before proceeding.
 
-        Args:
-            button (discord.ui.Button): Required positional argument that represents the button.
-            interaction (discord.Interaction): The context of the interaction.
+        The `button` parameter is positional and required despite unused.
         """
         embed = embeds.make_embed(
             description=f"{interaction.user.mention}, are you sure that you want to open a ticket?",
-            color="blurple",
+            color=discord.Color.blurple(),
         )
         await interaction.response.send_message(embed=embed, view=TicketConfirmButtons(), ephemeral=True)
 
@@ -74,20 +68,20 @@ class TicketConfirmButtons(discord.ui.View):
         super().__init__()
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.primary, custom_id="confirm_ticket")
-    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The confirm button to open a ticket.
+        The confirm button to open a ticket. Return if the user already have a ticket opened. Otherwise,
+        create a private ticket channel, ghost ping the author and ping staff if the author is a VIP,
+        send a pinned embed with a close button, and create a pending ticket entry in the database.
 
-        Args:
-            button (discord.ui.Button): Required positional argument that represents the button.
-            interaction (discord.Interaction): The context of the interaction.
+        The `button` parameter is positional and required despite unused.
         """
         category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
 
         if ticket:
             embed = embeds.make_embed(
-                color="blurple",
+                color=discord.Color.blurple(),
                 description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}"
             )
             return await interaction.response.edit_message(embed=embed, view=None)
@@ -109,11 +103,15 @@ class TicketConfirmButtons(discord.ui.View):
             await channel.send(f"<@&{config['roles']['staff']}>")
 
         embed = embeds.make_embed(
-            color="blurple",
             title="🎫  Ticket created",
-            description="Please wait patiently until a staff member is able to assist you. In the meantime, briefly describe what you need help with.",
+            description=(
+                "Please wait patiently until a staff member is able to assist you. "
+                "In the meantime, briefly describe what you need help with."
+            ),
+            fields=[{"name": "Ticket Creator:", "value": interaction.user.mention, "inline": False}],
+            color=discord.Color.blurple(),
         )
-        embed.add_field(name="Ticket Creator:", value=interaction.user.mention, inline=False)
+
         message = await channel.send(embed=embed, view=TicketCloseButton())
         await message.pin()
 
@@ -123,7 +121,7 @@ class TicketConfirmButtons(discord.ui.View):
         embed = embeds.make_embed(
             title="Created a ticket",
             description=f"Successfully opened a ticket: {channel.mention}",
-            color="blurple",
+            color=discord.Color.blurple(),
         )
         await interaction.response.edit_message(embed=embed, view=None)
 
@@ -140,15 +138,13 @@ class TicketConfirmButtons(discord.ui.View):
         db.close()
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, custom_id="cancel_ticket")
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
         The cancel button to cancel the ticket creation attempt.
 
-        Args:
-            button (discord.ui.Button): Required positional argument that represents the button.
-            interaction (discord.Interaction): The context of the interaction.
+        The `button` parameter is positional and required despite unused.
         """
-        embed = embeds.make_embed(description="Your ticket creation request has been canceled.", color="soft_red")
+        embed = embeds.make_embed(color=discord.Color.red(), description="Your ticket creation request has been canceled.", )
         await interaction.response.edit_message(embed=embed, view=None)
 
 
@@ -157,15 +153,14 @@ class TicketCloseButton(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")
-    async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The close button to close and archive an existing ticket.
+        The close ticket button. Iterates through the channel's messages to create a log,
+        send it to PrivateBin, send an embed into the log channel, and delete the channel.
 
-        Args:
-            button (discord.ui.Button): Required positional argument that represents the button.
-            interaction (discord.Interaction): The context of the interaction.
+        The `button` parameter is positional and required despite unused.
         """
-        close_embed = embeds.make_embed(color="blurple", description="The ticket will be closed shortly...")
+        close_embed = embeds.make_embed(color=discord.Color.blurple(), description="The ticket will be closed shortly...")
         await interaction.response.send_message(embed=close_embed)
 
         db = database.Database().get()
@@ -196,37 +191,33 @@ class TicketCloseButton(discord.ui.View):
         url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
 
         log_embed = embeds.make_embed(
-            author=False,
             title=f"{interaction.channel.name} archived",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
-            color=0x00FFDF,
-        )
-        log_embed.add_field(name="Ticket Creator:", value=member.mention, inline=True)
-        log_embed.add_field(name="Closed By:", value=interaction.user.mention, inline=True)
-        log_embed.add_field(name="Participating Moderators:", value=value, inline=False)
-        log_embed.add_field(name="Ticket Log: ", value=url, inline=False)
+            color=discord.Color.blurple(),
+            fields=[
+                {"name": "Ticket Creator:", "value": member.mention, "inline": True},
+                {"name": "Closed By:", "value": interaction.user.mention, "inline": True},
+                {"name": "Participating Moderators:", "value": value, "inline": False},
+                {"name": "Ticket Log:", "value": url, "inline": False},
+            ])
         ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["logs"]["ticket_log"])
         await ticket_log.send(embed=log_embed)
 
         try:
-            embed = embeds.make_embed(
-                author=False,
-                color=0xF4CDC5,
+            dm_embed = embeds.make_embed(
+                image_url="https://i.imgur.com/21nJqGC.gif",
+                color=discord.Color.blurple(),
                 title="Ticket closed",
                 description=(
                     "Your ticket was closed. "
                     "Please feel free to create a new ticket should you have any further inquiries."
                 ),
-            )
-            embed.add_field(
-                name="Server:",
-                value=f"[{interaction.guild.name}](https://discord.gg/piracy)",
-                inline=False,
-            )
-            embed.add_field(name="Ticket Log:", value=url, inline=False)
-            embed.set_image(url="https://i.imgur.com/21nJqGC.gif")
-            await member.send(embed=embed)
-        except discord.HTTPException:
+                fields=[
+                    {"name": "Server:", "value": f"[{interaction.guild.name}](https://discord.gg/piracy)", "inline": False},
+                    {"name": "Ticket Log:", "value": url, "inline": False},
+                ])
+            await member.send(embed=dm_embed)
+        except discord.Forbidden:
             logging.info(f"Unable to send ticket log to {member} because their DM is closed")
 
         ticket["status"] = "completed"
