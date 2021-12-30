@@ -4,13 +4,12 @@ from datetime import datetime
 from typing import Optional
 
 import discord
-from discord.ext import commands
 from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 from utils import database, embeds
 from utils.config import config
 from utils.pagination import LinePaginator
-
 
 log = logging.getLogger(__name__)
 
@@ -48,8 +47,7 @@ class NoteCommands(commands.Cog):
                 timestamp=int(time.time()),
                 reason=note,
                 type="note",
-            )
-        )
+            ))
         db.commit()
         db.close()
 
@@ -59,9 +57,10 @@ class NoteCommands(commands.Cog):
             description=f"{user.mention} was noted by {ctx.author.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="blurple",
-        )
-        embed.add_field(name="ID: ", value=note_id, inline=False)
-        embed.add_field(name="Note: ", value=note, inline=False)
+            fields=[
+                {"name": "ID:", "value": note_id, "inline": False},
+                {"name": "Note:", "value": note, "inline": False},
+            ])
 
         await ctx.send_followup(embed=embed)
 
@@ -74,10 +73,10 @@ class NoteCommands(commands.Cog):
         action: Option(
             str,
             description="Filter specific actions",
-            choices=["ban", "unban", "mute", "unmute", "kick", "restrict", "unrestrict", "warn", "note"],
-            required=False
+            choices=["ban", "unban", "mute", "unmute", "warn", "note"],
+            required=False,
         )
-    ) -> bool:
+    ) -> Optional[discord.Embed]:
         """ Search for the mod actions and notes for a user. """
         await ctx.defer()
 
@@ -98,11 +97,8 @@ class NoteCommands(commands.Cog):
                 "mute": "🤐",
                 "unmute": "🗣",
                 "warn": "⚠",
-                "kick": "👢",
                 "ban": "🔨",
                 "unban": "⚒",
-                "restrict": "🚫",
-                "unrestrict": "✅",
                 "note": "🗒️",
             }
 
@@ -143,12 +139,10 @@ class NoteCommands(commands.Cog):
         note: Option(str, description="The updated message for the log or note", required=True),
     ) -> Optional[discord.Embed]:
         """ Edit a mod action or note on a users profile. """
-        # TODO: we use db["mod_logs"] directly instead of defining a variable, need to fix that here...
         await ctx.defer()
 
         db = database.Database().get()
-        table = db["mod_logs"]
-        mod_log = table.find_one(id=id)
+        mod_log = db["mod_logs"].find_one(id=id)
         if not mod_log:
             return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
 
@@ -159,12 +153,13 @@ class NoteCommands(commands.Cog):
             description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color="soft_green",
-        )
-        embed.add_field(name="Before:", value=mod_log["reason"], inline=False)
-        embed.add_field(name="After:", value=note, inline=False)
+            fields=[
+                {"name": "Before:", "value": mod_log["reason"], "inline": False},
+                {"name": "After:", "value": note, "inline": False}
+            ])
 
         mod_log["reason"] = note
-        table.update(mod_log, ["id"])
+        db["mod_logs"].update(mod_log, ["id"])
         db.commit()
         db.close()
 
