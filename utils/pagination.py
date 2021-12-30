@@ -4,7 +4,8 @@ import typing
 
 import discord
 from discord.abc import User
-from discord.ext.commands import Context, Paginator
+from discord.commands import context
+from discord.ext.commands import Paginator
 
 FIRST_EMOJI = "\u23EE"   # [:track_previous:]
 LEFT_EMOJI = "\u2B05"    # [:arrow_left:]
@@ -46,6 +47,7 @@ class LinePaginator(Paginator):
         This function overrides the Paginator.__init__ from inside discord.ext.commands.\n
         It overrides in order to allow us to configure the maximum number of lines per page.
         """
+        super(LinePaginator, self).__init__()
         self.linesep = linesep
         self.prefix = prefix
         self.suffix = suffix
@@ -174,7 +176,7 @@ class LinePaginator(Paginator):
     async def paginate(
         cls,
         lines: typing.List[str],
-        ctx: Context,
+        ctx: context.ApplicationContext,
         embed: discord.Embed,
         prefix: str = "",
         suffix: str = "",
@@ -261,7 +263,7 @@ class LinePaginator(Paginator):
                 embed.url = url
 
             log.debug("There's less than two pages, so we won't paginate - sending single page on its own")
-            return await ctx.respond(embed=embed, delete_after=time_to_delete)
+            return await ctx.send_followup(embed=embed, delete_after=time_to_delete)
         else:
             if footer_text:
                 embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
@@ -272,7 +274,7 @@ class LinePaginator(Paginator):
                 embed.url = url
 
             log.debug("Sending first page to channel...")
-            message = await ctx.respond(embed=embed, delete_after=time_to_delete)
+            message = await ctx.send_followup(embed=embed, delete_after=time_to_delete)
 
         log.debug("Adding emoji reactions to message...")
 
