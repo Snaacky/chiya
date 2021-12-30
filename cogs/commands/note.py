@@ -52,7 +52,6 @@ class NoteCommands(commands.Cog):
         db.close()
 
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"Noting user: {user.name}",
             description=f"{user.mention} was noted by {ctx.author.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
@@ -148,7 +147,6 @@ class NoteCommands(commands.Cog):
 
         user = await self.bot.fetch_user(mod_log["user_id"])
         embed = embeds.make_embed(
-            ctx=ctx,
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
