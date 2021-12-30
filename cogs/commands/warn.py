@@ -25,46 +25,39 @@ class WarnCommands(commands.Cog):
         ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be warned", required=True),
         reason: Option(str, description="The reason why the member is being warned", required=True),
-    ):
-        """
-        Sends member a warning DM and logs to database.
-
-        Args:
-            ctx (context.ApplicationContext): The context of the slash command.
-            member (discord.Member): The user to be warned.
-            reason (str): The reason provided by the staff member issuing the warning.
-        """
+    ) -> None:
+        """ Send the member a warning DM and log to database. """
         await ctx.defer()
 
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
-        if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+        if len(reason) > 4096:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title=f"Warning member: {member.name}",
+            description=f"{member.mention} was warned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/4jeFA3h.png",
-            color="soft_orange"
+            color=discord.Color.gold()
         )
 
-        embed.description = f"{member.mention} was warned by {ctx.author.mention} for: {reason}"
-
         try:
-            channel = await member.create_dm()
-            warn_embed = embeds.make_embed(
+            dm_embed = embeds.make_embed(
                 author=False,
                 title="Uh-oh, you've received a warning!",
                 description="If you believe this was a mistake, contact staff.",
-                color=0xf7dcad
-            )
-            warn_embed.add_field(name="Server:", value=f"[{str(ctx.guild)}](https://discord.gg/piracy)", inline=True)
-            warn_embed.add_field(name="Moderator:", value=ctx.author.mention, inline=True)
-            warn_embed.add_field(name="Reason:", value=reason, inline=False)
-            warn_embed.set_image(url="https://i.imgur.com/rVf0mlG.gif")
-            await channel.send(embed=warn_embed)
-        except discord.HTTPException:
+                image_url="https://i.imgur.com/rVf0mlG.gif",
+                color=discord.Color.blurple(),
+                fields=[
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                    {"name": "Reason:", "value": reason, "inline": False},
+                ])
+            await member.send(embed=dm_embed)
+        except discord.Forbidden:
             embed.add_field(
                 name="Notice:",
                 value=(
