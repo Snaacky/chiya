@@ -1,7 +1,6 @@
 import logging
 import time
 from datetime import datetime
-from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -75,7 +74,7 @@ class NoteCommands(commands.Cog):
             choices=["ban", "unban", "mute", "unmute", "warn", "note"],
             required=False,
         )
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """ Search for the mod actions and notes for a user. """
         await ctx.defer()
 
@@ -136,7 +135,7 @@ class NoteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         id: Option(int, description="The ID of the log or note to be edited", required=True),
         note: Option(str, description="The updated message for the log or note", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """ Edit a mod action or note on a users profile. """
         await ctx.defer()
 

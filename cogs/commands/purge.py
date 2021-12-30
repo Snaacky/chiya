@@ -40,7 +40,7 @@ class PurgeCommands(commands.Cog):
         ctx: context.ApplicationContext,
         amount: Option(int, description="The amount of messages to be purged", required=True),
         reason: Option(str, description="The reason why the messages are being purged", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """
         Removes the last X amount of messages in bulk.
 

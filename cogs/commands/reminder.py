@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from datetime import datetime
-from typing import Optional
 
 import discord
 from discord.commands import Option, SlashCommandGroup, context, slash_command
@@ -31,7 +30,7 @@ class ReminderCommands(commands.Cog):
         ctx: context.ApplicationContext,
         duration: Option(str, description="Amount of time until the reminder is sent", required=True),
         message: Option(str, description="Reminder message", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """ Set a reminder message. """
         await ctx.defer()
 
@@ -77,7 +76,7 @@ class ReminderCommands(commands.Cog):
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be updated", required=True),
         new_message: Option(str, description="The updated message for the reminder", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """ Edit a reminder message. """
         await ctx.defer()
 
@@ -157,7 +156,7 @@ class ReminderCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be deleted", required=True),
-    ):
+    ) -> None:
         """ Delete a reminder. """
         await ctx.defer()
 
@@ -195,7 +194,7 @@ class ReminderCommands(commands.Cog):
         await ctx.send_followup(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
-    async def clear(self, ctx: context.ApplicationContext) -> Optional[discord.Embed]:
+    async def clear(self, ctx: context.ApplicationContext) -> None:
         """Clears all reminders."""
         await ctx.defer()
 

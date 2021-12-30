@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -55,7 +54,7 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         message: Option(str, description="The ID for the target message", required=False),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """
         Adds vote emojis (yes and no) reactions to a message.
 

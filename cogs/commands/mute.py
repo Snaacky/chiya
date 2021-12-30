@@ -1,7 +1,6 @@
 import datetime
 import logging
 import time
-from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -27,7 +26,7 @@ class MuteCommands(commands.Cog):
         member: Option(discord.Member, description="The member that will be kicked", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
         duration: Option(str, description="The length of time the user will be muted for", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """
         Mute the user, log the action to the database, and attempt to send them a direct message
         alerting them of their mute.
@@ -112,7 +111,7 @@ class MuteCommands(commands.Cog):
         ctx: context.ApplicationContext,
         member: Option(discord.Member, description="The member that will be unmuted", required=True),
         reason: Option(str, description="The reason why the member is being kicked", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """
         Unmute the user, log the action to the database, and attempt to send them a direct message
         alerting them of their mute.

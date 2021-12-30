@@ -1,6 +1,5 @@
 import logging
 import time
-from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -37,7 +36,7 @@ class BansCommands(commands.Cog):
             choices=[1, 2, 3, 4, 5, 6, 7],
             required=False
         )
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """
         Ban the user, log the action to the database, and attempt to send them a direct
         message alerting them of their ban.
@@ -117,7 +116,7 @@ class BansCommands(commands.Cog):
         ctx: context.ApplicationContext,
         user: Option(discord.Member, description="User to unban from the server", required=True),
         reason: Option(str, description="Reason why the user is being unbanned", required=True),
-    ) -> Optional[discord.Embed]:
+    ) -> None:
         """
         Unban the user from the server and log the action to the database.
 
