@@ -80,8 +80,7 @@ class MuteCommands(commands.Cog):
                     {"name": "Length:", "value": duration, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ])
-            dm_channel = await member.create_dm()
-            await dm_channel.send(embed=dm_embed)
+            await member.send(embed=dm_embed)
         except discord.Forbidden:
             mute_embed.add_field(
                 name="Notice:",
@@ -155,8 +154,7 @@ class MuteCommands(commands.Cog):
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ])
-            channel = await member.create_dm()
-            await channel.send(embed=dm_embed)
+            await member.send(embed=dm_embed)
         except discord.Forbidden:
             unmute_embed.add_field(
                 name="Notice:",

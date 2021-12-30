@@ -73,7 +73,6 @@ class BansCommands(commands.Cog):
         )
 
         try:
-            channel = await user.create_dm()
             dm_embed = embeds.make_embed(
                 author=False,
                 title="Uh-oh, you've been banned!",
@@ -87,7 +86,7 @@ class BansCommands(commands.Cog):
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                 ])
-            await channel.send(embed=dm_embed)
+            await user.send(embed=dm_embed)
         except discord.Forbidden:
             embed.add_field(
                 name="Notice:",
