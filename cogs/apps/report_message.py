@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 
@@ -36,8 +37,7 @@ class ReportCloseButton(discord.ui.View):
 
         close_embed = embeds.make_embed(color=discord.Color.blurple(), description="The report will be closed shortly...")
         await interaction.response.send_message(embed=close_embed)
-
-        time.sleep(3)
+        await asyncio.sleep(3)
         await interaction.channel.delete()
 
 
