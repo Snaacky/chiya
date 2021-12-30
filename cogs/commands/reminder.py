@@ -1,7 +1,9 @@
 import asyncio
 import logging
 from datetime import datetime
+from typing import Optional
 
+import discord
 from discord.commands import Option, SlashCommandGroup, context, slash_command
 from discord.ext import commands
 
@@ -23,42 +25,26 @@ class ReminderCommands(commands.Cog):
         guild_ids=config["guild_ids"],
     )
 
-    @slash_command(
-        guild_ids=config["guild_ids"],
-        description="Sets a reminder note to be sent at a future date",
-    )
+    @slash_command(guild_ids=config["guild_ids"], description="Set a reminder")
     async def remindme(
         self,
         ctx: context.ApplicationContext,
-        duration: Option(
-            str,
-            description="How long until you want the reminder to be sent",
-            required=True,
-        ),
-        message: Option(
-            str,
-            description="The message that you want to be reminded of",
-            required=True,
-        ),
-    ):
-        """Sets a reminder message."""
+        duration: Option(str, description="Amount of time until the reminder is sent", required=True),
+        message: Option(str, description="Reminder message", required=True),
+    ) -> Optional[discord.Embed]:
+        """ Set a reminder message. """
         await ctx.defer()
 
-        # Get the duration string for embed and ban end time for the specified duration.
         duration_string, end_time = utils.duration.get_duration(duration=duration)
-        # If the duration string is empty due to Regex not matching anything, send and error embed and return.
         if not duration_string:
             return await embeds.error_message(
                 ctx=ctx,
                 description=(
                     "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
                     "You can specify up to all four but you only need one."
-                ),
-            )
+                ))
 
-        # Open a connection to the database.
         db = database.Database().get()
-
         remind_id = db["remind_me"].insert(
             dict(
                 reminder_location=ctx.channel.id,
@@ -66,22 +52,23 @@ class ReminderCommands(commands.Cog):
                 date_to_remind=end_time,
                 message=message,
                 sent=False,
-            )
-        )
+            ))
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title="Reminder set",
             description=f"\nI'll remind you about this in {duration_string[:-1]}.",  # Remove the trailing white space.
             thumbnail_url="https://i.imgur.com/VZV64W0.png",
-            color="blurple",
-        )
-        embed.add_field(name="ID: ", value=remind_id, inline=False)
-        embed.add_field(name="Message:", value=message, inline=False)
+            color=discord.Color.blurple(),
+            fields=[
+                {"name": "ID:", "value": remind_id, "inline": False},
+                {"name": "Message:", "value": message, "inline": False},
+            ])
+
         await ctx.send_followup(embed=embed)
 
     @reminder.command(name="edit", descrption="Edit an existing reminder")
@@ -90,11 +77,10 @@ class ReminderCommands(commands.Cog):
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be updated", required=True),
         new_message: Option(str, description="The updated message for the reminder", required=True),
-    ):
-        """Edit a reminder message."""
+    ) -> Optional[discord.Embed]:
+        """ Edit a reminder message. """
         await ctx.defer()
 
-        # Open a connection to the database.
         db = database.Database().get()
 
         remind_me = db["remind_me"]
@@ -110,40 +96,36 @@ class ReminderCommands(commands.Cog):
         data = dict(id=result["id"], message=new_message)
         remind_me.update(data, ["id"])
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title="Reminder set",
             description="Your reminder was updated",
             thumbnail_url="https://i.imgur.com/UUbR5J1.png",
-            color="soft_green",
-        )
-        embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
-        embed.add_field(name="Old Message: ", value=old_message, inline=False)
-        embed.add_field(name="New Message: ", value=new_message, inline=False)
+            color=discord.Color.green(),
+            fields=[
+                {"name": "ID:", "value": str(reminder_id), "inline": False},
+                {"name": "Old Message:", "value": old_message, "inline": False},
+                {"name": "New Message:", "value": new_message, "inline": False},
+            ])
+
         await ctx.send_followup(embed=embed)
 
     @reminder.command(name="list", description="List your existing reminders")
-    async def list(self, ctx: context.ApplicationContext):
-        """List your reminders."""
+    async def list(self, ctx: context.ApplicationContext) -> None:
+        """ List your reminders. """
         await ctx.defer()
 
-        # Open a connection to the database.
         db = database.Database().get()
 
-        # Find all reminders from user and haven't been sent.
-        remind_me = db["remind_me"]
-        results = remind_me.find(sent=False, author_id=ctx.author.id)
+        results = db["remind_me"].find(sent=False, author_id=ctx.author.id)
 
         reminders = []
-
-        # Convert ResultSet to list.
         for result in results:
             alert_time = datetime.fromtimestamp(result["date_to_remind"])
-            # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
             alert_time = alert_time.strftime("%A, %b %d, %Y at %X")
             reminders.append(
                 f"**ID: {result['id']}** \n"
@@ -153,15 +135,12 @@ class ReminderCommands(commands.Cog):
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title="Reminders",
             thumbnail_url="https://i.imgur.com/VZV64W0.png",
-            color="blurple",
+            color=discord.Color.blurple(),
         )
 
-        # Close the connection to the database.
-        db.close()
-
-        # Paginate results.
         await LinePaginator.paginate(
             reminders,
             ctx=ctx,
@@ -171,20 +150,19 @@ class ReminderCommands(commands.Cog):
             restrict_to_user=ctx.author,
         )
 
+        db.close()
+
     @reminder.command(name="delete", description="Delete an existing reminder")
     async def delete(
         self,
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be deleted", required=True),
     ):
-
-        """Delete Reminders. User `reminder list` to find ID"""
+        """ Delete a reminder. """
         await ctx.defer()
 
-        # Open a connection to the database.
         db = database.Database().get()
 
-        # Find all reminders from user and haven't been sent.
         table = db["remind_me"]
         result = table.find_one(id=reminder_id)
 
@@ -197,45 +175,44 @@ class ReminderCommands(commands.Cog):
         if result["sent"]:
             return await embeds.error_message(ctx=ctx, description="This reminder has already been deleted.")
 
-        # All the checks should be done.
         data = dict(id=reminder_id, sent=True)
         table.update(data, ["id"])
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
 
         embed = embeds.make_embed(
             ctx=ctx,
+            author=True,
             title="Reminder deleted",
             description="Your reminder was deleted",
             thumbnail_url="https://i.imgur.com/03bmvBX.png",
-            color="soft_red",
-        )
-        embed.add_field(name="ID: ", value=str(reminder_id), inline=False)
-        embed.add_field(name="Message: ", value=result["message"], inline=False)
+            color=discord.Color.red(),
+            fields=[
+                {"name": "ID:", "value": str(reminder_id), "inline": False},
+                {"name": "Message: ", "value": result["message"], "inline": False},
+            ])
         await ctx.send_followup(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
-    async def clear(self, ctx: context.ApplicationContext):
+    async def clear(self, ctx: context.ApplicationContext) -> Optional[discord.Embed]:
         """Clears all reminders."""
         await ctx.defer()
 
-        # Open a connection to the database.
         db = database.Database().get()
 
         confirm_embed = embeds.make_embed(
             description=f"{ctx.author.mention}, clear all your reminders? (yes/no/y/n)",
-            color="soft_green",
+            color=discord.Color.blurple(),
         )
 
         await ctx.send_followup(embed=confirm_embed)
 
         def check(message):
             return (
-                message.author == ctx.author
-                and message.channel == ctx.channel
-                and message.content.lower() in ("yes", "no", "y", "n")
+                    message.author == ctx.author
+                    and message.channel == ctx.channel
+                    and message.content.lower() in ("yes", "no", "y", "n")
             )
 
         try:
@@ -257,12 +234,11 @@ class ReminderCommands(commands.Cog):
 
         embed = embeds.make_embed(
             description=f"{ctx.author.mention}, all your reminders have been cleared.",
-            color="soft_green",
+            color=discord.Color.green(),
         )
 
         await ctx.send_followup(embed=embed)
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
 
