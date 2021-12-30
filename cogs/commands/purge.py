@@ -1,5 +1,7 @@
 import logging
+from typing import Optional
 
+import discord
 from discord.commands import Option, context, permissions, slash_command
 from discord.ext import commands
 
@@ -31,26 +33,14 @@ class PurgeCommands(commands.Cog):
 
         return True
 
-    @slash_command(
-        guild_ids=config["guild_ids"],
-        default_permission=False,
-        description="Purges the last X amount of messages",
-    )
+    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Purge the last X amount of messages")
     @permissions.has_role(config["roles"]["staff"])
     async def purge(
         self,
         ctx: context.ApplicationContext,
-        amount: Option(
-            int,
-            description="The amount of messages to be purged (100 message maximum cap)",
-            required=True,
-        ),
-        reason: Option(
-            str,
-            description="The reason why the messages are being purged",
-            required=True,
-        ),
-    ):
+        amount: Option(int, description="The amount of messages to be purged", required=True),
+        reason: Option(str, description="The reason why the messages are being purged", required=True),
+    ) -> Optional[discord.Embed]:
         """
         Removes the last X amount of messages in bulk.
 
@@ -63,23 +53,20 @@ class PurgeCommands(commands.Cog):
         await ctx.defer()
 
         if not await self.can_purge_messages(ctx):
-            return await embeds.error_message(
-                ctx=ctx, description="You cannot use that command in this category."
-            )
+            return await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
 
-        if len(reason) > 512:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 512 characters.")
+        if len(reason) > 4096:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         amount = 100 if amount > 100 else amount
 
         embed = embeds.make_embed(
-            ctx=ctx,
             title="Purged messages",
             description=f"{ctx.author.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color="soft_red",
+            fields=[{"name": "Reason:", "value": reason, "inline": False}]
         )
-        embed.add_field(name="Reason:", value=reason, inline=False)
         await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
         await ctx.send_followup(embed=embed)
 
