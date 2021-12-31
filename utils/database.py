@@ -73,10 +73,10 @@ class Database:
         if "tickets" not in db:
             tickets = db.create_table("tickets")
             tickets.create_column("user_id", db.types.bigint)
-            tickets.create_column("status", db.types.text)
             tickets.create_column("guild", db.types.bigint)
             tickets.create_column("timestamp", db.types.bigint)
             tickets.create_column("log_url", db.types.text)
+            tickets.create_column("status", db.types.boolean)
             log.info("Created missing table: tickets")
 
         # Commit the changes to the database and close the connection.

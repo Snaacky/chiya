@@ -128,10 +128,10 @@ class TicketConfirmButtons(discord.ui.View):
         db = database.Database().get()
         db["tickets"].insert(dict(
             user_id=interaction.user.id,
-            status="in-progress",
             guild=interaction.guild.id,
             timestamp=int(time.time()),
             log_url=None,
+            status=False,
         ))
 
         db.commit()
@@ -165,7 +165,7 @@ class TicketCloseButton(discord.ui.View):
 
         db = database.Database().get()
         table = db["tickets"]
-        ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status="in-progress")
+        ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status=False)
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
         member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
@@ -220,7 +220,7 @@ class TicketCloseButton(discord.ui.View):
         except discord.Forbidden:
             logging.info(f"Unable to send ticket log to {member} because their DM is closed")
 
-        ticket["status"] = "completed"
+        ticket["status"] = True
         ticket["log_url"] = url
         table.update(ticket, ["id"])
 
