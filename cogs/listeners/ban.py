@@ -13,11 +13,11 @@ log = logging.getLogger(__name__)
 
 class BanListener(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]):
+    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]) -> None:
         ban_entry = await guild.fetch_ban(user)
         logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
         if logs[0].user != self.bot.user:

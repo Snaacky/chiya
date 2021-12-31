@@ -1,5 +1,4 @@
 import glob
-import logging
 
 import discord
 from discord.ext import commands
@@ -8,8 +7,6 @@ import __init__  # noqa
 import utils.database
 from utils.config import config
 
-log = logging.getLogger(__name__)
-
 bot = commands.Bot(
     command_prefix=config["bot"]["prefix"],
     intents=discord.Intents(
@@ -17,29 +14,24 @@ bot = commands.Bot(
         guilds=config["bot"]["intents"]["guilds"],
         members=config["bot"]["intents"]["members"],
         bans=config["bot"]["intents"]["bans"],
-        reactions=config["bot"]["intents"]["reactions"]
+        reactions=config["bot"]["intents"]["reactions"],
     ),
     case_insensitive=config["bot"]["case_insensitive"],
     help_command=None
 )
 
+
 @bot.event
-async def on_ready():
-    """Called when the client is done preparing the data received from Discord.
+async def on_ready() -> None:
+    """ Called when the client is done preparing the data received from Discord. """
 
-    For more information:
-    https://discordpy.readthedocs.io/en/stable/api.html#discord.on_ready
-    """
-    log.info(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
-
-    # Adding in a activity message when the bot begins.
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
             name="your command!"
-        )
-    )
+        ))
     await bot.register_commands()
+
 
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.

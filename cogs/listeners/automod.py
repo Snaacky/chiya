@@ -10,11 +10,11 @@ log = logging.getLogger(__name__)
 
 class AutomodListener(commands.Cog):
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         """
         Scan incoming messages for problematic content and action
         the message (and the user) accordingly.
@@ -22,7 +22,7 @@ class AutomodListener(commands.Cog):
         Args:
             message: The current message.
         """
-        # Ignores messages from bots (includes itself).
+        # Ignore messages from bots (includes itself).
         if message.author.bot:
             return
 
