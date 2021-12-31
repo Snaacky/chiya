@@ -16,7 +16,7 @@ class AutoresponderListener(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         """
         Scan incoming messages for autoresponder invokes (case-insensitive) and replies
         with the appopriate embed. Currently only when invoked by a staff member.

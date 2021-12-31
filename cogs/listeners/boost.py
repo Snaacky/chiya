@@ -24,10 +24,10 @@ class BoostListener(commands.Cog):
     async def on_guild_update(self, before: discord.Guild, after: discord.Guild) -> None:
         await self.on_new_boost(before, after)
 
-    async def on_new_boost(self, before: discord.Guild, after: discord.Guild):
+    async def on_new_boost(self, before: discord.Guild, after: discord.Guild) -> None:
         # TODO: Replace hardcoded mention with a .mention from config.
         if after.premium_subscription_count > before.premium_subscription_count:
-            embed = embeds.make_embed(
+            embed = discord.Embed(
                 title="A new booster appeared!",
                 description=(
                     "Thank you so much for the server boost! "
@@ -36,13 +36,12 @@ class BoostListener(commands.Cog):
                     "[hex color](https://www.google.com/search?q=hex+color) "
                     "and your desired role name for a custom booster role."
                 ),
-                author=False,
-                color="nitro_pink",
-                image_url="https://i.imgur.com/O8R98p9.gif"
+                color=discord.Color.nitro_pink()
             )
+            embed.set_image("https://i.imgur.com/O8R98p9.gif")
             await before.system_channel.send(embed=embed)
 
-    async def on_new_booster(self, before: discord.Member, after: discord.Member):
+    async def on_new_booster(self, before: discord.Member, after: discord.Member) -> None:
         if not before.premium_since and after.premium_since:
             channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
             embed = embeds.make_embed(
@@ -57,7 +56,7 @@ class BoostListener(commands.Cog):
             await channel.send(embed=embed)
             log.info(f'{after} boosted {after.guild.name}.')
 
-    async def on_lost_booster(self, before: discord.Member, after: discord.Member):
+    async def on_lost_booster(self, before: discord.Member, after: discord.Member) -> None:
         # Send an embed in #nitro-logs that someone stopped boosting the server.
         if before.premium_since and not after.premium_since:
             channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])

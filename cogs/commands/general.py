@@ -20,7 +20,7 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="User whose avatar will be grabbed", required=False),
-        server_avatar: Option(bool, description="Whether if their server specific avatar should be used", required=False),
+        guild_avatar: Option(bool, description="Do you want their server specific avatar", required=False)
     ) -> None:
         """
         Grab a user's avatar and return it in a large-sized embed.
@@ -36,10 +36,10 @@ class GeneralCommands(commands.Cog):
             user = await self.bot.fetch_user(user)
 
         embed = embeds.make_embed()
-        if server_avatar and hasattr(user, "guild_avatar"):
+        if guild_avatar and hasattr(user, "guild_avatar"):
             embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
             embed.set_image(url=user.guild_avatar.url)
-        elif server_avatar and not hasattr(user, "guild_avatar"):
+        elif guild_avatar and not hasattr(user, "guild_avatar"):
             embed.set_author(icon_url=user.avatar.url, name=str(user))
             embed.set_image(url=user.avatar.url)
             embed.set_footer(text="⚠️ Warning: Could not find server avatar, defaulted to global avatar.")
@@ -53,7 +53,7 @@ class GeneralCommands(commands.Cog):
     async def vote(
         self,
         ctx: context.ApplicationContext,
-        message: Option(str, description="The ID for the target message", required=False),
+        message: Option(str, description="The ID for the target message", required=False)
     ) -> None:
         """
         Adds vote emojis (yes and no) reactions to a message.

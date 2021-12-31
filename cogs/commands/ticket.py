@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class TicketCommands(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
@@ -46,7 +46,7 @@ class TicketCommands(commands.Cog):
 
 
 class TicketCreateButton(discord.ui.View):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
@@ -64,7 +64,7 @@ class TicketCreateButton(discord.ui.View):
 
 
 class TicketConfirmButtons(discord.ui.View):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.primary, custom_id="confirm_ticket")
@@ -149,7 +149,7 @@ class TicketConfirmButtons(discord.ui.View):
 
 
 class TicketCloseButton(discord.ui.View):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")

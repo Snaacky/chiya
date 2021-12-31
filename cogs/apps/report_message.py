@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import time
 
 import discord
 from discord import message_command
@@ -14,17 +13,17 @@ log = logging.getLogger(__name__)
 
 
 @commands.Cog.listener()
-async def on_ready(self):
+async def on_ready(self) -> None:
     """ Register the close report button that persists between bot restarts. """
     self.bot.add_view(ReportCloseButton())
 
 
 class ReportCloseButton(discord.ui.View):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Report", style=discord.ButtonStyle.danger, custom_id="close_report", emoji="🔒")
-    async def close(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """ The close button to close and archive an existing report. """
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         if role_staff not in interaction.user.roles:
@@ -42,20 +41,20 @@ class ReportCloseButton(discord.ui.View):
 
 
 class ReportMessageButtons(discord.ui.View):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.value = None
 
     @discord.ui.button(label="Submit Report", style=discord.ButtonStyle.primary, custom_id="submit_report")
-    async def submit(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def submit(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """ Create a View for the report message embed confirmation button. """
-        embed = embeds.make_embed(description=f"Your report has been submitted.", color=discord.Color.blurple())
+        embed = embeds.make_embed(description="Your report has been submitted.", color=discord.Color.blurple())
         await interaction.response.edit_message(embed=embed, view=None)
         self.value = True
         self.stop()
 
     @discord.ui.button(label="Cancel Report", style=discord.ButtonStyle.secondary, custom_id="cancel_report")
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """ Create a View for the report message embed cancel button. """
         embed = embeds.make_embed(description="Your report has been canceled.")
         await interaction.response.edit_message(embed=embed, view=None)
@@ -64,11 +63,11 @@ class ReportMessageButtons(discord.ui.View):
 
 class ReportMessageApp(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot) -> None:
         self.bot = bot
 
     @message_command(guild_ids=config["guild_ids"], name="Report Message")
-    async def report_message(self, ctx: context.ApplicationContext, message: discord.Message):
+    async def report_message(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
         """ Context menu command for reporting messages to staff. """
         await ctx.defer(ephemeral=True)
 
@@ -76,7 +75,8 @@ class ReportMessageApp(commands.Cog):
             config["categories"]["moderation"],
             config["categories"]["development"],
             config["categories"]["logs"],
-            config["categories"]["tickets"]]:
+            config["categories"]["tickets"]
+        ]:
             return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command in this category.")
 
         if ctx.author.bot:
