@@ -8,6 +8,7 @@ import __init__  # noqa
 import utils.database
 from utils.config import config
 
+log = logging.getLogger(__name__)
 
 bot = commands.Bot(
     command_prefix=config["bot"]["prefix"],
@@ -21,11 +22,9 @@ bot = commands.Bot(
     case_insensitive=config["bot"]["case_insensitive"],
     help_command=None
 )
-log = logging.getLogger(__name__)
-
 
 @bot.event
-async def on_ready() -> None:
+async def on_ready():
     """Called when the client is done preparing the data received from Discord.
 
     For more information:

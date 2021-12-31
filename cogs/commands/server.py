@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class ServerCommands(commands.Cog):
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     # Permission type 1 is role and type 2 is user.

@@ -1,9 +1,8 @@
 import datetime
 import re
-from typing import Tuple
 
 
-def get_duration(duration) -> Tuple(str, float):
+def get_duration(duration):
     # Recycled RegEx from https://github.com/r-smashbros/setsudo/
     regex = r"((?:(\d+)\s*d(?:ays)?)?\s*(?:(\d+)\s*h(?:ours|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|in)?)?\s*(?:(\d+)\s*s(?:econds|ec)?)?)"
 

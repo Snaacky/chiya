@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class BansCommands(commands.Cog):
-    def __init__(self, bot) -> None:
+    def __init__(self, bot):
         self.bot = bot
 
     async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:

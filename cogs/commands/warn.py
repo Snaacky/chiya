@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 class WarnCommands(commands.Cog):
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot):
         self.bot = bot
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Warn the member")

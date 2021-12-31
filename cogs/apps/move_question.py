@@ -12,11 +12,11 @@ log = logging.getLogger(__name__)
 
 
 class MoveQuestionApp(commands.Cog):
-    def __init__(self, bot) -> None:
+    def __init__(self, bot):
         self.bot = bot
 
     @message_command(guild_ids=config["guild_ids"], name="Move Question")
-    async def move_question(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
+    async def move_question(self, ctx: context.ApplicationContext, message: discord.Message):
         """ Context menu command for moving questions (messages) to #questions-and-help. """
         await ctx.defer(ephemeral=True)
 

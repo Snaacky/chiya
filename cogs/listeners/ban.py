@@ -17,7 +17,7 @@ class BanListener(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]) -> None:
+    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]):
         ban_entry = await guild.fetch_ban(user)
         logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
         if logs[0].user != self.bot.user:
@@ -33,6 +33,6 @@ class BanListener(commands.Cog):
             db.close()
 
 
-def setup(bot: commands.Bot):
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(BanListener(bot))
     log.info("Listener loaded: ban")
