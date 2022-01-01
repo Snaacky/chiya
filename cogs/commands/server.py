@@ -29,7 +29,9 @@ class ServerCommands(commands.Cog):
 
     @server.command(name="pop", description="Gets the current server population")
     async def pop(self, ctx: context.ApplicationContext) -> None:
-        """ Send the current member count of the server. """
+        """
+        Send the current member count of the server.
+        """
         await ctx.defer()
         await ctx.send_followup(ctx.guild.member_count)
 
@@ -69,7 +71,9 @@ class ServerCommands(commands.Cog):
         ctx: context.ApplicationContext,
         role: Option(discord.Role, description="The role to make pingable", required=True),
     ) -> None:
-        """ Make a role pingable for 10 seconds. """
+        """
+        Make a role pingable for 10 seconds.
+        """
         await ctx.defer()
 
         if role.mentionable:

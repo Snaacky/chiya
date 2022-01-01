@@ -34,7 +34,9 @@ class AdministrationCommands(Cog):
         self._last_result = None
 
     def _cleanup_code(self, content) -> str:
-        """Automatically removes code blocks from the code."""
+        """
+        Automatically removes code blocks from the code.
+        """
         # remove ```py\n```
         if content.startswith("```") and content.endswith("```"):
             return "\n".join(content.split("\n")[1:-1])
@@ -45,7 +47,9 @@ class AdministrationCommands(Cog):
     @commands.is_owner()
     @commands.command(name="eval")
     async def eval(self, ctx, *, body: str):
-        """Evaluates input as Python code."""
+        """
+        Evaluates input as Python code.
+        """
         # Required environment variables.
         env = {
             "bot": self.bot,

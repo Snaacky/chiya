@@ -22,7 +22,6 @@ class AutoresponderListener(commands.Cog):
         and replies with the appopriate embed. Currently only when invoked
         by a staff member.
         """
-
         if message.author.bot:
             return
 

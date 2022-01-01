@@ -162,7 +162,9 @@ class ReminderCommands(commands.Cog):
         ctx: context.ApplicationContext,
         reminder_id: Option(int, description="The ID of the reminder to be deleted", required=True),
     ) -> None:
-        """ Delete a reminder. """
+        """
+        Delete a reminder.
+        """
         await ctx.defer()
 
         db = database.Database().get()
@@ -200,7 +202,9 @@ class ReminderCommands(commands.Cog):
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
     async def clear(self, ctx: context.ApplicationContext) -> None:
-        """Clears all reminders."""
+        """
+        Clears all reminders.
+        """
         await ctx.defer()
 
         db = database.Database().get()
