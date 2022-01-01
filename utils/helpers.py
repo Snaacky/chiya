@@ -1,6 +1,32 @@
 import datetime
 import re
 from typing import Tuple
+import discord
+from discord.commands import context
+
+from utils.config import config
+
+import logging
+
+
+log = logging.getLogger(__name__)
+
+
+async def can_action_member(ctx: context.ApplicationContext, member: discord.Member) -> bool:
+    # Stop mods from actioning on the bot.
+    if member.bot:
+        return False
+
+    # Checking if bot is able to perform the action
+    if member.top_role >= member.guild.me.top_role:
+        return False
+
+    # Allow owner to override all limitations.
+    if member.id == ctx.guild.owner_id:
+        return True
+
+    # Otherwise, the action is probably valid, return true.
+    return True
 
 
 def get_duration(duration) -> Tuple[str, float]:

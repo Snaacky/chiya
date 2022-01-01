@@ -1,11 +1,13 @@
 import glob
+import logging
 
 import discord
 from discord.ext import commands
 
 import __init__  # noqa
-import utils.database
+import database
 from utils.config import config
+
 
 bot = commands.Bot(
     command_prefix=config["bot"]["prefix"],
@@ -19,12 +21,15 @@ bot = commands.Bot(
     case_insensitive=config["bot"]["case_insensitive"],
     help_command=None
 )
+log = logging.getLogger(__name__)
 
 
 @bot.event
 async def on_ready() -> None:
     """ Called when the client is done preparing the data received from Discord. """
+    log.info(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
 
+    # TODO: This is apparently bad practice and can result in connection interruption?
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.listening,
@@ -35,7 +40,7 @@ async def on_ready() -> None:
 
 if __name__ == '__main__':
     # Attempt to create the db, tables, and columns for Chiya.
-    utils.database.Database().setup()
+    database.Database().setup()
 
     # Recursively loads in all the cogs in the folder named cogs.
     # NOTE: Skips over any cogs that start with '__' or do not end with .py.

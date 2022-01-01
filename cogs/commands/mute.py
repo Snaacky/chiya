@@ -6,10 +6,10 @@ import discord
 from discord.commands import Option, context, permissions, slash_command
 from discord.ext import commands
 
-import utils.duration
 from utils import database, embeds
 from utils.config import config
-from utils.moderation import can_action_member
+from utils.helpers import can_action_member, get_duration
+
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class MuteCommands(commands.Cog):
         if len(reason) > 4096:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
 
-        duration_string, mute_end_time = utils.duration.get_duration(duration=duration)
+        duration_string, mute_end_time = get_duration(duration=duration)
         if not duration_string:
             return await embeds.error_message(
                 ctx=ctx,

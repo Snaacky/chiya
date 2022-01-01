@@ -7,7 +7,8 @@ from discord.ext import commands
 
 from utils import database, embeds
 from utils.config import config
-from utils.moderation import can_action_member
+from utils.helpers import can_action_member
+
 
 log = logging.getLogger(__name__)
 
