@@ -114,11 +114,12 @@ class MuteCommands(commands.Cog):
         reason: Option(str, description="The reason why the member is being kicked", required=True),
     ) -> None:
         """
-        Unmute the user, log the action to the database, and attempt to send them a direct message
-        alerting them of their mute.
+        Unmute the user, log the action to the database, and attempt to send
+        them a direct message alerting them of their mute.
 
-        If the user has privacy settings enabled or has the bot blocked they will be unable to
-        receive the ban notification. The bot will let the invoking mod know if this is the case.
+        If the user has privacy settings enabled or has the bot blocked they
+        will be unable to receive the ban notification. The bot will let the
+        invoking mod know if this is the case.
         """
         await ctx.defer()
 

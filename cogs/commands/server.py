@@ -40,8 +40,8 @@ class ServerCommands(commands.Cog):
         link: Option(str, description="The link to the image to be set", required=True),
     ) -> None:
         """
-        Update the banner of the guild. Return if the HTTP status code received
-        is not 200 OK (invalid url).
+        Update the banner of the guild. Return if the HTTP status code
+        received is not 200 OK (invalid url).
         """
         await ctx.defer()
 

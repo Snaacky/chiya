@@ -49,11 +49,11 @@ class PurgeCommands(commands.Cog):
         """
         Removes the last X amount of messages in bulk.
 
-        Capped at a maximum of 100 messages per command invoke to avoid accidents
-        wiping out large chunks of messages.
+        Capped at a maximum of 100 messages per command invoke to avoid
+        accidents wiping out large chunks of messages.
 
-        Cannot be used in the moderation, development, logs, or archive categories
-        for security reasons.
+        Cannot be used in the moderation, development, logs, or archive
+        categories for security reasons.
         """
         await ctx.defer()
 

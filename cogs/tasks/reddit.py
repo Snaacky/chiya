@@ -41,7 +41,9 @@ class RedditTask(commands.Cog):
 
     @tasks.loop(seconds=5)
     async def check_for_posts(self) -> None:
-        """ Posts new reddit submissions to channel specified in config """
+        """
+        Posts new reddit submissions to channel specified in config
+        """
         # Needed to fix bot crashes when reddit is down during startup.
         await self.bot.wait_until_ready()
 

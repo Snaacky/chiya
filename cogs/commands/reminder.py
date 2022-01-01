@@ -32,7 +32,9 @@ class ReminderCommands(commands.Cog):
         duration: Option(str, description="Amount of time until the reminder is sent", required=True),
         message: Option(str, description="Reminder message", required=True),
     ) -> None:
-        """ Set a reminder message. """
+        """
+        Set a reminder message.
+        """
         await ctx.defer()
 
         duration_string, end_time = get_duration(duration=duration)
@@ -78,7 +80,9 @@ class ReminderCommands(commands.Cog):
         reminder_id: Option(int, description="The ID of the reminder to be updated", required=True),
         new_message: Option(str, description="The updated message for the reminder", required=True),
     ) -> None:
-        """ Edit a reminder message. """
+        """
+        Edit a reminder message.
+        """
         await ctx.defer()
 
         db = database.Database().get()

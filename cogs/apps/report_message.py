@@ -15,17 +15,23 @@ log = logging.getLogger(__name__)
 
 @commands.Cog.listener()
 async def on_ready(self) -> None:
-    """ Register the close report button that persists between bot restarts. """
+    """
+    Register the close report button that persists between bot
+    restarts.
+    """
     self.bot.add_view(ReportCloseButton())
 
 
 class ReportCloseButton(discord.ui.View):
+
     def __init__(self) -> None:
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Report", style=discord.ButtonStyle.danger, custom_id="close_report", emoji="🔒")
     async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
-        """ The close button to close and archive an existing report. """
+        """
+        The close button to close and archive an existing report.
+        """
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         if role_staff not in interaction.user.roles:
             embed = embeds.make_embed(
@@ -51,7 +57,9 @@ class ReportMessageButtons(discord.ui.View):
 
     @discord.ui.button(label="Submit Report", style=discord.ButtonStyle.primary, custom_id="submit_report")
     async def submit(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
-        """ Create a View for the report message embed confirmation button. """
+        """
+        Create a View for the report message embed confirmation button.
+        """
         embed = embeds.make_embed(description="Your report has been submitted.", color=discord.Color.blurple())
         await interaction.response.edit_message(embed=embed, view=None)
         self.value = True
@@ -59,7 +67,9 @@ class ReportMessageButtons(discord.ui.View):
 
     @discord.ui.button(label="Cancel Report", style=discord.ButtonStyle.secondary, custom_id="cancel_report")
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
-        """ Create a View for the report message embed cancel button. """
+        """
+        Create a View for the report message embed cancel button.
+        """
         embed = embeds.make_embed(description="Your report has been canceled.")
         await interaction.response.edit_message(embed=embed, view=None)
         self.stop()
@@ -72,7 +82,9 @@ class ReportMessageApp(commands.Cog):
 
     @message_command(guild_ids=config["guild_ids"], name="Report Message")
     async def report_message(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
-        """ Context menu command for reporting messages to staff. """
+        """
+        Context menu command for reporting messages to staff.
+        """
         await ctx.defer(ephemeral=True)
 
         if ctx.channel.category_id in [

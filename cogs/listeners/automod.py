@@ -16,11 +16,8 @@ class AutomodListener(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """
-        Scan incoming messages for problematic content and action
-        the message (and the user) accordingly.
-
-        Args:
-            message: The current message.
+        Scan incoming messages for problematic content and action the
+        message (and the user) accordingly.
         """
         # Ignore messages from bots (includes itself).
         if message.author.bot:

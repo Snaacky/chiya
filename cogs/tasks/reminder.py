@@ -21,7 +21,9 @@ class ReminderTask(commands.Cog):
 
     @tasks.loop(seconds=3.0)
     async def check_for_reminder(self) -> None:
-        """ Checking for reminders to send """
+        """
+        Checking for reminders to send
+        """
         await self.bot.wait_until_ready()
 
         db = database.Database().get()

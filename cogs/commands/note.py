@@ -30,9 +30,9 @@ class NoteCommands(commands.Cog):
         """
         Adds a note to the users profile.
 
-        Notes can only be seen by staff via the /search command and do not punish the
-        user in anyway. They are merely for staff to log relevant information. Users are
-        not alerted when a note is added to them.
+        Notes can only be seen by staff via the /search command and do not
+        punish the user in anyway. They are merely for staff to log relevant
+        information. Users are not alerted when a note is added to them.
         """
         await ctx.defer()
 
@@ -76,7 +76,9 @@ class NoteCommands(commands.Cog):
             required=False,
         )
     ) -> None:
-        """ Search for the mod actions and notes for a user. """
+        """
+        Search for the mod actions and notes for a user.
+        """
         await ctx.defer()
 
         if not isinstance(user, discord.Member):
@@ -137,7 +139,9 @@ class NoteCommands(commands.Cog):
         id: Option(int, description="The ID of the log or note to be edited", required=True),
         note: Option(str, description="The updated message for the log or note", required=True),
     ) -> None:
-        """ Edit a mod action or note on a users profile. """
+        """
+        Edit a mod action or note on a users profile.
+        """
         await ctx.defer()
 
         db = database.Database().get()

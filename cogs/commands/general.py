@@ -30,9 +30,10 @@ class GeneralCommands(commands.Cog):
         """
         Grab a user's avatar and return it in a large-sized embed.
 
-        If the user parameter is not specified, the function will grab the invokers avatar instead.
-        Offers the ability to attempt to grab a users server avatar and will fallback to their global
-        avatar with a warning attached if a server specific avatar is not set.
+        If the user parameter is not specified, the function will grab the
+        invokers avatar instead. Offers the ability to attempt to grab a users
+        server avatar and will fallback to their global avatar with a warning
+        attached if a server specific avatar is not set.
         """
         await ctx.defer()
 
@@ -67,8 +68,9 @@ class GeneralCommands(commands.Cog):
         """
         Adds vote emojis (yes and no) reactions to a message.
 
-        If the message argument is specified, it will add the reactions to that message.
-        Otherwise, it will add the reactions to the last message in the channel.
+        If the message argument is specified, it will add the reactions to
+        that message. Otherwise, it will add the reactions to the last message
+        in the channel.
         """
         # TODO: what happens if the user doesn't have permission to add reactions in that channel?
         await ctx.defer(ephemeral=True)

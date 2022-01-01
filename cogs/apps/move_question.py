@@ -13,12 +13,16 @@ log = logging.getLogger(__name__)
 
 
 class MoveQuestionApp(commands.Cog):
+
     def __init__(self, bot) -> None:
         self.bot = bot
 
     @message_command(guild_ids=config["guild_ids"], name="Move Question")
     async def move_question(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
-        """ Context menu command for moving questions (messages) to #questions-and-help. """
+        """
+        Context menu command for moving questions (messages) to
+        #questions-and-help.
+        """
         await ctx.defer(ephemeral=True)
 
         staff = [x for x in ctx.author.roles

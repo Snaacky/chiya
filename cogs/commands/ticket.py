@@ -20,7 +20,10 @@ class TicketCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self) -> None:
-        """ Register the embed button and ticket close button that persists between bot restarts. """
+        """
+        Register the embed button and ticket close button that persists
+        between bot restarts.
+        """
         self.bot.add_view(TicketCreateButton())
         self.bot.add_view(TicketCloseButton())
 
@@ -54,7 +57,8 @@ class TicketCreateButton(discord.ui.View):
     @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
     async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The create ticket button of the ticket embed, that prompts for confirmation before proceeding.
+        The create ticket button of the ticket embed, that prompts for
+        confirmation before proceeding.
 
         The `button` parameter is positional and required despite unused.
         """
@@ -72,9 +76,11 @@ class TicketConfirmButtons(discord.ui.View):
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.primary, custom_id="confirm_ticket")
     async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The confirm button to open a ticket. Return if the user already have a ticket opened. Otherwise,
-        create a private ticket channel, ghost ping the author and ping staff if the author is a VIP,
-        send a pinned embed with a close button, and create a pending ticket entry in the database.
+        The confirm button to open a ticket. Return if the user already have
+        a ticket opened. Otherwise, create a private ticket channel, ghost
+        ping the author and ping staff if the author is a VIP, send a
+        pinned embed with a close button, and create a pending ticket
+        entry in the database.
 
         The `button` parameter is positional and required despite unused.
         """
@@ -160,8 +166,9 @@ class TicketCloseButton(discord.ui.View):
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")
     async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The close ticket button. Iterates through the channel's messages to create a log,
-        send it to PrivateBin, send an embed into the log channel, and delete the channel.
+        The close ticket button. Iterates through the channel's messages to
+        create a log, send it to PrivateBin, send an embed into the log
+        channel, and delete the channel.
 
         The `button` parameter is positional and required despite unused.
         """

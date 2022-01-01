@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class WarnCommands(commands.Cog):
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -25,7 +26,9 @@ class WarnCommands(commands.Cog):
         member: Option(discord.Member, description="The member that will be warned", required=True),
         reason: Option(str, description="The reason why the member is being warned", required=True),
     ) -> None:
-        """ Send the member a warning DM and log to database. """
+        """
+        Send the member a warning DM and log to database.
+        """
         await ctx.defer()
 
         if not isinstance(member, discord.Member):
