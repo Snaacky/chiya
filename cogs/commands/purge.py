@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -34,7 +33,11 @@ class PurgeCommands(commands.Cog):
 
         return True
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Purge the last X amount of messages")
+    @slash_command(
+        guild_ids=config["guild_ids"],
+        default_permission=False,
+        description="Purge the last X amount of messages"
+    )
     @permissions.has_role(config["roles"]["staff"])
     async def purge(
         self,

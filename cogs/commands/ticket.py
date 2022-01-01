@@ -145,7 +145,10 @@ class TicketConfirmButtons(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        embed = embeds.make_embed(color=discord.Color.red(), description="Your ticket creation request has been canceled.", )
+        embed = embeds.make_embed(
+            color=discord.Color.red(),
+            description="Your ticket creation request has been canceled."
+        )
         await interaction.response.edit_message(embed=embed, view=None)
 
 
@@ -161,7 +164,10 @@ class TicketCloseButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        close_embed = embeds.make_embed(color=discord.Color.blurple(), description="The ticket will be closed shortly...")
+        close_embed = embeds.make_embed(
+            color=discord.Color.blurple(),
+            description="The ticket will be closed shortly..."
+        )
         await interaction.response.send_message(embed=close_embed)
 
         db = database.Database().get()
@@ -214,7 +220,11 @@ class TicketCloseButton(discord.ui.View):
                     "Please feel free to create a new ticket should you have any further inquiries."
                 ),
                 fields=[
-                    {"name": "Server:", "value": f"[{interaction.guild.name}](https://discord.gg/piracy)", "inline": False},
+                    {
+                        "name": "Server:",
+                        "value": f"[{interaction.guild.name}](https://discord.gg/piracy)",
+                        "inline": False
+                    },
                     {"name": "Ticket Log:", "value": url, "inline": False},
                 ])
             await member.send(embed=dm_embed)

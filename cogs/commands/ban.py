@@ -42,7 +42,7 @@ class BansCommands(commands.Cog):
         Ban the user, log the action to the database, and attempt to send them a direct
         message alerting them of their ban.
 
-        If the user isn't in the server, has heavy privacy settings enabled, or has the
+        If the user isn't in the server, has privacy settings enabled, or has the
         bot blocked they will be unable to receive the ban notification. The bot will let
         the invoking mod know if this is the case.
 

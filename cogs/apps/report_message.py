@@ -35,7 +35,10 @@ class ReportCloseButton(discord.ui.View):
             )
             return await interaction.response.send_message(embed=embed, ephemeral=True)
 
-        close_embed = embeds.make_embed(color=discord.Color.blurple(), description="The report will be closed shortly...")
+        close_embed = embeds.make_embed(
+            color=discord.Color.blurple(),
+            description="The report will be closed shortly..."
+        )
         await interaction.response.send_message(embed=close_embed)
         await asyncio.sleep(3)
         await interaction.channel.delete()
@@ -49,7 +52,7 @@ class ReportMessageButtons(discord.ui.View):
     @discord.ui.button(label="Submit Report", style=discord.ButtonStyle.primary, custom_id="submit_report")
     async def submit(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """ Create a View for the report message embed confirmation button. """
-        embed = embeds.make_embed(description=f"Your report has been submitted.", color=discord.Color.blurple())
+        embed = embeds.make_embed(description="Your report has been submitted.", color=discord.Color.blurple())
         await interaction.response.edit_message(embed=embed, view=None)
         self.value = True
         self.stop()
@@ -78,10 +81,16 @@ class ReportMessageApp(commands.Cog):
             config["categories"]["logs"],
             config["categories"]["tickets"]
         ]:
-            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command in this category.")
+            return await embeds.error_message(
+                ctx=ctx,
+                description="You do not have permissions to use this command in this category."
+            )
 
         if ctx.author.bot:
-            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command on this user.")
+            return await embeds.error_message(
+                ctx=ctx,
+                description="You do not have permissions to use this command on this user."
+            )
 
         category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
         report = discord.utils.get(category.text_channels, name=f"report-{message.id + ctx.author.id}")
@@ -118,7 +127,9 @@ class ReportMessageApp(commands.Cog):
                 name=f"report-{message.id + ctx.author.id}",
                 category=category,
                 overwrites={
-                    discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(read_messages=True),
+                    discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(
+                        read_messages=True
+                    ),
                     ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                     ctx.author: discord.PermissionOverwrite(read_messages=True),
                 })

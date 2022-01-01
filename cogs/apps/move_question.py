@@ -33,7 +33,10 @@ class MoveQuestionApp(commands.Cog):
             config["categories"]["logs"],
             config["categories"]["tickets"],
         ]:
-            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command in this category.")
+            return await embeds.error_message(
+                ctx=ctx,
+                description="You do not have permissions to use this command in this category."
+            )
 
         channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["public"]["questions_and_help"])
         webhook = await channel.create_webhook(name=ctx.author.name)

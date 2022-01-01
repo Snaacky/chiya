@@ -21,7 +21,11 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="User whose avatar will be grabbed", required=False),
-        server_avatar: Option(bool, description="Whether if their server specific avatar should be used", required=False),
+        server_avatar: Option(
+            bool,
+            description="Whether if their server specific avatar should be used",
+            required=False
+        ),
     ) -> None:
         """
         Grab a user's avatar and return it in a large-sized embed.
@@ -49,7 +53,11 @@ class GeneralCommands(commands.Cog):
             embed.set_image(url=user.avatar.url)
         await ctx.send_followup(embed=embed)
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Add vote reactions to a message.")
+    @slash_command(
+        guild_ids=config["guild_ids"],
+        default_permission=False,
+        description="Add vote reactions to a message."
+    )
     @permissions.has_role(config["roles"]["staff"])
     async def vote(
         self,

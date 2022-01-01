@@ -6,9 +6,9 @@ import discord
 from discord.commands import Option, SlashCommandGroup, context, slash_command
 from discord.ext import commands
 
-import utils.duration
 from utils import database, embeds
 from utils.config import config
+from utils.helpers import get_duration
 from utils.pagination import LinePaginator
 
 log = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class ReminderCommands(commands.Cog):
         """ Set a reminder message. """
         await ctx.defer()
 
-        duration_string, end_time = utils.duration.get_duration(duration=duration)
+        duration_string, end_time = get_duration(duration=duration)
         if not duration_string:
             return await embeds.error_message(
                 ctx=ctx,
