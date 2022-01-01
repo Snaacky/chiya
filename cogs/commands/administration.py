@@ -7,24 +7,33 @@ from contextlib import redirect_stdout
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
-from discord_slash.utils.manage_commands import remove_all_commands
 
 from utils import embeds
 from utils.config import config
-from utils.record import record_usage
 
-# Enabling logs
+
 log = logging.getLogger(__name__)
 
 
-class AdministrationCog(Cog):
-    """Administration Cog Cog"""
+class AdministrationCommands(Cog):
+    """
+    This class is legacy code that needs to eventually be
+    split into separate files and removed from the codebase.
 
-    def __init__(self, bot):
+    The eval command cannot be ported to slash commands until Discord
+    supports slash command parameters with multiple lines of input.
+
+    We will eventually migrate the embed generators into a slash
+    command based embed generator system where the embed generators
+    below will be stored as presets that can be spawned via slash
+    commands.
+    """
+
+    def __init__(self, bot) -> None:
         self.bot = bot
         self._last_result = None
 
-    def _cleanup_code(self, content):
+    def _cleanup_code(self, content) -> str:
         """Automatically removes code blocks from the code."""
         # remove ```py\n```
         if content.startswith("```") and content.endswith("```"):
@@ -33,30 +42,8 @@ class AdministrationCog(Cog):
         # remove `foo`
         return content.strip("` \n")
 
-    @commands.before_invoke(record_usage)
-    @commands.group(aliases=["u", "ul"])
-    async def utilities(self, ctx):
-        return
-
     @commands.is_owner()
-    @utilities.command(name="ping")
-    async def ping(self, ctx):
-        """Returns the Discord WebSocket latency."""
-        await ctx.send(f"{round(self.bot.latency * 1000)}ms.")
-
-    @commands.is_owner()
-    @utilities.command(name="removecmds")
-    async def removecmds(self, ctx):
-        await remove_all_commands(bot_id=self.bot.user.id, bot_token=config["bot"]["token"], guild_ids=config["guild_ids"])
-
-    @commands.is_owner()
-    @utilities.command(name="say")
-    async def say(self, ctx, *, args):
-        """Echos the input argument."""
-        await ctx.send(args)
-
-    @commands.is_owner()
-    @utilities.command(name="eval")
+    @commands.command(name="eval")
     async def eval(self, ctx, *, body: str):
         """Evaluates input as Python code."""
         # Required environment variables.
@@ -125,10 +112,8 @@ class AdministrationCog(Cog):
                 await ctx.send(embed=embed)
 
     @commands.is_owner()
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @commands.command(name="rules")
-    async def rules(self, ctx: Context):
+    async def rules(self, ctx: Context) -> None:
         """Generates the #rules channel embeds."""
         embed = embeds.make_embed(color=0x7d98e9)
         embed.set_image(url="https://cdn.discordapp.com/attachments/835088653981581312/902441305836244992/AnimePiracy-Aqua-v2-Revision5.7.png")
@@ -179,10 +164,8 @@ class AdministrationCog(Cog):
         await ctx.message.delete()
 
     @commands.is_owner()
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    @commands.before_invoke(record_usage)
     @commands.command(name="createticketembed")
-    async def create_ticket_embed(self, ctx: Context):
+    async def create_ticket_embed(self, ctx: Context) -> None:
         embed = embeds.make_embed(
             title="🎫 Create a new modmail ticket",
             description="Click the react below to create a new modmail ticket.",
@@ -197,10 +180,8 @@ class AdministrationCog(Cog):
         await ctx.message.delete()
 
     @commands.is_owner()
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    @commands.before_invoke(record_usage)
-    @commands.command(name="createcolorrolesembed", aliases=["ccre"])
-    async def create_color_roles_embed(self, ctx: Context):
+    @commands.command(name="createcolorrolesembed")
+    async def create_color_roles_embed(self, ctx: Context) -> None:
         embed = discord.Embed(
             description=(
                 "You can react to one of the squares below to be assigned a colored user role. "
@@ -225,10 +206,8 @@ class AdministrationCog(Cog):
         await ctx.message.delete()
 
     @commands.is_owner()
-    @commands.bot_has_permissions(embed_links=True, send_messages=True)
-    @commands.before_invoke(record_usage)
-    @commands.command(name="createassignablerolesembed", aliases=["care"])
-    async def create_assignable_roles_embed(self, ctx: Context):
+    @commands.command(name="createassignablerolesembed")
+    async def create_assignable_roles_embed(self, ctx: Context) -> None:
         role_assignment_text = """
         You can react to one of the emotes below to assign yourself an event role.
 
@@ -254,6 +233,5 @@ class AdministrationCog(Cog):
 
 
 def setup(bot: Bot) -> None:
-    """Load the AdministrationCog cog."""
-    bot.add_cog(AdministrationCog(bot))
+    bot.add_cog(AdministrationCommands(bot))
     log.info("Commands loaded: administration")
