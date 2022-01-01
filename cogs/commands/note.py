@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 
 
 class NoteCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -25,7 +24,7 @@ class NoteCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="The user to add the note to", required=True),
-        note: Option(str, description="The note to leave on the user", required=True)
+        note: Option(str, description="The note to leave on the user", required=True),
     ) -> None:
         """
         Adds a note to the users profile.
@@ -47,7 +46,8 @@ class NoteCommands(commands.Cog):
                 timestamp=int(time.time()),
                 reason=note,
                 type="note",
-            ))
+            )
+        )
         db.commit()
         db.close()
 
@@ -59,7 +59,8 @@ class NoteCommands(commands.Cog):
             fields=[
                 {"name": "ID:", "value": note_id, "inline": False},
                 {"name": "Note:", "value": note, "inline": False},
-            ])
+            ],
+        )
 
         await ctx.send_followup(embed=embed)
 
@@ -74,7 +75,7 @@ class NoteCommands(commands.Cog):
             description="Filter specific actions",
             choices=["ban", "unban", "mute", "unmute", "warn", "note"],
             required=False,
-        )
+        ),
     ) -> None:
         """
         Search for the mod actions and notes for a user.
@@ -157,8 +158,9 @@ class NoteCommands(commands.Cog):
             color=discord.Color.green(),
             fields=[
                 {"name": "Before:", "value": mod_log["reason"], "inline": False},
-                {"name": "After:", "value": note, "inline": False}
-            ])
+                {"name": "After:", "value": note, "inline": False},
+            ],
+        )
 
         mod_log["reason"] = note
         db["mod_logs"].update(mod_log, ["id"])

@@ -1,9 +1,7 @@
-import asyncio
 import logging
 
 import discord
-import requests
-from discord.commands import Option, SlashCommandGroup, context, permissions
+from discord.commands import SlashCommandGroup, context, permissions
 from discord.ext import commands
 
 from utils import embeds
@@ -14,7 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class ServerCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -37,7 +34,7 @@ class ServerCommands(commands.Cog):
 
     @server.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: context.ApplicationContext) -> None:
-        """ Send an embed with all current server boosters. """
+        """Send an embed with all current server boosters."""
         await ctx.defer()
 
         embed = embeds.make_embed(

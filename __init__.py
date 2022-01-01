@@ -8,6 +8,7 @@ import coloredlogs
 
 from utils.config import config
 
+
 log_level = config["bot"]["log_level"]
 if not log_level:
     log_level = "NOTSET"
@@ -32,7 +33,7 @@ if "COLOREDLOGS_LEVEL_STYLES" not in os.environ:
         **coloredlogs.DEFAULT_LEVEL_STYLES,
         "trace": {"color": 246},
         "critical": {"background": "red"},
-        "debug": coloredlogs.DEFAULT_LEVEL_STYLES["info"]
+        "debug": coloredlogs.DEFAULT_LEVEL_STYLES["info"],
     }
 
 coloredlogs.DEFAULT_LOG_FORMAT = format_string

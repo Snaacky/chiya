@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 
 
 class TicketCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -90,7 +89,7 @@ class TicketConfirmButtons(discord.ui.View):
         if ticket:
             embed = embeds.make_embed(
                 color=discord.Color.blurple(),
-                description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}"
+                description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}",
             )
             return await interaction.response.edit_message(embed=embed, view=None)
 
@@ -134,13 +133,15 @@ class TicketConfirmButtons(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=None)
 
         db = database.Database().get()
-        db["tickets"].insert(dict(
-            user_id=interaction.user.id,
-            guild=interaction.guild.id,
-            timestamp=int(time.time()),
-            log_url=None,
-            status=False,
-        ))
+        db["tickets"].insert(
+            dict(
+                user_id=interaction.user.id,
+                guild=interaction.guild.id,
+                timestamp=int(time.time()),
+                log_url=None,
+                status=False,
+            )
+        )
 
         db.commit()
         db.close()
@@ -153,8 +154,7 @@ class TicketConfirmButtons(discord.ui.View):
         The `button` parameter is positional and required despite unused.
         """
         embed = embeds.make_embed(
-            color=discord.Color.red(),
-            description="Your ticket creation request has been canceled."
+            color=discord.Color.red(), description="Your ticket creation request has been canceled."
         )
         await interaction.response.edit_message(embed=embed, view=None)
 
@@ -173,8 +173,7 @@ class TicketCloseButton(discord.ui.View):
         The `button` parameter is positional and required despite unused.
         """
         close_embed = embeds.make_embed(
-            color=discord.Color.blurple(),
-            description="The ticket will be closed shortly..."
+            color=discord.Color.blurple(), description="The ticket will be closed shortly..."
         )
         await interaction.response.send_message(embed=close_embed)
 
@@ -214,7 +213,8 @@ class TicketCloseButton(discord.ui.View):
                 {"name": "Closed By:", "value": interaction.user.mention, "inline": True},
                 {"name": "Participating Moderators:", "value": value, "inline": False},
                 {"name": "Ticket Log:", "value": url, "inline": False},
-            ])
+            ],
+        )
         ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["logs"]["ticket_log"])
         await ticket_log.send(embed=log_embed)
 
@@ -231,10 +231,11 @@ class TicketCloseButton(discord.ui.View):
                     {
                         "name": "Server:",
                         "value": f"[{interaction.guild.name}](https://discord.gg/piracy)",
-                        "inline": False
+                        "inline": False,
                     },
                     {"name": "Ticket Log:", "value": url, "inline": False},
-                ])
+                ],
+            )
             await member.send(embed=dm_embed)
         except discord.Forbidden:
             logging.info(f"Unable to send ticket log to {member} because their DM is closed")

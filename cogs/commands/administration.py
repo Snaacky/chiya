@@ -119,49 +119,40 @@ class AdministrationCommands(Cog):
     @commands.command(name="rules")
     async def rules(self, ctx: Context) -> None:
         """Generates the #rules channel embeds."""
-        embed = embeds.make_embed(color=0x7d98e9)
-        embed.set_image(url="https://cdn.discordapp.com/attachments/835088653981581312/902441305836244992/AnimePiracy-Aqua-v2-Revision5.7.png")
+        embed = embeds.make_embed(color=0x7D98E9)
+        embed.set_image(
+            url="https://cdn.discordapp.com/attachments/835088653981581312/902441305836244992/AnimePiracy-Aqua-v2-Revision5.7.png"
+        )
         await ctx.send(embed=embed)
 
         embed = embeds.make_embed(
             description=(
                 "**1. Do not share copyright infringing files or links**\n"
                 "Sharing illegal streaming sites, downloads, torrents, magnet links, trackers, NZBs, or any other form of warez puts our community at risk of being shut down. We are a discussion community, not a file-sharing hub.\n\n"
-
                 "**2. Treat others the way you want to be treated**\n"
                 "Attacking, belittling, or instigating drama with others will result in your removal from the community. Any form of prejudice, including but not limited to race, religion, gender, sexual identity, or ethnic background, will not be tolerated.\n\n"
-
                 "**3. Do not disrupt chat**\n"
                 "Avoid spamming, derailing conversations, trolling, posting in the incorrect channel, or disregarding channel rules. We expect you to make a basic attempt to fit in and not cause problems.\n\n"
-
                 "**4. Do not abuse pings**\n"
                 "Attempting to mass ping, spam ping, ghost ping, or harassing users with pings is not allowed. VIPs should not be pinged for help with their service. <@&763031634379276308> should only be pinged when the situation calls for their immediate attention.\n\n"
-
                 "**5. Do not attempt to evade mod actions**\n"
                 "Abusing the rules, such as our automod system, will not be tolerated. Subsequently, trying to find loopholes in the rules to evade mod action is not allowed and will result in a permanent ban.\n\n"
-
                 "**6. Do not post unmarked spoilers**\n"
                 "Be considerate and [use spoiler tags](https://support.discord.com/hc/en-us/articles/360022320632-Spoiler-Tags-) when discussing plot elements. Specify which title, series, or episode your spoiler is referencing outside the spoiler tag so that people don't blindly click a spoiler.\n\n"
-
                 "**7. All conversation must be in English**\n"
                 "No language other than English is permitted. We appreciate other languages and cultures, but we can only moderate the content we understand.\n\n"
-
                 "**8. Do not post self-promotional content**\n"
                 "We are not a billboard for you to advertise your Discord server, social media channels, referral links, personal projects, or services. Unsolicited spam via DMs will result in an immediate ban.\n\n"
-
                 "**9. One account per person per lifetime**\n"
                 "Anyone found sharing or using alternate accounts will be banned. Contact staff if you feel you deserve an exception.\n\n"
-
                 "**10. Do not give away, trade, or misuse invites**\n"
                 "Invites are intended for personal acquaintances. Publicly offering, requesting, or giving away invites to private trackers, DDL communities, or Usenet indexers is not allowed.\n\n"
-
                 "**11. Do not post NSFL content**\n"
-                "NSFL content is described as \"content which is so nauseating or disturbing that it might be emotionally scarring to view.\" Content marked NSFL may contain fetish pornography, gore, or lethal violence.\n\n"
-
+                'NSFL content is described as "content which is so nauseating or disturbing that it might be emotionally scarring to view." Content marked NSFL may contain fetish pornography, gore, or lethal violence.\n\n'
                 "**12. Egregious profiles are not allowed**\n"
                 "Users with excessively offensive usernames, nicknames, avatars, server profiles, or statuses may be asked to change the offending content or may be preemptively banned in more severe cases."
-                ),
-            color=0x7d98e9
+            ),
+            color=0x7D98E9,
         )
 
         await ctx.send(embed=embed)

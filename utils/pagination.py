@@ -7,10 +7,11 @@ from discord.abc import User
 from discord.commands import context
 from discord.ext.commands import Paginator
 
-FIRST_EMOJI = "\u23EE"   # [:track_previous:]
-LEFT_EMOJI = "\u2B05"    # [:arrow_left:]
-RIGHT_EMOJI = "\u27A1"   # [:arrow_right:]
-LAST_EMOJI = "\u23ED"    # [:track_next:]
+
+FIRST_EMOJI = "\u23EE"  # [:track_previous:]
+LEFT_EMOJI = "\u2B05"  # [:arrow_left:]
+RIGHT_EMOJI = "\u27A1"  # [:arrow_right:]
+LAST_EMOJI = "\u23ED"  # [:track_next:]
 DELETE_EMOJI = "⛔"  # [:trashcan:]
 
 PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMOJI)
@@ -20,11 +21,12 @@ log = logging.getLogger(__name__)
 
 class EmptyPaginatorEmbed(Exception):
     """Raised when attempting to paginate with empty contents."""
+
     pass
 
 
 class LinePaginator(Paginator):
-    """ A class that aids in paginating code blocks for Discord messages.
+    """A class that aids in paginating code blocks for Discord messages.
 
     Available attributes include:
         prefix (str): The prefix inserted to every page. e.g. three backticks.
@@ -36,12 +38,12 @@ class LinePaginator(Paginator):
 
     def __init__(
         self,
-        prefix: str = '```',
-        suffix: str = '```',
+        prefix: str = "```",
+        suffix: str = "```",
         max_size: int = 2000,
         scale_to_size: int = 2000,
         max_lines: typing.Optional[int] = None,
-        linesep: str = "\n"
+        linesep: str = "\n",
     ) -> None:
         """
         This function overrides the Paginator.__init__ from inside discord.ext.commands.\n
@@ -72,8 +74,8 @@ class LinePaginator(Paginator):
         self._count = len(prefix) + 1  # prefix + newline
         self._pages = []
 
-    def add_line(self, line: str = '', *, empty: bool = False) -> None:
-        """ Adds a line to the current page.
+    def add_line(self, line: str = "", *, empty: bool = False) -> None:
+        """Adds a line to the current page.
         If a line on a page exceeds `max_size` characters, then `max_size` will go up to
             `scale_to_size` for a single line before creating a new page for the overflow words.
         If it is still exceeded, the excess characters are stored and placed on the next pages until
@@ -93,7 +95,7 @@ class LinePaginator(Paginator):
                 line, remaining_words = self._split_remaining_words(line, max_chars)
                 if len(line) > self.scale_to_size:
                     log.debug("Could not continue to next page, truncating line.")
-                    line = line[:self.scale_to_size]
+                    line = line[: self.scale_to_size]
 
         # Check if we should start a new page or continue the line on the current one
         if self.max_lines is not None and self._linecount >= self.max_lines:
@@ -109,7 +111,7 @@ class LinePaginator(Paginator):
         self._current_page.append(line)
 
         if empty:
-            self._current_page.append('')
+            self._current_page.append("")
             self._count += 1
 
         # Start a new page if there were any overflow words
@@ -169,7 +171,7 @@ class LinePaginator(Paginator):
 
         return (
             " ".join(reduced_words) + "..." if remaining_words else "",
-            continuation_header + " ".join(remaining_words) if remaining_words else None
+            continuation_header + " ".join(remaining_words) if remaining_words else None,
         )
 
     @classmethod
@@ -190,7 +192,7 @@ class LinePaginator(Paginator):
         url: str = None,
         exception_on_empty_embed: bool = False,
         time_to_delete: int = None,
-        linesep: str = "\n"
+        linesep: str = "\n",
     ) -> typing.Optional[discord.Message]:
         """
         Use a paginator and set of reactions to provide pagination over a set of lines.
@@ -209,6 +211,7 @@ class LinePaginator(Paginator):
 
         >await LinePaginator.paginate([line for line in lines], ctx, embed)
         """
+
         def event_check(reaction_: discord.Reaction, user_: discord.Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             no_restrictions = (
@@ -220,20 +223,28 @@ class LinePaginator(Paginator):
 
             return (
                 # Conditions for a successful pagination:
-                all((
-                    # Reaction is on this message
-                    reaction_.message.id == message.id,
-                    # Reaction is one of the pagination emotes
-                    str(reaction_.emoji) in PAGINATION_EMOJI,
-                    # Reaction was not made by the Bot
-                    user_.id != ctx.bot.user.id,
-                    # There were no restrictions
-                    no_restrictions
-                ))
+                all(
+                    (
+                        # Reaction is on this message
+                        reaction_.message.id == message.id,
+                        # Reaction is one of the pagination emotes
+                        str(reaction_.emoji) in PAGINATION_EMOJI,
+                        # Reaction was not made by the Bot
+                        user_.id != ctx.bot.user.id,
+                        # There were no restrictions
+                        no_restrictions,
+                    )
+                )
             )
 
-        paginator = cls(prefix=prefix, suffix=suffix, max_size=max_size, max_lines=max_lines,
-                        scale_to_size=scale_to_size, linesep=linesep)
+        paginator = cls(
+            prefix=prefix,
+            suffix=suffix,
+            max_size=max_size,
+            max_lines=max_lines,
+            scale_to_size=scale_to_size,
+            linesep=linesep,
+        )
         current_page = 0
 
         if not lines:

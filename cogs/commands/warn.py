@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 
 
 class WarnCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -43,7 +42,7 @@ class WarnCommands(commands.Cog):
             title=f"Warning member: {member.name}",
             description=f"{member.mention} was warned by {ctx.author.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/4jeFA3h.png",
-            color=discord.Color.gold()
+            color=discord.Color.gold(),
         )
 
         try:
@@ -57,7 +56,8 @@ class WarnCommands(commands.Cog):
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
-                ])
+                ],
+            )
             await member.send(embed=dm_embed)
         except discord.Forbidden:
             embed.add_field(
@@ -66,16 +66,19 @@ class WarnCommands(commands.Cog):
                     f"Unable to message {member.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                ))
+                ),
+            )
 
         db = database.Database().get()
-        db["mod_logs"].insert(dict(
-            user_id=member.id,
-            mod_id=ctx.author.id,
-            timestamp=int(time.time()),
-            reason=reason,
-            type="warn",
-        ))
+        db["mod_logs"].insert(
+            dict(
+                user_id=member.id,
+                mod_id=ctx.author.id,
+                timestamp=int(time.time()),
+                reason=reason,
+                type="warn",
+            )
+        )
 
         db.commit()
         db.close()

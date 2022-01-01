@@ -23,11 +23,15 @@ async def on_ready(self) -> None:
 
 
 class ReportCloseButton(discord.ui.View):
-
     def __init__(self) -> None:
         super().__init__(timeout=None)
 
-    @discord.ui.button(label="Close Report", style=discord.ButtonStyle.danger, custom_id="close_report", emoji="🔒")
+    @discord.ui.button(
+        label="Close Report",
+        style=discord.ButtonStyle.danger,
+        custom_id="close_report",
+        emoji="🔒",
+    )
     async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
         The close button to close and archive an existing report.
@@ -37,13 +41,13 @@ class ReportCloseButton(discord.ui.View):
             embed = embeds.make_embed(
                 title="Failed to close report",
                 description="You do not have the permission to close this report.",
-                color=discord.Color.red()
+                color=discord.Color.red(),
             )
             return await interaction.response.send_message(embed=embed, ephemeral=True)
 
         close_embed = embeds.make_embed(
             color=discord.Color.blurple(),
-            description="The report will be closed shortly..."
+            description="The report will be closed shortly...",
         )
         await interaction.response.send_message(embed=close_embed)
         await asyncio.sleep(3)
@@ -55,7 +59,11 @@ class ReportMessageButtons(discord.ui.View):
         super().__init__()
         self.value = None
 
-    @discord.ui.button(label="Submit Report", style=discord.ButtonStyle.primary, custom_id="submit_report")
+    @discord.ui.button(
+        label="Submit Report",
+        style=discord.ButtonStyle.primary,
+        custom_id="submit_report",
+    )
     async def submit(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
         Create a View for the report message embed confirmation button.
@@ -65,7 +73,11 @@ class ReportMessageButtons(discord.ui.View):
         self.value = True
         self.stop()
 
-    @discord.ui.button(label="Cancel Report", style=discord.ButtonStyle.secondary, custom_id="cancel_report")
+    @discord.ui.button(
+        label="Cancel Report",
+        style=discord.ButtonStyle.secondary,
+        custom_id="cancel_report",
+    )
     async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
         Create a View for the report message embed cancel button.
@@ -76,7 +88,6 @@ class ReportMessageButtons(discord.ui.View):
 
 
 class ReportMessageApp(commands.Cog):
-
     def __init__(self, bot) -> None:
         self.bot = bot
 
@@ -91,17 +102,17 @@ class ReportMessageApp(commands.Cog):
             config["categories"]["moderation"],
             config["categories"]["development"],
             config["categories"]["logs"],
-            config["categories"]["tickets"]
+            config["categories"]["tickets"],
         ]:
             return await embeds.error_message(
                 ctx=ctx,
-                description="You do not have permissions to use this command in this category."
+                description="You do not have permissions to use this command in this category.",
             )
 
         if ctx.author.bot:
             return await embeds.error_message(
                 ctx=ctx,
-                description="You do not have permissions to use this command on this user."
+                description="You do not have permissions to use this command on this user.",
             )
 
         category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
@@ -126,7 +137,11 @@ class ReportMessageApp(commands.Cog):
         )
 
         if message.clean_content:
-            embed.add_field(name="Message:", value=f">>> {message.clean_content[0:1023]}", inline=False)
+            embed.add_field(
+                name="Message:",
+                value=f">>> {message.clean_content[0:1023]}",
+                inline=False,
+            )
         for attachment in message.attachments:
             embed.add_field(name="Attachment:", value=attachment.url, inline=False)
 
@@ -144,7 +159,8 @@ class ReportMessageApp(commands.Cog):
                     ),
                     ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
                     ctx.author: discord.PermissionOverwrite(read_messages=True),
-                })
+                },
+            )
 
             embed = embeds.make_embed(
                 title="Reported message",
@@ -156,14 +172,31 @@ class ReportMessageApp(commands.Cog):
                 footer="Reported message originally sent",
                 timestamp=message.created_at,
                 fields=[
-                    {"name": "Author:", "value": message.author.mention, "inline": True},
-                    {"name": "Channel:", "value": message.channel.mention, "inline": True},
-                    {"name": "Reported By:", "value": ctx.author.mention, "inline": True},
+                    {
+                        "name": "Author:",
+                        "value": message.author.mention,
+                        "inline": True,
+                    },
+                    {
+                        "name": "Channel:",
+                        "value": message.channel.mention,
+                        "inline": True,
+                    },
+                    {
+                        "name": "Reported By:",
+                        "value": ctx.author.mention,
+                        "inline": True,
+                    },
                     {"name": "Link:", "value": message.jump_url, "inline": False},
-                ])
+                ],
+            )
 
             if message.clean_content:
-                embed.add_field(name="Message:", value=f">>> {message.clean_content[0:1023]}", inline=False)
+                embed.add_field(
+                    name="Message:",
+                    value=f">>> {message.clean_content[0:1023]}",
+                    inline=False,
+                )
 
             for attachment in message.attachments:
                 embed.add_field(name="Attachment:", value=attachment.url, inline=False)

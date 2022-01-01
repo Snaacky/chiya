@@ -11,7 +11,6 @@ log = logging.getLogger(__name__)
 
 
 class BoostListener(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -37,7 +36,8 @@ class BoostListener(commands.Cog):
                     "You can contact any <@&763031634379276308> member with a "
                     "[hex color](https://www.google.com/search?q=hex+color) "
                     "and your desired role name for a custom booster role."
-                ))
+                ),
+            )
             await before.system_channel.send(embed=embed)
 
     async def on_new_booster(self, before: discord.Member, after: discord.Member) -> None:
@@ -49,9 +49,10 @@ class BoostListener(commands.Cog):
                 description=(
                     f"{after.mention} boosted the server. "
                     f"We're now at {after.guild.premium_subscription_count} boosts."
-                ))
+                ),
+            )
             await channel.send(embed=embed)
-            log.info(f'{after} boosted {after.guild.name}.')
+            log.info(f"{after} boosted {after.guild.name}.")
 
     async def on_lost_booster(self, before: discord.Member, after: discord.Member) -> None:
         # Send an embed in #nitro-logs that someone stopped boosting the server.
@@ -63,9 +64,10 @@ class BoostListener(commands.Cog):
                 description=(
                     f"{after.mention} no longer boosts the server. "
                     f"We're now at {after.guild.premium_subscription_count} boosts."
-                ))
+                ),
+            )
             await channel.send(embed=embed)
-            log.info(f'{after} stopped boosting {after.guild.name}.')
+            log.info(f"{after} stopped boosting {after.guild.name}.")
 
 
 def setup(bot: commands.Bot) -> None:

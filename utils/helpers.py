@@ -1,10 +1,9 @@
 import datetime
 import re
 from typing import Tuple
+
 import discord
 from discord.commands import context
-
-from utils.config import config
 
 import logging
 
@@ -37,12 +36,7 @@ def get_duration(duration) -> Tuple[str, float]:
     match_list = re.findall(regex, duration)[0]
 
     # Assign the arguments from the parsed message into variables.
-    duration = dict(
-        days=match_list[1],
-        hours=match_list[2],
-        minutes=match_list[3],
-        seconds=match_list[4]
-    )
+    duration = dict(days=match_list[1], hours=match_list[2], minutes=match_list[3], seconds=match_list[4])
 
     # String that will store the duration in a more digestible format.
     duration_string = ""
@@ -61,11 +55,10 @@ def get_duration(duration) -> Tuple[str, float]:
 
     # Adds the timedelta of the ban length to the current time to get the mod command end datetime.
     end_time = datetime.datetime.timestamp(
-        datetime.datetime.now(tz=datetime.timezone.utc) + datetime.timedelta(
-            days=duration["days"],
-            hours=duration["hours"],
-            minutes=duration["minutes"],
-            seconds=duration["seconds"]
-        ))
+        datetime.datetime.now(tz=datetime.timezone.utc)
+        + datetime.timedelta(
+            days=duration["days"], hours=duration["hours"], minutes=duration["minutes"], seconds=duration["seconds"]
+        )
+    )
 
     return duration_string, end_time

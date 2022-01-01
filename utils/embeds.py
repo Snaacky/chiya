@@ -5,17 +5,17 @@ from discord.commands import context
 
 
 def make_embed(
-        ctx: context.ApplicationContext = None,
-        author: bool = None,
-        title: str = "",
-        description: str = "",
-        title_url: str = None,
-        thumbnail_url: str = None,
-        image_url: str = None,
-        fields: list = None,
-        footer: str = None,
-        color=None,
-        timestamp=None,
+    ctx: context.ApplicationContext = None,
+    author: bool = None,
+    title: str = "",
+    description: str = "",
+    title_url: str = None,
+    thumbnail_url: str = None,
+    image_url: str = None,
+    fields: list = None,
+    footer: str = None,
+    color=None,
+    timestamp=None,
 ) -> discord.Embed:
     """
     A wrapper for discord.Embed with added support for non-native attributes.
@@ -60,18 +60,14 @@ def make_embed(
 
 
 async def success_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
-    """ Send a simple, self-destruct success message. """
-    embed = make_embed(
-        title=title if title else "Success:",
-        description=description,
-        color=discord.Color.green()
-    )
+    """Send a simple, self-destruct success message."""
+    embed = make_embed(title=title if title else "Success:", description=description, color=discord.Color.green())
 
     await ctx.send_followup(embed=embed, delete_after=30)
 
 
 async def error_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
-    """ Send a simple, self-destruct error message. """
+    """Send a simple, self-destruct error message."""
     embed = make_embed(
         title=title if title else "Error:",
         description=description,
@@ -82,7 +78,7 @@ async def error_message(ctx: context.ApplicationContext, description: str, title
 
 
 async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
-    """ Send a simple, self-destruct warning message. """
+    """Send a simple, self-destruct warning message."""
     embed = make_embed(
         title=title if title else "Warning:",
         description=description,
@@ -93,7 +89,7 @@ async def warning_message(ctx: context.ApplicationContext, description: str, tit
 
 
 def error_embed(ctx: context.ApplicationContext, title: str, description: str, author: bool = True) -> discord.Embed:
-    """ Make a basic error message embed. """
+    """Make a basic error message embed."""
     return make_embed(
         ctx=ctx,
         title=title if title else "Error:",

@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 
 
 class MuteCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -57,7 +56,8 @@ class MuteCommands(commands.Cog):
                 description=(
                     "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
                     "You can specify up to all four but you only need one."
-                ))
+                ),
+            )
 
         mute_embed = embeds.make_embed(
             ctx=ctx,
@@ -79,7 +79,8 @@ class MuteCommands(commands.Cog):
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Length:", "value": duration, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
-                ])
+                ],
+            )
             await member.send(embed=dm_embed)
         except discord.Forbidden:
             mute_embed.add_field(
@@ -88,7 +89,8 @@ class MuteCommands(commands.Cog):
                     f"Unable to message {member.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                ))
+                ),
+            )
 
         db = database.Database().get()
         db["mod_logs"].insert(
@@ -98,7 +100,8 @@ class MuteCommands(commands.Cog):
                 timestamp=int(time.time()),
                 reason=reason,
                 type="mute",
-            ))
+            )
+        )
         db.commit()
         db.close()
 
@@ -154,7 +157,8 @@ class MuteCommands(commands.Cog):
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
-                ])
+                ],
+            )
             await member.send(embed=dm_embed)
         except discord.Forbidden:
             unmute_embed.add_field(
@@ -163,7 +167,8 @@ class MuteCommands(commands.Cog):
                     f"Unable to message {member.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                ))
+                ),
+            )
 
         db = database.Database().get()
         db["mod_logs"].insert(
@@ -173,7 +178,8 @@ class MuteCommands(commands.Cog):
                 timestamp=int(time.time()),
                 reason=reason,
                 type="unmute",
-            ))
+            )
+        )
         db.commit()
         db.close()
 

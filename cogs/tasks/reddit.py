@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class RedditTask(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.bot_started_at = time.time()
@@ -28,9 +27,7 @@ class RedditTask(commands.Cog):
             return
 
         self.reddit = asyncpraw.Reddit(
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            user_agent=self.user_agent
+            client_id=self.client_id, client_secret=self.client_secret, user_agent=self.user_agent
         )
 
         log.info("Starting reddit functionality background task")
@@ -65,12 +62,13 @@ class RedditTask(commands.Cog):
                 embed.set_author(
                     name=submission.author.name,
                     url=f"https://reddit.com/u/{submission.author.name}",
-                    icon_url=submission.author.icon_img
+                    icon_url=submission.author.icon_img,
                 )
 
                 embed.set_footer(
                     text=f"{submission.link_flair_text} posted on /r/{submission.subreddit}",
-                    icon_url=submission.subreddit.community_icon)
+                    icon_url=submission.subreddit.community_icon,
+                )
 
                 # Adds ellipsis if the data is too long to signify cutoff.
                 if len(submission.title) >= 252:

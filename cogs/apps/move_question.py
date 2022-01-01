@@ -13,7 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class MoveQuestionApp(commands.Cog):
-
     def __init__(self, bot) -> None:
         self.bot = bot
 
@@ -25,9 +24,7 @@ class MoveQuestionApp(commands.Cog):
         """
         await ctx.defer(ephemeral=True)
 
-        staff = [x for x in ctx.author.roles
-                 if x.id == config["roles"]["staff"]
-                 or x.id == config["roles"]["trial"]]
+        staff = [x for x in ctx.author.roles if x.id == config["roles"]["staff"] or x.id == config["roles"]["trial"]]
         if not staff:
             return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
 
@@ -39,16 +36,19 @@ class MoveQuestionApp(commands.Cog):
         ]:
             return await embeds.error_message(
                 ctx=ctx,
-                description="You do not have permissions to use this command in this category."
+                description="You do not have permissions to use this command in this category.",
             )
 
-        channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["public"]["questions_and_help"])
+        channel = discord.utils.get(
+            ctx.guild.text_channels,
+            id=config["channels"]["public"]["questions_and_help"],
+        )
         webhook = await channel.create_webhook(name=ctx.author.name)
 
         await webhook.send(
             content=message.content,
             username=ctx.author.name,
-            avatar_url=ctx.author.avatar
+            avatar_url=ctx.author.avatar,
         )
         await webhook.delete()
         await message.delete()
@@ -61,7 +61,8 @@ class MoveQuestionApp(commands.Cog):
                 f"{ctx.author.mention}, your message was moved to {channel.mention} "
                 "which is the more appropriate channel for help, questions, and support type "
                 "topics. Please continue your conversation in that channel."
-            ))
+            ),
+        )
         ping = await channel.send(ctx.author.mention)
         await ping.delete()
 

@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class PurgeCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -35,9 +34,7 @@ class PurgeCommands(commands.Cog):
         return True
 
     @slash_command(
-        guild_ids=config["guild_ids"],
-        default_permission=False,
-        description="Purge the last X amount of messages"
+        guild_ids=config["guild_ids"], default_permission=False, description="Purge the last X amount of messages"
     )
     @permissions.has_role(config["roles"]["staff"])
     async def purge(
@@ -70,7 +67,7 @@ class PurgeCommands(commands.Cog):
             description=f"{ctx.author.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color=discord.Color.red(),
-            fields=[{"name": "Reason:", "value": reason, "inline": False}]
+            fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )
         await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
         await ctx.send_followup(embed=embed)

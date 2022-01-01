@@ -11,7 +11,6 @@ log = logging.getLogger(__name__)
 
 
 class ReminderTask(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.check_for_reminder.start()
@@ -35,11 +34,7 @@ class ReminderTask(commands.Cog):
         for reminder in result:
             channel = self.bot.get_channel(reminder["reminder_location"])
             user = await self.bot.fetch_user(reminder["author_id"])
-            embed = embeds.make_embed(
-                title="Here is your reminder",
-                description=reminder["message"],
-                color="blurple"
-            )
+            embed = embeds.make_embed(title="Here is your reminder", description=reminder["message"], color="blurple")
 
             if channel:
                 try:

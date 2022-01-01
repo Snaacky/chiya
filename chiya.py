@@ -19,26 +19,24 @@ bot = commands.Bot(
         reactions=config["bot"]["intents"]["reactions"],
     ),
     case_insensitive=config["bot"]["case_insensitive"],
-    help_command=None
+    help_command=None,
 )
 log = logging.getLogger(__name__)
 
 
 @bot.event
 async def on_ready() -> None:
-    """ Called when the client is done preparing the data received from Discord. """
+    """
+    Called when the client is done preparing the data received from Discord.
+    """
     log.info(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
 
     # TODO: This is apparently bad practice and can result in connection interruption?
-    await bot.change_presence(
-        activity=discord.Activity(
-            type=discord.ActivityType.listening,
-            name="your command!"
-        ))
+    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="your command!"))
     await bot.register_commands()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # Attempt to create the db, tables, and columns for Chiya.
     database.Database().setup()
 

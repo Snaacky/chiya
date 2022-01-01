@@ -11,11 +11,11 @@ from utils.config import config
 from utils.helpers import get_duration
 from utils.pagination import LinePaginator
 
+
 log = logging.getLogger(__name__)
 
 
 class ReminderCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -44,7 +44,8 @@ class ReminderCommands(commands.Cog):
                 description=(
                     "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
                     "You can specify up to all four but you only need one."
-                ))
+                ),
+            )
 
         db = database.Database().get()
         remind_id = db["remind_me"].insert(
@@ -54,7 +55,8 @@ class ReminderCommands(commands.Cog):
                 date_to_remind=end_time,
                 message=message,
                 sent=False,
-            ))
+            )
+        )
 
         db.commit()
         db.close()
@@ -69,7 +71,8 @@ class ReminderCommands(commands.Cog):
             fields=[
                 {"name": "ID:", "value": remind_id, "inline": False},
                 {"name": "Message:", "value": message, "inline": False},
-            ])
+            ],
+        )
 
         await ctx.send_followup(embed=embed)
 
@@ -114,13 +117,14 @@ class ReminderCommands(commands.Cog):
                 {"name": "ID:", "value": str(reminder_id), "inline": False},
                 {"name": "Old Message:", "value": old_message, "inline": False},
                 {"name": "New Message:", "value": new_message, "inline": False},
-            ])
+            ],
+        )
 
         await ctx.send_followup(embed=embed)
 
     @reminder.command(name="list", description="List your existing reminders")
     async def list(self, ctx: context.ApplicationContext) -> None:
-        """ List your reminders. """
+        """List your reminders."""
         await ctx.defer()
 
         db = database.Database().get()
@@ -132,9 +136,7 @@ class ReminderCommands(commands.Cog):
             alert_time = datetime.fromtimestamp(result["date_to_remind"])
             alert_time = alert_time.strftime("%A, %b %d, %Y at %X")
             reminders.append(
-                f"**ID: {result['id']}** \n"
-                f"**Alert on:** {alert_time} UTC\n"
-                f"**Message: **{result['message']}"
+                f"**ID: {result['id']}** \n" f"**Alert on:** {alert_time} UTC\n" f"**Message: **{result['message']}"
             )
 
         embed = embeds.make_embed(
@@ -197,7 +199,8 @@ class ReminderCommands(commands.Cog):
             fields=[
                 {"name": "ID:", "value": str(reminder_id), "inline": False},
                 {"name": "Message: ", "value": result["message"], "inline": False},
-            ])
+            ],
+        )
         await ctx.send_followup(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
@@ -218,9 +221,9 @@ class ReminderCommands(commands.Cog):
 
         def check(message):
             return (
-                    message.author == ctx.author
-                    and message.channel == ctx.channel
-                    and message.content.lower() in ("yes", "no", "y", "n")
+                message.author == ctx.author
+                and message.channel == ctx.channel
+                and message.content.lower() in ("yes", "no", "y", "n")
             )
 
         try:

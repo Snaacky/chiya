@@ -37,8 +37,8 @@ class BansCommands(commands.Cog):
             int,
             description="Days worth of messages to delete from the user, up to 7",
             choices=[1, 2, 3, 4, 5, 6, 7],
-            required=False
-        )
+            required=False,
+        ),
     ) -> None:
         """
         Ban the user, log the action to the database, and attempt to send them
@@ -87,7 +87,8 @@ class BansCommands(commands.Cog):
                 fields=[
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                ])
+                ],
+            )
             await user.send(embed=dm_embed)
         except discord.Forbidden:
             embed.add_field(
@@ -96,16 +97,19 @@ class BansCommands(commands.Cog):
                     f"Unable to message {user.mention} about this action. "
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
-                ))
+                ),
+            )
 
         db = database.Database().get()
-        db["mod_logs"].insert(dict(
-            user_id=user.id,
-            mod_id=ctx.author.id,
-            timestamp=int(time.time()),
-            reason=reason,
-            type="ban",
-        ))
+        db["mod_logs"].insert(
+            dict(
+                user_id=user.id,
+                mod_id=ctx.author.id,
+                timestamp=int(time.time()),
+                reason=reason,
+                type="ban",
+            )
+        )
         db.commit()
         db.close()
 
@@ -148,13 +152,9 @@ class BansCommands(commands.Cog):
         )
 
         db = database.Database().get()
-        db["mod_logs"].insert(dict(
-            user_id=user.id,
-            mod_id=ctx.author.id,
-            timestamp=int(time.time()),
-            reason=reason,
-            type="unban"
-        ))
+        db["mod_logs"].insert(
+            dict(user_id=user.id, mod_id=ctx.author.id, timestamp=int(time.time()), reason=reason, type="unban")
+        )
         db.commit()
         db.close()
 

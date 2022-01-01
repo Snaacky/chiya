@@ -9,7 +9,6 @@ log = logging.getLogger(__name__)
 
 
 class AutomodListener(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -24,16 +23,14 @@ class AutomodListener(commands.Cog):
             return
 
         # Remove message containing Cyrillic characters (used for bypassing automod).
-        if bool(re.search('[\u0400-\u04FF]', message.clean_content)):
+        if bool(re.search("[\u0400-\u04FF]", message.clean_content)):
             await message.delete()
 
         # Remove message and ban user if "@everyone" and "nitro" are in the same message (nitro scam behavior).
         if all(match in message.content for match in ["nitro", "@everyone"]):
             await message.delete()
             await message.guild.ban(
-                user=message.author,
-                reason="Banned by potential Nitro scam link detection",
-                delete_message_days=1
+                user=message.author, reason="Banned by potential Nitro scam link detection", delete_message_days=1
             )
 
 

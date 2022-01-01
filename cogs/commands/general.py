@@ -12,7 +12,6 @@ log = logging.getLogger(__name__)
 
 
 class GeneralCommands(commands.Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -22,9 +21,7 @@ class GeneralCommands(commands.Cog):
         ctx: context.ApplicationContext,
         user: Option(discord.User, description="User whose avatar will be grabbed", required=False),
         server_avatar: Option(
-            bool,
-            description="Whether if their server specific avatar should be used",
-            required=False
+            bool, description="Whether if their server specific avatar should be used", required=False
         ),
     ) -> None:
         """
@@ -55,9 +52,7 @@ class GeneralCommands(commands.Cog):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        guild_ids=config["guild_ids"],
-        default_permission=False,
-        description="Add vote reactions to a message."
+        guild_ids=config["guild_ids"], default_permission=False, description="Add vote reactions to a message."
     )
     @permissions.has_role(config["roles"]["staff"])
     async def vote(
