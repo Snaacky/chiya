@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class GeneralCommands(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @slash_command(guild_ids=config["guild_ids"], description="Gets a users profile picture")
@@ -89,6 +89,6 @@ class GeneralCommands(commands.Cog):
         await embeds.success_message(ctx=ctx, description=f"Added votes to {message.jump_url}")
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(GeneralCommands(bot))
     log.info("Commands loaded: general")

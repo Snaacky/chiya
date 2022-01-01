@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class RedditTask(commands.Cog):
 
-    def __init__(self, bot: commands.bot.Bot) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.bot_started_at = time.time()
         self.cache = []
@@ -89,6 +89,6 @@ class RedditTask(commands.Cog):
             log.error(e)
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(RedditTask(bot))
     log.info("Task loaded: reddit")

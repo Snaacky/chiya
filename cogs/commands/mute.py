@@ -15,7 +15,8 @@ log = logging.getLogger(__name__)
 
 
 class MuteCommands(commands.Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Mutes a member in the server")
@@ -179,6 +180,6 @@ class MuteCommands(commands.Cog):
         await ctx.send_followup(embed=unmute_embed)
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(MuteCommands(bot))
     log.info("Commands loaded: mute")

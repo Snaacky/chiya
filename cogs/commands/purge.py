@@ -12,7 +12,8 @@ log = logging.getLogger(__name__)
 
 
 class PurgeCommands(commands.Cog):
-    def __init__(self, bot):
+
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     async def can_purge_messages(self, ctx: context.ApplicationContext) -> bool:
@@ -75,6 +76,6 @@ class PurgeCommands(commands.Cog):
         await ctx.send_followup(embed=embed)
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(PurgeCommands(bot))
     log.info("Commands loaded: purge")

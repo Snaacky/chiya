@@ -14,7 +14,8 @@ log = logging.getLogger(__name__)
 
 
 class TicketCommands(commands.Cog):
-    def __init__(self, bot) -> None:
+
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
@@ -241,6 +242,6 @@ class TicketCloseButton(discord.ui.View):
         await interaction.channel.delete()
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(TicketCommands(bot))
     log.info("Commands loaded: ticket")

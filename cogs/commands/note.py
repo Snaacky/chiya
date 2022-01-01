@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 
 class NoteCommands(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @slash_command(name="addnote", guild_ids=config["guild_ids"], default_permission=False)
@@ -164,6 +164,6 @@ class NoteCommands(commands.Cog):
         await ctx.send_followup(embed=embed)
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(NoteCommands(bot))
     log.info("Commands loaded: note")

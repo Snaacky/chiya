@@ -162,6 +162,6 @@ class ReportMessageApp(commands.Cog):
             await channel.send("@here", delete_after=1)
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(ReportMessageApp(bot))
     log.info("App loaded: report_message")

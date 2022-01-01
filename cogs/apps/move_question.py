@@ -62,6 +62,6 @@ class MoveQuestionApp(commands.Cog):
         await ping.delete()
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(MoveQuestionApp(bot))
     log.info("App loaded: move_question")

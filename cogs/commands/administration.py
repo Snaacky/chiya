@@ -29,7 +29,7 @@ class AdministrationCommands(Cog):
     commands.
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self._last_result = None
 

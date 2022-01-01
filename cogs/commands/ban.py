@@ -14,7 +14,8 @@ log = logging.getLogger(__name__)
 
 
 class BansCommands(commands.Cog):
-    def __init__(self, bot) -> None:
+
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
@@ -160,6 +161,6 @@ class BansCommands(commands.Cog):
         await ctx.send_followup(embed=embed)
 
 
-def setup(bot: commands.bot.Bot) -> None:
+def setup(bot: commands.Bot) -> None:
     bot.add_cog(BansCommands(bot))
     log.info("Commands loaded: ban")
