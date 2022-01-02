@@ -6,7 +6,8 @@ import privatebinapi
 from discord.commands import context, permissions, slash_command
 from discord.ext import commands
 
-from utils import database, embeds
+import database
+from utils import embeds
 from utils.config import config
 
 
@@ -30,7 +31,7 @@ class TicketCommands(commands.Cog):
         guild_ids=config["guild_ids"],
         description="Create the embed ticket",
         default_permission=False,
-        permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],
+        permissions=[permissions.CommandPermission(id=config["roles"]["staff"], type=1, permission=True)],
     )
     async def ticket(self, ctx: context.ApplicationContext) -> None:
         """

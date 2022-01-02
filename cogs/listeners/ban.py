@@ -5,7 +5,7 @@ from typing import Union
 import discord
 from discord.ext import commands
 
-from utils import database
+import database
 
 
 log = logging.getLogger(__name__)

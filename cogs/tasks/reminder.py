@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands, tasks
 
-from utils import database, embeds
+import database
+from utils import embeds
 
 
 log = logging.getLogger(__name__)
