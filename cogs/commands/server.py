@@ -21,7 +21,7 @@ class ServerCommands(commands.Cog):
         "Server management commands",
         guild_ids=config["guild_ids"],
         default_permission=False,
-        permissions=[permissions.Permission(id=config["roles"]["staff"], type=1, permission=True)],
+        permissions=[permissions.CommandPermission(id=config["roles"]["staff"], type=1, permission=True)],
     )
 
     @server.command(name="pop", description="Gets the current server population")
