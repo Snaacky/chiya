@@ -5,7 +5,8 @@ import discord
 from discord.commands import Option, context, permissions, slash_command
 from discord.ext import commands
 
-from utils import database, embeds
+import database
+from utils import embeds
 from utils.config import config
 from utils.helpers import can_action_member
 

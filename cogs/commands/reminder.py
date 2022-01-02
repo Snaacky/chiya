@@ -6,7 +6,8 @@ import discord
 from discord.commands import Option, SlashCommandGroup, context, slash_command
 from discord.ext import commands
 
-from utils import database, embeds
+import database
+from utils import embeds
 from utils.config import config
 from utils.helpers import get_duration
 from utils.pagination import LinePaginator
