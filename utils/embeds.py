@@ -54,7 +54,8 @@ def make_embed(
     if timestamp:
         if isinstance(timestamp, int):
             embed.timestamp = datetime.datetime.fromtimestamp(timestamp)
-        embed.timestamp = timestamp
+        else:
+            embed.timestamp = timestamp
 
     return embed
 
