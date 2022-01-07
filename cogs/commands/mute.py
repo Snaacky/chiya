@@ -47,8 +47,8 @@ class MuteCommands(commands.Cog):
         if member.timed_out:
             return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
 
-        if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+        if len(reason) > 1024:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         duration_string, mute_end_time = get_duration(duration=duration)
         if not duration_string:
@@ -136,8 +136,8 @@ class MuteCommands(commands.Cog):
         if not member.timed_out:
             return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
 
-        if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+        if len(reason) > 1024:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         unmute_embed = embeds.make_embed(
             ctx=ctx,

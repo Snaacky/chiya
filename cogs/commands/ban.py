@@ -63,8 +63,8 @@ class BansCommands(commands.Cog):
         if await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
 
-        if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+        if len(reason) > 1024:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -88,6 +88,7 @@ class BansCommands(commands.Cog):
                 fields=[
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                    {"name": "Reason:", "value": reason, "inline": True},
                 ],
             )
             await user.send(embed=dm_embed)
@@ -140,8 +141,8 @@ class BansCommands(commands.Cog):
         if not await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
 
-        if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+        if len(reason) > 1024:
+            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         embed = embeds.make_embed(
             ctx=ctx,
