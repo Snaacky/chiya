@@ -1,5 +1,6 @@
 import glob
 import logging
+import os
 
 import discord
 from discord.ext import commands
@@ -29,24 +30,15 @@ async def on_ready() -> None:
     """
     Called when the client is done preparing the data received from Discord.
     """
-    log.info(f"Logged in as: {bot.user.name}#{bot.user.discriminator}")
+    log.info(f"Logged in as: {str(bot.user)}")
 
-    # TODO: This is apparently bad practice and can result in connection interruption?
+    # TODO: Apparently changing presence in on_ready is bad practice and can result in connection interruption?
     await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="your command!"))
     await bot.register_commands()
 
 
 if __name__ == "__main__":
-    # Attempt to create the db, tables, and columns for Chiya.
+    for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
+        bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
     database.Database().setup()
-
-    # Recursively loads in all the cogs in the folder named cogs.
-    # NOTE: Skips over any cogs that start with '__' or do not end with .py.
-    for cog in glob.iglob("cogs/**/[!^_]*.py", recursive=True):
-        if "\\" in cog:  # Fix pathing on Windows.
-            bot.load_extension(cog.replace("\\", ".")[:-3])
-        else:  # Fix pathing on Linux.
-            bot.load_extension(cog.replace("/", ".")[:-3])
-
-    # Run the bot with the token as an environment variable.
     bot.run(config["bot"]["token"])

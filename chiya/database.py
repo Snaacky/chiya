@@ -22,6 +22,7 @@ class Database:
             raise SystemExit
 
         self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
+        self.setup()
 
     def get(self) -> dataset.Database:
         """Returns the dataset database object."""

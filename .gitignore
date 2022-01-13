@@ -147,3 +147,4 @@ notes.txt
 *.bat
 db/*
 *.lnk
+poetry.lock

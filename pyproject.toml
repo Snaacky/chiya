@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "chiya"
+version = "1.0.0"
+description = "A moderation-heavy general purpose Discord bot."
+license = "Unlicense"
+authors = [
+    "Snaacky <snaacky@pm.me>",
+    "Mint <developer@chocomint.dev>",
+    "REDACTED <red4c13d@gmail.com>",
+]
+maintainers = [
+    "Snaacky <snaacky@pm.me>",
+    "Mint <developer@chocomint.dev>",
+    "REDACTED <red4c13d@gmail.com>",
+]
+readme = "README.md"
+repository = "https://github.com/ranimepiracy/Chiya"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+asyncpraw = "7.5.0"
+coloredlogs = "15.0.1"
+py-cord = { git = "https://github.com/Pycord-Development/pycord.git" }
+dataset = { git = "https://github.com/snaacky/dataset.git" }
+mysqlclient = "2.1.0"
+parsedatetime = "2.6"
+PrivateBinAPI = "^1.0.0"
+pyaml_env = "^1.1.3"
+sqlalchemy-utils = "0.38.2"
+
+orjson = { version = "^3.5.4", optional = true }
+aiodns = { version = "^1.1", optional = true }
+Brotlipy = { version = "*", optional = true }
+cchardet = { version = "*", optional = true }
+
+[tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+black = {version = "^21.12b0", allow-prereleases = true}
+
+[tool.poetry.extras]
+orjson = ["orjson"]
+aiodns = ["aiodns"]
+Brotlipy = ["Brotlipy"]
+cchardet = ["cchardet"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
