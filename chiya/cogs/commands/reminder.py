@@ -129,15 +129,15 @@ class ReminderCommands(commands.Cog):
         await ctx.defer()
 
         db = database.Database().get()
-
         results = db["remind_me"].find(sent=False, author_id=ctx.author.id)
-
         reminders = []
         for result in results:
-            alert_time = datetime.fromtimestamp(result["date_to_remind"])
-            alert_time = alert_time.strftime("%A, %b %d, %Y at %X")
             reminders.append(
-                f"**ID: {result['id']}** \n" f"**Alert on:** {alert_time} UTC\n" f"**Message: **{result['message']}"
+                (
+                    f"**ID: {result['id']}**\n"
+                    f"**Alert on:** <t:{result['date_to_remind']}:F>\n"
+                    f"**Message: **{result['message']}"
+                )
             )
 
         embed = embeds.make_embed(
