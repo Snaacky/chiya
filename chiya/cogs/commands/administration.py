@@ -9,7 +9,7 @@ from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 
 from utils import embeds
-from utils.config import config
+from config import config
 
 
 log = logging.getLogger(__name__)

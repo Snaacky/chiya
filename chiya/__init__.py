@@ -6,7 +6,7 @@ from pathlib import Path
 
 import coloredlogs
 
-from utils.config import config
+from config import config
 
 
 log_level = config["bot"]["log_level"]

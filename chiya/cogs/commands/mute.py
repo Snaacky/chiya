@@ -8,7 +8,7 @@ from discord.ext import commands
 
 import database
 from utils import embeds
-from utils.config import config
+from config import config
 from utils.helpers import can_action_member, get_duration
 
 

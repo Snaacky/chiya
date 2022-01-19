@@ -7,7 +7,7 @@ from discord.ext import commands
 
 import __init__  # noqa
 import database
-from utils.config import config
+from config import config
 
 
 bot = commands.Bot(
