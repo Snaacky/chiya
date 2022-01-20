@@ -1,16 +1,14 @@
 import asyncio
 import logging
-from datetime import datetime
 
 import discord
 from discord.commands import Option, SlashCommandGroup, context, slash_command
 from discord.ext import commands
 
-import database
-from utils import embeds
-from config import config
-from utils.helpers import get_duration
-from utils.pagination import LinePaginator
+from chiya import config, database
+from chiya.utils import embeds
+from chiya.utils.helpers import get_duration
+from chiya.utils.pagination import LinePaginator
 
 
 log = logging.getLogger(__name__)

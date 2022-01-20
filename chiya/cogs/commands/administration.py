@@ -8,8 +8,8 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Bot, Cog, Context
 
-from utils import embeds
-from config import config
+from chiya import config
+from chiya.utils import embeds
 
 
 log = logging.getLogger(__name__)

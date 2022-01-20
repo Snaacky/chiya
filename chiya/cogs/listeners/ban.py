@@ -5,7 +5,7 @@ from typing import Union
 import discord
 from discord.ext import commands
 
-import database
+from chiya import database
 
 
 log = logging.getLogger(__name__)

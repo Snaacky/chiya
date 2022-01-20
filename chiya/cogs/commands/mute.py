@@ -6,10 +6,9 @@ import discord
 from discord.commands import Option, context, permissions, slash_command
 from discord.ext import commands
 
-import database
-from utils import embeds
-from config import config
-from utils.helpers import can_action_member, get_duration
+from chiya import config, database
+from chiya.utils import embeds
+from chiya.utils.helpers import can_action_member, get_duration
 
 
 log = logging.getLogger(__name__)
