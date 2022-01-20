@@ -233,7 +233,11 @@ class ReminderCommands(commands.Cog):
             msg = await self.bot.wait_for("message", timeout=60, check=check)
             if msg.content.lower() in ("no", "n"):
                 db.close()
-                return await embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has been canceled.")
+                embed = embeds.make_embed(
+                    description=f"{ctx.author.mention}, your request has been canceled.",
+                    color=discord.Color.blurple(),
+                )
+                return await ctx.send_followup(embed=embed)
         except asyncio.TimeoutError:
             db.close()
             return await embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has timed out.")
