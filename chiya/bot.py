@@ -33,7 +33,9 @@ async def on_ready() -> None:
     log.info(f"Logged in as: {str(bot.user)}")
 
     # TODO: Apparently changing presence in on_ready is bad practice and can result in connection interruption?
-    await bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="your command!"))
+    await bot.change_presence(
+        activity=discord.Activity(type=discord.ActivityType.listening, name=config["bot"]["status"])
+    )
     await bot.register_commands()
 
 
