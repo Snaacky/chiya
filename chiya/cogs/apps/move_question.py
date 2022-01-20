@@ -59,7 +59,11 @@ class MoveQuestionApp(commands.Cog):
 
         await message.delete()
 
-        await embeds.success_message(ctx=ctx, description=f"Successfully moved message to: {channel.mention}")
+        success_embed = embeds.make_embed(
+            description=f"Successfully moved message to: {channel.mention}",
+            color=discord.Color.green(),
+        )
+        await ctx.send_followup(embed=success_embed)
         await embeds.warning_message(
             ctx=ctx,
             title="Warning: Your question was moved",
