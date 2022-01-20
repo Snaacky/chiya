@@ -40,7 +40,7 @@ async def on_ready() -> None:
 
 
 if __name__ == "__main__":
-    for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="", recursive=True):
+    for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
         bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
     database.Database().setup()
     bot.run(config["bot"]["token"])
