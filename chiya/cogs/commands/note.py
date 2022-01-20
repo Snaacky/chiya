@@ -79,7 +79,13 @@ class NoteCommands(commands.Cog):
         ),
     ) -> None:
         """
-        Search for the mod actions and notes for a user.
+        Search for the mod actions and notes for a user. The search can be
+        filtered by ban, unban, unmute, warn, or notes.
+
+        Users are not alerted when they have a /search command ran on them.
+        Only the command invoking user can change pages on the pagination.
+        It is imperative that the command is not ran in public channels
+        because the output is not hidden.
         """
         await ctx.defer()
 
@@ -142,8 +148,16 @@ class NoteCommands(commands.Cog):
         note: Option(str, description="The updated message for the log or note", required=True),
     ) -> None:
         """
-        Edit a mod action or note on a users profile.
+        Edit a mod action or note on a users /search history.
+
+        This is a destructive action and will only change the original user
+        note. It should primarily be used for adding additional details
+        and correct English errors.
+
+        A history of edits is not maintained and will only show the
+        latest edited message.
         """
+        # TODO: Add some sort of support for history or editing mods.
         await ctx.defer()
 
         db = database.Database().get()

@@ -26,7 +26,16 @@ class WarnCommands(commands.Cog):
         reason: Option(str, description="The reason why the member is being warned", required=True),
     ) -> None:
         """
-        Send the member a warning DM and log to database.
+        Warn the user, log the action to the database, and attempt to send
+        them a direct message alerting them of their mute.
+
+        The warning does not inherently apply any sort of punishment and is
+        merely used for keeping track of rule breaking offenses to be used
+        when considering future mod actions.
+
+        If the user isn't in the server, has privacy settings enabled, or has
+        the bot blocked they will be unable to receive the ban notification.
+        The bot will let the invoking mod know if this is the case.
         """
         await ctx.defer()
 

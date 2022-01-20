@@ -34,7 +34,9 @@ class ServerCommands(commands.Cog):
 
     @server.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: context.ApplicationContext) -> None:
-        """Send an embed with all current server boosters."""
+        """
+        Send an embed with all current server boosters.
+        """
         await ctx.defer()
 
         embed = embeds.make_embed(

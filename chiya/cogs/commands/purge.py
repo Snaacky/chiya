@@ -17,8 +17,9 @@ class PurgeCommands(commands.Cog):
 
     async def can_purge_messages(self, ctx: context.ApplicationContext) -> bool:
         """
-        Check used by purge function to make sure that the moderation, development,
-        logs, and tickets categories can't be purged for security reasons.
+        Check used by purge function to make sure that the moderation,
+        development, logs, and tickets categories can't be purged for
+        security reasons.
         """
         if ctx.author.id == ctx.guild.owner.id:
             return True

@@ -34,7 +34,11 @@ class ReminderCommands(commands.Cog):
         message: Option(str, description="Reminder message", required=True),
     ) -> None:
         """
-        Set a reminder message.
+        Creates a reminder message that will be sent at the specified time.
+
+        The reminder will be sent in the same channel that it was originally
+        created at. If the channel no longer exists when the reminder is to
+        be sent, it will attempt to send the reminder to the user in DMs.
         """
         await ctx.defer()
 
