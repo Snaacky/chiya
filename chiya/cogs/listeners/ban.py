@@ -17,6 +17,9 @@ class BanListener(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]) -> None:
+        """
+        Add the user's ban entry to the database if they were banned manually.
+        """
         ban_entry = await guild.fetch_ban(user)
         logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
         if logs[0].user != self.bot.user:
