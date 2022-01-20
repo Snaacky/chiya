@@ -1,7 +1,8 @@
 import logging
 
+import aiohttp
 import discord
-from discord import message_command
+from discord import message_command, Webhook
 from discord.commands import context
 from discord.ext import commands
 
@@ -43,14 +44,19 @@ class MoveQuestionApp(commands.Cog):
             ctx.guild.text_channels,
             id=config["channels"]["public"]["questions_and_help"],
         )
-        webhook = await channel.create_webhook(name=ctx.author.name)
 
-        await webhook.send(
-            content=message.content,
-            username=ctx.author.name,
-            avatar_url=ctx.author.avatar,
-        )
-        await webhook.delete()
+        async with aiohttp.ClientSession() as session:
+            webhook = Webhook.from_url(
+                url=config["bot"]["webhook_url"],
+                session=session,
+            )
+
+            await webhook.send(
+                content=message.content,
+                username=message.author.name,
+                avatar_url=message.author.avatar,
+            )
+
         await message.delete()
 
         await embeds.success_message(ctx=ctx, description=f"Successfully moved message to: {channel.mention}")
