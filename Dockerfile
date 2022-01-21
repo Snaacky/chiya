@@ -14,7 +14,7 @@ RUN apt-get update -y && \
     apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl \
     && curl -sSL https://install.python-poetry.org | python -
 
-# set environment variables and install missing poetry dependencies
+# add poetry path to PATH
 ENV PATH="${PATH}:/root/.local/bin"
 
 # Install project dependencies with poetry
