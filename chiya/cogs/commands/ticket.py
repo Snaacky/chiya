@@ -26,27 +26,21 @@ class TicketCommands(commands.Cog):
         self.bot.add_view(TicketCreateButton())
         self.bot.add_view(TicketCloseButton())
 
-    @slash_command(
-        guild_ids=config["guild_ids"],
-        description="Create the embed ticket",
-        default_permission=False,
-        permissions=[permissions.CommandPermission(id=config["roles"]["staff"], type=1, permission=True)],
-    )
+    @commands.is_owner()
+    @commands.command(name="createticketembed")
     async def ticket(self, ctx: context.ApplicationContext) -> None:
         """
         Command to create an embed that allows creating tickets.
 
         Permission type 1 is role and type 2 is user.
         """
-        await ctx.defer()
-
         embed = embeds.make_embed(
             title="📫  Open a ticket",
             description="To create a ticket, click on the button below.",
             footer="Abusing will result in a ban. Only use this feature for serious inquiries.",
             color=discord.Color.blurple(),
         )
-        await ctx.send_followup(embed=embed, view=TicketCreateButton())
+        await ctx.send(embed=embed, view=TicketCreateButton())
 
 
 class TicketCreateButton(discord.ui.View):
