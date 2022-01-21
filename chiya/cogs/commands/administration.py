@@ -159,22 +159,6 @@ class AdministrationCommands(Cog):
         await ctx.message.delete()
 
     @commands.is_owner()
-    @commands.command(name="createticketembed")
-    async def create_ticket_embed(self, ctx: Context) -> None:
-        embed = embeds.make_embed(
-            title="🎫 Create a new modmail ticket",
-            description="Click the react below to create a new modmail ticket.",
-            color="default",
-        )
-        embed.add_field(
-            name="Warning:",
-            value="Serious inquiries only. Abuse may result in warning or ban.",
-        )
-        spawned = await ctx.send(embed=embed)
-        await spawned.add_reaction("🎫")
-        await ctx.message.delete()
-
-    @commands.is_owner()
     @commands.command(name="createcolorrolesembed")
     async def create_color_roles_embed(self, ctx: Context) -> None:
         embed = discord.Embed(
