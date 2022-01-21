@@ -21,7 +21,7 @@ python = "^3.10"
 asyncpraw = "7.5.0"
 coloredlogs = "15.0.1"
 py-cord = { git = "https://github.com/Pycord-Development/pycord.git" }
-dataset = { git = "https://github.com/snaacky/dataset.git" }
+dataset = "1.5.2"
 mysqlclient = "2.1.0"
 parsedatetime = "2.6"
 PrivateBinAPI = "^1.0.0"
