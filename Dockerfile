@@ -12,11 +12,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 # Install MySQL and poetry
 RUN apt-get update -y && \
     apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl \
-    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+    && curl -sSL https://install.python-poetry.org | python -
 
 # set environment variables and install missing poetry dependencies
-ENV PATH="${PATH}:/root/.poetry/bin"
-RUN pip install cleo tomlkit poetry.core requests cachecontrol cachy html5lib pkginfo virtualenv lockfile
+ENV PATH="${PATH}:/root/.local/bin"
 
 # Install project dependencies with poetry
 COPY pyproject.toml .
