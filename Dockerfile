@@ -9,17 +9,23 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
   # Force UTF8 encoding for funky characters
   PYTHONIOENCODING=utf8
 
-# Install MySQL
+# Install MySQL and poetry
 RUN apt-get update -y && \
-    apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git
+    apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl \
+    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 
-# Install pip requirements
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# set environment variables and install missing poetry dependencies
+ENV PATH="${PATH}:/root/.poetry/bin"
+RUN pip install cleo tomlkit poetry.core requests cachecontrol cachy html5lib pkginfo virtualenv lockfile
+
+# Install project dependencies with poetry
+COPY pyproject.toml .
+RUN poetry config virtualenvs.create false \
+  && poetry install --no-interaction --no-ansi
 
 # Place where the app lives in the container
 WORKDIR /app
 COPY . /app
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["python", "chiya.py"]
+CMD ["python", "/app/chiya/bot.py"]
