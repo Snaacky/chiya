@@ -68,7 +68,7 @@ class ReminderCommands(commands.Cog):
             ctx=ctx,
             author=True,
             title="Reminder set",
-            description=f"\nI'll remind you about this in {duration_string[:-1]}.",  # Remove the trailing white space.
+            description=f"I'll remind you about this <t:{end_time}:R>.",
             thumbnail_url="https://i.imgur.com/VZV64W0.png",
             color=discord.Color.blurple(),
             fields=[
