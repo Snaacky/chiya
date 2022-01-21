@@ -54,10 +54,12 @@ def get_duration(duration) -> Tuple[str, float]:
         duration[time_unit] = float(duration[time_unit])
 
     # Adds the timedelta of the ban length to the current time to get the mod command end datetime.
-    end_time = datetime.datetime.timestamp(
-        datetime.datetime.now(tz=datetime.timezone.utc)
-        + datetime.timedelta(
-            days=duration["days"], hours=duration["hours"], minutes=duration["minutes"], seconds=duration["seconds"]
+    end_time = int(
+        datetime.datetime.timestamp(
+            datetime.datetime.now(tz=datetime.timezone.utc)
+            + datetime.timedelta(
+                days=duration["days"], hours=duration["hours"], minutes=duration["minutes"], seconds=duration["seconds"]
+            )
         )
     )
 
