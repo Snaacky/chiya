@@ -25,20 +25,21 @@ class Database:
         self.setup()
 
     def get(self) -> dataset.Database:
-        """Returns the dataset database object."""
+        """
+        Returns the dataset database object.
+        """
         return dataset.connect(url=self.url)
 
     def setup(self) -> None:
-        """Sets up the tables needed for Chiya."""
-        # Create the database if it doesn't already exist.
+        """
+        Sets up the tables needed for Chiya.
+        """
         engine = create_engine(self.url)
         if not database_exists(engine.url):
             create_database(engine.url)
 
-        # Open a connection to the database.
         db = self.get()
 
-        # Create mod_logs table and columns to store moderator actions.
         if "mod_logs" not in db:
             mod_logs = db.create_table("mod_logs")
             mod_logs.create_column("user_id", db.types.bigint)
@@ -48,7 +49,6 @@ class Database:
             mod_logs.create_column("type", db.types.text)
             log.info("Created missing table: mod_logs")
 
-        # Create remind_me table and columns to store remind_me messages.
         if "remind_me" not in db:
             remind_me = db.create_table("remind_me")
             remind_me.create_column("reminder_location", db.types.bigint)
@@ -58,7 +58,6 @@ class Database:
             remind_me.create_column("sent", db.types.boolean, default=False)
             log.info("Created missing table: remind_me")
 
-        # Create timed_mod_actions table and columns to store timed moderator actions.
         if "timed_mod_actions" not in db:
             timed_mod_actions = db.create_table("timed_mod_actions")
             timed_mod_actions.create_column("user_id", db.types.bigint)
@@ -70,7 +69,6 @@ class Database:
             timed_mod_actions.create_column("reason", db.types.text)
             log.info("Created missing table: timed_mod_actions")
 
-        # Create ticket table and columns to store the ticket status information.
         if "tickets" not in db:
             tickets = db.create_table("tickets")
             tickets.create_column("user_id", db.types.bigint)
@@ -80,6 +78,5 @@ class Database:
             tickets.create_column("status", db.types.boolean)
             log.info("Created missing table: tickets")
 
-        # Commit the changes to the database and close the connection.
         db.commit()
         db.close()
