@@ -3,7 +3,7 @@ import time
 
 import discord
 import privatebinapi
-from discord.commands import context, permissions, slash_command
+from discord.commands import context
 from discord.ext import commands
 
 from chiya import config, database
