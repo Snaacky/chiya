@@ -5,7 +5,7 @@ import asyncpraw
 import discord
 from discord.ext import commands, tasks
 
-from config import config
+from chiya import config
 
 
 log = logging.getLogger(__name__)

@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 import discord
 from discord.ext import commands, tasks
 
-import database
-from utils import embeds
+from chiya import database
+from chiya.utils import embeds
 
 
 log = logging.getLogger(__name__)
