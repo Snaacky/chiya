@@ -24,7 +24,9 @@ class BoostListener(commands.Cog):
         await self.on_new_boost(before, after)
 
     async def on_new_boost(self, before: discord.Guild, after: discord.Guild) -> None:
-        # TODO: Replace hardcoded mention with a .mention from config.
+        """
+        Send a notification embed when a new boost was received.
+        """
         if after.premium_subscription_count > before.premium_subscription_count:
             embed = embeds.make_embed(
                 color=discord.Color.nitro_pink(),
@@ -33,7 +35,7 @@ class BoostListener(commands.Cog):
                 description=(
                     "Thank you so much for the server boost! "
                     f"We are now at {after.premium_subscription_count} boosts! "
-                    "You can contact any <@&763031634379276308> member with a "
+                    f"You can contact any <@&{config['roles']['staff']}> member with a "
                     "[hex color](https://www.google.com/search?q=hex+color) "
                     "and your desired role name for a custom booster role."
                 ),
@@ -41,6 +43,9 @@ class BoostListener(commands.Cog):
             await before.system_channel.send(embed=embed)
 
     async def on_new_booster(self, before: discord.Member, after: discord.Member) -> None:
+        """
+        Send an embed in #nitro-logs when a new boost was received.
+        """
         if not before.premium_since and after.premium_since:
             channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
             embed = embeds.make_embed(
@@ -55,7 +60,9 @@ class BoostListener(commands.Cog):
             log.info(f"{after} boosted {after.guild.name}.")
 
     async def on_lost_booster(self, before: discord.Member, after: discord.Member) -> None:
-        # Send an embed in #nitro-logs that someone stopped boosting the server.
+        """
+        Send an embed in #nitro-logs when a boost was lost.
+        """
         if before.premium_since and not after.premium_since:
             channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
             embed = embeds.make_embed(
