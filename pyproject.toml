@@ -20,7 +20,7 @@ repository = "https://github.com/ranimepiracy/Chiya"
 python = "^3.10"
 asyncpraw = "7.5.0"
 coloredlogs = "15.0.1"
-py-cord = { git = "https://github.com/Pycord-Development/pycord.git" }
+py-cord = "2.0.0b4"
 dataset = "1.5.2"
 mysqlclient = "2.1.0"
 parsedatetime = "2.6"
