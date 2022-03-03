@@ -36,7 +36,9 @@ async def on_ready() -> None:
     await bot.change_presence(
         activity=discord.Activity(type=discord.ActivityType.listening, name=config["bot"]["status"])
     )
-    await bot.register_commands()
+
+    # TODO: Move this to an admin command rather than running every time the bot loads.
+    # await bot.register_commands()
 
 
 if __name__ == "__main__":
