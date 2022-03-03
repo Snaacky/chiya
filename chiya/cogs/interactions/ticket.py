@@ -5,6 +5,7 @@ import discord
 import privatebinapi
 from discord.commands import context
 from discord.ext import commands
+from discord.ui import InputText, Modal
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -13,7 +14,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class TicketCommands(commands.Cog):
+class TicketInteractions(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -29,64 +30,44 @@ class TicketCommands(commands.Cog):
     @commands.is_owner()
     @commands.command(name="createticketembed")
     async def ticket(self, ctx: context.ApplicationContext) -> None:
+        # TODO: Move this into the commands/administration.py cog.
         """
         Command to create an embed that allows creating tickets.
-
-        Permission type 1 is role and type 2 is user.
         """
         embed = embeds.make_embed(
             title="📫  Open a ticket",
-            description="To create a ticket, click on the button below.",
-            footer="Abusing will result in a ban. Only use this feature for serious inquiries.",
+            description="For serious inquiries, click the button below to create a ticket.",
+            footer="Any abuse of the ticket system will result in moderation action.",
             color=discord.Color.blurple(),
         )
         await ctx.send(embed=embed, view=TicketCreateButton())
 
 
-class TicketCreateButton(discord.ui.View):
-    def __init__(self) -> None:
-        super().__init__(timeout=None)
-
-    @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
-    async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
-        """
-        The create ticket button of the ticket embed, that prompts for
-        confirmation before proceeding.
-
-        The `button` parameter is positional and required despite unused.
-        """
-        embed = embeds.make_embed(
-            description=f"{interaction.user.mention}, are you sure that you want to open a ticket?",
-            color=discord.Color.blurple(),
-        )
-        await interaction.response.send_message(embed=embed, view=TicketConfirmButtons(), ephemeral=True)
-
-
-class TicketConfirmButtons(discord.ui.View):
-    def __init__(self) -> None:
-        super().__init__()
-
-    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.primary, custom_id="confirm_ticket")
-    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
-        """
-        The confirm button to open a ticket. Return if the user already have
-        a ticket opened. Otherwise, create a private ticket channel, ghost
-        ping the author and ping staff if the author is a VIP, send a
-        pinned embed with a close button, and create a pending ticket
-        entry in the database.
-
-        The `button` parameter is positional and required despite unused.
-        """
-        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
-        ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
-
-        if ticket:
-            embed = embeds.make_embed(
-                color=discord.Color.blurple(),
-                description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}",
+class TicketSubmissionModal(Modal):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.add_item(
+            InputText(
+                label="Subject:",
+                placeholder="The subject of your ticket",
+                required=True,
+                max_length=1024,
+                style=discord.InputTextStyle.short,
             )
-            return await interaction.response.edit_message(embed=embed, view=None)
+        )
 
+        self.add_item(
+            InputText(
+                label="Message:",
+                placeholder="The message for your ticket",
+                required=True,
+                max_length=1024,
+                style=discord.InputTextStyle.long,
+            )
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         permission = {
             role_staff: discord.PermissionOverwrite(read_messages=True),
@@ -105,11 +86,12 @@ class TicketConfirmButtons(discord.ui.View):
 
         embed = embeds.make_embed(
             title="🎫  Ticket created",
-            description=(
-                "Please wait patiently until a staff member is able to assist you. "
-                "In the meantime, briefly describe what you need help with."
-            ),
-            fields=[{"name": "Ticket Creator:", "value": interaction.user.mention, "inline": False}],
+            description="Please wait patiently until a staff member is available to assist you.",
+            fields=[
+                {"name": "Ticket Creator:", "value": interaction.user.mention, "inline": False},
+                {"name": "Ticket Subject:", "value": self.children[0].value, "inline": False},
+                {"name": "Ticket Message:", "value": self.children[1].value, "inline": False},
+            ],
             color=discord.Color.blurple(),
         )
 
@@ -124,7 +106,7 @@ class TicketConfirmButtons(discord.ui.View):
             description=f"Successfully opened a ticket: {channel.mention}",
             color=discord.Color.blurple(),
         )
-        await interaction.response.edit_message(embed=embed, view=None)
+        await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
 
         db = database.Database().get()
         db["tickets"].insert(
@@ -140,17 +122,32 @@ class TicketConfirmButtons(discord.ui.View):
         db.commit()
         db.close()
 
-    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, custom_id="cancel_ticket")
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+
+class TicketCreateButton(discord.ui.View):
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
+    async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
         """
-        The cancel button to cancel the ticket creation attempt.
+        The create ticket button of the ticket embed, that prompts for
+        confirmation before proceeding.
 
         The `button` parameter is positional and required despite unused.
         """
-        embed = embeds.make_embed(
-            color=discord.Color.red(), description="Your ticket creation request has been canceled."
-        )
-        await interaction.response.edit_message(embed=embed, view=None)
+        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
+        ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
+
+        if ticket:
+            embed = embeds.make_embed(
+                color=discord.Color.red(),
+                title="Error:",
+                description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}",
+            )
+            return await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+
+        modal = TicketSubmissionModal(title="Ticket Submission")
+        await interaction.response.send_modal(modal)
 
 
 class TicketCloseButton(discord.ui.View):
@@ -167,7 +164,7 @@ class TicketCloseButton(discord.ui.View):
         The `button` parameter is positional and required despite unused.
         """
         close_embed = embeds.make_embed(
-            color=discord.Color.blurple(), description="The ticket will be closed shortly..."
+            color=discord.Color.blurple(), description="This ticket will be archived and closed momentarily..."
         )
         await interaction.response.send_message(embed=close_embed)
 
@@ -245,5 +242,5 @@ class TicketCloseButton(discord.ui.View):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(TicketCommands(bot))
-    log.info("Commands loaded: ticket")
+    bot.add_cog(TicketInteractions(bot))
+    log.info("Interactions loaded: ticket")
