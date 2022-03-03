@@ -10,7 +10,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class BoostListener(commands.Cog):
+class BoostListeners(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -78,5 +78,5 @@ class BoostListener(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(BoostListener(bot))
-    log.info("Listener loaded: boost")
+    bot.add_cog(BoostListeners(bot))
+    log.info("Listeners loaded: boost")

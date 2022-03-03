@@ -10,7 +10,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class AutoresponderListener(commands.Cog):
+class AutoresponderListeners(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -178,5 +178,5 @@ class AutoresponderListener(commands.Cog):
 
 
 def setup(bot) -> None:
-    bot.add_cog(AutoresponderListener(bot))
-    log.info("Listener Loaded: autoresponder")
+    bot.add_cog(AutoresponderListeners(bot))
+    log.info("Listeners Loaded: autoresponder")

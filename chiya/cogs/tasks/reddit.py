@@ -11,7 +11,7 @@ from chiya import config
 log = logging.getLogger(__name__)
 
 
-class RedditTask(commands.Cog):
+class RedditTasks(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.bot_started_at = time.time()
@@ -90,5 +90,5 @@ class RedditTask(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(RedditTask(bot))
-    log.info("Task loaded: reddit")
+    bot.add_cog(RedditTasks(bot))
+    log.info("Tasks loaded: reddit")

@@ -11,7 +11,7 @@ from chiya import database
 log = logging.getLogger(__name__)
 
 
-class BanListener(commands.Cog):
+class BanListeners(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -38,5 +38,5 @@ class BanListener(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(BanListener(bot))
-    log.info("Listener loaded: ban")
+    bot.add_cog(BanListeners(bot))
+    log.info("Listeners loaded: ban")

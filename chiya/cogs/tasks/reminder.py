@@ -11,7 +11,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class ReminderTask(commands.Cog):
+class ReminderTasks(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.check_for_reminder.start()
@@ -58,5 +58,5 @@ class ReminderTask(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(ReminderTask(bot))
-    log.info("Task loaded: reminder")
+    bot.add_cog(ReminderTasks(bot))
+    log.info("Tasks loaded: reminder")
