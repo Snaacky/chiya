@@ -3,7 +3,7 @@ services:
   bot:
     depends_on:
       - db
-    image: docker.pkg.github.com/ranimepiracy/chiya/chiya:latest
+    image: docker.pkg.github.com/snaacky/chiya/chiya:latest
     restart: unless-stopped
     volumes:
         - ${CONFIG}:/app/config.yml
