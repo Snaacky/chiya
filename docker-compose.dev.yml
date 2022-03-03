@@ -1,6 +1,8 @@
 version: "3.3"
 services:
   bot:
+    depends_on:
+      - db
     build: .
     restart: unless-stopped
     volumes:
@@ -10,10 +12,11 @@ services:
         - BOT_TOKEN=${BOT_TOKEN}
         - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
         - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
-        - MYSQL_HOST=db
+        - MYSQL_HOST=db:3306
         - MYSQL_DATABASE=${MYSQL_DATABASE}
         - MYSQL_USER=chiya
         - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+        - PYTHONPATH=/app
   db:
     image: mariadb
     restart: unless-stopped
