@@ -36,11 +36,11 @@ class ReminderTasks(commands.Cog):
             channel = self.bot.get_channel(reminder["reminder_location"])
             try:
                 user = await self.bot.fetch_user(reminder["author_id"])
-            except:
+            except Exception:  # TODO: Add a proper Exception here
                 db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
                 log.warning(f"Reminder entry with ID {reminder['id']} has an invalid user ID: {reminder['author_id']}.")
                 continue
-                  
+
             embed = embeds.make_embed(title="Here is your reminder", description=reminder["message"], color="blurple")
 
             if channel:
