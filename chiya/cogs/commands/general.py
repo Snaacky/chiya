@@ -19,10 +19,8 @@ class GeneralCommands(commands.Cog):
     async def pfp(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.User, description="User whose avatar will be grabbed", required=False),
-        server_avatar: Option(
-            bool, description="Whether if their server specific avatar should be used", required=False
-        ),
+        user: Option(discord.User, description="User whose profile picture will be grabbed", required=False),
+        server: Option(bool, description="Prefer server profile picture (if one exists)", required=False),
     ) -> None:
         """
         Grab a user's avatar and return it in a large-sized embed.
@@ -39,13 +37,13 @@ class GeneralCommands(commands.Cog):
             user = await self.bot.fetch_user(user)
 
         embed = embeds.make_embed()
-        if server_avatar and hasattr(user, "guild_avatar"):
+        if server and user.guild_avatar is not None:
             embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
             embed.set_image(url=user.guild_avatar.url)
-        elif server_avatar and not hasattr(user, "guild_avatar"):
+        elif server and user.guild_avatar is None:
             embed.set_author(icon_url=user.avatar.url, name=str(user))
             embed.set_image(url=user.avatar.url)
-            embed.set_footer(text="⚠️ Warning: Could not find server avatar, defaulted to global avatar.")
+            embed.set_footer(text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set.")
         else:
             embed.set_author(icon_url=user.avatar.url, name=str(user))
             embed.set_image(url=user.avatar.url)
