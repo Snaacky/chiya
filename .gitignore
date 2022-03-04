@@ -148,3 +148,4 @@ notes.txt
 db/*
 *.lnk
 poetry.lock
+test.py
