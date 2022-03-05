@@ -68,12 +68,12 @@ class MoveQuestionApp(commands.Cog):
             ctx=ctx,
             title="Warning: Your question was moved",
             description=(
-                f"{ctx.author.mention}, your message was moved to {channel.mention} "
+                f"{message.author.mention}, your message was moved to {channel.mention} "
                 "which is the more appropriate channel for help, questions, and support type "
                 "topics. Please continue your conversation in that channel."
             ),
         )
-        ping = await channel.send(ctx.author.mention)
+        ping = await channel.send(message.author.mention)
         await ping.delete()
 
 
