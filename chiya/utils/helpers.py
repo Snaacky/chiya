@@ -30,13 +30,19 @@ async def can_action_member(ctx: context.ApplicationContext, member: discord.Mem
 
 def get_duration(duration) -> Tuple[str, float]:
     # Recycled RegEx from https://github.com/r-smashbros/setsudo/
-    regex = r"((?:(\d+)\s*d(?:ays|ay)?)?\s*(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?)"
+    regex = r"((?:(\d+)\s*w(?:eeks|eek|ks|k)?)?\s*(?:(\d+)\s*d(?:ays|ay)?)?\s*(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?)"
 
     # Attempt to parse the message argument with the Setsudo RegEx
     match_list = re.findall(regex, duration)[0]
 
     # Assign the arguments from the parsed message into variables.
-    duration = dict(days=match_list[1], hours=match_list[2], minutes=match_list[3], seconds=match_list[4])
+    duration = dict(
+        weeks=match_list[1],
+        days=match_list[2],
+        hours=match_list[3],
+        minutes=match_list[4],
+        seconds=match_list[5],
+    )
 
     # String that will store the duration in a more digestible format.
     duration_string = ""
@@ -58,7 +64,10 @@ def get_duration(duration) -> Tuple[str, float]:
         datetime.datetime.timestamp(
             datetime.datetime.now(tz=datetime.timezone.utc)
             + datetime.timedelta(
-                days=duration["days"], hours=duration["hours"], minutes=duration["minutes"], seconds=duration["seconds"]
+                weeks=duration["weeks"],
+                days=duration["days"],
+                hours=duration["hours"],
+                minutes=duration["minutes"],
             )
         )
     )
