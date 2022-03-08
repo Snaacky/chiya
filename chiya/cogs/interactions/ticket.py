@@ -71,7 +71,12 @@ class TicketSubmissionModal(Modal):
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         permission = {
             role_staff: discord.PermissionOverwrite(read_messages=True),
-            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            interaction.guild.default_role: discord.PermissionOverwrite(
+                read_messages=False,
+                manage_channels=False,
+                manage_permissions=False,
+                manage_messages=False,
+            ),
             interaction.user: discord.PermissionOverwrite(read_messages=True),
         }
 
