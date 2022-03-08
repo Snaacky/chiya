@@ -68,6 +68,7 @@ def get_duration(duration) -> Tuple[str, float]:
                 days=duration["days"],
                 hours=duration["hours"],
                 minutes=duration["minutes"],
+                seconds=duration["seconds"],
             )
         )
     )
