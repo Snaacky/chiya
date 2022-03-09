@@ -23,6 +23,10 @@ async def can_action_member(ctx: context.ApplicationContext, member: discord.Mem
     # Allow owner to override all limitations.
     if member.id == ctx.guild.owner_id:
         return True
+    
+    # Prevents mods from actioning other mods
+    if ctx.author.top_role <= member.top_role:
+        return False
 
     # Otherwise, the action is probably valid, return true.
     return True
