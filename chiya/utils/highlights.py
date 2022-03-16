@@ -35,13 +35,14 @@ async def check_highlights(message: discord.Message):
         result = re.search(regex, message.clean_content, re.IGNORECASE)
         if result:
             # caught a term
-            print("Caught a term!")
             embed = embeds.make_embed(
                 title="Highlighted message caught!",
                 description=f"[Message link]({message.jump_url})",
                 color=discord.Color.gold()
             )
             for subscriber in highlight['subscribed_users']:
+                if subscriber == message.author.id:
+                    continue
                 member = message.guild.get_member(subscriber)
                 if not member:
                     member = await message.guild.fetch_member(subscriber)
