@@ -77,6 +77,12 @@ class Database:
             tickets.create_column("log_url", db.types.text)
             tickets.create_column("status", db.types.boolean)
             log.info("Created missing table: tickets")
+        
+        if "highlights" not in db:
+            highlights = db.create_table("highlights")
+            highlights.create_column("highlighted_term", db.types.text)
+            highlights.create_column("subscribed_users", db.types.text)
+            log.info("Created missing table: highlights")
 
         db.commit()
         db.close()
