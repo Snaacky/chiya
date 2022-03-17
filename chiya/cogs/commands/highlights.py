@@ -26,11 +26,11 @@ class HighlightCommands(commands.Cog):
         guild_ids=config["guild_ids"],
     )
 
-    @highlight.command(name="add", descrption="Adds a highlighted term to be track")
+    @highlight.command(name="add", description="Adds a term to be tracked")
     async def add_highlight(
         self,
         ctx: context.ApplicationContext,
-        term: Option(str, description="Term to be highlighted.", required=True),
+        term: Option(str, description="Term to be highlighted", required=True),
     ) -> None:
         """
         Adds the user to the highlighted term list so they will be notified
@@ -66,7 +66,7 @@ class HighlightCommands(commands.Cog):
         )
         await ctx.send_followup(embed=embed)
 
-    @highlight.command(name="list", descrption="Lists the highlighted terms you're currently tracking")
+    @highlight.command(name="list", description="Lists the terms you're currently tracking")
     async def list_highlights(
         self,
         ctx: context.ApplicationContext
@@ -88,6 +88,41 @@ class HighlightCommands(commands.Cog):
             author=True
         )
         db.close()
+        await ctx.send_followup(embed=embed)
+        
+    @highlight.command(name="remove", description="Remove a term from being tracked")
+    async def remove_highlight(
+        self,
+        ctx: context.ApplicationContext,
+        term: Option(str, description="Term to be removed", required=True),
+    ) -> None:
+        await ctx.defer()
+
+        db = database.Database().get()
+        results = db['highlights'].find_one(term=term)
+
+        if not results:
+            return await embeds.error_message(ctx=ctx, description="You are not tracking that term.")
+
+        await ctx.send_followup(results)
+        row = orjson.loads(results["users"])
+        data = dict(id=results['id'], users=row.remove(ctx.author.id))
+
+        # Delete the term from the database if no users are tracking the keyword anymore.
+        if not len(row):
+            db["highlights"].delete(term=term)
+
+        db['highlights'].update(data, ["id"])
+        db.commit()
+        db.close()
+
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title='Highlight removed',
+            description=f'The term `{term}` was removed from your highlights list.',
+            color=discord.Color.green(),
+            author=True
+        )
         await ctx.send_followup(embed=embed)
 
 
