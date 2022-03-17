@@ -75,10 +75,14 @@ class HighlightCommands(commands.Cog):
         Renders a list showing all of the terms that the user currently has
         highlighted to be notified on usage of.
         """
+        # TODO: For some reason this sometimes doesn't output
         await ctx.defer()
 
         db = database.Database().get()
         results = db['highlights'].find(users={"ilike": f"%{ctx.author.id}%"})
+
+        if not any(results):
+            return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -89,7 +93,7 @@ class HighlightCommands(commands.Cog):
         )
         db.close()
         await ctx.send_followup(embed=embed)
-        
+
     @highlight.command(name="remove", description="Remove a term from being tracked")
     async def remove_highlight(
         self,
@@ -99,22 +103,22 @@ class HighlightCommands(commands.Cog):
         await ctx.defer()
 
         db = database.Database().get()
-        results = db['highlights'].find_one(term=term)
+        result = db['highlights'].find_one(term=term, users={"ilike": f"%{ctx.author.id}%"})
 
-        if not results:
+        if not result:
             return await embeds.error_message(ctx=ctx, description="You are not tracking that term.")
 
-        await ctx.send_followup(results)
-        row = orjson.loads(results["users"])
-        data = dict(id=results['id'], users=row.remove(ctx.author.id))
+        users = orjson.loads(result["users"])
+        users.remove(ctx.author.id)
+        db['highlights'].update(dict(id=result['id'], users=orjson.dumps(users)), ["id"])
 
         # Delete the term from the database if no users are tracking the keyword anymore.
-        if not len(row):
+        if not len(users):
             db["highlights"].delete(term=term)
 
-        db['highlights'].update(data, ["id"])
         db.commit()
         db.close()
+        refresh_cache()
 
         embed = embeds.make_embed(
             ctx=ctx,
