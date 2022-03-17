@@ -80,8 +80,8 @@ class Database:
         
         if "highlights" not in db:
             highlights = db.create_table("highlights")
-            highlights.create_column("highlighted_term", db.types.text)
-            highlights.create_column("subscribed_users", db.types.text)
+            highlights.create_column("term", db.types.text)
+            highlights.create_column("users", db.types.text)
             log.info("Created missing table: highlights")
 
         db.commit()

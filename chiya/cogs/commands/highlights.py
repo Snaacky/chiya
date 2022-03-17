@@ -22,52 +22,74 @@ class HighlightCommands(commands.Cog):
 
     highlight = SlashCommandGroup(
         "hl",
-        "Sets a highlight to be notified when a message is sent in chat.",
+        "Sets a highlight to be notified when a message is sent in chat",
         guild_ids=config["guild_ids"],
     )
 
-    @highlight.command(name="add", descrption="Adds a highlight to track.")
+    @highlight.command(name="add", descrption="Adds a highlighted term to be track")
     async def add_highlight(
         self,
         ctx: context.ApplicationContext,
-        highlighted_term: Option(str, description="Term to be highlighted.", required=True),
+        term: Option(str, description="Term to be highlighted.", required=True),
     ) -> None:
         """
-        Add a highlight.
+        Adds the user to the highlighted term list so they will be notified
+        on subsquent messages containing the highlighted term.
         """
         await ctx.defer()
 
         db = database.Database().get()
-        highlights = db['highlights']
-        result = highlights.find_one(highlighted_term={"ilike": highlighted_term})
+        result = db['highlights'].find_one(term={"ilike": term})
         if result:
-            subscribed_users = orjson.loads(result['subscribed_users'])
-            if ctx.author.id not in subscribed_users:
-                subscribed_users.append(ctx.author.id)
-                data = dict(id=result['id'], subscribed_users=orjson.dumps(subscribed_users))
-                highlights.update(data, ["id"])
+            users = orjson.loads(result["users"])
+            if ctx.author.id not in users:
+                users.append(ctx.author.id)
+                data = dict(id=result['id'], users=orjson.dumps(users))
+                db['highlights'].update(data, ["id"])
         else:
             data = dict(
-                highlighted_term=highlighted_term, 
-                subscribed_users=orjson.dumps([ctx.author.id])
+                term=term,
+                users=orjson.dumps([ctx.author.id])
             )
-            highlights.insert(data)
-        
+            db['highlights'].insert(data)
+
         refresh_cache()
         db.commit()
         db.close()
-        
-        
+
         embed = embeds.make_embed(
             ctx=ctx,
             title='Highlight added',
-            description=f'The term `{highlighted_term}` was added to your highlights list.',
+            description=f'The term `{term}` was added to your highlights list.',
             color=discord.Color.green(),
             author=True
         )
         await ctx.send_followup(embed=embed)
-    
-            
+
+    @highlight.command(name="list", descrption="Lists the highlighted terms you're currently tracking")
+    async def list_highlights(
+        self,
+        ctx: context.ApplicationContext
+    ) -> None:
+        """
+        Renders a list showing all of the terms that the user currently has
+        highlighted to be notified on usage of.
+        """
+        await ctx.defer()
+
+        db = database.Database().get()
+        results = db['highlights'].find(users={"ilike": f"%{ctx.author.id}%"})
+
+        embed = embeds.make_embed(
+            ctx=ctx,
+            title="You're currently tracking the following words:",
+            description="\n".join([str(term["term"]) for term in results]),
+            color=discord.Color.green(),
+            author=True
+        )
+        db.close()
+        await ctx.send_followup(embed=embed)
+
 
 def setup(bot: commands.Bot) -> None:
     bot.add_cog(HighlightCommands(bot))

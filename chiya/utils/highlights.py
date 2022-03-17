@@ -9,8 +9,8 @@ from chiya.utils import embeds
 db = database.Database().get()
 highlights = [
     dict(
-        highlighted_term=highlight["highlighted_term"],
-        subscribed_users=orjson.loads(highlight["subscribed_users"]),
+        term=highlight["term"],
+        users=orjson.loads(highlight["users"]),
     )
     for highlight in db["highlights"].find()
 ]
@@ -22,8 +22,8 @@ def refresh_cache():
     global highlights
     highlights = [
         dict(
-            highlighted_term=highlight["highlighted_term"],
-            subscribed_users=orjson.loads(highlight["subscribed_users"]),
+            term=highlight["term"],
+            users=orjson.loads(highlight["users"]),
         )
         for highlight in db["highlights"].find()
     ]
@@ -31,7 +31,7 @@ def refresh_cache():
 async def check_highlights(message: discord.Message):
     global highlights
     for highlight in highlights:
-        regex = r"\b" + highlight['highlighted_term'] + r"\b"
+        regex = r"\b" + highlight['term'] + r"\b"
         result = re.search(regex, message.clean_content, re.IGNORECASE)
         if result:
             # caught a term
@@ -40,7 +40,7 @@ async def check_highlights(message: discord.Message):
                 description=f"[Message link]({message.jump_url})",
                 color=discord.Color.gold()
             )
-            for subscriber in highlight['subscribed_users']:
+            for subscriber in highlight['users']:
                 if subscriber == message.author.id:
                     continue
                 member = message.guild.get_member(subscriber)
@@ -49,6 +49,5 @@ async def check_highlights(message: discord.Message):
                 try:
                     channel = await member.create_dm()
                     await channel.send(embed=embed)
-                except:
+                except Exception:
                     pass
-            
