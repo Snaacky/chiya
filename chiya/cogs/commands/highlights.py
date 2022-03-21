@@ -85,7 +85,6 @@ class HighlightCommands(commands.Cog):
 
         db = database.Database().get()
         results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
-        print(results)
         if not results:
             return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
 
