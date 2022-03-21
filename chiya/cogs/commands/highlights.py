@@ -34,7 +34,17 @@ class HighlightCommands(commands.Cog):
         """
         await ctx.defer()
 
+        # 50 character limit prevents the /hl list embed from ever overflowing and causing it to be unable to be sent.
+        if len(term) > 50:
+            return await embeds.error_message(ctx=ctx, description="Highlighted terms must be less than 50 characters.")
+
         db = database.Database().get()
+
+        # 20 term limit prevents the same as the above because 20 * 50 = 1000 characters max and embeds are 4096 max.
+        total = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
+        if len(total) >= 20:
+            return await embeds.error_message(ctx=ctx, description="You may only have up to 20 highlighted terms at once.")
+
         result = db["highlights"].find_one(term={"ilike": term})
         if result:
             users = orjson.loads(result["users"])
@@ -74,8 +84,8 @@ class HighlightCommands(commands.Cog):
         await ctx.defer()
 
         db = database.Database().get()
-        results = db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})
-
+        results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
+        print(results)
         if not results:
             return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
 
@@ -131,7 +141,7 @@ class HighlightCommands(commands.Cog):
         await ctx.defer()
 
         db = database.Database().get()
-        results = db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})
+        results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
 
         if not results:
             return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
