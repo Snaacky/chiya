@@ -7,6 +7,7 @@ import orjson
 
 from chiya import config, database
 from chiya.utils import embeds
+from chiya.cogs.listeners.highlights import HighlightsListener
 
 
 log = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class HighlightCommands(commands.Cog):
         guild_ids=config["guild_ids"],
     )
 
+    
     @highlight.command(name="add", description="Adds a term to be tracked")
     async def add_highlight(
         self,
@@ -70,6 +72,7 @@ class HighlightCommands(commands.Cog):
             author=True
         )
         await ctx.send_followup(embed=embed)
+        HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
 
     @highlight.command(name="list", description="Lists the terms you're currently tracking")
     async def list_highlights(
@@ -131,7 +134,8 @@ class HighlightCommands(commands.Cog):
             author=True
         )
         await ctx.send_followup(embed=embed)
-
+        HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
+    
     @highlight.command(name="clear", description="Clears all terms being tracked")
     async def clear_highlights(
         self,
@@ -165,6 +169,7 @@ class HighlightCommands(commands.Cog):
             author=True
         )
         await ctx.send_followup(embed=embed)
+        HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
 
 
 def setup(bot: commands.Bot) -> None:
