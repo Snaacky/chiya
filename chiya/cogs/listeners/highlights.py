@@ -1,10 +1,12 @@
 import logging
 import re
+import orjson
 
 import discord
 from discord.ext import commands
 
 from chiya.utils import embeds
+from chiya import database, config
 
 
 log = logging.getLogger(__name__)
@@ -13,7 +15,14 @@ log = logging.getLogger(__name__)
 class HighlightsListener(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        db = database.Database().get()
+        self.highlights = [{"term": highlight['term'], "users": orjson.loads(highlight['users'])} for highlight in db['highlights'].find()]
 
+    def refresh_highlights(self):
+        db = database.Database().get()
+        self.highlights = [{"term": highlight['term'], "users": orjson.loads(highlight['users'])} for highlight in db['highlights'].find()]
+
+    
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """
@@ -23,10 +32,7 @@ class HighlightsListener(commands.Cog):
         if message.author.bot:
             return
 
-        # TODO: This needs to be rewritten to functional properly.
-        # It's merely here as a placeholder to show where this block should be.
-        global highlights
-        for highlight in highlights:
+        for highlight in self.highlights:
             regex = r"\b" + highlight['term'] + r"\b"
             result = re.search(regex, message.clean_content, re.IGNORECASE)
             if result:
