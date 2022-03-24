@@ -37,9 +37,14 @@ class HighlightsListener(commands.Cog):
             result = re.search(regex, message.clean_content, re.IGNORECASE)
             if result:
                 # caught a term
+                messages = await message.channel.history(limit=4, before=message).flatten()
+                messages_str = ""
+                for past_message in reversed(messages):
+                    messages_str+=f"**[<t:{int(past_message.created_at.timestamp())}:T>] {past_message.author.name}:** {past_message.clean_content[0:256]}\n"
+                messages_str+=f"⭐️ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** {message.clean_content[0:256]}\n"
                 embed = embeds.make_embed(
-                    title="Highlighted message caught!",
-                    description=f"[Message link]({message.jump_url})",
+                    title=highlight['term'],
+                    description=f"{messages_str}\n[Message link]({message.jump_url})",
                     color=discord.Color.gold()
                 )
                 for subscriber in highlight['users']:
@@ -50,7 +55,7 @@ class HighlightsListener(commands.Cog):
                         member = await message.guild.fetch_member(subscriber)
                     try:
                         channel = await member.create_dm()
-                        await channel.send(embed=embed)
+                        await channel.send(content=f"You were mentioned with the highlight term `{highlight['term']}` in **{message.guild.name}** {message.channel.mention}.", embed=embed)
                     except Exception:
                         pass
 
