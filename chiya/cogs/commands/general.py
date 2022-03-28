@@ -41,12 +41,12 @@ class GeneralCommands(commands.Cog):
             embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
             embed.set_image(url=user.guild_avatar.url)
         elif server and user.guild_avatar is None:
-            embed.set_author(icon_url=user.avatar.url, name=str(user))
-            embed.set_image(url=user.avatar.url)
+            embed.set_author(icon_url=user.display_avatar, name=str(user))
+            embed.set_image(url=user.display_avatar)
             embed.set_footer(text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set.")
         else:
-            embed.set_author(icon_url=user.avatar.url, name=str(user))
-            embed.set_image(url=user.avatar.url)
+            embed.set_author(icon_url=user.display_avatar, name=str(user))
+            embed.set_image(url=user.display_avatar)
         await ctx.send_followup(embed=embed)
 
     @slash_command(

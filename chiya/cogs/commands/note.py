@@ -126,7 +126,7 @@ class NoteCommands(commands.Cog):
             return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
 
         embed = embeds.make_embed(title="Mod Actions")
-        embed.set_author(name=user, icon_url=user.avatar.url)
+        embed.set_author(name=user, icon_url=user.display_avatar)
 
         await LinePaginator.paginate(
             lines=actions,
