@@ -73,7 +73,10 @@ class Starboard(commands.Cog):
                 embed.set_image(url=attachment.url)
 
         embed.description = description
-        embed.set_author(name=message.author.name, icon_url=message.author.avatar.url)
+        if message.author.guild_avatar is not None:
+            embed.set_author(name=message.author.display_name, icon_url=message.author.guild_avatar.url)
+        else:
+            embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
 
         starred_message = await starboard_channel.send(embed=embed)
         data = dict(
