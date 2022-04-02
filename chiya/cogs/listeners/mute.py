@@ -19,7 +19,7 @@ class MuteListeners(commands.Cog):
         """
         Add the user's mute entry to the database if they were timed out manually.
         """
-        if after.timed_out:
+        if not before.timed_out and after.timed_out:
             logs = await after.guild.audit_logs(
                 limit=1, action=discord.AuditLogAction.member_update
             ).flatten()
