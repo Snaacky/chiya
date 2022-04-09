@@ -53,6 +53,8 @@ class HighlightsListener(commands.Cog):
                     member = message.guild.get_member(subscriber)
                     if not member:
                         member = await message.guild.fetch_member(subscriber)
+                    if not message.channel.permissions_for(member).view_channel:
+                        continue
                     try:
                         channel = await member.create_dm()
                         await channel.send(content=f"You were mentioned with the highlight term `{highlight['term']}` in **{message.guild.name}** {message.channel.mention}.", embed=embed)
