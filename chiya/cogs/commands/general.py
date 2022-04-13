@@ -97,9 +97,8 @@ class GeneralCommands(commands.Cog):
             messages = await ctx.channel.history(limit=1).flatten()
             message = messages[0]
 
-        # TODO: replace this with emotes grabbed from config
-        await message.add_reaction(":yes:914162499023142996")
-        await message.add_reaction(":no:914162576403873832")
+        await message.add_reaction(f":yes:{config['emoji']['yes']}")
+        await message.add_reaction(f":no:{config['emoji']['no']}")
         await embeds.success_message(
             ctx=ctx, description=f"Added votes to {message.jump_url}"
         )
@@ -134,9 +133,9 @@ class GeneralCommands(commands.Cog):
         no_reactions = None
         
         for reaction in message.reactions:
-            if reaction.emoji.id == 914162499023142996:
+            if reaction.emoji.id == config['emoji']['yes']:
                 yes_reactions = reaction
-            if reaction.emoji.id == 914162576403873832:
+            if reaction.emoji.id == config['emoji']['no']:
                 no_reactions = reaction
 
         if not yes_reactions or not no_reactions:
@@ -167,7 +166,6 @@ class GeneralCommands(commands.Cog):
         )
 
         await ctx.send_followup(embed=embed)
-
 
 def setup(bot: commands.Bot) -> None:
     bot.add_cog(GeneralCommands(bot))
