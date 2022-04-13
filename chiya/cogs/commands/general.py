@@ -1,4 +1,5 @@
 import logging
+from unittest import skip
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -144,33 +145,23 @@ class GeneralCommands(commands.Cog):
                 description="That message does not have the appropriate yes and no reactions.",
             )
 
-        yes_users = []
-        async for user in yes_reactions.users():
-            if not user.bot:
-                yes_users.append(user.mention)
-
-        no_users = []
-        async for user in no_reactions.users():
-            if not user.bot:
-                no_users.append(user.mention)
-
-        both_users = set(yes_users).intersection(set(no_users))
-
-        staff = discord.utils.get(message.guild.roles, id=config['roles']['staff']).members
-        staff_users = []
-        for user in staff:
-            if not user.bot:
-                staff_users.append(user.mention)
-
-        skipped_users = set(staff_users).difference(
-            set(yes_users).union(set(no_users))
-        )
-
+        yes_users = set(await yes_reactions.users().flatten())
+        no_users = set(await no_reactions.users().flatten())
+        both_users = yes_users.intersection(no_users)
+        role_staff = discord.utils.get(message.guild.roles, id=config['roles']['staff'])
+        staff_users = set(user for user in role_staff.members)
+        skipped_users = staff_users.difference(yes_users.union(no_users))
+        
+        yes_users = [user.mention if not user.bot else "" for user in yes_users.copy()]
+        no_users = [user.mention if not user.bot else "" for user in no_users.copy()]
+        both_users = [user.mention if not user.bot else "" for user in both_users.copy()]
+        skipped_users = [user.mention if not user.bot else "" for user in skipped_users.copy()]
+        
         embed = embeds.make_embed(
             ctx=ctx, author=True, title="Results of vote", 
-            description=f"""<:yes:914162499023142996> - **{len(yes_users)}** {" ".join(yes_users)}
-            <:no:914162576403873832> - **{len(no_users)}** {" ".join(no_users)}
-            **Both: ** **{len(both_users)}** {" ".join(both_users)}
+            description=f"""<:yes:914162499023142996> - **{len(yes_users) - 1}** {" ".join(yes_users)}
+            <:no:914162576403873832> - **{len(no_users) - 1}** {" ".join(no_users)}
+            **Both: ** **{len(both_users) - 1}** {" ".join(both_users)}
             **Did not vote: ** **{len(skipped_users)}** {" ".join(skipped_users)}
             """, color=discord.Color.green()
         )
