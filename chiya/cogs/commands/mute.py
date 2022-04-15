@@ -1,6 +1,6 @@
-import datetime
 import logging
 import time
+from datetime import datetime, timezone
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -20,6 +20,7 @@ class MuteCommands(commands.Cog):
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Mutes a member in the server")
     @permissions.has_role(config["roles"]["staff"])
+    @permissions.has_role(config["roles"]["chat_mod"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
@@ -58,6 +59,13 @@ class MuteCommands(commands.Cog):
                     "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
                     "You can specify up to all four but you only need one."
                 ),
+            )
+
+        chat_mod = [x for x in ctx.author.roles if x.id == config["roles"]["chat_mod"]]
+        time_delta = mute_end_time - datetime.now(tz=timezone.utc).timestamp()
+        if chat_mod and time_delta > 21600:
+            return await embeds.error_message(
+                ctx=ctx, description="You are not allowed to mute for longer than 6 hours."
             )
 
         mute_embed = embeds.make_embed(
@@ -106,7 +114,7 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.timeout(until=datetime.datetime.utcfromtimestamp(mute_end_time), reason=reason)
+        await member.timeout(until=datetime.utcfromtimestamp(mute_end_time), reason=reason)
         await ctx.send_followup(embed=mute_embed)
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmute a member in the server")
