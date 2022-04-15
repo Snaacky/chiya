@@ -51,3 +51,4 @@ database:
   password: !ENV ${MYSQL_PASSWORD}
 privatebin:
   url: "https://privatebin.net"
+timeout_limit: 3600
