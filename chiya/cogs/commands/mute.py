@@ -78,7 +78,7 @@ class MuteCommands(commands.Cog):
                 fields=[
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                    {"name": "Length:", "value": duration, "inline": True},
+                    {"name": "Duration:", "value": duration_string, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
             )
@@ -100,6 +100,7 @@ class MuteCommands(commands.Cog):
                 mod_id=ctx.author.id,
                 timestamp=int(time.time()),
                 reason=reason,
+                duration=duration_string,
                 type="mute",
             )
         )
