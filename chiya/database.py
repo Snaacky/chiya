@@ -46,7 +46,7 @@ class Database:
             mod_logs.create_column("mod_id", db.types.bigint)
             mod_logs.create_column("timestamp", db.types.bigint)
             mod_logs.create_column("reason", db.types.text)
-            mod_logs.create_column("duration", db.types.bigint)
+            mod_logs.create_column("duration", db.types.text)
             mod_logs.create_column("type", db.types.text)
             log.info("Created missing table: mod_logs")
 
