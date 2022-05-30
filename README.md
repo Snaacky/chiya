@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-<a href="https://discord.gg/piracy"><img src="https://img.shields.io/discord/622243127435984927?label=Discord&logo=discord"></a> <a href="https://github.com/ranimepiracy/Chiya/actions"><img src="https://github.com/ranimepiracy/Chiya/workflows/Docker/badge.svg?branch=master"></a>
+<a href="https://discord.gg/theindex"><img src="https://img.shields.io/discord/974468300304171038?label=Discord&logo=discord"></a> <a href="https://github.com/ranimepiracy/Chiya/actions"><img src="https://github.com/ranimepiracy/Chiya/workflows/Docker/badge.svg?branch=master"></a>
 </p>
 
 ## Getting started
