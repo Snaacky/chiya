@@ -114,13 +114,17 @@ class NoteCommands(commands.Cog):
             action_type = action_type[0].upper() + action_type[1:]
             action_type = f"{action_emoji[action['type']]} {action_type}"
 
-            actions.append(
+            action_string = \
                 f"""**{action_type}**
-                **ID:** {action['id']}
-                **Timestamp:** {datetime.fromtimestamp(action['timestamp'])} UTC
-                **Moderator:** <@!{action['mod_id']}>
-                **Reason:** {action['reason']}"""
-            )
+                **ID:** {action["id"]}
+                **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
+                **Moderator:** <@!{action["mod_id"]}>
+                **Reason:** {action["reason"]}"""
+
+            if action["type"] == "mute":
+                action_string += f"\n**Duration:** {action['duration']}"
+
+            actions.append(action_string)
 
         if not actions:
             return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
