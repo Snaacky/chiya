@@ -15,6 +15,9 @@ bot:
   case_insensitive: True
   sync_commands: True
   sync_on_cog_reload: True
+emoji:
+  "yes": 000000000000000000
+  "no": 000000000000000000
 roles:
   staff: 000000000000000000
   trial_mod: 000000000000000000

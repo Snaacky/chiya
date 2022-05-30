@@ -1,12 +1,10 @@
 import logging
 
 import discord
-from discord.commands import Option, context, permissions, slash_command
-from discord.ext import commands
-
 from chiya import config
 from chiya.utils import embeds
-
+from discord.commands import Option, context, permissions, slash_command
+from discord.ext import commands
 
 log = logging.getLogger(__name__)
 
@@ -15,12 +13,22 @@ class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(guild_ids=config["guild_ids"], description="Gets a users profile picture")
+    @slash_command(
+        guild_ids=config["guild_ids"], description="Gets a users profile picture"
+    )
     async def pfp(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.User, description="User whose profile picture will be grabbed", required=False),
-        server: Option(bool, description="Prefer server profile picture (if one exists)", required=False),
+        user: Option(
+            discord.User,
+            description="User whose profile picture will be grabbed",
+            required=False,
+        ),
+        server: Option(
+            bool,
+            description="Prefer server profile picture (if one exists)",
+            required=False,
+        ),
     ) -> None:
         """
         Grab a user's avatar and return it in a large-sized embed.
@@ -50,13 +58,17 @@ class GeneralCommands(commands.Cog):
         await ctx.send_followup(embed=embed)
 
     @slash_command(
-        guild_ids=config["guild_ids"], default_permission=False, description="Add vote reactions to a message."
+        guild_ids=config["guild_ids"],
+        default_permission=False,
+        description="Add vote reactions to a message.",
     )
     @permissions.has_role(config["roles"]["staff"])
     async def vote(
         self,
         ctx: context.ApplicationContext,
-        message: Option(str, description="The ID for the target message", required=False),
+        message: Option(
+            str, description="The ID for the target message", required=False
+        ),
     ) -> None:
         """
         Adds vote emojis (yes and no) reactions to a message.
@@ -72,16 +84,90 @@ class GeneralCommands(commands.Cog):
             try:
                 message = await ctx.channel.fetch_message(message)
             except discord.NotFound:
-                return await embeds.error_message(ctx=ctx, description="Invalid message ID.")
+                return await embeds.error_message(
+                    ctx=ctx, description="Invalid message ID."
+                )
 
         if not message:
             messages = await ctx.channel.history(limit=1).flatten()
             message = messages[0]
 
-        # TODO: replace this with emotes grabbed from config
-        await message.add_reaction(":yes:778724405333196851")
-        await message.add_reaction(":no:778724416230129705")
-        await embeds.success_message(ctx=ctx, description=f"Added votes to {message.jump_url}")
+        await message.add_reaction(f":yes:{config['emoji']['yes']}")
+        await message.add_reaction(f":no:{config['emoji']['no']}")
+        await embeds.success_message(
+            ctx=ctx, description=f"Added votes to {message.jump_url}"
+        )
+
+    @slash_command(
+        guild_ids=config["guild_ids"],
+        default_permission=False,
+        description="Summarises a vote, and displays results.",
+    )
+    @permissions.has_role(config["roles"]["staff"])
+    async def vote_info(
+        self,
+        ctx: context.ApplicationContext,
+        message: Option(
+            str, description="The ID for the target message", required=True
+        ),
+    ) -> None:
+        """
+        Summarises a vote, and displays results.
+        """
+        await ctx.defer()
+
+        if message:
+            try:
+                message = await ctx.channel.fetch_message(message)
+            except discord.NotFound:
+                return await embeds.error_message(
+                    ctx=ctx, description="Invalid message ID."
+                )
+
+        yes_reactions = None
+        no_reactions = None
+
+        for reaction in message.reactions:
+            if reaction.emoji.id == config["emoji"]["yes"]:
+                yes_reactions = reaction
+            if reaction.emoji.id == config["emoji"]["no"]:
+                no_reactions = reaction
+
+        if not yes_reactions or not no_reactions:
+            return await embeds.error_message(
+                ctx=ctx,
+                description="That message does not have the appropriate yes and no reactions.",
+            )
+
+        yes_users = set(await yes_reactions.users().flatten())
+        no_users = set(await no_reactions.users().flatten())
+        both_users = yes_users.intersection(no_users)
+        role_staff = discord.utils.get(message.guild.roles, id=config["roles"]["staff"])
+        staff_users = set(user for user in role_staff.members)
+        skipped_users = staff_users.difference(yes_users.union(no_users))
+
+        yes_users = [user.mention if not user.bot else "" for user in yes_users.copy()]
+        no_users = [user.mention if not user.bot else "" for user in no_users.copy()]
+        both_users = [
+            user.mention if not user.bot else "" for user in both_users.copy()
+        ]
+        skipped_users = [
+            user.mention if not user.bot else "" for user in skipped_users.copy()
+        ]
+
+        embed = embeds.make_embed(
+            ctx=ctx,
+            author=True,
+            title="Results of vote",
+            description=f"""<:yes:{config['emoji']['yes']}> - **{len(yes_users) - 1}** {" ".join(yes_users)}
+            <:no:{config['emoji']['no']}> - **{len(no_users) - 1}** {" ".join(no_users)}
+            **Both: ** **{len(both_users) - 1}** {" ".join(both_users)}
+            **Did not vote: ** **{len(skipped_users)}** {" ".join(skipped_users)}
+            """,
+            color=discord.Color.green(),
+        )
+
+        await ctx.send_followup(embed=embed)
 
 
 def setup(bot: commands.Bot) -> None:
