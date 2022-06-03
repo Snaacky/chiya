@@ -8,6 +8,7 @@ bot:
   webhook_url: "https://canary.discord.com/api/webhooks/000000000000000000/xxxxxxxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   intents:
     messages: True
+    message_content: True
     guilds: True
     members: True
     bans: True
