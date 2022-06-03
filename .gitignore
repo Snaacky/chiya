@@ -147,5 +147,4 @@ notes.txt
 *.bat
 db/*
 *.lnk
-poetry.lock
 test.py

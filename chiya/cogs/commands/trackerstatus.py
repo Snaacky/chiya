@@ -55,16 +55,11 @@ class TrackerStatusCommands(commands.Cog):
             case "0":
                 return "<:status_offline:596576752013279242> Offline"
 
-    @slash_command(guild_ids=config["guild_ids"], description="Get tracker uptime statuses", default_permission=True)
+    @slash_command(guild_ids=config["guild_ids"], description="Get tracker uptime statuses")
     async def trackerstatus(
         self,
         ctx: context.ApplicationContext,
-        tracker: Option(
-            str,
-            description="Tracker to get uptime statuses for",
-            choices=trackers,
-            required=True
-        )
+        tracker: Option(str, description="Tracker to get uptime statuses for", choices=trackers, required=True),
     ) -> None:
         # TODO: Change the color of the embed to green if all services are online,
         # yellow if one of the services is offline, and grey or red if all are offline.

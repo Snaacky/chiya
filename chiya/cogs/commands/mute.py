@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timezone
 
 import discord
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import Option, context, slash_command
 from discord.ext import commands
 
 from chiya import config, database
@@ -18,9 +18,9 @@ class MuteCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Mutes a member in the server")
-    @permissions.has_role(config["roles"]["staff"])
-    @permissions.has_role(config["roles"]["chat_mod"])
+    @slash_command(guild_ids=config["guild_ids"], description="Mutes a member in the server")
+    @commands.has_role(config["roles"]["staff"])
+    @commands.has_role(config["roles"]["chat_mod"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
@@ -118,8 +118,8 @@ class MuteCommands(commands.Cog):
         await member.timeout(until=datetime.utcfromtimestamp(mute_end_time), reason=reason)
         await ctx.send_followup(embed=mute_embed)
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmute a member in the server")
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], description="Unmute a member in the server")
+    @commands.has_role(config["roles"]["staff"])
     async def unmute(
         self,
         ctx: context.ApplicationContext,
