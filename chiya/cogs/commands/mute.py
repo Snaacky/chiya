@@ -84,7 +84,7 @@ class MuteCommands(commands.Cog):
                 image_url="https://i.imgur.com/840Q48l.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Duration:", "value": duration_string, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
@@ -164,7 +164,7 @@ class MuteCommands(commands.Cog):
                 image_url="https://i.imgur.com/U5Fvr2Y.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],

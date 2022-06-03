@@ -61,7 +61,7 @@ class WarnCommands(commands.Cog):
                 image_url="https://i.imgur.com/rVf0mlG.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
