@@ -2,7 +2,7 @@ import logging
 import time
 
 import discord
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import Option, context, slash_command
 from discord.ext import commands
 
 from chiya import config, database
@@ -26,8 +26,8 @@ class BansCommands(commands.Cog):
         except discord.NotFound:
             return False
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False)
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"])
+    @commands.has_role(config["roles"]["staff"])
     async def ban(
         self,
         ctx: context.ApplicationContext,
@@ -117,8 +117,8 @@ class BansCommands(commands.Cog):
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
         await ctx.send_followup(embed=embed)
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False)
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"])
+    @commands.has_role(config["roles"]["staff"])
     async def unban(
         self,
         ctx: context.ApplicationContext,

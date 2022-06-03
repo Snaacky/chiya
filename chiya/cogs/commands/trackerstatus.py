@@ -55,7 +55,7 @@ class TrackerStatusCommands(commands.Cog):
             case "0":
                 return "<:status_offline:596576752013279242> Offline"
 
-    @slash_command(guild_ids=config["guild_ids"], description="Get tracker uptime statuses", default_permission=True)
+    @slash_command(guild_ids=config["guild_ids"], description="Get tracker uptime statuses")
     async def trackerstatus(
         self,
         ctx: context.ApplicationContext,

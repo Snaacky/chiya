@@ -3,7 +3,7 @@ import logging
 import discord
 from chiya import config
 from chiya.utils import embeds
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import Option, context, slash_command
 from discord.ext import commands
 
 log = logging.getLogger(__name__)
@@ -59,10 +59,9 @@ class GeneralCommands(commands.Cog):
 
     @slash_command(
         guild_ids=config["guild_ids"],
-        default_permission=False,
         description="Add vote reactions to a message.",
     )
-    @permissions.has_role(config["roles"]["staff"])
+    @commands.has_role(config["roles"]["staff"])
     async def vote(
         self,
         ctx: context.ApplicationContext,
@@ -100,10 +99,9 @@ class GeneralCommands(commands.Cog):
 
     @slash_command(
         guild_ids=config["guild_ids"],
-        default_permission=False,
         description="Summarises a vote, and displays results.",
     )
-    @permissions.has_role(config["roles"]["staff"])
+    @commands.has_role(config["roles"]["staff"])
     async def vote_info(
         self,
         ctx: context.ApplicationContext,
