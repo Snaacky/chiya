@@ -14,7 +14,7 @@ maintainers = [
     "REDACTED <red4c13d@gmail.com>",
 ]
 readme = "README.md"
-repository = "https://github.com/ranimepiracy/Chiya"
+repository = "https://github.com/Snaacky/Chiya"
 
 [tool.poetry.dependencies]
 asyncpraw = "7.5.0"
