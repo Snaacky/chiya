@@ -1,6 +1,6 @@
-import datetime
 import logging
 import time
+from datetime import datetime, timezone
 
 import discord
 from discord.commands import Option, context, permissions, slash_command
@@ -20,6 +20,7 @@ class MuteCommands(commands.Cog):
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Mutes a member in the server")
     @permissions.has_role(config["roles"]["staff"])
+    @permissions.has_role(config["roles"]["chat_mod"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
@@ -60,6 +61,13 @@ class MuteCommands(commands.Cog):
                 ),
             )
 
+        chat_mod = [x for x in ctx.author.roles if x.id == config["roles"]["chat_mod"]]
+        time_delta = mute_end_time - datetime.now(tz=timezone.utc).timestamp()
+        if chat_mod and time_delta > config["timeout_limit"]:
+            return await embeds.error_message(
+                ctx=ctx, description="You are not allowed to mute for longer than 1 hour."
+            )
+
         mute_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Muting member: {member}",
@@ -78,7 +86,7 @@ class MuteCommands(commands.Cog):
                 fields=[
                     {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                    {"name": "Length:", "value": duration, "inline": True},
+                    {"name": "Duration:", "value": duration_string, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
             )
@@ -100,13 +108,14 @@ class MuteCommands(commands.Cog):
                 mod_id=ctx.author.id,
                 timestamp=int(time.time()),
                 reason=reason,
+                duration=duration_string,
                 type="mute",
             )
         )
         db.commit()
         db.close()
 
-        await member.timeout(until=datetime.datetime.utcfromtimestamp(mute_end_time), reason=reason)
+        await member.timeout(until=datetime.utcfromtimestamp(mute_end_time), reason=reason)
         await ctx.send_followup(embed=mute_embed)
 
     @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmute a member in the server")

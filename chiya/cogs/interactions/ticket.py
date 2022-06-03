@@ -71,7 +71,12 @@ class TicketSubmissionModal(Modal):
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         permission = {
             role_staff: discord.PermissionOverwrite(read_messages=True),
-            interaction.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+            interaction.guild.default_role: discord.PermissionOverwrite(
+                read_messages=False,
+                manage_channels=False,
+                manage_permissions=False,
+                manage_messages=False,
+            ),
             interaction.user: discord.PermissionOverwrite(read_messages=True),
         }
 
@@ -84,13 +89,16 @@ class TicketSubmissionModal(Modal):
         if any(role.id == config["roles"]["vip"] for role in interaction.user.roles):
             await channel.send(f"<@&{config['roles']['staff']}>")
 
+        ticket_subject = self.children[0].value
+        ticket_message = self.children[1].value
+
         embed = embeds.make_embed(
             title="🎫  Ticket created",
             description="Please wait patiently until a staff member is available to assist you.",
             fields=[
                 {"name": "Ticket Creator:", "value": interaction.user.mention, "inline": False},
-                {"name": "Ticket Subject:", "value": self.children[0].value, "inline": False},
-                {"name": "Ticket Message:", "value": self.children[1].value, "inline": False},
+                {"name": "Ticket Subject:", "value": ticket_subject, "inline": False},
+                {"name": "Ticket Message:", "value": ticket_message, "inline": False},
             ],
             color=discord.Color.blurple(),
         )
@@ -114,6 +122,8 @@ class TicketSubmissionModal(Modal):
                 user_id=interaction.user.id,
                 guild=interaction.guild.id,
                 timestamp=int(time.time()),
+                ticket_subject=ticket_subject,
+                ticket_message=ticket_message,
                 log_url=None,
                 status=False,
             )
@@ -172,12 +182,14 @@ class TicketCloseButton(discord.ui.View):
         table = db["tickets"]
         ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status=False)
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
+        ticket_subject = ticket["ticket_subject"]
+        ticket_message = ticket["ticket_message"]
         member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
 
         mod_list = set()
-        message_log = f"Ticket Creator: {member}\nUser ID: {member.id}\n\n"
+        message_log = f"Ticket Creator: {member}\nTicket Subject: {ticket_subject}\nTicket Message: {ticket_message}\nUser ID: {member.id}\n\n"
 
         async for message in interaction.channel.history(oldest_first=True, limit=None):
             if not message.author.bot:
@@ -202,6 +214,8 @@ class TicketCloseButton(discord.ui.View):
             fields=[
                 {"name": "Ticket Creator:", "value": member.mention, "inline": True},
                 {"name": "Closed By:", "value": interaction.user.mention, "inline": True},
+                {"name": "Ticket Subject:", "value": ticket_subject, "inline": False},
+                {"name": "Ticket Message:", "value": ticket_message, "inline": False},
                 {"name": "Participating Moderators:", "value": value, "inline": False},
                 {"name": "Ticket Log:", "value": url, "inline": False},
             ],
