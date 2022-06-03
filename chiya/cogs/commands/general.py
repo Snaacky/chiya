@@ -13,9 +13,7 @@ class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(
-        guild_ids=config["guild_ids"], description="Gets a users profile picture"
-    )
+    @slash_command(guild_ids=config["guild_ids"], description="Gets a users profile picture")
     async def pfp(
         self,
         ctx: context.ApplicationContext,
@@ -51,7 +49,9 @@ class GeneralCommands(commands.Cog):
         elif server and user.guild_avatar is None:
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
-            embed.set_footer(text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set.")
+            embed.set_footer(
+                text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
+            )
         else:
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
@@ -65,9 +65,7 @@ class GeneralCommands(commands.Cog):
     async def vote(
         self,
         ctx: context.ApplicationContext,
-        message: Option(
-            str, description="The ID for the target message", required=False
-        ),
+        message: Option(str, description="The ID for the target message", required=False),
     ) -> None:
         """
         Adds vote emojis (yes and no) reactions to a message.
@@ -83,9 +81,7 @@ class GeneralCommands(commands.Cog):
             try:
                 message = await ctx.channel.fetch_message(message)
             except discord.NotFound:
-                return await embeds.error_message(
-                    ctx=ctx, description="Invalid message ID."
-                )
+                return await embeds.error_message(ctx=ctx, description="Invalid message ID.")
 
         if not message:
             messages = await ctx.channel.history(limit=1).flatten()
@@ -93,9 +89,7 @@ class GeneralCommands(commands.Cog):
 
         await message.add_reaction(f":yes:{config['emoji']['yes']}")
         await message.add_reaction(f":no:{config['emoji']['no']}")
-        await embeds.success_message(
-            ctx=ctx, description=f"Added votes to {message.jump_url}"
-        )
+        await embeds.success_message(ctx=ctx, description=f"Added votes to {message.jump_url}")
 
     @slash_command(
         guild_ids=config["guild_ids"],
@@ -105,9 +99,7 @@ class GeneralCommands(commands.Cog):
     async def vote_info(
         self,
         ctx: context.ApplicationContext,
-        message: Option(
-            str, description="The ID for the target message", required=True
-        ),
+        message: Option(str, description="The ID for the target message", required=True),
     ) -> None:
         """
         Summarises a vote, and displays results.
@@ -118,9 +110,7 @@ class GeneralCommands(commands.Cog):
             try:
                 message = await ctx.channel.fetch_message(message)
             except discord.NotFound:
-                return await embeds.error_message(
-                    ctx=ctx, description="Invalid message ID."
-                )
+                return await embeds.error_message(ctx=ctx, description="Invalid message ID.")
 
         yes_reactions = None
         no_reactions = None
@@ -146,12 +136,8 @@ class GeneralCommands(commands.Cog):
 
         yes_users = [user.mention if not user.bot else "" for user in yes_users.copy()]
         no_users = [user.mention if not user.bot else "" for user in no_users.copy()]
-        both_users = [
-            user.mention if not user.bot else "" for user in both_users.copy()
-        ]
-        skipped_users = [
-            user.mention if not user.bot else "" for user in skipped_users.copy()
-        ]
+        both_users = [user.mention if not user.bot else "" for user in both_users.copy()]
+        skipped_users = [user.mention if not user.bot else "" for user in skipped_users.copy()]
 
         embed = embeds.make_embed(
             ctx=ctx,

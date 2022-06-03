@@ -59,12 +59,7 @@ class TrackerStatusCommands(commands.Cog):
     async def trackerstatus(
         self,
         ctx: context.ApplicationContext,
-        tracker: Option(
-            str,
-            description="Tracker to get uptime statuses for",
-            choices=trackers,
-            required=True
-        )
+        tracker: Option(str, description="Tracker to get uptime statuses for", choices=trackers, required=True),
     ) -> None:
         # TODO: Change the color of the embed to green if all services are online,
         # yellow if one of the services is offline, and grey or red if all are offline.

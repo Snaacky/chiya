@@ -34,9 +34,7 @@ class PurgeCommands(commands.Cog):
 
         return True
 
-    @slash_command(
-        guild_ids=config["guild_ids"], description="Purge the last X amount of messages"
-    )
+    @slash_command(guild_ids=config["guild_ids"], description="Purge the last X amount of messages")
     @commands.has_role(config["roles"]["staff"])
     async def purge(
         self,

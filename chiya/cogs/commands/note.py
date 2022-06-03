@@ -114,8 +114,7 @@ class NoteCommands(commands.Cog):
             action_type = action_type[0].upper() + action_type[1:]
             action_type = f"{action_emoji[action['type']]} {action_type}"
 
-            action_string = \
-                f"""**{action_type}**
+            action_string = f"""**{action_type}**
                 **ID:** {action["id"]}
                 **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
                 **Moderator:** <@!{action["mod_id"]}>
