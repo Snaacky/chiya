@@ -3,6 +3,7 @@ import re
 import orjson
 
 import discord
+import datetime
 from discord.ext import commands
 
 from chiya.utils import embeds
@@ -22,7 +23,18 @@ class HighlightsListener(commands.Cog):
         db = database.Database().get()
         self.highlights = [{"term": highlight['term'], "users": orjson.loads(highlight['users'])} for highlight in db['highlights'].find()]
 
-    
+    async def is_user_active(self, channel: discord.TextChannel, member: discord.Member) -> bool:
+        """
+        Checks if the user was active in chat recently.
+        """
+        after = datetime.datetime.now() - datetime.timedelta(minutes=20)
+        messages = await channel.history(after=after).flatten()
+        for historical_message in messages:
+            if historical_message.author == member:
+                return True
+        
+        return False
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """
@@ -54,6 +66,8 @@ class HighlightsListener(commands.Cog):
                     if not member:
                         member = await message.guild.fetch_member(subscriber)
                     if not message.channel.permissions_for(member).view_channel:
+                        continue
+                    if await self.is_user_active(message.channel, member):
                         continue
                     try:
                         channel = await member.create_dm()
