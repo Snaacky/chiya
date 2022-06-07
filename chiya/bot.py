@@ -14,6 +14,7 @@ bot = commands.Bot(
     command_prefix=config["bot"]["prefix"],
     intents=discord.Intents(
         messages=config["bot"]["intents"]["messages"],
+        message_content=config["bot"]["intents"]["message_content"],
         guilds=config["bot"]["intents"]["guilds"],
         members=config["bot"]["intents"]["members"],
         bans=config["bot"]["intents"]["bans"],

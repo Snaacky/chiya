@@ -1,7 +1,7 @@
 import logging
 
 import discord
-from discord.commands import SlashCommandGroup, context, permissions
+from discord.commands import SlashCommandGroup, context
 from discord.ext import commands
 
 from chiya import config
@@ -17,14 +17,13 @@ class ServerCommands(commands.Cog):
 
     # Permission type 1 is role and type 2 is user.
     server = SlashCommandGroup(
-        "server",
-        "Server management commands",
+        name="server",
+        description="Server management commands",
         guild_ids=config["guild_ids"],
-        default_permission=False,
-        permissions=[permissions.CommandPermission(id=config["roles"]["staff"], type=1, permission=True)],
     )
 
     @server.command(name="pop", description="Gets the current server population")
+    @commands.has_role(config["roles"]["staff"])
     async def pop(self, ctx: context.ApplicationContext) -> None:
         """
         Send the current member count of the server.
@@ -33,6 +32,7 @@ class ServerCommands(commands.Cog):
         await ctx.send_followup(ctx.guild.member_count)
 
     @server.command(name="boosters", description="List all the server boosters")
+    @commands.has_role(config["roles"]["staff"])
     async def boosters(self, ctx: context.ApplicationContext) -> None:
         """
         Send an embed with all current server boosters.

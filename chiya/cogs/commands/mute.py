@@ -1,9 +1,9 @@
-import datetime
 import logging
 import time
+from datetime import datetime, timezone
 
 import discord
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import Option, context, slash_command
 from discord.ext import commands
 
 from chiya import config, database
@@ -18,8 +18,9 @@ class MuteCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Mutes a member in the server")
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], description="Mutes a member in the server")
+    @commands.has_role(config["roles"]["staff"])
+    @commands.has_role(config["roles"]["chat_mod"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
@@ -60,6 +61,13 @@ class MuteCommands(commands.Cog):
                 ),
             )
 
+        chat_mod = [x for x in ctx.author.roles if x.id == config["roles"]["chat_mod"]]
+        time_delta = mute_end_time - datetime.now(tz=timezone.utc).timestamp()
+        if chat_mod and time_delta > config["timeout_limit"]:
+            return await embeds.error_message(
+                ctx=ctx, description="You are not allowed to mute for longer than 1 hour."
+            )
+
         mute_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Muting member: {member}",
@@ -76,9 +84,9 @@ class MuteCommands(commands.Cog):
                 image_url="https://i.imgur.com/840Q48l.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                    {"name": "Length:", "value": duration, "inline": True},
+                    {"name": "Duration:", "value": duration_string, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
             )
@@ -100,17 +108,18 @@ class MuteCommands(commands.Cog):
                 mod_id=ctx.author.id,
                 timestamp=int(time.time()),
                 reason=reason,
+                duration=duration_string,
                 type="mute",
             )
         )
         db.commit()
         db.close()
 
-        await member.timeout(until=datetime.datetime.utcfromtimestamp(mute_end_time), reason=reason)
+        await member.timeout(until=datetime.utcfromtimestamp(mute_end_time), reason=reason)
         await ctx.send_followup(embed=mute_embed)
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Unmute a member in the server")
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], description="Unmute a member in the server")
+    @commands.has_role(config["roles"]["staff"])
     async def unmute(
         self,
         ctx: context.ApplicationContext,
@@ -155,7 +164,7 @@ class MuteCommands(commands.Cog):
                 image_url="https://i.imgur.com/U5Fvr2Y.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],

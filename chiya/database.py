@@ -46,6 +46,7 @@ class Database:
             mod_logs.create_column("mod_id", db.types.bigint)
             mod_logs.create_column("timestamp", db.types.bigint)
             mod_logs.create_column("reason", db.types.text)
+            mod_logs.create_column("duration", db.types.text)
             mod_logs.create_column("type", db.types.text)
             log.info("Created missing table: mod_logs")
 
@@ -74,6 +75,8 @@ class Database:
             tickets.create_column("user_id", db.types.bigint)
             tickets.create_column("guild", db.types.bigint)
             tickets.create_column("timestamp", db.types.bigint)
+            tickets.create_column("ticket_subject", db.types.text)
+            tickets.create_column("ticket_message", db.types.text)
             tickets.create_column("log_url", db.types.text)
             tickets.create_column("status", db.types.boolean)
             log.info("Created missing table: tickets")

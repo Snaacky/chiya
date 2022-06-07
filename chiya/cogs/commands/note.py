@@ -3,7 +3,7 @@ import time
 from datetime import datetime
 
 import discord
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import Option, context, slash_command
 from discord.ext import commands
 
 from chiya import config, database
@@ -18,8 +18,8 @@ class NoteCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(name="addnote", guild_ids=config["guild_ids"], default_permission=False)
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(name="addnote", guild_ids=config["guild_ids"])
+    @commands.has_role(config["roles"]["staff"])
     async def add_note(
         self,
         ctx: context.ApplicationContext,
@@ -64,8 +64,8 @@ class NoteCommands(commands.Cog):
 
         await ctx.send_followup(embed=embed)
 
-    @slash_command(name="search", guild_ids=config["guild_ids"], default_permission=False)
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(name="search", guild_ids=config["guild_ids"])
+    @commands.has_role(config["roles"]["staff"])
     async def search_mod_actions(
         self,
         ctx: context.ApplicationContext,
@@ -114,19 +114,22 @@ class NoteCommands(commands.Cog):
             action_type = action_type[0].upper() + action_type[1:]
             action_type = f"{action_emoji[action['type']]} {action_type}"
 
-            actions.append(
-                f"""**{action_type}**
-                **ID:** {action['id']}
-                **Timestamp:** {datetime.fromtimestamp(action['timestamp'])} UTC
-                **Moderator:** <@!{action['mod_id']}>
-                **Reason:** {action['reason']}"""
-            )
+            action_string = f"""**{action_type}**
+                **ID:** {action["id"]}
+                **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
+                **Moderator:** <@!{action["mod_id"]}>
+                **Reason:** {action["reason"]}"""
+
+            if action["type"] == "mute":
+                action_string += f"\n**Duration:** {action['duration']}"
+
+            actions.append(action_string)
 
         if not actions:
             return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
 
         embed = embeds.make_embed(title="Mod Actions")
-        embed.set_author(name=user, icon_url=user.avatar.url)
+        embed.set_author(name=user, icon_url=user.display_avatar)
 
         await LinePaginator.paginate(
             lines=actions,
@@ -138,8 +141,8 @@ class NoteCommands(commands.Cog):
             timeout=120,
         )
 
-    @slash_command(name="editlog", guild_ids=config["guild_ids"], default_permission=False)
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(name="editlog", guild_ids=config["guild_ids"])
+    @commands.has_role(config["roles"]["staff"])
     async def edit_log(
         self,
         ctx: context.ApplicationContext,

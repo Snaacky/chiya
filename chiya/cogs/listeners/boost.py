@@ -47,7 +47,7 @@ class BoostListeners(commands.Cog):
         Send an embed in #nitro-logs when a new boost was received.
         """
         if not before.premium_since and after.premium_since:
-            channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
+            channel = discord.utils.get(after.guild.channels, id=config["channels"]["logs"]["nitro_log"])
             embed = embeds.make_embed(
                 color=discord.Color.nitro_pink(),
                 title="New booster",
@@ -64,7 +64,7 @@ class BoostListeners(commands.Cog):
         Send an embed in #nitro-logs when a boost was lost.
         """
         if before.premium_since and not after.premium_since:
-            channel = discord.utils.get(after.guild.channels, id=config["channels"]["nitro_log"])
+            channel = discord.utils.get(after.guild.channels, id=config["channels"]["logs"]["nitro_log"])
             embed = embeds.make_embed(
                 color=discord.Color.nitro_pink(),
                 title="Lost booster",

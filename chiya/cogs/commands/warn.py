@@ -2,7 +2,7 @@ import logging
 import time
 
 import discord
-from discord.commands import Option, context, permissions, slash_command
+from discord.commands import Option, context, slash_command
 from discord.ext import commands
 
 from chiya import config, database
@@ -16,8 +16,8 @@ class WarnCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(guild_ids=config["guild_ids"], default_permission=False, description="Warn the member")
-    @permissions.has_role(config["roles"]["staff"])
+    @slash_command(guild_ids=config["guild_ids"], description="Warn the member")
+    @commands.has_role(config["roles"]["staff"])
     async def warn(
         self,
         ctx: context.ApplicationContext,
@@ -61,7 +61,7 @@ class WarnCommands(commands.Cog):
                 image_url="https://i.imgur.com/rVf0mlG.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/piracy)", "inline": True},
+                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
                     {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
