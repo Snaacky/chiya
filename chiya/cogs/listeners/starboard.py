@@ -69,7 +69,7 @@ class Starboard(commands.Cog):
         for attachment in message.attachments:
             description += f"{attachment.url}\n"
             # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
-            if attachment.content_type and "image" in attachment.content_type:
+            if attachment.content_type and "image" in attachment.content_type and payload.channel_id not in config["channels"]["public"]["nsfw_channels"]:
                 embed.set_image(url=attachment.url)
 
         embed.description = description

@@ -36,6 +36,7 @@ channels:
   public:
     starboard: 000000000000000000
     questions_and_help: 000000000000000000
+    nsfw_channels: [000000000000000000]
   mod:
     moderation: 000000000000000000
   logs:
