@@ -39,21 +39,29 @@ class Starboard(commands.Cog):
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
         reaction = discord.utils.get(message.reactions, emoji=payload.emoji.name)
 
-        if message.author.bot or message.author.id == payload.member.id or reaction.count < 5:
+        if (
+            message.author.bot
+            or message.author.id == payload.member.id
+            or payload.channel_id in config["channels"]["starboard"]["blacklisted"]
+            or reaction.count < 5
+        ):
             return
 
-        starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["public"]["starboard"])
+        starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
 
         db = database.Database().get()
         result = db["starboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
 
-        if result and result["channel_id"] == payload.channel_id and result["message_id"] == payload.message_id:
-            msg = await starboard_channel.fetch_message(result["star_embed_id"])
-            embed_dict = msg.embeds[0].to_dict()
-            embed_dict["color"] = self.generate_color(star_count=reaction.count)
-            embed_dict["fields"][0]["value"] = f"{random.choice(stars)} {reaction.count}"
-            embed = discord.Embed.from_dict(embed_dict)
-            return await msg.edit(embed=embed)
+        if result:
+            try:
+                msg = await starboard_channel.fetch_message(result["star_embed_id"])
+                embed_dict = msg.embeds[0].to_dict()
+                embed_dict["color"] = self.generate_color(star_count=reaction.count)
+                embed_dict["fields"][0]["value"] = f"{random.choice(stars)} {reaction.count}"
+                embed = discord.Embed.from_dict(embed_dict)
+                return await msg.edit(embed=embed)
+            except discord.NotFound:
+                pass
 
         embed = embeds.make_embed(
             color=self.generate_color(star_count=reaction.count),
@@ -82,7 +90,12 @@ class Starboard(commands.Cog):
             message_id=payload.message_id,
             star_embed_id=starred_message.id,
         )
-        db["starboard"].insert(data, ["id"])
+
+        if result:
+            db["starboard"].update(data, ["id"])
+        else:
+            db["starboard"].insert(data, ["id"])
+
         db.commit()
         db.close()
 
@@ -104,7 +117,7 @@ class Starboard(commands.Cog):
         if not result:
             return
 
-        starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["public"]["starboard"])
+        starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
         msg = await starboard_channel.fetch_message(result["star_embed_id"])
 
         if not reaction:
