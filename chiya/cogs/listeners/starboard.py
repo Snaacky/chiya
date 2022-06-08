@@ -47,7 +47,7 @@ class Starboard(commands.Cog):
         db = database.Database().get()
         result = db["starboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
 
-        if result and result["message_id"] == payload.message_id:
+        if result and result["channel_id"] == payload.channel_id and result["message_id"] == payload.message_id:
             msg = await starboard_channel.fetch_message(result["star_embed_id"])
             embed_dict = msg.embeds[0].to_dict()
             embed_dict["color"] = self.generate_color(star_count=reaction.count)
@@ -68,7 +68,7 @@ class Starboard(commands.Cog):
         description = f"{message.content}\n\n"
         for attachment in message.attachments:
             description += f"{attachment.url}\n"
-            # Must be of a MIME type. `content_type` will fail otherwise (NoneType).
+            # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
             if attachment.content_type and "image" in attachment.content_type:
                 embed.set_image(url=attachment.url)
 
@@ -79,6 +79,7 @@ class Starboard(commands.Cog):
             embed.set_author(name=message.author.display_name, icon_url=message.author.avatar.url)
 
         starred_message = await starboard_channel.send(embed=embed)
+
         data = dict(
             channel_id=payload.channel_id,
             message_id=payload.message_id,
