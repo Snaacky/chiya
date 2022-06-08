@@ -43,7 +43,7 @@ channels:
     nitro_log: 000000000000000000
   starboard:
     channel_id: 000000000000000000
-    blacklised: [000000000000000000]
+    blacklisted: [000000000000000000]
 reddit:
   subreddit: "animepiracy"
   channel: 000000000000000000
