@@ -57,7 +57,7 @@ class Starboard(commands.Cog):
             message.author.bot
             or message.author.id == payload.member.id
             or payload.channel_id in config["channels"]["starboard"]["blacklisted"]
-            or reaction.count < 5
+            or reaction.count < config["channels"]["starboard"]["star_limit"]
         ):
             return
 
