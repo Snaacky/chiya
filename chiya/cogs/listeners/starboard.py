@@ -1,6 +1,5 @@
 import datetime
 import logging
-import random
 
 import discord
 from discord.ext import commands
@@ -31,14 +30,24 @@ class Starboard(commands.Cog):
 
         return discord.Color.from_hsv(48 / 360, saturation, 1).value
 
+    @staticmethod
+    def generate_star(star_count: int) -> str:
+        if star_count <= 5:
+            return "⭐"
+        elif 6 <= star_count <= 10:
+            return "🌟"
+        elif 11 <= star_count <= 25:
+            return "💫"
+        else:
+            return "✨"
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         """
         If a message was reacted with 5 or more stars, send an embed to the starboard channel, as well as update the star
         count in the embed if more stars were reacted.
         """
-        stars = ("💫", "⭐", "🌟")
-        if payload.emoji.name not in stars:
+        if payload.emoji.name not in ("⭐", "🌟", "💫", "✨"):
             return
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
@@ -63,7 +72,10 @@ class Starboard(commands.Cog):
                 embed_dict = msg.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(star_count=reaction.count)
                 embed = discord.Embed.from_dict(embed_dict)
-                return await msg.edit(content=f"{random.choice(stars)} **{reaction.count}** {message.channel.mention}", embed=embed)
+                return await msg.edit(
+                    content=f"{self.generate_star(reaction.count)} **{reaction.count}** {message.channel.mention}",
+                    embed=embed,
+                )
             except discord.NotFound:
                 pass
 
@@ -85,7 +97,7 @@ class Starboard(commands.Cog):
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
 
         starred_message = await starboard_channel.send(
-            content=f"{random.choice(stars)} **{reaction.count}** {message.channel.mention}", embed=embed
+            content=f"{self.generate_star(reaction.count)} **{reaction.count}** {message.channel.mention}", embed=embed
         )
 
         data = dict(
@@ -107,8 +119,7 @@ class Starboard(commands.Cog):
         """
         Update the star count in the embed if the stars were reacted. Delete star embed if the message has no star reacts.
         """
-        stars = ("💫", "⭐", "🌟")
-        if payload.emoji.name not in stars:
+        if payload.emoji.name not in ("⭐", "🌟", "💫", "✨"):
             return
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
@@ -135,7 +146,9 @@ class Starboard(commands.Cog):
         embed_dict = msg.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(star_count=reaction.count)
         embed = discord.Embed.from_dict(embed_dict)
-        await msg.edit(content=f"{random.choice(stars)} **{reaction.count}** {message.channel.mention}", embed=embed)
+        await msg.edit(
+            content=f"{self.generate_star(reaction.count)} **{reaction.count}** {message.channel.mention}", embed=embed
+        )
 
 
 def setup(bot: commands.bot.Bot) -> None:
