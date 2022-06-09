@@ -17,19 +17,19 @@ class Starboard(commands.Cog):
         self.bot = bot
 
     @staticmethod
-    def generate_color(star_count) -> int:
+    def generate_color(star_count: int) -> int:
         """
         Hue, saturation, and value is divided by 360, 100, 100 respectively because it is using the fourth coordinate group
         described in https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
         """
         if star_count <= 5:
             saturation = 0.4
-        elif 5 < star_count <= 15:
-            saturation = (star_count - 5) * 0.06
+        elif 6 <= star_count <= 15:
+            saturation = 0.4 + (star_count - 5) * 0.06
         else:
             saturation = 1
-        color = discord.Color.from_hsv(48 / 360, saturation, 1).value
-        return color
+
+        return discord.Color.from_hsv(48 / 360, saturation, 1).value
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
