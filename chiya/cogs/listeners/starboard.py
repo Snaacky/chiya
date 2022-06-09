@@ -22,7 +22,12 @@ class Starboard(commands.Cog):
         Hue, saturation, and value is divided by 360, 100, 100 respectively because it is using the fourth coordinate group
         described in https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
         """
-        saturation = (star_count / 15) if star_count <= 15 else 1
+        if star_count <= 5:
+            saturation = 0.4
+        elif 5 < star_count <= 15:
+            saturation = (star_count - 5) * 0.06
+        else:
+            saturation = 1
         color = discord.Color.from_hsv(48 / 360, saturation, 1).value
         return color
 
