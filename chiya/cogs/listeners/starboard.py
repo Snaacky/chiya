@@ -72,11 +72,11 @@ class Starboard(commands.Cog):
 
         if result:
             try:
-                msg = await starboard_channel.fetch_message(result["star_embed_id"])
-                embed_dict = msg.embeds[0].to_dict()
+                star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
+                embed_dict = star_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(star_count=star_count)
                 embed = discord.Embed.from_dict(embed_dict)
-                return await msg.edit(
+                return await star_embed.edit(
                     content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
                     embed=embed,
                 )
@@ -138,7 +138,7 @@ class Starboard(commands.Cog):
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
 
         try:
-            msg = await starboard_channel.fetch_message(result["star_embed_id"])
+            star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
         except discord.NotFound:
             return
 
@@ -146,16 +146,16 @@ class Starboard(commands.Cog):
             db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
-            return await msg.delete()
+            return await star_embed.delete()
 
         star_count = 0
         for reaction in message.reactions:
             star_count += reaction.count if reaction.emoji in stars else 0
 
-        embed_dict = msg.embeds[0].to_dict()
+        embed_dict = star_embed.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(star_count=star_count)
         embed = discord.Embed.from_dict(embed_dict)
-        await msg.edit(
+        await star_embed.edit(
             content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}", embed=embed
         )
 
