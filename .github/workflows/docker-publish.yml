@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Run tests
         run: |
@@ -63,11 +63,11 @@ jobs:
         run: docker build . --file Dockerfile --tag ${{ steps.prep.outputs.tag }}
 
       - name: Log into Github registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push image to Github packages
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ steps.prep.outputs.github-tag }}
+          IMAGE_ID=ghcr.io/${{ steps.prep.outputs.github-tag }}
 
           docker image tag ${{ steps.prep.outputs.tag }} $IMAGE_ID
           docker push $IMAGE_ID

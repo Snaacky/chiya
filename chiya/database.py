@@ -87,5 +87,11 @@ class Database:
             highlights.create_column("users", db.types.text)
             log.info("Created missing table: highlights")
 
+        if "starboard" not in db:
+            starboard = db.create_table("starboard")
+            starboard.create_column("channel_id", db.types.bigint)
+            starboard.create_column("message_id", db.types.bigint)
+            starboard.create_column("star_embed_id", db.types.bigint)
+
         db.commit()
         db.close()
