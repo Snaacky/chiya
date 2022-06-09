@@ -100,15 +100,15 @@ class Starboard(commands.Cog):
             content=f"{self.generate_star(reaction.count)} **{reaction.count}** {message.channel.mention}", embed=embed
         )
 
-        data = dict(
-            channel_id=payload.channel_id,
-            message_id=payload.message_id,
-            star_embed_id=starred_message.id,
-        )
-
         if result:
-            db["starboard"].update(data, ["id"])
+            result["star_embed_id"] = starred_message.id
+            db["starboard"].update(result, ["id"])
         else:
+            data = dict(
+                channel_id=payload.channel_id,
+                message_id=payload.message_id,
+                star_embed_id=starred_message.id,
+            )
             db["starboard"].insert(data, ["id"])
 
         db.commit()
