@@ -1,13 +1,13 @@
 import logging
 
 import discord
+import orjson
 from discord.commands import Option, SlashCommandGroup, context
 from discord.ext import commands
-import orjson
 
 from chiya import config, database
-from chiya.utils import embeds
 from chiya.cogs.listeners.highlights import HighlightsListener
+from chiya.utils import embeds
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,6 @@ class HighlightCommands(commands.Cog):
         guild_ids=config["guild_ids"],
     )
 
-    
     @highlight.command(name="add", description="Adds a term to be tracked")
     async def add_highlight(
         self,
@@ -45,7 +44,9 @@ class HighlightCommands(commands.Cog):
         # 20 term limit prevents the same as the above because 20 * 50 = 1000 characters max and embeds are 4096 max.
         total = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
         if len(total) >= 20:
-            return await embeds.error_message(ctx=ctx, description="You may only have up to 20 highlighted terms at once.")
+            return await embeds.error_message(
+                ctx=ctx, description="You may only have up to 20 highlighted terms at once."
+            )
 
         result = db["highlights"].find_one(term={"ilike": term})
         if result:
@@ -55,10 +56,7 @@ class HighlightCommands(commands.Cog):
                 data = dict(id=result["id"], users=orjson.dumps(users))
                 db["highlights"].update(data, ["id"])
         else:
-            data = dict(
-                term=term,
-                users=orjson.dumps([ctx.author.id])
-            )
+            data = dict(term=term, users=orjson.dumps([ctx.author.id]))
             db["highlights"].insert(data)
 
         db.commit()
@@ -69,16 +67,13 @@ class HighlightCommands(commands.Cog):
             title="Highlight added",
             description=f"The term `{term}` was added to your highlights list.",
             color=discord.Color.green(),
-            author=True
+            author=True,
         )
         await ctx.send_followup(embed=embed)
         HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
 
     @highlight.command(name="list", description="Lists the terms you're currently tracking")
-    async def list_highlights(
-        self,
-        ctx: context.ApplicationContext
-    ) -> None:
+    async def list_highlights(self, ctx: context.ApplicationContext) -> None:
         """
         Renders a list showing all of the terms that the user currently has
         highlighted to be notified on usage of.
@@ -96,7 +91,7 @@ class HighlightCommands(commands.Cog):
             title="You're currently tracking the following words:",
             description="\n".join([str(term["term"]) for term in results]),
             color=discord.Color.green(),
-            author=True
+            author=True,
         )
         db.close()
         await ctx.send_followup(embed=embed)
@@ -131,16 +126,13 @@ class HighlightCommands(commands.Cog):
             title="Highlight removed",
             description=f"The term `{term}` was removed from your highlights list.",
             color=discord.Color.green(),
-            author=True
+            author=True,
         )
         await ctx.send_followup(embed=embed)
         HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
-    
+
     @highlight.command(name="clear", description="Clears all terms being tracked")
-    async def clear_highlights(
-        self,
-        ctx: context.ApplicationContext
-    ) -> None:
+    async def clear_highlights(self, ctx: context.ApplicationContext) -> None:
         await ctx.defer()
 
         db = database.Database().get()
@@ -166,7 +158,7 @@ class HighlightCommands(commands.Cog):
             title="Highlights cleared",
             description="All of the terms in your highlight list were cleared.",
             color=discord.Color.green(),
-            author=True
+            author=True,
         )
         await ctx.send_followup(embed=embed)
         HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
