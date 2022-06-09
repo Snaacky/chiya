@@ -65,12 +65,9 @@ class Starboard(commands.Cog):
 
         embed = embeds.make_embed(
             color=self.generate_color(star_count=reaction.count),
+            footer=payload.message_id,
             timestamp=datetime.datetime.now(),
-            fields=[
-                {"name": "Stars:", "value": f"{random.choice(stars)} {reaction.count}", "inline": False},
-                {"name": "Channel:", "value": f"{message.channel.mention}", "inline": False},
-                {"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False},
-            ],
+            fields=[{"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False}],
         )
 
         description = f"{message.content}\n\n"
@@ -83,7 +80,9 @@ class Starboard(commands.Cog):
         embed.description = description
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
 
-        starred_message = await starboard_channel.send(embed=embed)
+        starred_message = await starboard_channel.send(
+            f"{random.choice(stars)} {reaction.count} {message.channel.mention}", embed=embed
+        )
 
         data = dict(
             channel_id=payload.channel_id,
