@@ -3,6 +3,7 @@ import time
 
 import discord
 import privatebinapi
+import requests.exceptions
 from discord.commands import context
 from discord.ext import commands
 from discord.ui import InputText, Modal
@@ -176,7 +177,7 @@ class TicketCloseButton(discord.ui.View):
         close_embed = embeds.make_embed(
             color=discord.Color.blurple(), description="This ticket will be archived and closed momentarily..."
         )
-        await interaction.response.send_message(embed=close_embed)
+        message = await interaction.response.send_message(embed=close_embed)
 
         db = database.Database().get()
         table = db["tickets"]
@@ -205,7 +206,13 @@ class TicketCloseButton(discord.ui.View):
         else:
             value = mod_list.add("None")
 
-        url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
+        try:
+            url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
+        except requests.exceptions.ConnectionError:
+            embed_dict = message.embeds[0].to_dict()
+            embed_dict["description"] = "Privatebin is currently unavailable. Please try again later."
+            embed = discord.Embed.from_dict(embed_dict)
+            return await message.edit(embed=embed)
 
         log_embed = embeds.make_embed(
             title=f"{interaction.channel.name} archived",
