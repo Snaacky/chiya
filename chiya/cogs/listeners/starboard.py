@@ -62,9 +62,8 @@ class Starboard(commands.Cog):
                 msg = await starboard_channel.fetch_message(result["star_embed_id"])
                 embed_dict = msg.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(star_count=reaction.count)
-                embed_dict["fields"][0]["value"] = f"{random.choice(stars)} {reaction.count}"
                 embed = discord.Embed.from_dict(embed_dict)
-                return await msg.edit(embed=embed)
+                return await msg.edit(content=f"{random.choice(stars)} {reaction.count} {message.channel.mention}", embed=embed)
             except discord.NotFound:
                 pass
 
@@ -86,7 +85,7 @@ class Starboard(commands.Cog):
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
 
         starred_message = await starboard_channel.send(
-            f"{random.choice(stars)} {reaction.count} {message.channel.mention}", embed=embed
+            content=f"{random.choice(stars)} {reaction.count} {message.channel.mention}", embed=embed
         )
 
         data = dict(
@@ -132,9 +131,8 @@ class Starboard(commands.Cog):
 
         embed_dict = msg.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(star_count=reaction.count)
-        embed_dict["fields"][0]["value"] = f"{random.choice(stars)} {reaction.count}"
         embed = discord.Embed.from_dict(embed_dict)
-        await msg.edit(embed=embed)
+        await msg.edit(content=f"{random.choice(stars)} {reaction.count} {message.channel.mention}", embed=embed)
 
 
 def setup(bot: commands.bot.Bot) -> None:
