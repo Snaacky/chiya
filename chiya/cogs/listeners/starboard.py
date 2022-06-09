@@ -121,7 +121,10 @@ class Starboard(commands.Cog):
             return
 
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
-        msg = await starboard_channel.fetch_message(result["star_embed_id"])
+        try:
+            msg = await starboard_channel.fetch_message(result["star_embed_id"])
+        except discord.NotFound:
+            return
 
         if not reaction:
             db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
