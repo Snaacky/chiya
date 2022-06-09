@@ -22,7 +22,12 @@ class Starboard(commands.Cog):
         Hue, saturation, and value is divided by 360, 100, 100 respectively because it is using the fourth coordinate group
         described in https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
         """
-        saturation = (star_count / 15) if star_count <= 15 else 1
+        if star_count <= 5:
+            saturation = 0.4
+        elif 5 < star_count <= 15:
+            saturation = (star_count - 5) * 0.06
+        else:
+            saturation = 1
         color = discord.Color.from_hsv(48 / 360, saturation, 1).value
         return color
 
@@ -65,12 +70,9 @@ class Starboard(commands.Cog):
 
         embed = embeds.make_embed(
             color=self.generate_color(star_count=reaction.count),
+            footer=payload.message_id,
             timestamp=datetime.datetime.now(),
-            fields=[
-                {"name": "Stars:", "value": f"{random.choice(stars)} {reaction.count}", "inline": False},
-                {"name": "Channel:", "value": f"{message.channel.mention}", "inline": False},
-                {"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False},
-            ],
+            fields=[{"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False}],
         )
 
         description = f"{message.content}\n\n"
@@ -83,7 +85,9 @@ class Starboard(commands.Cog):
         embed.description = description
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
 
-        starred_message = await starboard_channel.send(embed=embed)
+        starred_message = await starboard_channel.send(
+            f"{random.choice(stars)} {reaction.count} {message.channel.mention}", embed=embed
+        )
 
         data = dict(
             channel_id=payload.channel_id,
