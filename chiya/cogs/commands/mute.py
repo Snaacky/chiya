@@ -19,8 +19,7 @@ class MuteCommands(commands.Cog):
         self.bot = bot
 
     @slash_command(guild_ids=config["guild_ids"], description="Mutes a member in the server")
-    @commands.has_role(config["roles"]["staff"])
-    @commands.has_role(config["roles"]["chat_mod"])
+    @commands.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
