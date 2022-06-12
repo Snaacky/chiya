@@ -76,6 +76,7 @@ class Starboard(commands.Cog):
                 embed_dict = star_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(star_count=star_count)
                 embed = discord.Embed.from_dict(embed_dict)
+                db.close()
                 return await star_embed.edit(
                     content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
                     embed=embed,
@@ -133,6 +134,7 @@ class Starboard(commands.Cog):
         result = db["starboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
 
         if not result:
+            db.close()
             return
 
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
@@ -140,6 +142,7 @@ class Starboard(commands.Cog):
         try:
             star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
         except discord.NotFound:
+            db.close()
             return
 
         if not message.reactions:
@@ -158,6 +161,8 @@ class Starboard(commands.Cog):
         await star_embed.edit(
             content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}", embed=embed
         )
+        
+        db.close()
 
 
 def setup(bot: commands.bot.Bot) -> None:
