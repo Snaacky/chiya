@@ -55,6 +55,9 @@ def get_duration(duration) -> Tuple[str, int]:
     for time_unit in duration:
         duration[time_unit] = float(duration[time_unit]) if duration[time_unit] != "" else 0
 
+        if duration[time_unit] > 999:
+            duration[time_unit] = 999
+
         # If the time value is 1, make the time unit into singular form and plural otherwise
         if duration[time_unit] == 0:
             continue
@@ -65,17 +68,14 @@ def get_duration(duration) -> Tuple[str, int]:
 
     duration["days"] += duration["years"] * 365 + duration["months"] * 30
 
-    end_time = int(
-        datetime.datetime.timestamp(
-            datetime.datetime.now(tz=datetime.timezone.utc)
-            + datetime.timedelta(
-                weeks=duration["weeks"],
-                days=duration["days"],
-                hours=duration["hours"],
-                minutes=duration["minutes"],
-                seconds=duration["seconds"],
-            )
-        )
+    time_delta = datetime.timedelta(
+        weeks=duration["weeks"],
+        days=duration["days"],
+        hours=duration["hours"],
+        minutes=duration["minutes"],
+        seconds=duration["seconds"],
     )
+
+    end_time = int(datetime.datetime.timestamp(datetime.datetime.now(tz=datetime.timezone.utc) + time_delta))
 
     return duration_string, end_time
