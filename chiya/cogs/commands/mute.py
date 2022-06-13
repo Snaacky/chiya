@@ -50,13 +50,13 @@ class MuteCommands(commands.Cog):
         if len(reason) > 1024:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        duration_string, mute_end_time = get_duration(duration=duration)
-        if not duration_string:
+        match_list, mute_end_time = get_duration(duration=duration)
+        if not any(match_list):
             return await embeds.error_message(
                 ctx=ctx,
                 description=(
-                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
-                    "You can specify up to all four but you only need one."
+                    "Duration syntax: `y#mo#w#d#h#m#s` (year, month, week, day, hour, min, sec)\n"
+                    "You can specify up to all seven but you only need one."
                 ),
             )
 
