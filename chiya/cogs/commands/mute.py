@@ -50,8 +50,8 @@ class MuteCommands(commands.Cog):
         if len(reason) > 1024:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        match_list, mute_end_time = get_duration(duration=duration)
-        if not any(match_list):
+        duration_string, mute_end_time = get_duration(duration=duration)
+        if not duration_string:
             return await embeds.error_message(
                 ctx=ctx,
                 description=(

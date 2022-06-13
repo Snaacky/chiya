@@ -1,11 +1,11 @@
 import datetime
+import logging
 import re
 from typing import Tuple
 
 import discord
 from discord.commands import context
 
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -26,17 +26,18 @@ async def can_action_member(ctx: context.ApplicationContext, member: discord.Mem
     return True
 
 
-def get_duration(duration) -> Tuple[str, float]:
-    regex = (r"("
-             r"(?:(\d+)\s*y(?:ears|ear|rs|r)?)?\s*"
-             r"(?:(\d+)\s*mo(?:nths|nth)?)?\s*"
-             r"(?:(\d+)\s*w(?:eeks|eek|ks|k)?)?\s*"
-             r"(?:(\d+)\s*d(?:ays|ay)?)?\s*"
-             r"(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*"
-             r"(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*"
-             r"(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?"
-             r")"
-             )
+def get_duration(duration) -> Tuple[str, int]:
+    regex = (
+        r"("
+        r"(?:(\d+)\s*y(?:ears|ear|rs|r)?)?\s*"
+        r"(?:(\d+)\s*mo(?:nths|nth)?)?\s*"
+        r"(?:(\d+)\s*w(?:eeks|eek|ks|k)?)?\s*"
+        r"(?:(\d+)\s*d(?:ays|ay)?)?\s*"
+        r"(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*"
+        r"(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*"
+        r"(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?"
+        r")"
+    )
 
     match_list = re.findall(regex, duration)[0]
 
@@ -50,10 +51,19 @@ def get_duration(duration) -> Tuple[str, float]:
         seconds=match_list[7],
     )
 
+    duration_string = ""
     for time_unit in duration:
         duration[time_unit] = float(duration[time_unit]) if duration[time_unit] != "" else 0
 
-    duration["days"] += (duration["years"] * 365 + duration["months"] * 30)
+        # If the time value is 1, make the time unit into singular form and plural otherwise
+        if duration[time_unit] == 0:
+            continue
+        elif duration[time_unit] == 1:
+            duration_string += f"{int(duration[time_unit])} {time_unit[:-1]} "
+        else:
+            duration_string += f"{int(duration[time_unit])} {time_unit} "
+
+    duration["days"] += duration["years"] * 365 + duration["months"] * 30
 
     end_time = int(
         datetime.datetime.timestamp(
@@ -68,4 +78,4 @@ def get_duration(duration) -> Tuple[str, float]:
         )
     )
 
-    return match_list, end_time
+    return duration_string, end_time

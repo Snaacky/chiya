@@ -40,8 +40,8 @@ class ReminderCommands(commands.Cog):
         """
         await ctx.defer()
 
-        match_list, end_time = get_duration(duration=duration)
-        if not any(match_list):
+        duration_string, end_time = get_duration(duration=duration)
+        if not duration_string:
             return await embeds.error_message(
                 ctx=ctx,
                 description=(
