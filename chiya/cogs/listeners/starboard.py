@@ -32,11 +32,11 @@ class Starboard(commands.Cog):
 
     @staticmethod
     def generate_star(star_count: int) -> str:
-        if star_count <= 5:
+        if star_count <= 4:
             return "⭐"
-        elif 6 <= star_count <= 10:
+        elif 5 <= star_count <= 9:
             return "🌟"
-        elif 11 <= star_count <= 25:
+        elif 10 <= star_count <= 24:
             return "💫"
         else:
             return "✨"
