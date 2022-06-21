@@ -185,6 +185,8 @@ class TicketCloseButton(discord.ui.View):
         ticket_subject = ticket["ticket_subject"]
         ticket_message = ticket["ticket_message"]
         member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
+        if not member:
+            member = await interaction.client.fetch_user(ticket_creator_id)
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
 
