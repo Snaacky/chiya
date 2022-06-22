@@ -37,13 +37,10 @@ async def on_ready() -> None:
     await bot.change_presence(
         activity=discord.Activity(type=discord.ActivityType.listening, name=config["bot"]["status"])
     )
-
-    # TODO: Move this to an admin command rather than running every time the bot loads.
-    # await bot.register_commands()
+    for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir=os.path.dirname(__file__), recursive=True):
+        bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
 
 
 if __name__ == "__main__":
-    for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
-        bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
     database.Database().setup()
     bot.run(config["bot"]["token"])
