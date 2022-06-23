@@ -41,7 +41,8 @@ class GeneralCommands(commands.Cog):
         user = user or ctx.author
         if isinstance(user, int):
             user = await self.bot.fetch_user(user)
-
+        else:
+            user = await self.bot.fetch_user(user.id)
         embed = embeds.make_embed()
         if server and user.guild_avatar is not None:
             embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
