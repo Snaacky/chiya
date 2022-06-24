@@ -62,9 +62,10 @@ class HighlightsListener(commands.Cog):
                 messages_str += f"⭐️ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** {message.clean_content[0:256]}\n"
                 embed = embeds.make_embed(
                     title=highlight["term"],
-                    description=f"{messages_str}\n[Message link]({message.jump_url})",
+                    description=messages_str,
                     color=discord.Color.gold(),
                 )
+                embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
                 for subscriber in highlight["users"]:
                     if subscriber == message.author.id:
                         continue
