@@ -42,6 +42,7 @@ channels:
     ticket_log: 000000000000000000
     nitro_log: 000000000000000000
   starboard:
+    star_limit: 0
     channel_id: 000000000000000000
     blacklisted: [000000000000000000]
 reddit:

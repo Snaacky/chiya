@@ -45,8 +45,8 @@ class ReminderCommands(commands.Cog):
             return await embeds.error_message(
                 ctx=ctx,
                 description=(
-                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
-                    "You can specify up to all four but you only need one."
+                    "Duration syntax: `y#mo#w#d#h#m#s` (year, month, week, day, hour, min, sec)\n"
+                    "You can specify up to all seven but you only need one."
                 ),
             )
 

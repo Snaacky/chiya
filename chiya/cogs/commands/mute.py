@@ -19,8 +19,7 @@ class MuteCommands(commands.Cog):
         self.bot = bot
 
     @slash_command(guild_ids=config["guild_ids"], description="Mutes a member in the server")
-    @commands.has_role(config["roles"]["staff"])
-    @commands.has_role(config["roles"]["chat_mod"])
+    @commands.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
     async def mute(
         self,
         ctx: context.ApplicationContext,
@@ -56,16 +55,22 @@ class MuteCommands(commands.Cog):
             return await embeds.error_message(
                 ctx=ctx,
                 description=(
-                    "Duration syntax: `#d#h#m#s` (day, hour, min, sec)\n"
-                    "You can specify up to all four but you only need one."
+                    "Duration syntax: `y#mo#w#d#h#m#s` (year, month, week, day, hour, min, sec)\n"
+                    "You can specify up to all seven but you only need one."
                 ),
             )
 
-        chat_mod = [x for x in ctx.author.roles if x.id == config["roles"]["chat_mod"]]
         time_delta = mute_end_time - datetime.now(tz=timezone.utc).timestamp()
+
+        if time_delta >= 2419200:
+            return await embeds.error_message(
+                ctx=ctx, description="Timeout duration cannot exceed 28 days."
+            )
+
+        chat_mod = [x for x in ctx.author.roles if x.id == config["roles"]["chat_mod"]]
         if chat_mod and time_delta > config["timeout_limit"]:
             return await embeds.error_message(
-                ctx=ctx, description="You are not allowed to mute for longer than 1 hour."
+                ctx=ctx, description="You are not allowed to timeout for longer than 1 hour."
             )
 
         mute_embed = embeds.make_embed(
