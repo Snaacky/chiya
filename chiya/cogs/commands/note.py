@@ -89,7 +89,7 @@ class NoteCommands(commands.Cog):
         await ctx.defer()
 
         if not isinstance(user, discord.Member):
-            user = await self.bot.fetch_user(user)
+            user = await self.bot.fetch_user(user.id)
 
         db = database.Database().get()
         # TODO: can't this be merged into one call because action will return None either way?
