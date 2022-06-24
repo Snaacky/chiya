@@ -78,7 +78,6 @@ class HighlightCommands(commands.Cog):
         Renders a list showing all of the terms that the user currently has
         highlighted to be notified on usage of.
         """
-        # This has very inconsistent output and the if not results check does not seem to work consistently.
         await ctx.defer()
 
         db = database.Database().get()
