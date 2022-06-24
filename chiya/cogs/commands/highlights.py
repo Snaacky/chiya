@@ -6,7 +6,6 @@ from discord.commands import Option, SlashCommandGroup, context
 from discord.ext import commands
 
 from chiya import config, database
-from chiya.cogs.listeners.highlights import HighlightsListener
 from chiya.utils import embeds
 
 
@@ -70,7 +69,8 @@ class HighlightCommands(commands.Cog):
             author=True,
         )
         await ctx.send_followup(embed=embed)
-        HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
+        highlights = self.bot.get_cog("HighlightsListener")
+        highlights.refresh_highlights()
 
     @highlight.command(name="list", description="Lists the terms you're currently tracking")
     async def list_highlights(self, ctx: context.ApplicationContext) -> None:
@@ -128,7 +128,8 @@ class HighlightCommands(commands.Cog):
             author=True,
         )
         await ctx.send_followup(embed=embed)
-        HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
+        highlights = self.bot.get_cog("HighlightsListener")
+        highlights.refresh_highlights()
 
     @highlight.command(name="clear", description="Clears all terms being tracked")
     async def clear_highlights(self, ctx: context.ApplicationContext) -> None:
@@ -151,6 +152,8 @@ class HighlightCommands(commands.Cog):
 
         db.commit()
         db.close()
+        highlights = self.bot.get_cog("HighlightsListener")
+        highlights.refresh_highlights()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -160,8 +163,8 @@ class HighlightCommands(commands.Cog):
             author=True,
         )
         await ctx.send_followup(embed=embed)
-        HighlightsListener.refresh_highlights(self.bot.get_cog("HighlightsListener"))
-
+        
+        
 
 def setup(bot: commands.Bot) -> None:
     bot.add_cog(HighlightCommands(bot))
