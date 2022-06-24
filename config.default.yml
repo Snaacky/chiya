@@ -1,5 +1,6 @@
 guild_id: 000000000000000000
 emoji_guild_ids: [000000000000000000]
+highlight_timeout: 5
 bot:
   token: !ENV ${BOT_TOKEN}
   prefix: "!"
