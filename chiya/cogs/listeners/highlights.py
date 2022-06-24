@@ -82,7 +82,7 @@ class HighlightsListener(commands.Cog):
                             content=f"You were mentioned with the highlight term `{highlight['term']}` in **{message.guild.name}** {message.channel.mention}.",
                             embed=embed,
                         )
-                    except Exception:
+                    except discord.Forbidden:
                         pass
 
 
