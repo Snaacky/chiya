@@ -3,8 +3,8 @@ import logging
 import re
 
 import discord
-import orjson
 from discord.ext import commands
+import orjson
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -33,7 +33,7 @@ class HighlightsListener(commands.Cog):
         """
         Checks if the user was active in chat recently.
         """
-        after = datetime.datetime.now() - datetime.timedelta(minutes=config['highlight_timeout'])
+        after = datetime.datetime.now() - datetime.timedelta(minutes=config["highlight_timeout"])
         messages = await channel.history(after=after).flatten()
         for historical_message in messages:
             if historical_message.author == member:
