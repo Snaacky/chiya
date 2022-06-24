@@ -184,31 +184,31 @@ class TicketCloseButton(discord.ui.View):
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
         ticket_subject = ticket["ticket_subject"]
         ticket_message = ticket["ticket_message"]
-        member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
-        if not member:
-            member = await interaction.client.fetch_user(ticket_creator_id)
+
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
 
+        member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
+        if not member:
+            member = await interaction.client.fetch_user(ticket_creator_id)
+
         mod_list = set()
+        mod_roles = (role_staff, role_trial_mod)
         message_log = f"Ticket Creator: {member}\nTicket Subject: {ticket_subject}\nTicket Message: {ticket_message}\nUser ID: {member.id}\n\n"
 
         async for message in interaction.channel.history(oldest_first=True, limit=None):
-            if not message.author.bot:
-                formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
-                message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
-                # Check if ticket participant is still in the server and add to the mod_list if it's staff.
-                if isinstance(message.author, discord.Member):
-                    if role_staff in message.author.roles or role_trial_mod in message.author.roles:
-                        mod_list.add(message.author)
+            if message.author.bot:
+                continue
 
-        if len(mod_list) > 0:
-            value = " ".join(mod.mention for mod in mod_list)
-        else:
-            value = mod_list.add("None")
+            formatted_time = message.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            message_log += f"[{formatted_time}] {message.author}: {message.content}\n"
+            # Cannot do role check on participants who left the server (no role attribute).
+            if isinstance(message.author, discord.Member) and any(role in mod_roles for role in message.author.roles):
+                mod_list.add(message.author)
 
+        value = " ".join(mod.mention for mod in mod_list) if mod_list else mod_list.add("None")
         url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
-
+        
         log_embed = embeds.make_embed(
             title=f"{interaction.channel.name} archived",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
