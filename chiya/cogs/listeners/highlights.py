@@ -59,7 +59,7 @@ class HighlightsListener(commands.Cog):
                 messages_str = ""
                 for past_message in reversed(messages):
                     messages_str += f"**[<t:{int(past_message.created_at.timestamp())}:T>] {past_message.author.name}:** {past_message.clean_content[0:256]}\n"
-                messages_str += f"⭐️ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** {message.clean_content[0:256]}\n"
+                messages_str += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** {message.clean_content[0:256]}\n"
                 embed = embeds.make_embed(
                     title=highlight["term"],
                     description=messages_str,
