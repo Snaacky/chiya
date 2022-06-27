@@ -66,6 +66,7 @@ class Starboard(commands.Cog):
             message.author.bot
             or message.author.id == payload.member.id
             or channel.is_nsfw()
+            or payload.channel_id in config["channels"]["starboard"]["blacklisted"]
             or star_count < config["channels"]["starboard"]["star_limit"]
             or (payload.message_id, payload.channel_id) in self.cache
         ):

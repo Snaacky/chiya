@@ -44,6 +44,7 @@ channels:
   starboard:
     star_limit: 0
     channel_id: 000000000000000000
+    blacklisted: [000000000000000000]
 reddit:
   subreddit: "animepiracy"
   channel: 000000000000000000
