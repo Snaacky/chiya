@@ -55,7 +55,8 @@ class Starboard(commands.Cog):
         if payload.emoji.name not in stars:
             return
 
-        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
 
         star_count = 0
         for reaction in message.reactions:
@@ -64,7 +65,7 @@ class Starboard(commands.Cog):
         if (
             message.author.bot
             or message.author.id == payload.member.id
-            or payload.channel_id in config["channels"]["starboard"]["blacklisted"]
+            or channel.is_nsfw()
             or star_count < config["channels"]["starboard"]["star_limit"]
             or (payload.message_id, payload.channel_id) in self.cache
         ):
