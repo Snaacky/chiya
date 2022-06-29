@@ -84,7 +84,7 @@ class AutoresponderListeners(commands.Cog):
                     title="Rule 5: Do not ghost ping, spam ping, ping VIPs for support, or abuse pings in any way",
                     description=(
                         "Attempting to mass ping, spam ping, ghost ping, or harassing users with pings is not "
-                        "allowed. VIPs should not be pinged for help with their service. <@&763031634379276308> "
+                        "allowed. VIPs should not be pinged for help with their service. <@&974483014967001119> "
                         "should only be pinged when the situation calls for their immediate attention."
                     ),
                     color=0x7d98e9,
