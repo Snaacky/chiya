@@ -58,7 +58,7 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule3":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 3:  Do not attack others, troll, or instigate drama",
+                    title="Rule 3: Do not attack others, troll, or instigate drama",
                     description=(
                         "Attacking, belittling, or instigating drama with others will result in your removal "
                         "from the community."
