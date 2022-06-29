@@ -156,7 +156,7 @@ class AutoresponderListeners(commands.Cog):
                     title="Rule 11: References to banned users or banned communities are not allowed",
                     description=(
                         "Do not discuss or reference any banned users or banned communities as "
-                        "they have been banned for a reason already discussed by staff with no"
+                        "they have been banned for a reason already discussed by staff with no "
                         "need for further discussions."
                     ),
                     color=0x7d98e9,
