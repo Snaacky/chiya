@@ -31,7 +31,7 @@ class AutoresponderListeners(commands.Cog):
         if not staff:
             return
 
-        rules_message = "https://ptb.discord.com/channels/622243127435984927/623100638812962816/904426149491400715"
+        rules_message = "https://discord.com/channels/974468300304171038/974483470548099104/984329857007747094"
         match message.clean_content.lower():
             case "rule1":
                 await message.reply(embed=embeds.make_embed(
