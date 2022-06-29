@@ -141,7 +141,7 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule10":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 10: Spoilers must be [marked in spoiler tags](https://support.discord.com/hc/en-us/articles/360022320632-Spoiler-Tags-) and be clearly labeled",
+                    title="Rule 10: Spoilers must be marked in spoiler tags and be clearly labeled",
                     description=(
                         "Be considerate and use spoiler tags when discussing plot elements. "
                         "Specify which title, series, or episode your spoiler is referencing outside the spoiler tag "
