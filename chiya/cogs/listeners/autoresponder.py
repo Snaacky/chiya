@@ -178,7 +178,7 @@ class AutoresponderListeners(commands.Cog):
                 await message.reply(embed=embeds.make_embed(
                     title="Rule 13: Do not discuss your sexual endeavors or relationships",
                     description=(
-                        "Disussion of NSFW topics like sex and fetishes are not allowed "
+                        "Discussion of NSFW topics like sex and fetishes are not allowed "
                         "outside of NSFW channels. "
                     ),
                     color=0x7d98e9,
