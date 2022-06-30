@@ -1,4 +1,3 @@
-
 <p align="center">
 <img width="150" height="150" src="https://i.imgur.com/Lkqobis.png">
 </p>
@@ -8,7 +7,7 @@
 </p>
 
 <p align="center">
-<a href="https://discord.gg/theindex"><img src="https://img.shields.io/discord/974468300304171038?label=Discord&logo=discord"></a> <a href="https://github.com/ranimepiracy/Chiya/actions"><img src="https://github.com/ranimepiracy/Chiya/workflows/Docker/badge.svg?branch=master"></a>
+<a href="https://discord.gg/snackbox"><img src="https://img.shields.io/discord/974468300304171038?label=Discord&logo=discord"></a> <a href="https://github.com/snaacky/chiya/actions"><img src="https://github.com/snaacky/chiya/workflows/Docker/badge.svg?branch=master"></a>
 </p>
 
 ## Getting started
@@ -50,7 +49,7 @@ DATABASE_FOLDER=
 LOGS_FOLDER=
 ```
 
-**Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out. 
+**Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out.
 
 **Step 4:** Pull the Docker image and start the containers by running `docker-compose up -d` in the same folder.
 
@@ -67,9 +66,9 @@ Contributors are more than welcome to help make Chiya a better bot. Please follo
 
 Chiya relies predominantly on the following projects:
 
-* [Python](https://www.python.org/)
-* [MariaDB](https://mariadb.org/)
-* [Docker](https://www.docker.com/)
-* [pycord](https://github.com/Pycord-Development/pycord)
-* [dataset](https://github.com/pudo/dataset)
-* [asyncpraw](https://github.com/praw-dev/asyncpraw)
+- [Python](https://www.python.org/)
+- [MariaDB](https://mariadb.org/)
+- [Docker](https://www.docker.com/)
+- [pycord](https://github.com/Pycord-Development/pycord)
+- [dataset](https://github.com/pudo/dataset)
+- [asyncpraw](https://github.com/praw-dev/asyncpraw)
