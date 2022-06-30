@@ -39,7 +39,7 @@ class GeneralCommands(commands.Cog):
         await ctx.defer()
 
         user = user or ctx.author
-        user = await self.bot.fetch_user(user.id)
+        user = await ctx.guild.fetch_member(user.id)
         
         embed = embeds.make_embed()
         if server and user.guild_avatar is not None:
