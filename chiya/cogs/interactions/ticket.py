@@ -237,8 +237,8 @@ class TicketCloseButton(discord.ui.View):
                 fields=[
                     {
                         "name": "Server:",
-                        "value": f"[{interaction.guild.name}](https://discord.gg/theindex)",
-                        "inline": False,
+                        "value": f"[{interaction.guild.name}]({await interaction.guild.vanity_invite()})",
+                        "inline": True,
                     },
                     {"name": "Ticket Log:", "value": url, "inline": False},
                 ],

@@ -63,15 +63,7 @@ class MuteCommands(commands.Cog):
         time_delta = mute_end_time - datetime.now(tz=timezone.utc).timestamp()
 
         if time_delta >= 2419200:
-            return await embeds.error_message(
-                ctx=ctx, description="Timeout duration cannot exceed 28 days."
-            )
-
-        chat_mod = [x for x in ctx.author.roles if x.id == config["roles"]["chat_mod"]]
-        if chat_mod and time_delta > config["timeout_limit"]:
-            return await embeds.error_message(
-                ctx=ctx, description="You are not allowed to timeout for longer than 1 hour."
-            )
+            return await embeds.error_message(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
 
         mute_embed = embeds.make_embed(
             ctx=ctx,
@@ -82,19 +74,20 @@ class MuteCommands(commands.Cog):
             fields=[{"name": "Duration:", "value": duration_string, "inline": False}],
         )
 
+        dm_embed = embeds.make_embed(
+            title="Uh-oh, you've been muted!",
+            description="If you believe this was a mistake, contact staff.",
+            image_url="https://i.imgur.com/840Q48l.gif",
+            color=discord.Color.blurple(),
+            fields=[
+                {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
+                {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                {"name": "Duration:", "value": duration_string, "inline": True},
+                {"name": "Reason:", "value": reason, "inline": False},
+            ],
+        )
+
         try:
-            dm_embed = embeds.make_embed(
-                title="Uh-oh, you've been muted!",
-                description="If you believe this was a mistake, contact staff.",
-                image_url="https://i.imgur.com/840Q48l.gif",
-                color=discord.Color.blurple(),
-                fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
-                    {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                    {"name": "Duration:", "value": duration_string, "inline": True},
-                    {"name": "Reason:", "value": reason, "inline": False},
-                ],
-            )
             await member.send(embed=dm_embed)
         except discord.Forbidden:
             mute_embed.add_field(
@@ -161,19 +154,19 @@ class MuteCommands(commands.Cog):
             thumbnail_url="https://i.imgur.com/W7DpUHC.png",
         )
 
+        dm_embed = embeds.make_embed(
+            author=False,
+            title="Yay, you've been unmuted!",
+            description="Review our server rules to avoid being actioned again in the future.",
+            image_url="https://i.imgur.com/U5Fvr2Y.gif",
+            color=discord.Color.blurple(),
+            fields=[
+                {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
+                {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                {"name": "Reason:", "value": reason, "inline": False},
+            ],
+        )
         try:
-            dm_embed = embeds.make_embed(
-                author=False,
-                title="Yay, you've been unmuted!",
-                description="Review our server rules to avoid being actioned again in the future.",
-                image_url="https://i.imgur.com/U5Fvr2Y.gif",
-                color=discord.Color.blurple(),
-                fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
-                    {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                    {"name": "Reason:", "value": reason, "inline": False},
-                ],
-            )
             await member.send(embed=dm_embed)
         except discord.Forbidden:
             unmute_embed.add_field(
