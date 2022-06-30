@@ -1,6 +1,6 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
 FROM python:3.10.0-slim-buster
-LABEL maintainer="https://github.com/ranimepiracy/Chiya"
+LABEL maintainer="https://github.com/snaacky/chiya"
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE=1 \
