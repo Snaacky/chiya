@@ -20,7 +20,7 @@ ENV PATH="${PATH}:/root/.local/bin"
 # Install project dependencies with poetry
 COPY pyproject.toml .
 RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi --extras "aiodns Brotlipy cchardet orjson"
+  && poetry install --no-interaction --no-ansi --no-dev --extras "aiodns Brotlipy cchardet orjson"
 
 # Place where the app lives in the container
 WORKDIR /app
