@@ -74,22 +74,23 @@ class BansCommands(commands.Cog):
             color=discord.Color.red(),
         )
 
+        dm_embed = embeds.make_embed(
+            author=False,
+            title="Uh-oh, you've been banned!",
+            description=(
+                "You can submit a ban appeal on our subreddit [here]"
+                "(https://www.reddit.com/message/compose/?to=/r/snackbox)."
+            ),
+            image_url="https://i.imgur.com/CglQwK5.gif",
+            color=discord.Color.blurple(),
+            fields=[
+                {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
+                {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                {"name": "Reason:", "value": reason, "inline": True},
+            ],
+        )
+
         try:
-            dm_embed = embeds.make_embed(
-                author=False,
-                title="Uh-oh, you've been banned!",
-                description=(
-                    "You can submit a ban appeal on our subreddit [here]"
-                    "(https://www.reddit.com/message/compose/?to=/r/animepiracy)."
-                ),
-                image_url="https://i.imgur.com/CglQwK5.gif",
-                color=discord.Color.blurple(),
-                fields=[
-                    {"name": "Server:", "value": f"[{ctx.guild.name}](https://discord.gg/theindex)", "inline": True},
-                    {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
-                    {"name": "Reason:", "value": reason, "inline": True},
-                ],
-            )
             await user.send(embed=dm_embed)
         except discord.Forbidden:
             embed.add_field(
