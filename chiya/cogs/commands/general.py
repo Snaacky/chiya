@@ -48,9 +48,7 @@ class GeneralCommands(commands.Cog):
         elif server and user.guild_avatar is None:
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
-            embed.set_footer(
-                text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
-            )
+            embed.set_footer(text="⚠️ User does not have a server avatar set.")
         else:
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
