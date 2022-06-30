@@ -46,11 +46,11 @@ channels:
     channel_id: 000000000000000000
     blacklisted: [000000000000000000]
 reddit:
-  subreddit: "animepiracy"
+  subreddit: "snackbox"
   channel: 000000000000000000
   client_id: !ENV ${REDDIT_CLIENT_ID}
   client_secret: !ENV ${REDDIT_CLIENT_SECRET}
-  user_agent: "Chiya:v1.0.0 (for /r/animepiracy)"
+  user_agent: "Chiya:v1.0.0 (for /r/snackbox)"
 database:
   database: !ENV ${MYSQL_DATABASE}
   host: !ENV ${MYSQL_HOST}
