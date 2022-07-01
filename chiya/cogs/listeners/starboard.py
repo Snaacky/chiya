@@ -58,9 +58,12 @@ class Starboard(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
 
-        star_count = 0
+        star_users = set()
         for reaction in message.reactions:
-            star_count += reaction.count if reaction.emoji in stars else 0
+            if reaction.emoji in stars:
+                 star_users.update(await reaction.users().flatten())
+        
+        star_count = len(star_users)
 
         if (
             message.author.bot
@@ -164,9 +167,12 @@ class Starboard(commands.Cog):
             db.close()
             return await star_embed.delete()
 
-        star_count = 0
+        star_users = set()
         for reaction in message.reactions:
-            star_count += reaction.count if reaction.emoji in stars else 0
+            if reaction.emoji in stars:
+                 star_users.update(await reaction.users().flatten())
+        
+        star_count = len(star_users)
 
         embed_dict = star_embed.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(star_count=star_count)
