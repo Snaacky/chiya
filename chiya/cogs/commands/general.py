@@ -13,6 +13,15 @@ class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    async def isuser_in_server(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
+        """
+        Check if the user is in the guild where command was invoked.
+        """
+        if ctx.guild.get_member(user.id) is not None:
+            return True
+        else:
+            return False
+    
     @slash_command(guild_ids=config["guild_ids"], description="Gets a users profile picture")
     async def pfp(
         self,
@@ -38,20 +47,25 @@ class GeneralCommands(commands.Cog):
         """
         await ctx.defer()
 
-        user = user or ctx.author
-        user = await ctx.guild.fetch_member(user.id)
-        
+        user = user or ctx.author 
+
         embed = embeds.make_embed()
-        if server and user.guild_avatar is not None:
-            embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
-            embed.set_image(url=user.guild_avatar.url)
-        elif server and user.guild_avatar is None:
-            embed.set_author(icon_url=user.display_avatar, name=str(user))
-            embed.set_image(url=user.display_avatar)
-            embed.set_footer(
-                text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
-            )
+        if await self.isuser_in_server(ctx=ctx,user=user):
+            user = await ctx.guild.fetch_member(user.id)
+            if server and user.guild_avatar is not None:
+                embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
+                embed.set_image(url=user.guild_avatar.url)
+            elif server and user.guild_avatar is None:
+                embed.set_author(icon_url=user.display_avatar, name=str(user))
+                embed.set_image(url=user.display_avatar)
+                embed.set_footer(
+                    text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
+                )
+            else:
+                embed.set_author(icon_url=user.display_avatar, name=str(user))
+                embed.set_image(url=user.display_avatar)
         else:
+            user = await self.bot.fetch_user(user.id)
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
         await ctx.send_followup(embed=embed)
