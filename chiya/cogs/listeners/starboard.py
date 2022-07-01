@@ -140,7 +140,7 @@ class Starboard(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload):
         """
-        Update the star count in the embed if the stars were reacted. Delete star embed if the message has no star reacts.
+        Update the star count in the embed if the stars were reacted. Delete star embed if the star count is below threshold.
         """
         stars = ("⭐", "🌟", "💫", "✨")
         if payload.emoji.name not in stars:
@@ -163,13 +163,14 @@ class Starboard(commands.Cog):
             db.close()
             return
 
-        if not message.reactions:
+        star_count = await self.get_star_count(message, stars)
+
+        if star_count < config["channels"]["starboard"]["star_limit"]:
             db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
             return await star_embed.delete()
 
-        star_count = await self.get_star_count(message, stars)
         embed_dict = star_embed.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(star_count=star_count)
         embed = discord.Embed.from_dict(embed_dict)
