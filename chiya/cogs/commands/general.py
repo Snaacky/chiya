@@ -13,14 +13,6 @@ class GeneralCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    async def isuser_in_server(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
-        """
-        Check if the user is in the guild where command was invoked.
-        """
-        if ctx.guild.get_member(user.id) is not None:
-            return True
-        else:
-            return False
     
     @slash_command(guild_ids=config["guild_ids"], description="Gets a users profile picture")
     async def pfp(
@@ -50,7 +42,7 @@ class GeneralCommands(commands.Cog):
         user = user or ctx.author 
 
         embed = embeds.make_embed()
-        if await self.isuser_in_server(ctx=ctx,user=user):
+        if ctx.guild.get_member(user.id): #Checks whether user is present in server
             user = await ctx.guild.fetch_member(user.id)
             if server and user.guild_avatar is not None:
                 embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
