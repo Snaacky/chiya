@@ -16,8 +16,7 @@ class Starboard(commands.Cog):
         self.bot = bot
         self.cache = []
 
-    @staticmethod
-    def generate_color(star_count: int) -> int:
+    def generate_color(self, star_count: int) -> int:
         """
         Hue, saturation, and value is divided by 360, 100, 100 respectively because it is using the fourth coordinate group
         described in https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
@@ -31,8 +30,7 @@ class Starboard(commands.Cog):
 
         return discord.Color.from_hsv(48 / 360, saturation, 1).value
 
-    @staticmethod
-    def generate_star(star_count: int) -> str:
+    def generate_star(self, star_count: int) -> str:
         if star_count <= 4:
             return "⭐"
         elif 5 <= star_count <= 9:
@@ -41,6 +39,16 @@ class Starboard(commands.Cog):
             return "💫"
         else:
             return "✨"
+
+    async def get_star_count(self, message: discord.Message, stars: tuple) -> int:
+        unique_users = set()
+        for reaction in message.reactions:
+            if reaction.emoji not in stars:
+                continue
+            async for user in reaction.users():
+                unique_users.add(user.id)
+
+        return len(unique_users)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -57,10 +65,7 @@ class Starboard(commands.Cog):
 
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-
-        star_count = 0
-        for reaction in message.reactions:
-            star_count += reaction.count if reaction.emoji in stars else 0
+        star_count = await self.get_star_count(message, stars)
 
         if (
             message.author.bot
@@ -164,17 +169,15 @@ class Starboard(commands.Cog):
             db.close()
             return await star_embed.delete()
 
-        star_count = 0
-        for reaction in message.reactions:
-            star_count += reaction.count if reaction.emoji in stars else 0
-
+        star_count = await self.get_star_count(message, stars)
         embed_dict = star_embed.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(star_count=star_count)
         embed = discord.Embed.from_dict(embed_dict)
         await star_embed.edit(
-            content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}", embed=embed
+            content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
+            embed=embed,
         )
-        
+
         db.close()
 
 
