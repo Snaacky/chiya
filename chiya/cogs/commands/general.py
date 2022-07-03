@@ -39,9 +39,8 @@ class GeneralCommands(commands.Cog):
         await ctx.defer()
 
         user = user or ctx.author
-        if isinstance(user, int):
-            user = await self.bot.fetch_user(user)
-
+        user = await self.bot.fetch_user(user.id)
+        
         embed = embeds.make_embed()
         if server and user.guild_avatar is not None:
             embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
@@ -49,9 +48,7 @@ class GeneralCommands(commands.Cog):
         elif server and user.guild_avatar is None:
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
-            embed.set_footer(
-                text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
-            )
+            embed.set_footer(text="⚠️ User does not have a server avatar set.")
         else:
             embed.set_author(icon_url=user.display_avatar, name=str(user))
             embed.set_image(url=user.display_avatar)
