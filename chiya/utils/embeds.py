@@ -30,7 +30,7 @@ def make_embed(
         embed = discord.Embed(title=title, description=description, color=color)
 
     if ctx and author:
-        embed.set_author(icon_url=ctx.author.avatar.url, name=ctx.author.name)
+        embed.set_author(icon_url=ctx.author.display_avatar, name=ctx.author.name)
 
     if title_url:
         embed.url = title_url
