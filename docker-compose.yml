@@ -1,29 +1,22 @@
 version: "3.3"
 services:
-  bot:
-    depends_on:
-      - db
-    image: ghcr.io/snaacky/chiya/chiya:latest
+  chiya:
+    container_name: chiya
+    image: ghcr.io/snaacky/chiya:latest
     restart: unless-stopped
     volumes:
-        - ${CONFIG}:/app/config.yml
-        - ${LOGS_FOLDER}:/app/logs/
-    environment:
-        - BOT_TOKEN=${BOT_TOKEN}
-        - REDDIT_CLIENT_ID=${REDDIT_CLIENT_ID}
-        - REDDIT_CLIENT_SECRET=${REDDIT_CLIENT_SECRET}
-        - MYSQL_HOST=db:3306
-        - MYSQL_DATABASE=${MYSQL_DATABASE}
-        - MYSQL_USER=chiya
-        - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-        - PYTHONPATH=/app
-  db:
+        - ./config/config.yml:/app/config.yml
+        - ./config/logs:/app/logs/
+    depends_on:
+        - mariadb
+  mariadb:
+    container_name: mariadb
     image: mariadb
     restart: unless-stopped
     volumes:
-        - ${DATABASE_FOLDER}:/var/lib/mysql
+        - ./config/db:/var/lib/mysql
     environment:
-        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_DATABASE: chiya
         MYSQL_USER: chiya
-        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_PASSWORD: your_secure_password
+        MYSQL_ROOT_PASSWORD: your_more_secure_password
