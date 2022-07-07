@@ -33,8 +33,8 @@ jobs:
       - name: Build and publish Docker image (using cache)
         uses: whoan/docker-build-with-cache-action@v5
         with:
-          registry: ${{env.REPOSITORY}}
+          registry: ${{ env.REPOSITORY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          image_name: ${{env.IMAGE_NAME}}
+          image_name: ${{ env.IMAGE_NAME }}
           image_tag: ${{ steps.prep.outputs.version }}
