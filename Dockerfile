@@ -14,7 +14,8 @@ ENV PYTHONPATH=/app
 # Install MySQL and Poetry
 RUN apt-get update -y
 RUN apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl
-RUN curl -sSL https://install.python-poetry.org | python -
+RUN pip install https://github.com/python-poetry/poetry/releases/download/1.2.0b2/poetry-1.2.0b2-py3-none-any.whl
+# RUN curl -sSL https://install.python-poetry.org | python -
 
 # Add Poetry path to PATH
 ENV PATH="${PATH}:/root/.local/bin"
@@ -22,7 +23,7 @@ ENV PATH="${PATH}:/root/.local/bin"
 # Install project dependencies with Poetry
 COPY pyproject.toml .
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-interaction --no-ansi --no-dev --extras "aiodns Brotlipy cchardet orjson"
+RUN poetry install --no-interaction --no-ansi --only main --all-extras
 
 # Place where the app lives in the container
 WORKDIR /app
