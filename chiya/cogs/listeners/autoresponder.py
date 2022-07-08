@@ -31,11 +31,11 @@ class AutoresponderListeners(commands.Cog):
         if not staff:
             return
 
-        rules_message = "https://ptb.discord.com/channels/622243127435984927/623100638812962816/904426149491400715"
+        rules_message = "https://discord.com/channels/974468300304171038/974483470548099104/984329857007747094"
         match message.clean_content.lower():
             case "rule1":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 1: Do not share copyright infringing files or links",
+                    title="Rule 1: Do not share content that violates anyone's intellectual property or other rights",
                     description=(
                         "Sharing illegal streaming sites, downloads, torrents, magnet links, trackers, "
                         "NZBs, or any other form of warez puts our community at risk of being shut down. "
@@ -47,10 +47,9 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule2":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 2: Treat others the way you want to be treated",
+                    title="Rule 2: Do not spread any form of hate speech. Irony or jokes are not an excuse",
                     description=(
-                        "Attacking, belittling, or instigating drama with others will result in your removal "
-                        "from the community. Any form of prejudice, including but not limited to race, "
+                        "Any form of prejudice, including but not limited to race, "
                         "religion, gender, sexual identity, or ethnic background, will not be tolerated."
                     ),
                     color=0x7d98e9,
@@ -59,11 +58,10 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule3":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 3: Do not disrupt chat",
+                    title="Rule 3: Do not attack others, troll, or instigate drama",
                     description=(
-                        "Avoid spamming, derailing conversations, trolling, posting in the incorrect channel, "
-                        "or disregarding channel rules. We expect you to make a basic attempt to fit in and "
-                        "not cause problems."
+                        "Attacking, belittling, or instigating drama with others will result in your removal "
+                        "from the community."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/7OLIuky.png",
@@ -71,11 +69,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule4":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 4: Do not abuse pings",
+                    title="Rule 4: Do not spam (text, images, links, Tenor gifs) or disrupt the flow of chat",
                     description=(
-                        "Attempting to mass ping, spam ping, ghost ping, or harassing users with pings is not "
-                        "allowed. VIPs should not be pinged for help with their service. <@&763031634379276308> "
-                        "should only be pinged when the situation calls for their immediate attention."
+                        "Avoid spamming, derailing conversations, trolling, posting in the incorrect channel, "
+                        "or disregarding channel rules. We expect you to make a basic attempt to fit in and "
+                        "not cause problems."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/37s6rUa.png",
@@ -83,11 +81,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule5":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 5: Do not attempt to evade mod actions",
+                    title="Rule 5: Do not ghost ping, spam ping, ping VIPs for support, or abuse pings in any way",
                     description=(
-                        "Abusing the rules, such as our automod system, will not be tolerated. Subsequently, "
-                        "trying to find loopholes in the rules to evade mod action is not allowed and "
-                        "will result in a permanent ban."
+                        "Attempting to mass ping, spam ping, ghost ping, or harassing users with pings is not "
+                        "allowed. VIPs should not be pinged for help with their service. <@&974483014967001119> "
+                        "should only be pinged when the situation calls for their immediate attention."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/4a5K4c6.png",
@@ -95,11 +93,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule6":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 6: Do not post unmarked spoilers",
+                    title="Rule 6: Do not ask for, giveaway, or attempt to buy/sell/trade tracker invites",
                     description=(
-                        "Be considerate and use spoiler tags when discussing plot elements. "
-                        "Specify which title, series, or episode your spoiler is referencing outside the spoiler tag "
-                        "so that people don't blindly click a spoiler."
+                        "Invites are intended for personal acquaintances. "
+                        "Publicly offering, requesting, or giving away invites to private trackers, "
+                        "DDL communities, or Usenet indexers is not allowed."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/W17MO9d.png",
@@ -107,10 +105,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule7":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 7: All conversation must be in English",
+                    title="Rule 7: Do not advertise other Discord servers or services",
                     description=(
-                        "No language other than English is permitted. We appreciate other languages "
-                        "and cultures, but we can only moderate the content we understand."
+                        "We are not a billboard for you to advertise your Discord server, social media "
+                        "channels, referral links, personal projects, or services. "
+                        "Unsolicited spam via DMs will result in an immediate ban."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/7cJCnh0.png",
@@ -118,11 +117,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule8":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 8: Do not post self-promotional content",
+                    title="Rule 8: Do not use offensive or edgy text or imagery on your profile",
                     description=(
-                        "We are not a billboard for you to advertise your Discord server, social media "
-                        "channels, referral links, personal projects, or services. "
-                        "Unsolicited spam via DMs will result in an immediate ban."
+                        "Users with excessively offensive usernames, nicknames, avatars, server "
+                        "profiles, or statuses may be asked to change the offending content or may be "
+                        "preemptively banned in more severe cases."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/xbvjFRq.png",
@@ -130,10 +129,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule9":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 9: One account per person per lifetime",
+                    title="Rule 9: Do not attempt to evade automod or mod actions",
                     description=(
-                        "Anyone found sharing or using alternate accounts will be banned. "
-                        "Contact staff if you feel you deserve an exception."
+                        "Abusing the rules, such as our automod system, will not be tolerated. Subsequently, "
+                        "trying to find loopholes in the rules to evade mod action is not allowed and "
+                        "will result in a permanent ban."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/Nfcrq1N.png",
@@ -141,11 +141,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule10":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 10: Do not give away, trade, or misuse invites",
+                    title="Rule 10: Spoilers must be marked in spoiler tags and be clearly labeled",
                     description=(
-                        "Invites are intended for personal acquaintances. "
-                        "Publicly offering, requesting, or giving away invites to private trackers, "
-                        "DDL communities, or Usenet indexers is not allowed."
+                        "Be considerate and use spoiler tags when discussing plot elements. "
+                        "Specify which title, series, or episode your spoiler is referencing outside the spoiler tag "
+                        "so that people don't blindly click a spoiler."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/wNZxV36.png",
@@ -153,11 +153,11 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule11":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 11: Do not post NSFL content",
+                    title="Rule 11: References to banned users or banned communities are not allowed",
                     description=(
-                        "NSFL content is described as \"content which is so nauseating or disturbing "
-                        "that it might be emotionally scarring to view.\" Content marked NSFL may contain "
-                        "fetish pornography, gore, or lethal violence."
+                        "Do not discuss or reference any banned users or banned communities as "
+                        "they have been banned for a reason already discussed by staff with no "
+                        "need for further discussions."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/2ZxCttO.png",
@@ -165,14 +165,24 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule12":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 12: Egregious profiles are not allowed",
+                    title="Rule 12: All conversations must be in English",
                     description=(
-                        "Users with excessively offensive usernames, nicknames, avatars, server "
-                        "profiles, or statuses may be asked to change the offending content or may be "
-                        "preemptively banned in more severe cases."
+                        "No language other than English is permitted. We appreciate other languages "
+                        "and cultures, but we can only moderate the content we understand."
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/EQvl6Lm.png",
+                    title_url=rules_message
+                ))
+            case "rule13":
+                await message.reply(embed=embeds.make_embed(
+                    title="Rule 13: Do not discuss your sexual endeavors or relationships",
+                    description=(
+                        "Discussion of NSFW topics like sex and fetishes are not allowed "
+                        "outside of NSFW channels. "
+                    ),
+                    color=0x7d98e9,
+                    thumbnail_url="https://i.imgur.com/GgL8pPz.png",
                     title_url=rules_message
                 ))
 
