@@ -34,7 +34,7 @@ jobs:
         uses: whoan/docker-build-with-cache-action@v5
         with:
           registry: ${{ env.REPOSITORY }}
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
           image_name: ${{ env.IMAGE_NAME }}
           image_tag: ${{ steps.prep.outputs.version }}
