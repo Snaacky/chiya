@@ -45,7 +45,6 @@ class GeneralCommands(commands.Cog):
         if ctx.guild.get_member(user.id): #Checks whether user is present in server
             user = await ctx.guild.fetch_member(user.id)
             if server and user.guild_avatar is not None:
-                embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
                 embed.set_image(url=user.guild_avatar.url)
             elif server and user.guild_avatar is None:
                 embed.set_author(icon_url=user.display_avatar, name=str(user))
@@ -54,8 +53,9 @@ class GeneralCommands(commands.Cog):
                     text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
                 )
             else:
-                embed.set_author(icon_url=user.display_avatar, name=str(user))
-                embed.set_image(url=user.display_avatar)
+                avatar = user.avatar.url if user.avatar else user.display_avatar
+                embed.set_author(icon_url=avatar, name=str(user))
+                embed.set_image(url=avatar)
         else:
             user = await self.bot.fetch_user(user.id)
             embed.set_author(icon_url=user.display_avatar, name=str(user))
