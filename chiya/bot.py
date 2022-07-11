@@ -19,6 +19,7 @@ bot = commands.Bot(
         members=config["bot"]["intents"]["members"],
         bans=config["bot"]["intents"]["bans"],
         reactions=config["bot"]["intents"]["reactions"],
+        auto_moderation_configuration=config["bot"]["intents"]["automod"]
     ),
     case_insensitive=config["bot"]["case_insensitive"],
     help_command=None,

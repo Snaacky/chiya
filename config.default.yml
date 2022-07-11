@@ -13,6 +13,7 @@ bot:
     members: True
     bans: True
     reactions: True
+    automod: True
   case_insensitive: True
   sync_commands: True
   sync_on_cog_reload: True
