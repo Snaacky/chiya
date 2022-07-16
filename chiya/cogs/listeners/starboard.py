@@ -108,11 +108,20 @@ class Starboard(commands.Cog):
         )
 
         description = f"{message.content}\n\n"
+        has_img = False
         for attachment in message.attachments:
             description += f"{attachment.url}\n"
             # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
             if attachment.content_type and "image" in attachment.content_type:
                 embed.set_image(url=attachment.url)
+                has_img = True
+
+        for sticker in message.stickers:
+            description += f"{sticker.url}\n"
+            # Must be of image PNG, otherwise it is a JSON.
+            if not has_img and sticker.format.file_extension == "png":
+                embed.set_image(url=sticker.url)
+                has_img = True
 
         embed.description = description
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
