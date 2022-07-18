@@ -109,14 +109,17 @@ class Starboard(commands.Cog):
 
         description = f"{message.content}\n\n"
 
+        images = []
         for attachment in message.attachments:
             description += f"{attachment.url}\n"
             # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
             if "image" in attachment.content_type:
-                embed.set_image(url=attachment.url)
+                images.append(attachment.url)
 
-        # Prioritize the sticker over images if possible.
-        if message.stickers:
+        # Prioritize the first image over sticker if possible.
+        if images:
+            embed.set_image(url=images[0])
+        elif message.stickers:
             embed.set_image(url=message.stickers[0].url)
 
         embed.description = description
