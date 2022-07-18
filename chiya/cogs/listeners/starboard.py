@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 class Starboard(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.cache = []
+        self.reaction_add_cache = set()
 
     def generate_color(self, star_count: int) -> int:
         """
@@ -58,7 +58,7 @@ class Starboard(commands.Cog):
         If a message was reacted with 5 or more stars, send an embed to the starboard channel, as well as update the star
         count in the embed if more stars were reacted.
 
-        Implements a "cache" to prevent race condition where if multiple stars were reacted on a message after it hit the
+        Implements a cache to prevent race condition where if multiple stars were reacted on a message after it hits the
         star threshold and the IDs were not written to the database quickly enough, a duplicated star embed would be sent.
         """
         stars = ("⭐", "🌟", "💫", "✨")
@@ -68,6 +68,7 @@ class Starboard(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         star_count = await self.get_star_count(message, stars)
+        cache_data = (payload.message_id, payload.channel_id)
 
         if (
             message.author.bot
@@ -75,11 +76,11 @@ class Starboard(commands.Cog):
             or channel.is_nsfw()
             or payload.channel_id in config["channels"]["starboard"]["blacklisted"]
             or star_count < config["channels"]["starboard"]["star_limit"]
-            or (payload.message_id, payload.channel_id) in self.cache
+            or cache_data in self.reaction_add_cache
         ):
             return
 
-        self.cache.append((payload.channel_id, payload.message_id))
+        self.reaction_add_cache.add(cache_data)
 
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
 
@@ -93,7 +94,7 @@ class Starboard(commands.Cog):
                 embed_dict["color"] = self.generate_color(star_count=star_count)
                 embed = discord.Embed.from_dict(embed_dict)
                 db.close()
-                self.cache.remove((payload.channel_id, payload.message_id))
+                self.reaction_add_cache.remove(cache_data)
                 return await star_embed.edit(
                     content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
                     embed=embed,
@@ -128,7 +129,8 @@ class Starboard(commands.Cog):
         embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
 
         starred_message = await starboard_channel.send(
-            content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}", embed=embed
+            content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
+            embed=embed,
         )
 
         # Update the star embed ID since the original one was probably deleted.
@@ -145,7 +147,7 @@ class Starboard(commands.Cog):
 
         db.commit()
         db.close()
-        self.cache.remove((payload.channel_id, payload.message_id))
+        self.reaction_add_cache.remove(cache_data)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
