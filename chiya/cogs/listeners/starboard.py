@@ -14,8 +14,7 @@ log = logging.getLogger(__name__)
 class Starboard(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.reaction_add_cache = set()
-        self.reaction_remove_cache = set()
+        self.cache = {"add": set(), "remove": set()}
 
     def generate_color(self, star_count: int) -> int:
         """
@@ -77,11 +76,11 @@ class Starboard(commands.Cog):
             or channel.is_nsfw()
             or payload.channel_id in config["channels"]["starboard"]["blacklisted"]
             or star_count < config["channels"]["starboard"]["star_limit"]
-            or cache_data in self.reaction_add_cache
+            or cache_data in self.cache["add"]
         ):
             return
 
-        self.reaction_add_cache.add(cache_data)
+        self.cache["add"].add(cache_data)
 
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
 
@@ -95,7 +94,7 @@ class Starboard(commands.Cog):
                 embed_dict["color"] = self.generate_color(star_count=star_count)
                 embed = discord.Embed.from_dict(embed_dict)
                 db.close()
-                self.reaction_add_cache.remove(cache_data)
+                self.cache["add"].remove(cache_data)
                 return await star_embed.edit(
                     content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
                     embed=embed,
@@ -148,7 +147,7 @@ class Starboard(commands.Cog):
 
         db.commit()
         db.close()
-        self.reaction_add_cache.remove(cache_data)
+        self.cache["add"].remove(cache_data)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
@@ -160,11 +159,11 @@ class Starboard(commands.Cog):
 
         if (
             payload.emoji.name not in stars
-            or cache_data in self.reaction_remove_cache
+            or cache_data in self.cache["remove"]
         ):
             return
 
-        self.reaction_remove_cache.add(cache_data)
+        self.cache["remove"].add(cache_data)
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
@@ -172,18 +171,16 @@ class Starboard(commands.Cog):
         result = db["starboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
 
         if not result:
-            db.close()
-            self.reaction_remove_cache.remove(cache_data)
-            return
+            self.cache["remove"].remove(cache_data)
+            return db.close()
 
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
 
         try:
             star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
         except discord.NotFound:
-            db.close()
-            self.reaction_remove_cache.remove(cache_data)
-            return
+            self.cache["remove"].remove(cache_data)
+            return db.close()
 
         star_count = await self.get_star_count(message, stars)
 
@@ -191,7 +188,7 @@ class Starboard(commands.Cog):
             db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
-            self.reaction_remove_cache.remove(cache_data)
+            self.cache["remove"].remove(cache_data)
             return await star_embed.delete()
 
         embed_dict = star_embed.embeds[0].to_dict()
@@ -203,7 +200,7 @@ class Starboard(commands.Cog):
         )
 
         db.close()
-        self.reaction_remove_cache.remove(cache_data)
+        self.cache["remove"].remove(cache_data)
 
 
 def setup(bot: commands.bot.Bot) -> None:
