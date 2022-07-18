@@ -15,6 +15,7 @@ class Starboard(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.reaction_add_cache = set()
+        self.reaction_remove_cache = set()
 
     def generate_color(self, star_count: int) -> int:
         """
@@ -153,8 +154,15 @@ class Starboard(commands.Cog):
         Update the star count in the embed if the stars were reacted. Delete star embed if the star count is below threshold.
         """
         stars = ("⭐", "🌟", "💫", "✨")
-        if payload.emoji.name not in stars:
+        cache_data = (payload.message_id, payload.channel_id)
+
+        if (
+            payload.emoji.name not in stars
+            or cache_data in self.reaction_remove_cache
+        ):
             return
+
+        self.reaction_remove_cache.add(cache_data)
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
@@ -163,6 +171,7 @@ class Starboard(commands.Cog):
 
         if not result:
             db.close()
+            self.reaction_remove_cache.remove(cache_data)
             return
 
         starboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["starboard"]["channel_id"])
@@ -171,6 +180,7 @@ class Starboard(commands.Cog):
             star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
         except discord.NotFound:
             db.close()
+            self.reaction_remove_cache.remove(cache_data)
             return
 
         star_count = await self.get_star_count(message, stars)
@@ -179,6 +189,7 @@ class Starboard(commands.Cog):
             db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
+            self.reaction_remove_cache.remove(cache_data)
             return await star_embed.delete()
 
         embed_dict = star_embed.embeds[0].to_dict()
@@ -190,6 +201,7 @@ class Starboard(commands.Cog):
         )
 
         db.close()
+        self.reaction_remove_cache.remove(cache_data)
 
 
 def setup(bot: commands.bot.Bot) -> None:
