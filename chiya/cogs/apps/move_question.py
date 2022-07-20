@@ -61,8 +61,6 @@ class MoveQuestionApp(commands.Cog):
                 avatar_url=message.author.avatar,
             )
 
-        await message.delete()
-
         success_embed = embeds.make_embed(
             description=f"Successfully moved message to: {channel.mention}",
             color=discord.Color.green(),
@@ -79,6 +77,7 @@ class MoveQuestionApp(commands.Cog):
         )
         ping = await channel.send(message.author.mention)
         await ping.delete()
+        await message.delete()
 
 
 def setup(bot: commands.Bot) -> None:
