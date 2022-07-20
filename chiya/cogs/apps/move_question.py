@@ -51,8 +51,12 @@ class MoveQuestionApp(commands.Cog):
                 session=session,
             )
 
+            content = f"{message.content}\n\n"
+            for attachment in message.attachments:
+                content += f"{attachment.url}\n"
+
             await webhook.send(
-                content=message.content,
+                content=content,
                 username=message.author.name,
                 avatar_url=message.author.avatar,
             )
