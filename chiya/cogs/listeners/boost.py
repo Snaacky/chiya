@@ -19,7 +19,7 @@ class BoostListeners(commands.Cog):
         await self.on_lost_booster(before, after)
 
     @commands.Cog.listener()
-    async def on_message(self, message: discord.Message):
+    async def on_message(self, message: discord.Message) -> None:
         if message.type == discord.MessageType.premium_guild_subscription:
             await self.on_new_boost(message)
 
@@ -39,22 +39,22 @@ class BoostListeners(commands.Cog):
                 f"We are now at {guild.premium_subscription_count} boosts! "
                 f"You can contact any <@&{config['roles']['staff']}> member with a "
                 "[hex color](https://www.google.com/search?q=hex+color) "
-                "and your desired role name for a custom booster role."
+                "and your desired role name and icon for a custom booster role."
             ),
         )
-        boostMsg = await message.channel.send(embed=embed)
+        boost_message = await message.channel.send(embed=embed)
 
         channel = discord.utils.get(guild.channels, id=config["channels"]["logs"]["nitro_log"])
         embed = embeds.make_embed(
             color=discord.Color.nitro_pink(),
             title="New booster",
             description=(
-                f"{member.mention} [boosted]({boostMsg.jump_url}) the server. "
+                f"{member.mention} [boosted]({boost_message.jump_url}) the server. "
                 f"We're now at {guild.premium_subscription_count} boosts."
             ),
         )
         await channel.send(embed=embed)
-        log.info(f"{member} boosted {guild.name}.")
+        log.info(f"{member} boosted {guild.name}")
 
     async def on_lost_booster(self, before: discord.Member, after: discord.Member) -> None:
         """
@@ -71,7 +71,7 @@ class BoostListeners(commands.Cog):
                 ),
             )
             await channel.send(embed=embed)
-            log.info(f"{after} stopped boosting {after.guild.name}.")
+            log.info(f"{after} stopped boosting {after.guild.name}")
 
 
 def setup(bot: commands.Bot) -> None:
