@@ -46,12 +46,13 @@ class Starboard(commands.Cog):
             if reaction.emoji not in stars:
                 continue
             async for user in reaction.users():
+                if user.id == message.author.id: continue
                 unique_users.add(user.id)
 
         return len(unique_users)
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         """
         If a message was reacted with 5 or more stars, send an embed to the starboard channel, as well as update the star
         count in the embed if more stars were reacted.
@@ -146,7 +147,7 @@ class Starboard(commands.Cog):
         self.cache.remove((payload.channel_id, payload.message_id))
 
     @commands.Cog.listener()
-    async def on_raw_reaction_remove(self, payload):
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
         """
         Update the star count in the embed if the stars were reacted. Delete star embed if the star count is below threshold.
         """
