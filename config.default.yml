@@ -41,6 +41,8 @@ channels:
     mute_log: 000000000000000000
     ticket_log: 000000000000000000
     nitro_log: 000000000000000000
+  server:
+    tickets: 000000000000000000
   starboard:
     star_limit: 0
     channel_id: 000000000000000000

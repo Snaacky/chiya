@@ -37,7 +37,7 @@ class BoostListeners(commands.Cog):
             description=(
                 f"{member.mention}, thank you so much for the server boost! "
                 f"We are now at {guild.premium_subscription_count} boosts! "
-                f"You can contact any <@&{config['roles']['staff']}> member with a "
+                f"You can create a ticket at <#{config['channels']['server']['tickets']}> with a "
                 "[hex color](https://www.google.com/search?q=hex+color) "
                 "and your desired role name and icon for a custom booster role."
             ),
