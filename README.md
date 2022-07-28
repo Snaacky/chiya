@@ -62,6 +62,17 @@ Contributors are more than welcome to help make Chiya a better bot. Please follo
 3. Add a feature, fix a bug, or refactor some code.
 4. Open a Pull Request with a comprehensive list of changes.
 
+### Style Guide
+- [PEP8 as our style guide base.](https://peps.python.org/pep-0008/)
+- [Black](https://github.com/psf/black) with `--line-length 120` instead of native 88.
+- Comments and docstrings should aim to be 79 characters per line.
+- Type hinting should be used for function declarations but not variable declarations.
+- Keyword arguments are preferred for function calls even when the keyword is the same variable name as the function parameter.
+- Imports should be in the following order: standard library imports, 3rd party dependencies imports, current project imports.
+- There should be 1 newline between each category of imports (standard, 3rd party, and current project.)
+- All `import <module>` lines should always come before `from <module> import <object>` lines per category.
+- There should be 2 newlines before and after global variables, starting after the last import, and ending before the first class or function declaration.
+
 ## Built on
 
 Chiya relies predominantly on the following projects:
