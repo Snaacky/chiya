@@ -203,6 +203,9 @@ class Starboard(commands.Cog):
         try:
             starboard_channel = self.bot.get_channel(config["channels"]["starboard"]["channel_id"])
             star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
+            db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
+            db.commit()
+            db.close()
             return await star_embed.delete()
         except discord.NotFound:
             db.close()
