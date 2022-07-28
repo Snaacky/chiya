@@ -45,9 +45,10 @@ class Starboard(commands.Cog):
         for reaction in message.reactions:
             if reaction.emoji not in stars:
                 continue
+
             async for user in reaction.users():
-                if user.id == message.author.id: continue
-                unique_users.add(user.id)
+                if not user.id == message.author.id:
+                    unique_users.add(user.id)
 
         return len(unique_users)
 
