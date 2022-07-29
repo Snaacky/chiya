@@ -44,14 +44,12 @@ class GeneralCommands(commands.Cog):
         embed = embeds.make_embed()
         if server and user.guild_avatar is not None:
             embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
-            embed.set_image(url=user.guild_avatar.url)
-        elif server and user.guild_avatar is None:
-            embed.set_author(icon_url=user.display_avatar, name=str(user))
-            embed.set_image(url=user.display_avatar)
-            embed.set_footer(text="⚠️ User does not have a server avatar set.")
+            embed.set_image(url=user.guild_avatar.url)           
         else:
-            embed.set_author(icon_url=user.display_avatar, name=str(user))
-            embed.set_image(url=user.display_avatar)
+            embed.set_author(icon_url=user.display_avatar.url, name=str(user))
+            embed.set_image(url=user.display_avatar.url)
+            if server:
+                embed.set_footer(text="⚠️ User does not have a server avatar set.")
         await ctx.send_followup(embed=embed)
 
     @slash_command(
