@@ -69,25 +69,4 @@ LOGS_FOLDER=
 
 ## Contributing
 
-Contributors are more than welcome to help make Chiya a better bot. If you are a developer, we encourage you to fork the bot, make changes, and PR your changes upstream. We ask that you read and adhere to our style guide for all PRs for consistency across the entire code base. PRs with no prior communication are not encouraged as your PR may not align with our ideals for the bot. Feel free to reach out for any questions or feedback.
-
-### Style Guide
-- [PEP8 as our style guide base.](https://peps.python.org/pep-0008/)
-- [Black](https://github.com/psf/black) with `--line-length 120` instead of native 88.
-- Comments and docstrings should aim to be 79 characters per line.
-- Type hinting should be used for function declarations but not variable declarations.
-- Keyword arguments are preferred for function calls even when the keyword is the same variable name as the function parameter.
-- Imports should be in the following order: standard library imports, 3rd party dependency imports, and current project imports with a newline between each category of imports. 
-- `import <module>` lines should come before `from <module> import <object>` lines.
-- There should be 2 newlines before and after global variables: after the last import and before the first class or function declaration.
-- When breaking out of a function with a return, avoid returning nothing.
-- Each function should have a brief docstring explaining what the function is doing. 
-  - The starting `"""` and ending `"""` should be on lines by themselves even for one-line docstrings.
-  - Docstrings should be written as sentences with proper capitalization, grammar, and punctuation.
-  - Specifying parameters or return type in a docstring isn't necessary because we use type hinting.
-- Comments should be minimal and explain why the code is doing something instead of what it is doing.
-- Any messages logged to console should not contain ending punctuation.
-- Any settings, keys, values, or IDs that may change on a deployment basis should be kept in the config file.
-- All Discord commands and command parameters should have descriptions.
-- All Discord commands should start with `await ctx.defer()` to avoid 3 second timeouts.
-- There is no enforced git commit message style but keep your commit messages descriptive and self-explanatory.
+Contributors are more than welcome to help make Chiya a better bot. If you are a developer, we encourage you to fork the bot, make changes, and PR your changes upstream. For more information about contributing, [check out our contributing guide](https://github.com/Snaacky/chiya/blob/readme-rework/CONTRIBUTING.md).
