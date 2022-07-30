@@ -63,9 +63,7 @@ Contributors are more than welcome to help make Chiya a better bot. If you are a
 - Comments and docstrings should aim to be 79 characters per line.
 - Type hinting should be used for function declarations but not variable declarations.
 - Keyword arguments are preferred for function calls even when the keyword is the same variable name as the function parameter.
-- Imports should be in the following order: standard library imports, 3rd party dependency imports, and current project imports.
-  - There should be 1 newline between each category of imports.
-  - All `import <module>` lines should come before `from <module> import <object>` lines for each category.
+- Imports should be in the following order: standard library imports, 3rd party dependency imports, and current project imports with a newline between each category of imports. `import <module>` lines should come before `from <module> import <object>` lines.
 - There should be 2 newlines before and after global variables: after the last import and before the first class or function declaration.
 - When breaking out of a function with a return, avoid returning nothing.
 - Each function should have a brief docstring explaining what the function is doing. 
