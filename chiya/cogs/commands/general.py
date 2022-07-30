@@ -3,8 +3,9 @@ import logging
 import discord
 from chiya import config
 from chiya.utils import embeds
-from discord.commands import Option, context, slash_command
+from discord.commands import Option, context, slash_command, message_command
 from discord.ext import commands
+import discord.utils
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ class GeneralCommands(commands.Cog):
             embed.set_image(url=user.display_avatar)
         await ctx.send_followup(embed=embed)
 
-    @slash_command(
+    @message_command(
         guild_ids=config["guild_ids"],
         description="Add vote reactions to a message.",
     )
@@ -62,14 +63,10 @@ class GeneralCommands(commands.Cog):
     async def vote(
         self,
         ctx: context.ApplicationContext,
-        message: Option(str, description="The ID for the target message", required=False),
+        message: discord.Message,
     ) -> None:
         """
         Adds vote emojis (yes and no) reactions to a message.
-
-        If the message argument is specified, it will add the reactions to
-        that message. Otherwise, it will add the reactions to the last message
-        in the channel.
         """
         # TODO: what happens if the user doesn't have permission to add reactions in that channel?
         await ctx.defer(ephemeral=True)
@@ -84,8 +81,11 @@ class GeneralCommands(commands.Cog):
             messages = await ctx.channel.history(limit=1).flatten()
             message = messages[0]
 
-        await message.add_reaction(f":yes:{config['emoji']['yes']}")
-        await message.add_reaction(f":no:{config['emoji']['no']}")
+        emoji_yes = discord.utils.get(ctx.guild.emojis, id=config['emoji']['yes']) or "👍"
+        emoji_no = discord.utils.get(ctx.guild.emojis, id=config['emoji']['no']) or "👎"   
+
+        await message.add_reaction(emoji_yes)
+        await message.add_reaction(emoji_no)
         await embeds.success_message(ctx=ctx, description=f"Added votes to {message.jump_url}")
 
     @slash_command(
@@ -105,17 +105,20 @@ class GeneralCommands(commands.Cog):
 
         if message:
             try:
-                message = await ctx.channel.fetch_message(message)
+                message: discord.Message = await ctx.channel.fetch_message(message)
             except discord.NotFound:
                 return await embeds.error_message(ctx=ctx, description="Invalid message ID.")
 
         yes_reactions = None
         no_reactions = None
 
+        emoji_yes = discord.utils.get(ctx.guild.emojis, id=config['emoji']['yes']) or "👍"
+        emoji_no = discord.utils.get(ctx.guild.emojis, id=config['emoji']['no']) or "👎" 
+
         for reaction in message.reactions:
-            if reaction.emoji.id == config["emoji"]["yes"]:
+            if reaction.emoji == emoji_yes:
                 yes_reactions = reaction
-            if reaction.emoji.id == config["emoji"]["no"]:
+            if reaction.emoji == emoji_no:
                 no_reactions = reaction
 
         if not yes_reactions or not no_reactions:
