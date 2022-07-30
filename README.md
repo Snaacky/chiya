@@ -30,42 +30,12 @@ Chiya is deployed into a production environment using [Docker](https://docs.dock
 
 You will also need a Discord bot with [privileged intents](https://discordpy.readthedocs.io/en/stable/intents.html) enabled and the token for that bot before installation. You can create a new Discord bot [here](https://discord.com/developers/). Keep in mind Chiya will need the `bot` and `applications.commands` scopes selected when you generate your OAuth2 URL to function properly. If you intend on using the Reddit functionality, you will also need to create a Reddit application [here](https://www.reddit.com/prefs/apps/).
 
-## Install
+## Setup
 
-**Step 1:** Download the `docker-compose.yml` to your local file system.
-
-**Step 2:** Create a `.env` file in the same folder and fill out the following:
-
-```env
-# The bot token for the Discord application
-# https://discordapp.com/developers/
-BOT_TOKEN=
-
-# The client ID and secret for the Reddit application
-# https://www.reddit.com/prefs/apps/
-REDDIT_CLIENT_ID=
-REDDIT_CLIENT_SECRET=
-
-# The authentication settings for the database
-MYSQL_HOST=
-MYSQL_DB=
-MYSQL_USER=
-MYSQL_PASSWORD=
-MYSQL_ROOT_PASSWORD=
-
-# The path on your host file system to config.yml
-CONFIG=
-
-# The folder on your host file system for storing database data
-DATABASE_FOLDER=
-
-# The folder on your host file system for storing logs
-LOGS_FOLDER=
-```
-
-**Step 3:** Create a `config.yml` file in the same folder using `config.default.yml` as the base and fill it out.
-
-**Step 4:** Pull the Docker image and start the containers by running `docker-compose up -d` in the same folder.
+1. Download [`docker-compose.yml`](https://github.com/Snaacky/chiya/blob/master/docker-compose.yml) and fill it out for your deployment. 
+2. Create a new directory called `config` in the same parent directory.  
+3. Download [`config.default.yml`](https://github.com/Snaacky/chiya/blob/master/config.default.yml) into your newly created directory, fill it out for your deployment, and rename the file to `config.yml`.
+4. Pull the Docker image and start the containers by running `docker-compose up -d`.
 
 ## Contributing
 
