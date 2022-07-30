@@ -63,7 +63,7 @@ Contributors are more than welcome to help make Chiya a better bot. If you are a
 - Comments and docstrings should aim to be 79 characters per line.
 - Type hinting should be used for function declarations but not variable declarations.
 - Keyword arguments are preferred for function calls even when the keyword is the same variable name as the function parameter.
-- Imports should be in the following order: standard library imports, 3rd party dependencies imports, current project imports.
+- Imports should be in the following order: standard library imports, 3rd party dependency imports, and current project imports.
   - There should be 1 newline between each category of imports.
   - All `import <module>` lines should come before `from <module> import <object>` lines for each category.
 - There should be 2 newlines before and after global variables: after the last import and before the first class or function declaration.
@@ -72,7 +72,7 @@ Contributors are more than welcome to help make Chiya a better bot. If you are a
   - The starting `"""` and ending `"""` should be on lines by themselves even for one-line docstrings.
   - Docstrings should be written as sentences with proper capitalization, grammar, and punctuation.
   - Specifying parameters or return type in a docstring isn't necessary because we use type hinting.
-- Usage of comments should be minimal and should explain why the code is doing something instead of what it is doing.
+- Comments should be minimal and explain why the code is doing something instead of what it is doing.
 - Any messages logged to console should not contain ending punctuation.
 - Any settings, keys, values, or IDs that may change on a deployment basis should be kept in the config file.
 - All Discord commands and command parameters should have descriptions.
