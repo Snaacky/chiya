@@ -10,6 +10,20 @@
 <a href="https://discord.gg/snackbox"><img src="https://img.shields.io/discord/974468300304171038?label=Discord&logo=discord"></a> <a href="https://github.com/snaacky/chiya/actions"><img src="https://github.com/snaacky/chiya/workflows/Docker/badge.svg?branch=master"></a>
 </p>
 
+## Features
+* Avatar Grabber
+* Bans
+* Message purging
+* Mutes
+* Notes
+* Reminders
+* Server information
+* Tracker status
+* Unbans
+* Unmutes
+* Voting
+* Warns
+
 ## Getting started
 
 Chiya is deployed into a production environment using [Docker](https://docs.docker.com/engine/reference/run/) images. As such, the install guide will focus on deployment via Docker. Chiya has been tested on both Windows and Linux bare metal environments and attempts to retain compatibility across both operating systems but this may not always be the case. The install guide assumes that you already have Docker and [docker-compose](https://docs.docker.com/compose/) installed.
