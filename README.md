@@ -55,12 +55,7 @@ LOGS_FOLDER=
 
 ## Contributing
 
-Contributors are more than welcome to help make Chiya a better bot. Please follow these steps to get your work merged in:
-
-1. Reach out on Discord and propose your idea beforehand.
-2. Clone the repository `git clone` and create a new branch `git checkout -b branch_name` for your work.
-3. Add a feature, fix a bug, or refactor some code.
-4. Open a Pull Request with a comprehensive list of changes.
+Contributors are more than welcome to help make Chiya a better bot. If you are a developer, we encourage you to fork the bot, make changes, and PR your changes upstream. We ask that you read and adhere to our style guide for all PRs for consistency across the entire code base. PRs with no prior communication are not encouraged as your PR may not align with our ideals for the bot. Feel free to reach out for any questions or feedback.
 
 ### Style Guide
 - [PEP8 as our style guide base.](https://peps.python.org/pep-0008/)
@@ -69,17 +64,17 @@ Contributors are more than welcome to help make Chiya a better bot. Please follo
 - Type hinting should be used for function declarations but not variable declarations.
 - Keyword arguments are preferred for function calls even when the keyword is the same variable name as the function parameter.
 - Imports should be in the following order: standard library imports, 3rd party dependencies imports, current project imports.
-- There should be 1 newline between each category of imports (standard, 3rd party, and current project.)
-- All `import <module>` lines should always come before `from <module> import <object>` lines per category.
-- There should be 2 newlines before and after global variables, starting after the last import, and ending before the first class or function declaration.
-
-## Built on
-
-Chiya relies predominantly on the following projects:
-
-- [Python](https://www.python.org/)
-- [MariaDB](https://mariadb.org/)
-- [Docker](https://www.docker.com/)
-- [pycord](https://github.com/Pycord-Development/pycord)
-- [dataset](https://github.com/pudo/dataset)
-- [asyncpraw](https://github.com/praw-dev/asyncpraw)
+  - There should be 1 newline between each category of imports.
+  - All `import <module>` lines should come before `from <module> import <object>` lines for each category.
+- There should be 2 newlines before and after global variables: after the last import and before the first class or function declaration.
+- When breaking out of a function with a return, avoid returning nothing.
+- Each function should have a brief docstring explaining what the function is doing. 
+  - The starting `"""` and ending `"""` should be on lines by themselves even for one-line docstrings.
+  - Docstrings should be written as sentences with proper capitalization, grammar, and punctuation.
+  - Specifying parameters or return type in a docstring isn't necessary because we use type hinting.
+- Usage of comments should be minimal and should explain why the code is doing something instead of what it is doing.
+- Any messages logged to console should not contain ending punctuation.
+- Any settings, keys, values, or IDs that may change on a deployment basis should be kept in the config file.
+- All Discord commands and command parameters should have descriptions.
+- All Discord commands should start with `await ctx.defer()` to avoid 3 second timeouts.
+- There is currently no enforced git commit message styling, just keep your commit messages descriptive and self-explanatory.
