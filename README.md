@@ -77,4 +77,4 @@ Contributors are more than welcome to help make Chiya a better bot. If you are a
 - Any settings, keys, values, or IDs that may change on a deployment basis should be kept in the config file.
 - All Discord commands and command parameters should have descriptions.
 - All Discord commands should start with `await ctx.defer()` to avoid 3 second timeouts.
-- There is currently no enforced git commit message styling, just keep your commit messages descriptive and self-explanatory.
+- There is no enforced git commit message style but keep your commit messages descriptive and self-explanatory.
