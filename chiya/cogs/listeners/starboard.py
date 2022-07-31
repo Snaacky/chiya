@@ -202,6 +202,27 @@ class Starboard(commands.Cog):
         db.close()
         self.cache["remove"].remove(cache_data)
 
+    @commands.Cog.listener()
+    async def on_raw_message_delete(self, payload):
+        """
+        Automatically remove the starboard embed if the message linked to it is deleted.
+        """
+        db = database.Database().get()
+        result = db["starboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
+
+        if not result:
+            return db.close()
+
+        try:
+            starboard_channel = self.bot.get_channel(config["channels"]["starboard"]["channel_id"])
+            star_embed = await starboard_channel.fetch_message(result["star_embed_id"])
+            db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
+            db.commit()
+            db.close()
+            return await star_embed.delete()
+        except discord.NotFound:
+            db.close()
+
 
 def setup(bot: commands.bot.Bot) -> None:
     bot.add_cog(Starboard(bot))
