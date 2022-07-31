@@ -37,9 +37,9 @@ class BoostListeners(commands.Cog):
             description=(
                 f"{member.mention}, thank you so much for the server boost! "
                 f"We are now at {guild.premium_subscription_count} boosts! "
-                f"You can create a ticket at <#{config['channels']['server']['tickets']}> with a "
-                "[hex color](https://www.google.com/search?q=hex+color) "
-                "and your desired role name and icon for a custom booster role."
+                f"You can create a new ticket in <#{config['channels']['server']['tickets']}> "
+                "with your desired role name, icon (must be transparent), "
+                "and [hex color](https://www.google.com/search?q=hex+color) for a custom booster role."
             ),
         )
         boost_message = await message.channel.send(embed=embed)
