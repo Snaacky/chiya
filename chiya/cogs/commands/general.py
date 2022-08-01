@@ -18,13 +18,13 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(
-            discord.User,
+            discord.Member,
             description="User whose profile picture will be grabbed",
             required=False,
         ),
-        server: Option(
+        profile: Option(
             bool,
-            description="Prefer server profile picture (if one exists)",
+            description="Prefer global profile picture",
             required=False,
         ),
     ) -> None:
@@ -39,17 +39,14 @@ class GeneralCommands(commands.Cog):
         await ctx.defer()
 
         user = user or ctx.author
-        user = await self.bot.fetch_user(user.id)
         
         embed = embeds.make_embed()
-        if server and user.guild_avatar is not None:
-            embed.set_author(icon_url=user.guild_avatar.url, name=str(user))
-            embed.set_image(url=user.guild_avatar.url)           
+        if profile and isinstance(user, discord.Member) and user.avatar is not None:
+            embed.set_author(icon_url=user.avatar.url, name=str(user))
+            embed.set_image(url=user.avatar.url)           
         else:
             embed.set_author(icon_url=user.display_avatar.url, name=str(user))
             embed.set_image(url=user.display_avatar.url)
-            if server:
-                embed.set_footer(text="⚠️ User does not have a server avatar set.")
         await ctx.send_followup(embed=embed)
 
     @slash_command(
