@@ -17,7 +17,7 @@ class BansCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.User) -> bool:
+    async def is_user_banned(self, ctx: context.ApplicationContext, user: discord.Member | discord.User) -> bool:
         """
         Check if the user is banned from the context invoking guild.
         """
@@ -31,7 +31,7 @@ class BansCommands(commands.Cog):
     async def ban(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.User, description="User to ban from the server", required=True),
+        user: Option(discord.Member | discord.User, description="User to ban from the server", required=True),
         reason: Option(str, description="Reason why the user is being banned", required=True),
         daystodelete: Option(
             int,
@@ -123,7 +123,7 @@ class BansCommands(commands.Cog):
     async def unban(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.Member, description="User to unban from the server", required=True),
+        user: Option(discord.Member | discord.User, description="User to unban from the server", required=True),
         reason: Option(str, description="Reason why the user is being unbanned", required=True),
     ) -> None:
         """

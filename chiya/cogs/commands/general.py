@@ -18,7 +18,7 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(
-            discord.Member,
+            discord.Member | discord.User,
             description="User whose profile picture will be grabbed",
             required=False,
         ),

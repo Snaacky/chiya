@@ -10,7 +10,7 @@ from discord.commands import context
 log = logging.getLogger(__name__)
 
 
-async def can_action_member(ctx: context.ApplicationContext, member: discord.Member) -> bool:
+async def can_action_member(ctx: context.ApplicationContext, member: discord.Member | discord.User) -> bool:
     # Stop mods from actioning on the bot.
     if member.bot:
         return False
