@@ -18,13 +18,13 @@ class GeneralCommands(commands.Cog):
         self,
         ctx: context.ApplicationContext,
         user: Option(
-            discord.User,
+            discord.Member,
             description="User whose profile picture will be grabbed",
             required=False,
         ),
-        server: Option(
+        profile: Option(
             bool,
-            description="Prefer server profile picture (if one exists)",
+            description="Prefer global profile picture",
             required=False,
         ),
     ) -> None:
@@ -38,28 +38,14 @@ class GeneralCommands(commands.Cog):
         """
         await ctx.defer()
 
-        user = user or ctx.author 
+        user = user or ctx.author
 
         embed = embeds.make_embed()
-        if ctx.guild.get_member(user.id): #Checks whether user is present in server
-            user = await ctx.guild.fetch_member(user.id)
-            if server and user.guild_avatar is not None:
-                embed.set_author(icon_url=user.guild_avatar, name=str(user))
-                embed.set_image(url=user.guild_avatar.url)
-            elif server and user.guild_avatar is None:
-                embed.set_author(icon_url=user.display_avatar, name=str(user))
-                embed.set_image(url=user.display_avatar)
-                embed.set_footer(
-                    text="⚠️ Prefer server profile picture was specified but user does not have a server profile picture set."
-                )
-            else:
-                avatar = user.avatar.url if user.avatar else user.display_avatar
-                embed.set_author(icon_url=avatar, name=str(user))
-                embed.set_image(url=avatar)
-        else:
-            user = await self.bot.fetch_user(user.id)
-            embed.set_author(icon_url=user.display_avatar, name=str(user))
-            embed.set_image(url=user.display_avatar)
+        if profile and isinstance(user, discord.Member):
+            user: discord.User = ctx.bot.get_user(user.id)
+
+        embed.set_author(icon_url=user.display_avatar.url, name=str(user))
+        embed.set_image(url=user.display_avatar.url)
         await ctx.send_followup(embed=embed)
 
     @slash_command(
