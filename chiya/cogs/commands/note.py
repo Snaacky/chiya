@@ -23,7 +23,7 @@ class NoteCommands(commands.Cog):
     async def add_note(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.User, description="The user to add the note to", required=True),
+        user: Option(discord.Member | discord.User, description="The user to add the note to", required=True),
         note: Option(str, description="The note to leave on the user", required=True),
     ) -> None:
         """
@@ -69,7 +69,7 @@ class NoteCommands(commands.Cog):
     async def search_mod_actions(
         self,
         ctx: context.ApplicationContext,
-        user: Option(discord.User, description="The user to lookup", required=True),
+        user: Option(discord.Member | discord.User, description="The user to lookup", required=True),
         action: Option(
             str,
             description="Filter specific actions",

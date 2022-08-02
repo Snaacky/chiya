@@ -21,7 +21,7 @@ class WarnCommands(commands.Cog):
     async def warn(
         self,
         ctx: context.ApplicationContext,
-        member: Option(discord.Member, description="The member that will be warned", required=True),
+        member: Option(discord.Member | discord.User, description="The member that will be warned", required=True),
         reason: Option(str, description="The reason why the member is being warned", required=True),
     ) -> None:
         """
