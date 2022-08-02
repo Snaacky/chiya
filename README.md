@@ -30,7 +30,7 @@ You will need a Discord bot with [privileged intents](https://discordpy.readthed
 
 ## Setup
 
-Chiya is deployed into a production environment using [Docker](https://docs.docker.com/engine/reference/run/) images. As such, the install guide will focus on deployment via Docker. Chiya has been tested on both Windows and Linux bare metal environments and attempts to retain compatibility across both operating systems but this may not always be the case. The install guide assumes that you already have Docker and [docker-compose](https://docs.docker.com/compose/) installed.
+Chiya is deployed into a production environment using [Docker](https://docs.docker.com/get-started/) images. As such, the install guide will focus on deployment via Docker. Chiya has been tested on both Windows and Linux bare metal environments and attempts to retain compatibility across both operating systems but this may not always be the case. The install guide assumes that you already have Docker and [docker-compose](https://docs.docker.com/compose/) installed.
 
 #### Steps:
 1. Download [`docker-compose.yml`](https://github.com/Snaacky/chiya/blob/master/docker-compose.yml) and fill it out for your deployment. 
