@@ -89,7 +89,7 @@ class MuteCommands(commands.Cog):
 
         try:
             await member.send(embed=dm_embed)
-        except discord.Forbidden:
+        except (discord.Forbidden, discord.HTTPException):
             mute_embed.add_field(
                 name="Notice:",
                 value=(
@@ -168,7 +168,7 @@ class MuteCommands(commands.Cog):
         )
         try:
             await member.send(embed=dm_embed)
-        except discord.Forbidden:
+        except (discord.Forbidden, discord.HTTPException):
             unmute_embed.add_field(
                 name="Notice:",
                 value=(
