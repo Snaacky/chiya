@@ -36,10 +36,7 @@ class HighlightsListener(commands.Cog):
         after = datetime.datetime.now() - datetime.timedelta(minutes=config["highlight_timeout"])
         messages = await channel.history(after=after).flatten()
         for historical_message in messages:
-            if historical_message.author == member:
-                return True
-
-        return False
+            return True if historical_message.author == member else False
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -51,10 +48,9 @@ class HighlightsListener(commands.Cog):
             return
 
         for highlight in self.highlights:
-            regex = r"\b" + highlight["term"] + r"\b"
+            regex = rf"\b{highlight['term']}\b"
             result = re.search(regex, message.clean_content, re.IGNORECASE)
             if result:
-                # caught a term
                 messages = await message.channel.history(limit=4, before=message).flatten()
                 messages_str = ""
                 for past_message in reversed(messages):
@@ -67,15 +63,14 @@ class HighlightsListener(commands.Cog):
                 )
                 embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
                 for subscriber in highlight["users"]:
-                    if subscriber == message.author.id:
+                    member = await message.guild.fetch_member(subscriber)
+                    if (
+                        subscriber == message.author.id
+                        or not message.channel.permissions_for(member).view_channel
+                        or await self.is_user_active(message.channel, member)
+                    ):
                         continue
-                    member = message.guild.get_member(subscriber)
-                    if not member:
-                        member = await message.guild.fetch_member(subscriber)
-                    if not message.channel.permissions_for(member).view_channel:
-                        continue
-                    if await self.is_user_active(message.channel, member):
-                        continue
+
                     try:
                         channel = await member.create_dm()
                         await channel.send(
