@@ -35,9 +35,6 @@ class NoteCommands(commands.Cog):
         """
         await ctx.defer()
 
-        if not isinstance(user, discord.Member):
-            user = await self.bot.fetch_user(user)
-
         db = database.Database().get()
         note_id = db["mod_logs"].insert(
             dict(
@@ -87,9 +84,6 @@ class NoteCommands(commands.Cog):
         because the output is not hidden.
         """
         await ctx.defer()
-
-        if not isinstance(user, discord.Member):
-            user = await self.bot.fetch_user(user.id)
 
         db = database.Database().get()
         # TODO: can't this be merged into one call because action will return None either way?
