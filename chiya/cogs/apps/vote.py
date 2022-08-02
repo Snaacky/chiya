@@ -13,20 +13,13 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class GeneralApp(commands.Cog):
+class VoteApp(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
 
-    @message_command(
-        guild_ids=config["guild_ids"],
-        description="Add vote reactions to a message.",
-    )
+    @message_command(guild_ids=config["guild_ids"], description="Add vote reactions to a message.")
     @commands.has_role(config["roles"]["staff"])
-    async def vote(
-        self,
-        ctx: context.ApplicationContext,
-        message: discord.Message,
-    ) -> None:
+    async def vote(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
         """
         Adds vote emojis (yes and no) reactions to a message.
         """
@@ -43,8 +36,8 @@ class GeneralApp(commands.Cog):
             messages = await ctx.channel.history(limit=1).flatten()
             message = messages[0]
 
-        emoji_yes = discord.utils.get(ctx.guild.emojis, id=config['emoji']['yes']) or "👍"
-        emoji_no = discord.utils.get(ctx.guild.emojis, id=config['emoji']['no']) or "👎"   
+        emoji_yes = discord.utils.get(ctx.guild.emojis, id=config["emoji"]["yes"]) or "👍"
+        emoji_no = discord.utils.get(ctx.guild.emojis, id=config["emoji"]["no"]) or "👎"
 
         await message.add_reaction(emoji_yes)
         await message.add_reaction(emoji_no)
@@ -52,5 +45,5 @@ class GeneralApp(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(GeneralApp(bot))
-    log.info("App loaded: general")
+    bot.add_cog(VoteApp(bot))
+    log.info("App loaded: vote")
