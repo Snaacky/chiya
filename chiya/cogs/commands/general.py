@@ -1,10 +1,12 @@
 import logging
 
 import discord
-from chiya import config
-from chiya.utils import embeds
 from discord.commands import Option, context, slash_command
 from discord.ext import commands
+
+from chiya import config
+from chiya.utils import embeds
+
 
 log = logging.getLogger(__name__)
 
