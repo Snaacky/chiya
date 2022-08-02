@@ -2,7 +2,7 @@ guild_id: 000000000000000000
 emoji_guild_ids: [000000000000000000]
 highlight_timeout: 5
 bot:
-  token: !ENV ${BOT_TOKEN}
+  token: your_bot_token
   prefix: "!"
   status: "your commands!"
   log_level: "INFO"
@@ -42,21 +42,23 @@ channels:
     mute_log: 000000000000000000
     ticket_log: 000000000000000000
     nitro_log: 000000000000000000
+  server:
+    tickets: 000000000000000000
   starboard:
     star_limit: 0
     channel_id: 000000000000000000
     blacklisted: [000000000000000000]
 reddit:
-  subreddit: "animepiracy"
+  subreddit: "snackbox"
   channel: 000000000000000000
-  client_id: !ENV ${REDDIT_CLIENT_ID}
-  client_secret: !ENV ${REDDIT_CLIENT_SECRET}
-  user_agent: "Chiya:v1.0.0 (for /r/animepiracy)"
+  client_id: your_reddit_client_id
+  client_secret: your_reddit_client_secret
+  user_agent: "Chiya:v1.0.0 (for /r/snackbox)"
 database:
-  database: !ENV ${MYSQL_DATABASE}
-  host: !ENV ${MYSQL_HOST}
-  user: !ENV ${MYSQL_USER}
-  password: !ENV ${MYSQL_PASSWORD}
+  database: chiya
+  host: mariadb
+  user: chiya
+  password: your_secure_password
 privatebin:
   url: "https://privatebin.net"
 timeout_limit: 3600

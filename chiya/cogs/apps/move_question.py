@@ -51,13 +51,15 @@ class MoveQuestionApp(commands.Cog):
                 session=session,
             )
 
+            content = f"{message.content}\n\n"
+            for attachment in message.attachments:
+                content += f"{attachment.url}\n"
+
             await webhook.send(
-                content=message.content,
+                content=content,
                 username=message.author.name,
                 avatar_url=message.author.avatar,
             )
-
-        await message.delete()
 
         success_embed = embeds.make_embed(
             description=f"Successfully moved message to: {channel.mention}",
@@ -75,6 +77,7 @@ class MoveQuestionApp(commands.Cog):
         )
         ping = await channel.send(message.author.mention)
         await ping.delete()
+        await message.delete()
 
 
 def setup(bot: commands.Bot) -> None:
