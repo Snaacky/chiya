@@ -16,7 +16,7 @@ class BanListeners(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]) -> None:
+    async def on_member_ban(self, guild: discord.Guild, user: discord.Member | discord.User) -> None:
         """
         Add the user's ban entry to the database if they were banned manually.
         """
