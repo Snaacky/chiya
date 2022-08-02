@@ -71,7 +71,7 @@ class WarnCommands(commands.Cog):
                 ],
             )
             await member.send(embed=dm_embed)
-        except discord.Forbidden:
+        except (discord.Forbidden, discord.HTTPException):
             embed.add_field(
                 name="Notice:",
                 value=(
