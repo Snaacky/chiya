@@ -53,11 +53,8 @@ class BansCommands(commands.Cog):
         """
         await ctx.defer()
 
-        if isinstance(user, discord.Member):
-            if not await can_action_member(ctx=ctx, member=user):
-                return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
-        else:  # TODO: is this really the best way to handle this?
-            user = await self.bot.fetch_user(user)
+        if not await can_action_member(ctx=ctx, member=user):
+            return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
@@ -134,9 +131,6 @@ class BansCommands(commands.Cog):
         with users that it does not share a mutual server with.
         """
         await ctx.defer()
-
-        if not isinstance(user, discord.User):
-            user = await self.bot.fetch_user(user)
 
         if not await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
