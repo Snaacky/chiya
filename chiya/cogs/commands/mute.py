@@ -23,7 +23,7 @@ class MuteCommands(commands.Cog):
     async def mute(
         self,
         ctx: context.ApplicationContext,
-        member: Option(discord.Member, description="The member that will be muted", required=True),
+        member: Option(discord.Member | discord.User, description="The member that will be muted", required=True),
         reason: Option(str, description="The reason why the member is being muted", required=True),
         duration: Option(str, description="The length of time the user will be muted for", required=True),
     ) -> None:
@@ -121,7 +121,7 @@ class MuteCommands(commands.Cog):
     async def unmute(
         self,
         ctx: context.ApplicationContext,
-        member: Option(discord.Member, description="The member that will be unmuted", required=True),
+        member: Option(discord.Member | discord.User, description="The member that will be unmuted", required=True),
         reason: Option(str, description="The reason why the member is being unmuted", required=True),
     ) -> None:
         """
