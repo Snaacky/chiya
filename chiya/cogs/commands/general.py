@@ -39,10 +39,10 @@ class GeneralCommands(commands.Cog):
         await ctx.defer()
 
         user = user or ctx.author
-        
+
         embed = embeds.make_embed()
         if profile and isinstance(user, discord.Member):
-            user: discord.User = ctx.bot.get_user(user.id)    
+            user: discord.User = ctx.bot.get_user(user.id)
 
         embed.set_author(icon_url=user.display_avatar.url, name=str(user))
         embed.set_image(url=user.display_avatar.url)
