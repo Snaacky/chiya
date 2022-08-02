@@ -10,18 +10,22 @@ from discord.commands import context
 log = logging.getLogger(__name__)
 
 
-async def can_action_member(ctx: context.ApplicationContext, member: discord.Member) -> bool:
+async def can_action_member(ctx: context.ApplicationContext, member: discord.Member | discord.User) -> bool:
+    # Allow owner to override all limitations.
+    if member.id == ctx.guild.owner_id:
+        return True
+
     # Stop mods from actioning on the bot.
-    if member.bot:
+    if member.id == ctx.bot.user.id:
         return False
+
+    # Skip over the rest of the checks if it's a discord.User and not a discord.Member.
+    if isinstance(member, discord.User):
+        return True
 
     # Checking if bot is able to perform the action.
     if member.top_role >= member.guild.me.top_role:
         return False
-
-    # Allow owner to override all limitations.
-    if member.id == ctx.guild.owner_id:
-        return True
 
     # Prevents mods from actioning other mods.
     if ctx.author.top_role <= member.top_role:
