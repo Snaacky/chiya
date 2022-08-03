@@ -6,9 +6,10 @@ from discord.ext import commands, tasks
 from chiya import config
 from chiya.utils.trackerstatus import TrackerStatus, TrackerStatusAB, TrackerStatusInfo, TrackerStatusMAM
 
+
 log = logging.getLogger(__name__)
 
-trackers: list[TrackerStatus]  = [
+trackers: list[TrackerStatus] = [
     TrackerStatusInfo("AR"),
     TrackerStatusInfo("BTN"),
     TrackerStatusInfo("GGn"),
@@ -18,8 +19,8 @@ trackers: list[TrackerStatus]  = [
     TrackerStatusAB(),
     TrackerStatusMAM()
 ]
+trackers_dict = {item.tracker: item for item in trackers}
 
-trackers_dict = {item.tracker:item for item in trackers}
 
 class TrackerStatusCommands(commands.Cog):
     # TODO: Add support for trackers that offer their own status page.
@@ -41,12 +42,16 @@ class TrackerStatusCommands(commands.Cog):
         for tracker in trackers:
             tracker.do_refresh()
 
-
     @slash_command(guild_ids=config["guild_ids"], description="Get tracker uptime statuses")
     async def trackerstatus(
         self,
         ctx: context.ApplicationContext,
-        tracker: Option(str, description="Tracker to get uptime statuses for", choices=list(trackers_dict.keys()), required=True),
+        tracker: Option(
+            str,
+            description="Tracker to get uptime statuses for",
+            choices=sorted(list(trackers_dict.keys())),
+            required=True
+        ),
     ) -> None:
         # TODO: Change the color of the embed to green if all services are online,
         # yellow if one of the services is offline, and grey or red if all are offline.

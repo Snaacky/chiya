@@ -1,16 +1,18 @@
-import discord
-import requests
-import embeds
 import logging
 
+import discord
+import requests
 from discord.commands import context
+
+from chiya.utils import embeds
+
 
 log = logging.getLogger(__name__)
 
-class TrackerStatus():
-    def __init__(self, tracker:str) -> None:
-        self.tracker = tracker
 
+class TrackerStatus():
+    def __init__(self, tracker: str) -> None:
+        self.tracker = tracker
         self.cache_data = None
 
     def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
@@ -24,7 +26,7 @@ class TrackerStatusInfo(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
-    def __init__(self, tracker:str) -> None:
+    def __init__(self, tracker: str) -> None:
         super().__init__(tracker)
 
     def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
@@ -67,6 +69,7 @@ class TrackerStatusInfo(TrackerStatus):
         if r.status_code == 200:
             self.cache_data = r.json()
 
+
 class TrackerStatusAB(TrackerStatus):
     """
     Gets status of AB from API
@@ -88,7 +91,7 @@ class TrackerStatusAB(TrackerStatus):
         if not self.cache_data.get("status", False):
             embed.set_footer("<:status_offline:596576752013279242> API Failed")
 
-        for key, value in self.cache_data.get("status",{}).items():
+        for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
 
         return embed
@@ -116,11 +119,12 @@ class TrackerStatusAB(TrackerStatus):
         if r.status_code == 200:
             self.cache_data: dict = r.json()
 
+
 class TrackerStatusUptimeRobot(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
-    def __init__(self, tracker:str, url:str) -> None:
+    def __init__(self, tracker: str, url: str) -> None:
         self.url = url
 
         super().__init__(tracker)
@@ -138,9 +142,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         for monitor in monitors:
             dratio: dict = monitor.get("dailyRatios", [])[0]
-
             embed.add_field(name=monitor.get("name", "UNKNOWN"), value=self.normalize_value(dratio), inline=True)
-
 
         return embed
 
@@ -168,6 +170,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         if r.status_code == 200:
             self.cache_data: dict = r.json()
+
 
 class TrackerStatusMAM(TrackerStatusUptimeRobot):
     def __init__(self) -> None:
