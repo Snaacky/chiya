@@ -35,7 +35,7 @@ Chiya is deployed into a production environment using [Docker](https://docs.dock
 #### Steps:
 1. Download [`docker-compose.yml`](https://github.com/Snaacky/chiya/blob/master/docker-compose.yml) and fill it out for your deployment. 
 2. Create a new directory called `config` in the same parent directory.  
-3. Download [`config.default.yml`](https://github.com/Snaacky/chiya/blob/master/config.default.yml) into your newly created directory, fill it out for your deployment, and rename the file to `config.yml`.
+3. Download [`config.default.yml`](https://github.com/Snaacky/chiya/blob/master/config.default.yml) into `config`, fill it out for your deployment, and rename the file to `config.yml`.
 4. Pull the Docker image and start the containers by running `docker-compose up -d`.
 
 ## Contributing
