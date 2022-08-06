@@ -65,9 +65,9 @@ class TrackerStatusInfo(TrackerStatus):
         except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
             log.error(e)
             pass
-
-        if r.status_code == 200:
-            self.cache_data = r.json()
+        else:
+            if r and hasattr(r, "status_code") and r.status_code == 200:
+                self.cache_data = r.json()
 
 
 class TrackerStatusAB(TrackerStatus):
@@ -115,9 +115,9 @@ class TrackerStatusAB(TrackerStatus):
         except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
             log.error(e)
             pass
-
-        if r.status_code == 200:
-            self.cache_data: dict = r.json()
+        else:
+            if r and hasattr(r, "status_code") and r.status_code == 200:
+                self.cache_data: dict = r.json()
 
 
 class TrackerStatusUptimeRobot(TrackerStatus):
@@ -167,9 +167,9 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
             log.error(e)
             pass
-
-        if r.status_code == 200:
-            self.cache_data: dict = r.json()
+        else:
+            if r and hasattr(r, "status_code") and r.status_code == 200:
+                self.cache_data: dict = r.json()
 
 
 class TrackerStatusMAM(TrackerStatusUptimeRobot):
