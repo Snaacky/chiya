@@ -111,7 +111,7 @@ class AutomodCommands(commands.Cog):
         await ctx.defer()
         automod_term = automod_term.lower()
         automod_rule = await ctx.guild.fetch_auto_moderation_rule(id=config["automod"]["words"])
-        if automod_term not in automod_rule.trigger_metadata.keyword_filter:
+        if automod_term in automod_rule.trigger_metadata.keyword_filter:
             automod_rule.trigger_metadata.keyword_filter.remove(automod_term)
             await automod_rule.edit(
                 trigger_metadata=automod_rule.trigger_metadata, reason=f"Remove word: {automod_term} from automod."
@@ -138,15 +138,15 @@ class AutomodCommands(commands.Cog):
         await ctx.defer()
         automod_term = automod_term.lower()
         automod_rule = await ctx.guild.fetch_auto_moderation_rule(id=config["automod"]["links"])
-        if automod_term not in automod_rule.trigger_metadata.keyword_filter:
-            automod_rule.trigger_metadata.keyword_filter.remove(automod_term)
+        if f"*{automod_term}*" in automod_rule.trigger_metadata.keyword_filter:
+            automod_rule.trigger_metadata.keyword_filter.remove(f"*{automod_term}*")
             await automod_rule.edit(
                 trigger_metadata=automod_rule.trigger_metadata, reason=f"Remove link: {automod_term} from automod."
             )
 
         embed = embeds.make_embed(
             ctx=ctx,
-            title="Word removed from AutoMod.",
+            title="Link removed from AutoMod.",
             description=f"Link `{automod_term}` was removed from AutoMod.",
             color=discord.Color.red,
         )
