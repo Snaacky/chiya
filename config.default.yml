@@ -13,6 +13,7 @@ bot:
     members: True
     bans: True
     reactions: True
+    automod: True
   case_insensitive: True
   sync_commands: True
   sync_on_cog_reload: True
@@ -47,6 +48,9 @@ channels:
     star_limit: 0
     channel_id: 000000000000000000
     blacklisted: [000000000000000000]
+automod:
+  words: 000000000000000000
+  links: 000000000000000000
 reddit:
   subreddit: "snackbox"
   channel: 000000000000000000
