@@ -8,7 +8,7 @@ LABEL maintainer="https://github.com/snaacky/chiya"
 # Needed so imports function properly
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1 
-ENV PYTHONIOENCODING=utf8
+ENV PYTHONIOENCODING=utf-8
 ENV PYTHONPATH=/app
 
 # Install MySQL and Poetry
