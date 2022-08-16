@@ -87,5 +87,8 @@ class Database:
             starboard.create_column("message_id", db.types.bigint)
             starboard.create_column("star_embed_id", db.types.bigint)
 
+        for table in db.tables:
+            db.query(f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+
         db.commit()
         db.close()
