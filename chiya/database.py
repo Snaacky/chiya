@@ -12,23 +12,24 @@ log = logging.getLogger(__name__)
 
 class Database:
     def __init__(self) -> None:
-        self.host = config["database"]["host"]
-        self.database = config["database"]["database"]
-        self.user = config["database"]["user"]
-        self.password = config["database"]["password"]
+        host = config["database"]["host"]
+        database = config["database"]["database"]
+        user = config["database"]["user"]
+        password = config["database"]["password"]
 
-        if not all([self.host, self.database, self.user, self.password]):
+        if not all([host, database, user, password]):
             log.error("One or more database connection variables are missing, exiting...")
             raise SystemExit
 
-        self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
-        self.setup()
+        self.url = f"mysql://{user}:{password}@{host}/{database}"
 
     def get(self) -> dataset.Database:
         """
         Returns the dataset database object.
         """
-        return dataset.connect(url=self.url)
+        db = dataset.connect(url=self.url)
+        db.query("SET NAMES utf8mb4;")
+        return db
 
     def setup(self) -> None:
         """
@@ -86,9 +87,11 @@ class Database:
             starboard.create_column("channel_id", db.types.bigint)
             starboard.create_column("message_id", db.types.bigint)
             starboard.create_column("star_embed_id", db.types.bigint)
+            log.info("Created missing table: starboard")
 
         for table in db.tables:
             db.query(f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+            log.info(f"Converted table to utf8mb4_unicode_ci: {table}")
 
         db.commit()
         db.close()
