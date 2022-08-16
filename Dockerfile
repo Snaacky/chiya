@@ -11,6 +11,22 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONIOENCODING=utf-8
 ENV PYTHONPATH=/app
 
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=
+ENV LC_CTYPE="en_US.UTF-8"
+ENV LC_NUMERIC="en_US.UTF-8"
+ENV LC_TIME="en_US.UTF-8"
+ENV LC_COLLATE="en_US.UTF-8"
+ENV LC_MONETARY="en_US.UTF-8"
+ENV LC_MESSAGES="en_US.UTF-8"
+ENV LC_PAPER="en_US.UTF-8"
+ENV LC_NAME="en_US.UTF-8"
+ENV LC_ADDRESS="en_US.UTF-8"
+ENV LC_TELEPHONE="en_US.UTF-8"
+ENV LC_MEASUREMENT="en_US.UTF-8"
+ENV LC_IDENTIFICATION="en_US.UTF-8"
+ENV LC_ALL=en_US.UTF-8
+
 # Install MySQL and Poetry
 RUN apt-get update -y
 RUN apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl
