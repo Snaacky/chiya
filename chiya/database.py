@@ -27,9 +27,7 @@ class Database:
         """
         Returns the dataset database object.
         """
-        db = dataset.connect(url=self.url)
-        db.query("SET NAMES utf8mb4;")
-        return db
+        return dataset.connect(url=self.url)
 
     def setup(self) -> None:
         """
