@@ -21,7 +21,7 @@ class Database:
             log.error("One or more database connection variables are missing, exiting...")
             raise SystemExit
 
-        self.url = f"mysql://{user}:{password}@{host}/{database}"
+        self.url = f"mysql://{user}:{password}@{host}/{database}?charset=utf8mb4"
 
     def get(self) -> dataset.Database:
         """
