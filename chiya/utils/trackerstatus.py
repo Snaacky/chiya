@@ -21,9 +21,6 @@ class TrackerStatus():
         pass
 
     def do_refresh(self) -> None:
-        pass
-
-    def do_refresh(self) -> None:
         try:
             r = requests.get(url=self.url)
             r.raise_for_status()
