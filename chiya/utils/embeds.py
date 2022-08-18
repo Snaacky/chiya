@@ -4,7 +4,7 @@ import discord
 
 
 def make_embed(
-    ctx: None,
+    ctx: discord.Interaction = None,
     author: bool = None,
     title: str = "",
     description: str = "",
@@ -59,11 +59,10 @@ def make_embed(
     return embed
 
 
-async def success_message(ctx, description: str, title: str = None) -> None:
+async def success_message(ctx: discord.Interaction, description: str, title: str = None) -> None:
     """Send a simple, self-destruct success message."""
     embed = make_embed(title=title if title else "Success:", description=description, color=discord.Color.green())
-
-    await ctx.send_followup(embed=embed, delete_after=30)
+    await ctx.followup.send(embed=embed)
 
 
 async def error_message(ctx, description: str, title: str = None) -> None:
@@ -73,22 +72,20 @@ async def error_message(ctx, description: str, title: str = None) -> None:
         description=description,
         color=discord.Color.red(),
     )
+    await ctx.followup.send(embed=embed)
 
-    await ctx.send_followup(embed=embed, delete_after=30)
 
-
-async def warning_message(ctx, description: str, title: str = None) -> None:
+async def warning_message(ctx: discord.Interaction, description: str, title: str = None) -> None:
     """Send a simple, self-destruct warning message."""
     embed = make_embed(
         title=title if title else "Warning:",
         description=description,
         color=discord.Color.dark_gold(),
     )
+    await ctx.followup.send(embed=embed)
 
-    await ctx.send_followup(embed=embed, delete_after=30)
 
-
-def error_embed(ctx, title: str, description: str, author: bool = True) -> discord.Embed:
+def error_embed(ctx: discord.Interaction, title: str, description: str, author: bool = True) -> discord.Embed:
     """Make a basic error message embed."""
     return make_embed(
         ctx=ctx,
