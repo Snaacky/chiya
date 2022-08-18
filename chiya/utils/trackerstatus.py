@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 import logging
 
 import discord
@@ -11,9 +12,10 @@ log = logging.getLogger(__name__)
 
 
 class TrackerStatus():
-    def __init__(self, tracker: str) -> None:
+    def __init__(self, tracker: str, url: str) -> None:
         self.tracker = tracker
-        self.cache_data = None
+        self.cache_data: dict = None
+        self.url = url
 
     def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
         pass
@@ -21,13 +23,22 @@ class TrackerStatus():
     def do_refresh(self) -> None:
         pass
 
+    def do_refresh(self) -> None:
+        try:
+            r = requests.get(url=self.url)
+            r.raise_for_status()
+            if r and hasattr(r, "status_code") and r.status_code == 200:
+                self.cache_data = r.json()
+        except (requests.exceptions.RequestException, requests.exceptions.HTTPError, JSONDecodeError) as e:
+            log.error(e)
+            pass
 
 class TrackerStatusInfo(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
     def __init__(self, tracker: str) -> None:
-        super().__init__(tracker)
+        super().__init__(tracker, f"https://{tracker}.trackerstatus.info/api/status/")
 
     def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
         embed = embeds.make_embed(
@@ -57,27 +68,13 @@ class TrackerStatusInfo(TrackerStatus):
                 return "<:status_dnd:596576774364856321> Unstable"
             case "0":
                 return "<:status_offline:596576752013279242> Offline"
-
-    def do_refresh(self) -> None:
-        try:
-            r = requests.get(url=f"https://{self.tracker}.trackerstatus.info/api/status/")
-            r.raise_for_status()
-        except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
-            log.error(e)
-            pass
-        else:
-            if r and hasattr(r, "status_code") and r.status_code == 200:
-                self.cache_data = r.json()
-
-
 class TrackerStatusAB(TrackerStatus):
     """
     Gets status of AB from API
     """
-    URL = "https://status.animebytes.tv/api/status"
 
     def __init__(self) -> None:
-        super().__init__("AB")
+        super().__init__("AB", "https://status.animebytes.tv/api/status")
 
     def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
         embed = embeds.make_embed(
@@ -108,26 +105,12 @@ class TrackerStatusAB(TrackerStatus):
             case 0:
                 return "<:status_offline:596576752013279242> Offline"
 
-    def do_refresh(self) -> None:
-        try:
-            r = requests.get(url=self.URL)
-            r.raise_for_status()
-        except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
-            log.error(e)
-            pass
-        else:
-            if r and hasattr(r, "status_code") and r.status_code == 200:
-                self.cache_data: dict = r.json()
-
-
 class TrackerStatusUptimeRobot(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
     def __init__(self, tracker: str, url: str) -> None:
-        self.url = url
-
-        super().__init__(tracker)
+        super().__init__(tracker, url)
 
     def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
         embed = embeds.make_embed(
@@ -159,18 +142,6 @@ class TrackerStatusUptimeRobot(TrackerStatus):
             return "<:status_offline:596576752013279242> Offline"
 
         return "<:status_offline:596576752013279242> Unknown"
-
-    def do_refresh(self) -> None:
-        try:
-            r = requests.get(url=self.url)
-            r.raise_for_status()
-        except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
-            log.error(e)
-            pass
-        else:
-            if r and hasattr(r, "status_code") and r.status_code == 200:
-                self.cache_data: dict = r.json()
-
 
 class TrackerStatusMAM(TrackerStatusUptimeRobot):
     def __init__(self) -> None:
