@@ -12,7 +12,10 @@ from config import config
 
 
 bot = commands.Bot(
+    activity=discord.Activity(type=discord.ActivityType.listening, name=config["bot"]["status"]),
+    case_insensitive=config["bot"]["case_insensitive"],
     command_prefix=config["bot"]["prefix"],
+    help_command=None,
     intents=discord.Intents(
         messages=config["bot"]["intents"]["messages"],
         message_content=config["bot"]["intents"]["message_content"],
@@ -21,8 +24,6 @@ bot = commands.Bot(
         bans=config["bot"]["intents"]["bans"],
         reactions=config["bot"]["intents"]["reactions"],
     ),
-    case_insensitive=config["bot"]["case_insensitive"],
-    help_command=None,
 )
 log = logging.getLogger(__name__)
 
@@ -34,9 +35,6 @@ async def on_ready() -> None:
     """
     log.info(f"Logged in as: {str(bot.user)}")
     await bot.tree.sync(guild=discord.Object(config["guild_id"]))
-    await bot.change_presence(
-        activity=discord.Activity(type=discord.ActivityType.listening, name=config["bot"]["status"])
-    )
 
 
 async def main():
