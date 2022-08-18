@@ -84,11 +84,11 @@ class NoteCommands(commands.Cog):
 
         TODO: Bug that occurs when running /search:
             Traceback (most recent call last):
-            File "C:\Users\s\AppData\Local\pypoetry\Cache\virtualenvs\chiya-Z7ITmrUJ-py3.10\lib\site-packages\sqlalchemy\engine\base.py", line 1995, in _safe_close_cursor
+            File "virtualenvs\\chiya-Z7ITmrUJ-py3.10\\lib\\site-packages\\sqlalchemy\\engine\\base.py", line 1995, in _safe_close_cursor
                 cursor.close()
-            File "C:\Users\s\AppData\Local\pypoetry\Cache\virtualenvs\chiya-Z7ITmrUJ-py3.10\lib\site-packages\MySQLdb\cursors.py", line 83, in close
+            File "virtualenvs\\chiya-Z7ITmrUJ-py3.10\\lib\\site-packages\\MySQLdb\\cursors.py", line 83, in close
                 while self.nextset():
-            File "C:\Users\s\AppData\Local\pypoetry\Cache\virtualenvs\chiya-Z7ITmrUJ-py3.10\lib\site-packages\MySQLdb\cursors.py", line 137, in nextset
+            File "virtualenvs\\chiya-Z7ITmrUJ-py3.10\\lib\\site-packages\\MySQLdb\\\cursors.py", line 137, in nextset
                 nr = db.next_result()
             MySQLdb.OperationalError: (2006, '')
         """
