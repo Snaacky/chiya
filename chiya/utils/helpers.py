@@ -1,16 +1,14 @@
 import datetime
 import logging
 import re
-from typing import Tuple
 
 import discord
-from discord.commands import context
 
 
 log = logging.getLogger(__name__)
 
 
-async def can_action_member(ctx: context.ApplicationContext, member: discord.Member | discord.User) -> bool:
+async def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
     # Allow owner to override all limitations.
     if member.id == ctx.guild.owner_id:
         return True
@@ -34,7 +32,7 @@ async def can_action_member(ctx: context.ApplicationContext, member: discord.Mem
     return True
 
 
-def get_duration(duration) -> Tuple[str, int]:
+def get_duration(duration) -> tuple[str, int]:
     regex = (
         r"("
         r"(?:(\d+)\s*y(?:ears|ear|rs|r)?)?\s*"
