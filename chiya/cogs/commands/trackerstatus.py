@@ -45,7 +45,7 @@ class TrackerStatusCommands(commands.Cog):
             tracker.do_refresh()
 
     async def tracker_autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
-        return [app_commands.Choice(name=tracker, value=tracker) for tracker in trackers_list]
+        return [app_commands.Choice(name=tracker, value=tracker) for tracker in trackers_list if current.lower() in tracker.lower()]
 
 
     @app_commands.command(name="trackerstatus", description="Get tracker uptime statuses")
