@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 import discord
 from discord import app_commands
@@ -24,6 +23,7 @@ trackers: list[TrackerStatus] = [
 trackers_dict = {item.tracker: item for item in trackers}
 trackers_list = sorted(list(trackers_dict.keys()))
 
+
 class TrackerStatusCommands(commands.Cog):
     # TODO: Add support for trackers that offer their own status page.
     # http://about.empornium.ph/
@@ -44,9 +44,12 @@ class TrackerStatusCommands(commands.Cog):
         for tracker in trackers:
             tracker.do_refresh()
 
-    async def tracker_autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
-        return [app_commands.Choice(name=tracker, value=tracker) for tracker in trackers_list if current.lower() in tracker.lower()]
-
+    async def tracker_autocomplete(self, ctx: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return [
+            app_commands.Choice(name=tracker, value=tracker)
+            for tracker in trackers_list
+            if current.lower() in tracker.lower()
+        ]
 
     @app_commands.command(name="trackerstatus", description="Get tracker uptime statuses")
     @app_commands.guilds(config["guild_id"])
@@ -60,10 +63,8 @@ class TrackerStatusCommands(commands.Cog):
         # TODO: Change the color of the embed to green if all services are online,
         # yellow if one of the services is offline, and grey or red if all are offline.
         await ctx.response.defer()
-
         tracker: TrackerStatus = trackers_dict.get(tracker)
         embed = tracker.get_status_embed(ctx)
-
         await ctx.followup.send(embed=embed)
 
 
