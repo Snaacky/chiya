@@ -4,7 +4,6 @@ import typing
 
 import discord
 from discord.abc import User
-from discord.commands import context
 from discord.ext.commands import Paginator
 
 
@@ -21,7 +20,6 @@ log = logging.getLogger(__name__)
 
 class EmptyPaginatorEmbed(Exception):
     """Raised when attempting to paginate with empty contents."""
-
     pass
 
 
@@ -178,7 +176,7 @@ class LinePaginator(Paginator):
     async def paginate(
         cls,
         lines: typing.List[str],
-        ctx: context.ApplicationContext,
+        ctx: discord.Interaction,
         embed: discord.Embed,
         prefix: str = "",
         suffix: str = "",
@@ -274,7 +272,7 @@ class LinePaginator(Paginator):
                 embed.url = url
 
             log.debug("There's less than two pages, so we won't paginate - sending single page on its own")
-            return await ctx.send_followup(embed=embed, delete_after=time_to_delete)
+            return await ctx.followup.send(embed=embed)
         else:
             if footer_text:
                 embed.set_footer(text=f"{footer_text} (Page {current_page + 1}/{len(paginator.pages)})")
@@ -285,7 +283,7 @@ class LinePaginator(Paginator):
                 embed.url = url
 
             log.debug("Sending first page to channel...")
-            message = await ctx.send_followup(embed=embed, delete_after=time_to_delete)
+            message = await ctx.followup.send(embed=embed)
 
         log.debug("Adding emoji reactions to message...")
 
