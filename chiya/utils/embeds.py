@@ -1,11 +1,10 @@
 import datetime
 
 import discord
-from discord.commands import context
 
 
 def make_embed(
-    ctx: context.ApplicationContext = None,
+    ctx: None,
     author: bool = None,
     title: str = "",
     description: str = "",
@@ -60,14 +59,14 @@ def make_embed(
     return embed
 
 
-async def success_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
+async def success_message(ctx, description: str, title: str = None) -> None:
     """Send a simple, self-destruct success message."""
     embed = make_embed(title=title if title else "Success:", description=description, color=discord.Color.green())
 
     await ctx.send_followup(embed=embed, delete_after=30)
 
 
-async def error_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
+async def error_message(ctx, description: str, title: str = None) -> None:
     """Send a simple, self-destruct error message."""
     embed = make_embed(
         title=title if title else "Error:",
@@ -78,7 +77,7 @@ async def error_message(ctx: context.ApplicationContext, description: str, title
     await ctx.send_followup(embed=embed, delete_after=30)
 
 
-async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
+async def warning_message(ctx, description: str, title: str = None) -> None:
     """Send a simple, self-destruct warning message."""
     embed = make_embed(
         title=title if title else "Warning:",
@@ -89,7 +88,7 @@ async def warning_message(ctx: context.ApplicationContext, description: str, tit
     await ctx.send_followup(embed=embed, delete_after=30)
 
 
-def error_embed(ctx: context.ApplicationContext, title: str, description: str, author: bool = True) -> discord.Embed:
+def error_embed(ctx, title: str, description: str, author: bool = True) -> discord.Embed:
     """Make a basic error message embed."""
     return make_embed(
         ctx=ctx,
