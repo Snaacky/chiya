@@ -44,20 +44,14 @@ class TrackerStatusCommands(commands.Cog):
         for tracker in trackers:
             tracker.do_refresh()
 
-    async def tracker_autocomplete(
-        interaction: discord.Interaction,
-        current: str,
-    ) -> List[app_commands.Choice[str]]:
-        return [
-            app_commands.Choice(name=tracker, value=tracker)
-            for tracker in trackers_list
-        ]
+    async def tracker_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+        return [app_commands.Choice(name=tracker, value=tracker) for tracker in trackers_list]
 
 
     @app_commands.command(name="trackerstatus", description="Get tracker uptime statuses")
     @app_commands.guilds(config["guild_id"])
-    @app_commands.describe(tracker="Tracker to get uptime statuses for")
     @app_commands.autocomplete(tracker=tracker_autocomplete)
+    @app_commands.describe(tracker="Tracker to get uptime statuses for")
     async def trackerstatus(
         self,
         ctx: discord.Interaction,
