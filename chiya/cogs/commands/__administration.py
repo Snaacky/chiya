@@ -172,7 +172,7 @@ class AdministrationCommands(Cog):
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(config["emoji_guild_ids"][0])
+        emotes_guild = await ctx.client.fetch_guild(config["emoji_guild_ids"][0])
         await emotes_guild.fetch_emojis()
 
         await msg.add_reaction(":redsquare:805032092907601952")
@@ -200,7 +200,7 @@ class AdministrationCommands(Cog):
         msg = await ctx.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.bot.fetch_guild(config["emoji_guild_ids"][0])
+        emotes_guild = await ctx.client.fetch_guild(config["emoji_guild_ids"][0])
         await emotes_guild.fetch_emojis()
 
         await msg.add_reaction("🎁")

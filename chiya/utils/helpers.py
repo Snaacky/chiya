@@ -16,7 +16,7 @@ async def can_action_member(ctx: context.ApplicationContext, member: discord.Mem
         return True
 
     # Stop mods from actioning on the bot.
-    if member.id == ctx.bot.user.id:
+    if member.id == ctx.client.user.id:
         return False
 
     # Skip over the rest of the checks if it's a discord.User and not a discord.Member.

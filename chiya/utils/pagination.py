@@ -230,7 +230,7 @@ class LinePaginator(Paginator):
                         # Reaction is one of the pagination emotes
                         str(reaction_.emoji) in PAGINATION_EMOJI,
                         # Reaction was not made by the Bot
-                        user_.id != ctx.bot.user.id,
+                        user_.id != ctx.client.user.id,
                         # There were no restrictions
                         no_restrictions,
                     )
@@ -295,7 +295,7 @@ class LinePaginator(Paginator):
 
         while True:
             try:
-                reaction, user = await ctx.bot.wait_for("reaction_add", timeout=timeout, check=event_check)
+                reaction, user = await ctx.client.wait_for("reaction_add", timeout=timeout, check=event_check)
             except asyncio.TimeoutError:
                 log.debug("Timed out waiting for a reaction")
                 break  # We're done, no reactions for the last 5 minutes
