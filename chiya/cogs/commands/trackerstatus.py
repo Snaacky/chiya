@@ -44,7 +44,7 @@ class TrackerStatusCommands(commands.Cog):
         for tracker in trackers:
             tracker.do_refresh()
 
-    async def tracker_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+    async def tracker_autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
         return [app_commands.Choice(name=tracker, value=tracker) for tracker in trackers_list]
 
 
