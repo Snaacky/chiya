@@ -28,11 +28,11 @@ class BansCommands(commands.Cog):
 
     @app_commands.command(name="ban", description="Ban user from the server")
     @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(config["roles"]["staff"])
     @app_commands.describe(user="User to ban from the server")
     @app_commands.describe(reason="Reason why the user is being banned")
     @app_commands.describe(daystodelete="Days worth of messages to delete from the user, up to 7")
-    @app_commands.checks.has_role(config["roles"]["staff"])
-    @app_commands.guild_only()
     async def ban(
         self,
         ctx: discord.Interaction,
@@ -117,10 +117,10 @@ class BansCommands(commands.Cog):
 
     @app_commands.command(name="unban", description="Unban user from the server")
     @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.checks.has_role(config["roles"]["staff"])
     @app_commands.describe(user="User to unban from the server")
     @app_commands.describe(reason="Reason why the user is being unbanned")
-    @app_commands.checks.has_role(config["roles"]["staff"])
-    @app_commands.guild_only()
     async def unban(self, ctx: discord.Interaction, user: discord.Member | discord.User, reason: str) -> None:
         """
         Unban the user from the server and log the action to the database.
