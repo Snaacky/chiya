@@ -2,7 +2,6 @@ import logging
 
 import discord
 import requests
-from discord.commands import context
 
 from chiya.utils import embeds
 
@@ -15,7 +14,7 @@ class TrackerStatus():
         self.tracker = tracker
         self.cache_data = None
 
-    def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
+    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
         pass
 
     def do_refresh(self) -> None:
@@ -29,7 +28,7 @@ class TrackerStatusInfo(TrackerStatus):
     def __init__(self, tracker: str) -> None:
         super().__init__(tracker)
 
-    def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
+    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Tracker Status: {self.tracker}",
@@ -79,7 +78,7 @@ class TrackerStatusAB(TrackerStatus):
     def __init__(self) -> None:
         super().__init__("AB")
 
-    def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
+    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Tracker Status: {self.tracker}",
@@ -129,7 +128,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         super().__init__(tracker)
 
-    def get_status_embed(self, ctx: context.ApplicationContext = None) -> discord.Embed:
+    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Tracker Status: {self.tracker}",
