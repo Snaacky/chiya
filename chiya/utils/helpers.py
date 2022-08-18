@@ -28,7 +28,7 @@ async def can_action_member(ctx: context.ApplicationContext, member: discord.Mem
         return False
 
     # Prevents mods from actioning other mods.
-    if ctx.author.top_role <= member.top_role:
+    if ctx.user.top_role <= member.top_role:
         return False
 
     return True
