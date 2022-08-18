@@ -22,8 +22,8 @@ class GeneralCommands(commands.Cog):
     async def pfp(
         self,
         ctx: discord.Interaction,
-        user: discord.Member | discord.User,
-        profile: bool
+        user: discord.Member | discord.User = None,
+        profile: bool = None
     ) -> None:
         """
         Grab a user's avatar and return it in a large-sized embed.
