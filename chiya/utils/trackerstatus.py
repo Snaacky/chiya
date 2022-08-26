@@ -25,7 +25,7 @@ class TrackerStatus():
             r = requests.get(url=self.url)
             r.raise_for_status()
             self.cache_data = r.json()
-        except (Exception) as e:
+        except Exception as e:
             log.error(e)
             pass
 
