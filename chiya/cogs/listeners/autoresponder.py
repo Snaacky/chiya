@@ -187,6 +187,6 @@ class AutoresponderListeners(commands.Cog):
                 ))
 
 
-def setup(bot) -> None:
-    bot.add_cog(AutoresponderListeners(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(AutoresponderListeners(bot))
     log.info("Listeners Loaded: autoresponder")

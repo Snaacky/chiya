@@ -5,8 +5,9 @@ import traceback
 from contextlib import redirect_stdout
 
 import discord
+from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import Bot, Cog, Context
+from discord.ext.commands import Cog
 
 from chiya import config
 from chiya.utils import embeds
@@ -33,7 +34,16 @@ class AdministrationCommands(Cog):
         self.bot = bot
         self._last_result = None
 
-    def _cleanup_code(self, content) -> str:
+    def app_is_owner(self, interaction: discord.Interaction):
+        return self.bot.is_owner(interaction.user)
+
+    @app_commands.check(app_is_owner)
+    class AdminGroup(app_commands.Group):
+        pass
+    admin = AdminGroup(name="admin", description="Admin commands", guild_ids=[config["guild_id"]])
+
+
+    def _cleanup_code(self, content: str) -> str:
         """
         Automatically removes code blocks from the code.
         """
@@ -44,9 +54,10 @@ class AdministrationCommands(Cog):
         # remove `foo`
         return content.strip("` \n")
 
-    @commands.is_owner()
-    @commands.command(name="eval")
-    async def eval(self, ctx, *, body: str):
+    @app_commands.context_menu(name="eval", description="Runs code provided")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.check(app_is_owner)
+    async def eval(self, ctx: discord.Interaction, message: discord.Message):
         """
         Evaluates input as Python code.
         """
@@ -55,12 +66,15 @@ class AdministrationCommands(Cog):
             "bot": self.bot,
             "ctx": ctx,
             "channel": ctx.channel,
-            "author": ctx.author,
+            "author": ctx.user,
             "guild": ctx.guild,
-            "message": ctx.message,
+            "message": message,
             "embeds": embeds,
             "_": self._last_result,
         }
+        await ctx.response.defer(thinking=True)
+
+        body = message.content
         # Creating embed.
         embed = discord.Embed(title="Evaluating.", color=0xB134EB)
         env.update(globals())
@@ -81,7 +95,7 @@ class AdministrationCommands(Cog):
             # In case there's an error, add it to the embed, send and stop.
             errors = f"```py\n{e.__class__.__name__}: {e}\n```"
             embed.add_field(name="Errors:", value=errors, inline=False)
-            await ctx.send(embed=embed)
+            await ctx.followup.send(embed=embed)
             return errors
 
         func = env["func"]
@@ -93,12 +107,12 @@ class AdministrationCommands(Cog):
             value = stdout.getvalue()
             errors = f"```py\n{value}{traceback.format_exc()}\n```"
             embed.add_field(name="Errors:", value=errors, inline=False)
-            await ctx.send(embed=embed)
+            await ctx.followup.send(embed=embed)
 
         else:
             value = stdout.getvalue()
             try:
-                await ctx.message.add_reaction("\u2705")
+                await message.add_reaction("\u2705")
             except Exception:
                 pass
 
@@ -107,23 +121,24 @@ class AdministrationCommands(Cog):
                     # Output.
                     output = f"```py\n{value}\n```"
                     embed.add_field(name="Output:", value=output, inline=False)
-                    await ctx.send(embed=embed)
+                    await ctx.followup.send(embed=embed)
             else:
                 # Maybe the case where there's no output?
                 self._last_result = ret
                 output = f"```py\n{value}{ret}\n```"
                 embed.add_field(name="Output:", value=output, inline=False)
-                await ctx.send(embed=embed)
+                await ctx.followup.send(embed=embed)
 
-    @commands.is_owner()
-    @commands.command(name="rules")
-    async def rules(self, ctx: Context) -> None:
+    @admin.command(name="rules", description="Sends rule message to channel")
+    async def rules(self, ctx: discord.Interaction) -> None:
         """Generates the #rules channel embeds."""
+        await ctx.response.defer(ephemeral=True,thinking=True)
+
         embed = embeds.make_embed(color=0x7D98E9)
         embed.set_image(
             url="https://cdn.discordapp.com/attachments/835088653981581312/902441305836244992/AnimePiracy-Aqua-v2-Revision5.7.png"
         )
-        await ctx.send(embed=embed)
+        await ctx.channel.send(embed=embed)
 
         embed = embeds.make_embed(
             description=(
@@ -155,12 +170,12 @@ class AdministrationCommands(Cog):
             color=0x7D98E9,
         )
 
-        await ctx.send(embed=embed)
-        await ctx.message.delete()
+        await ctx.channel.send(embed=embed)
+        await ctx.followup.send("Rules added!", ephemeral=True)
 
-    @commands.is_owner()
-    @commands.command(name="createcolorrolesembed")
-    async def create_color_roles_embed(self, ctx: Context) -> None:
+    @admin.command(name="createcolorrolesembed", description="Create the color roles embed message")
+    async def create_color_roles_embed(self, ctx: discord.Interaction) -> None:
+        await ctx.response.defer(ephemeral=True,thinking=True)
         embed = discord.Embed(
             description=(
                 "You can react to one of the squares below to be assigned a colored user role. "
@@ -169,10 +184,10 @@ class AdministrationCommands(Cog):
             )
         )
 
-        msg = await ctx.send(embed=embed)
+        msg = await ctx.channel.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
-        emotes_guild = await ctx.client.fetch_guild(config["emoji_guild_ids"][0])
+        emotes_guild = await self.bot.fetch_guild((config["emoji_guild_ids"][0]))
         await emotes_guild.fetch_emojis()
 
         await msg.add_reaction(":redsquare:805032092907601952")
@@ -182,11 +197,11 @@ class AdministrationCommands(Cog):
         await msg.add_reaction(":bluesquare:805032145030348840")
         await msg.add_reaction(":pinksquare:805032162197635114")
         await msg.add_reaction(":purplesquare:805032172074696744")
-        await ctx.message.delete()
+        await ctx.followup.send("Color messaged sent!", ephemeral=True)
 
-    @commands.is_owner()
-    @commands.command(name="createassignablerolesembed")
-    async def create_assignable_roles_embed(self, ctx: Context) -> None:
+    @admin.command(name="createassignablerolesembed", description="Create the assignable roles embed message")
+    async def create_assignable_roles_embed(self, ctx: discord.Interaction) -> None:
+        await ctx.response.defer(ephemeral=True,thinking=True)
         role_assignment_text = """
         You can react to one of the emotes below to assign yourself an event role.
 
@@ -197,7 +212,7 @@ class AdministrationCommands(Cog):
         🧩  <@&832512320306675722> - Receive Rin event pings.
         """
         embed = discord.Embed(description=role_assignment_text)
-        msg = await ctx.send(embed=embed)
+        msg = await ctx.channel.send(embed=embed)
 
         # API call to fetch all the emojis to cache, so that they work in future calls
         emotes_guild = await ctx.client.fetch_guild(config["emoji_guild_ids"][0])
@@ -208,9 +223,9 @@ class AdministrationCommands(Cog):
         await msg.add_reaction("📽")
         await msg.add_reaction(":kakeraW:830594599001129000")
         await msg.add_reaction("🧩")
-        await ctx.message.delete()
+        await ctx.followup.send("Rules added!", ephemeral=True)
 
 
-def setup(bot: Bot) -> None:
-    bot.add_cog(AdministrationCommands(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(AdministrationCommands(bot))
     log.info("Commands loaded: administration")

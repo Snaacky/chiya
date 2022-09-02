@@ -3,8 +3,8 @@ import time
 from datetime import datetime, timezone
 
 import discord
-from discord.commands import Option, context, slash_command
 from discord.ext import commands
+from discord import app_commands
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -18,14 +18,19 @@ class MuteCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(guild_ids=config["guild_ids"], description="Mutes a member in the server")
-    @commands.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
+    @app_commands.command(name="mute", description="Mutes a member in the server")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
+    @app_commands.describe(member="The member that will be muted")
+    @app_commands.describe(reason="The reason why the member is being muted")
+    @app_commands.describe(duration="The length of time the user will be muted for")
     async def mute(
         self,
-        ctx: context.ApplicationContext,
-        member: Option(discord.Member | discord.User, description="The member that will be muted", required=True),
-        reason: Option(str, description="The reason why the member is being muted", required=True),
-        duration: Option(str, description="The length of time the user will be muted for", required=True),
+        ctx: discord.Interaction,
+        member: discord.Member | discord.User,
+        reason: str,
+        duration: str,
     ) -> None:
         """
         Mute the user, log the action to the database, and attempt to send
@@ -36,7 +41,7 @@ class MuteCommands(commands.Cog):
         notification. The bot will let the invoking mod know if this
         is the case.
         """
-        await ctx.defer()
+        await ctx.response.defer(thinking=True)
 
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
@@ -44,7 +49,7 @@ class MuteCommands(commands.Cog):
         if not await can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
-        if member.timed_out:
+        if member.is_timed_out():
             return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
 
         if len(reason) > 1024:
@@ -68,7 +73,7 @@ class MuteCommands(commands.Cog):
         mute_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Muting member: {member}",
-            description=f"{member.mention} was muted by {ctx.author.mention} for: {reason}",
+            description=f"{member.mention} was muted by {ctx.user.mention} for: {reason}",
             thumbnail_url="https://i.imgur.com/rHtYWIt.png",
             color=discord.Color.red(),
             fields=[{"name": "Duration:", "value": duration_string, "inline": False}],
@@ -81,7 +86,7 @@ class MuteCommands(commands.Cog):
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
-                {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                {"name": "Moderator:", "value": ctx.user.mention, "inline": True},
                 {"name": "Duration:", "value": duration_string, "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
@@ -103,7 +108,7 @@ class MuteCommands(commands.Cog):
         db["mod_logs"].insert(
             dict(
                 user_id=member.id,
-                mod_id=ctx.author.id,
+                mod_id=ctx.user.id,
                 timestamp=int(time.time()),
                 reason=reason,
                 duration=duration_string,
@@ -114,15 +119,19 @@ class MuteCommands(commands.Cog):
         db.close()
 
         await member.timeout(until=datetime.utcfromtimestamp(mute_end_time), reason=reason)
-        await ctx.send_followup(embed=mute_embed)
+        await ctx.followup.send(embed=mute_embed)
 
-    @slash_command(guild_ids=config["guild_ids"], description="Unmute a member in the server")
-    @commands.has_role(config["roles"]["staff"])
+    @app_commands.command(name="unmute", description="Umutes a member in the server")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.checks.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
+    @app_commands.describe(member="The member that will be unmuted")
+    @app_commands.describe(reason="The reason why the member is being unmuted")
     async def unmute(
         self,
-        ctx: context.ApplicationContext,
-        member: Option(discord.Member | discord.User, description="The member that will be unmuted", required=True),
-        reason: Option(str, description="The reason why the member is being unmuted", required=True),
+        ctx: discord.Interaction,
+        member: discord.Member | discord.User,
+        reason: str,
     ) -> None:
         """
         Unmute the user, log the action to the database, and attempt to send
@@ -132,7 +141,7 @@ class MuteCommands(commands.Cog):
         will be unable to receive the ban notification. The bot will let the
         invoking mod know if this is the case.
         """
-        await ctx.defer()
+        await ctx.response.defer(thinking=True)
 
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
@@ -140,7 +149,7 @@ class MuteCommands(commands.Cog):
         if not await can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
-        if not member.timed_out:
+        if not member.is_timed_out():
             return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
 
         if len(reason) > 1024:
@@ -149,7 +158,7 @@ class MuteCommands(commands.Cog):
         unmute_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unmuting member: {member.name}",
-            description=f"{member.mention} was unmuted by {ctx.author.mention} for: {reason}",
+            description=f"{member.mention} was unmuted by {ctx.user.mention} for: {reason}",
             color=discord.Color.green(),
             thumbnail_url="https://i.imgur.com/W7DpUHC.png",
         )
@@ -162,7 +171,7 @@ class MuteCommands(commands.Cog):
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
-                {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
+                {"name": "Moderator:", "value": ctx.user.mention, "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -182,7 +191,7 @@ class MuteCommands(commands.Cog):
         db["mod_logs"].insert(
             dict(
                 user_id=member.id,
-                mod_id=ctx.author.id,
+                mod_id=ctx.user.id,
                 timestamp=int(time.time()),
                 reason=reason,
                 type="unmute",
@@ -191,10 +200,10 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.remove_timeout(reason=reason)
-        await ctx.send_followup(embed=unmute_embed)
+        await member.timeout(until=None, reason=reason)
+        await ctx.followup.send(embed=unmute_embed)
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(MuteCommands(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(MuteCommands(bot))
     log.info("Commands loaded: mute")
