@@ -17,8 +17,8 @@ log = logging.getLogger(__name__)
 class MoveQuestionApp(Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
-        self.ctx_menu = app_commands.ContextMenu(name="Move Question", callback=self.move_question)
-        self.bot.tree.add_command(self.ctx_menu)
+        self.move_question_command = app_commands.ContextMenu(name="Move Question", callback=self.move_question)
+        self.bot.tree.add_command(self.move_question_command)
 
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()

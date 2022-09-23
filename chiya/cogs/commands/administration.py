@@ -32,9 +32,11 @@ class AdministrationCommands(Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.eval_command = app_commands.ContextMenu(name="eval", callback=self.eval)
         self._last_result = None
+        self.bot.tree.add_command(self.eval_command)
 
-    def app_is_owner(self, interaction: discord.Interaction):
+    def app_is_owner(self, interaction: discord.Interaction, *kwargs):
         return self.bot.is_owner(interaction.user)
 
     @app_commands.check(app_is_owner)
@@ -54,13 +56,16 @@ class AdministrationCommands(Cog):
         # remove `foo`
         return content.strip("` \n")
 
-    @app_commands.context_menu(name="eval", description="Runs code provided")
     @app_commands.guilds(config["guild_id"])
-    @app_commands.check(app_is_owner)
+    @app_commands.guild_only()
     async def eval(self, ctx: discord.Interaction, message: discord.Message):
         """
         Evaluates input as Python code.
         """
+        await ctx.response.defer(thinking=True, ephemeral=True)
+
+        if not await self.bot.is_owner(ctx.user):
+            return await embeds.error_message(ctx=ctx, description="You do not own this bot.")
         # Required environment variables.
         env = {
             "bot": self.bot,
@@ -72,7 +77,6 @@ class AdministrationCommands(Cog):
             "embeds": embeds,
             "_": self._last_result,
         }
-        await ctx.response.defer(thinking=True)
 
         body = message.content
         # Creating embed.
@@ -122,6 +126,9 @@ class AdministrationCommands(Cog):
                     output = f"```py\n{value}\n```"
                     embed.add_field(name="Output:", value=output, inline=False)
                     await ctx.followup.send(embed=embed)
+                else:
+                    # no output, so remove the "bot is thinking... message"
+                    response = await ctx.followup.send("** **")
             else:
                 # Maybe the case where there's no output?
                 self._last_result = ret
