@@ -3,9 +3,7 @@ import time
 
 import discord
 import privatebinapi
-from discord.commands import context
 from discord.ext import commands
-from discord.ui import InputText, Modal
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -29,7 +27,7 @@ class TicketInteractions(commands.Cog):
 
     @commands.is_owner()
     @commands.command(name="createticketembed")
-    async def ticket(self, ctx: context.ApplicationContext) -> None:
+    async def ticket(self, ctx: commands.context) -> None:
         # TODO: Move this into the commands/administration.py cog.
         """
         Command to create an embed that allows creating tickets.
@@ -43,30 +41,31 @@ class TicketInteractions(commands.Cog):
         await ctx.send(embed=embed, view=TicketCreateButton())
 
 
-class TicketSubmissionModal(Modal):
+class TicketSubmissionModal(discord.ui.Modal):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.add_item(
-            InputText(
+            discord.ui.TextInput(
                 label="Subject:",
                 placeholder="The subject of your ticket",
                 required=True,
                 max_length=1024,
-                style=discord.InputTextStyle.short,
+                style=discord.TextStyle.short,
             )
         )
 
         self.add_item(
-            InputText(
+            discord.ui.TextInput(
                 label="Message:",
                 placeholder="The message for your ticket",
                 required=True,
                 max_length=1024,
-                style=discord.InputTextStyle.long,
+                style=discord.TextStyle.long,
             )
         )
 
-    async def callback(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.defer(thinking=True, ephemeral=True)
         category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
         role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
         permission = {
@@ -114,7 +113,7 @@ class TicketSubmissionModal(Modal):
             description=f"Successfully opened a ticket: {channel.mention}",
             color=discord.Color.blurple(),
         )
-        await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+        await interaction.followup.send(embed=embed)
 
         db = database.Database().get()
         db["tickets"].insert(
@@ -138,7 +137,7 @@ class TicketCreateButton(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
-    async def create_ticket(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         The create ticket button of the ticket embed, that prompts for
         confirmation before proceeding.
@@ -165,7 +164,7 @@ class TicketCloseButton(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")
-    async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def close(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         The close ticket button. Iterates through the channel's messages to
         create a log, send it to PrivateBin, send an embed into the log
@@ -257,6 +256,6 @@ class TicketCloseButton(discord.ui.View):
         await interaction.channel.delete()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(TicketInteractions(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(TicketInteractions(bot))
     log.info("Interactions loaded: ticket")
