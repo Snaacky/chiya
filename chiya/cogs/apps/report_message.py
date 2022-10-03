@@ -2,8 +2,7 @@ import asyncio
 import logging
 
 import discord
-from discord import message_command
-from discord.commands import context
+from discord import app_commands
 from discord.ext import commands
 
 from chiya import config
@@ -32,11 +31,11 @@ class ReportCloseButton(discord.ui.View):
         custom_id="close_report",
         emoji="🔒",
     )
-    async def close(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def close(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         The close button to close and archive an existing report.
         """
-        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
+        role_staff = discord.utils.get(interaction.message.guild.roles, id=config["roles"]["staff"])
         if role_staff not in interaction.user.roles:
             embed = embeds.make_embed(
                 title="Failed to close report",
@@ -64,7 +63,7 @@ class ReportMessageButtons(discord.ui.View):
         style=discord.ButtonStyle.primary,
         custom_id="submit_report",
     )
-    async def submit(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def submit(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         Create a View for the report message embed confirmation button.
         """
@@ -90,13 +89,16 @@ class ReportMessageButtons(discord.ui.View):
 class ReportMessageApp(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.report_message_command = app_commands.ContextMenu(name="Report Message", callback=self.report_message)
+        self.bot.tree.add_command(self.report_message_command)
 
-    @message_command(guild_ids=config["guild_ids"], name="Report Message")
-    async def report_message(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    async def report_message(self, ctx: discord.Interaction, message: discord.Message) -> None:
         """
         Context menu command for reporting messages to staff.
         """
-        await ctx.defer(ephemeral=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         if ctx.channel.category_id in [
             config["categories"]["moderation"],
@@ -109,14 +111,14 @@ class ReportMessageApp(commands.Cog):
                 description="You do not have permissions to use this command in this category.",
             )
 
-        if ctx.author.bot:
+        if message.author.bot:
             return await embeds.error_message(
                 ctx=ctx,
                 description="You do not have permissions to use this command on this user.",
             )
 
         category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
-        report = discord.utils.get(category.text_channels, name=f"report-{message.id + ctx.author.id}")
+        report = discord.utils.get(category.text_channels, name=f"report-{message.id + ctx.user.id}")
         if report:
             return await embeds.error_message(ctx, description=f"You already have a report open: {report.mention}")
 
@@ -146,19 +148,19 @@ class ReportMessageApp(commands.Cog):
             embed.add_field(name="Attachment:", value=attachment.url, inline=False)
 
         view = ReportMessageButtons()
-        await ctx.send_followup(embed=embed, view=view, ephemeral=True)
+        await ctx.followup.send(embed=embed, view=view, ephemeral=True)
         await view.wait()
 
         if view.value:
             channel = await ctx.guild.create_text_channel(
-                name=f"report-{message.id + ctx.author.id}",
+                name=f"report-{message.id + ctx.user.id}",
                 category=category,
                 overwrites={
                     discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(
                         read_messages=True
                     ),
                     ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    ctx.author: discord.PermissionOverwrite(read_messages=True),
+                    ctx.user: discord.PermissionOverwrite(read_messages=True),
                 },
             )
 
@@ -184,7 +186,7 @@ class ReportMessageApp(commands.Cog):
                     },
                     {
                         "name": "Reported By:",
-                        "value": ctx.author.mention,
+                        "value": ctx.user.mention,
                         "inline": True,
                     },
                     {"name": "Link:", "value": message.jump_url, "inline": False},
@@ -203,10 +205,10 @@ class ReportMessageApp(commands.Cog):
 
             await channel.send(embed=embed, view=ReportCloseButton())
 
-            await channel.send(ctx.author.mention, delete_after=1)
+            await channel.send(ctx.user.mention, delete_after=1)
             await channel.send("@here", delete_after=1)
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(ReportMessageApp(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(ReportMessageApp(bot))
     log.info("App loaded: report_message")
