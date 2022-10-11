@@ -105,7 +105,7 @@ async def warning_message(ctx: Union[commands.Context, discord.Interaction], des
         await ctx.response.send_message(embed=embed, ephemeral=True)
 
 
-def error_embed(ctx: Union[commands.Context, discord.Interaction], title: str, description: str, author: bool = True) -> discord.Embed:
+def error_embed(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None, author: bool = True) -> discord.Embed:
     """Make a basic error message embed."""
     return make_embed(
         ctx=ctx,
