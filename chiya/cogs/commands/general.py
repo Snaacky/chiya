@@ -34,7 +34,7 @@ class GeneralCommands(commands.Cog):
         attached if a server specific avatar is not set.
         """
         await ctx.response.defer(thinking=True)
-        user = user or ctx.author
+        user = user or ctx.user
         embed = embeds.make_embed()
         if profile and isinstance(user, discord.Member):
             user: discord.User = ctx.client.get_user(user.id)

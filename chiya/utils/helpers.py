@@ -35,13 +35,13 @@ async def can_action_member(ctx: discord.Interaction, member: discord.Member | d
 def get_duration(duration) -> tuple[str, int]:
     regex = (
         r"("
-        r"(?:(\d+)\s*y(?:ears|ear|rs|r)?)?\s*"
-        r"(?:(\d+)\s*mo(?:nths|nth)?)?\s*"
-        r"(?:(\d+)\s*w(?:eeks|eek|ks|k)?)?\s*"
-        r"(?:(\d+)\s*d(?:ays|ay)?)?\s*"
-        r"(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*"
-        r"(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*"
-        r"(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?"
+        r"(?:(\d+)\s*y(?:(ear|r)s?)?)?\s*"
+        r"(?:(\d+)\s*mo(?:(nth)s?)?)?\s*"
+        r"(?:(\d+)\s*w(?:(eek|k)s?)?)?\s*"
+        r"(?:(\d+)\s*d(?:(ay)s?)?)?\s*"
+        r"(?:(\d+)\s*h(?:(our|r)s?)?)?\s*"
+        r"(?:(\d+)\s*m(?:(inute|in)s?)?)?\s*"
+        r"(?:(\d+)\s*s(?:(econd|ec)s?)?)?"
         r")"
     )
 
