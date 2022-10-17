@@ -87,7 +87,10 @@ async def error_message(ctx: Union[commands.Context, discord.Interaction], descr
         await ctx.send(embed=embed, delete_after=30)
 
     if isinstance(ctx, discord.Interaction):
-        await ctx.response.send_message(embed=embed, ephemeral=True)
+        if ctx.response.is_done():
+            await ctx.followup.send(embed=embed, ephemeral=True)
+        else:
+            await ctx.response.send_message(embed=embed, ephemeral=True)
 
 
 async def warning_message(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None) -> None:
