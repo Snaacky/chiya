@@ -61,9 +61,11 @@ class SyncCog(commands.GroupCog, group_name="admin"):
     @sync_global_to_guild.error
     @sync_remove.error
     async def sync_error(self, interaction: discord.Interaction, error: discord.HTTPException) -> None:
+        await interaction.response.defer()
+
         if isinstance(error, discord.app_commands.errors.MissingRole):
             embed = embeds.error_embed(ctx=interaction, description=f"Role <@&{error.missing_role}> is required to use this command.")
-            await interaction.response.send_message(embed=embed)
+            await interaction.followup.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
