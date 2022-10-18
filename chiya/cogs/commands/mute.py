@@ -118,7 +118,7 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.timeout(datetime.utcfromtimestamp(mute_end_time), reason=reason)
+        await member.timeout(datetime.fromtimestamp(mute_end_time, timezone.utc), reason=reason)
         await ctx.followup.send(embed=mute_embed)
 
     @app_commands.command(name="unmute", description="Umutes a member in the server")
