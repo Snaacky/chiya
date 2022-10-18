@@ -47,8 +47,8 @@ def make_embed(
 
     if fields:
         for field in fields:
-            name = field.get("name", "​")
-            value = field.get("value", "​")
+            name = field.get("name", "​") or "​"
+            value = field.get("value", "​") or "​"
             inline = field["inline"] if isinstance(field["inline"], bool) else False
             embed.add_field(name=name, value=value, inline=inline)
 
@@ -69,6 +69,7 @@ async def send_interaction_message(ctx: discord.Interaction, embed: discord.Embe
         await ctx.followup.send(embed=embed, ephemeral=True)
     else:
         await ctx.response.send_message(embed=embed, ephemeral=True)
+
 
 async def success_message(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None) -> None:
     """Send a simple, self-destruct success message."""
