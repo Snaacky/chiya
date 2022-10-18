@@ -153,7 +153,7 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.guild.unban(user=user, reason=reason)
+        await ctx.guild.unban(user, reason=reason)
         await ctx.followup.send(embed=embed)
 
 
