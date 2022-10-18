@@ -112,7 +112,7 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
+        await ctx.guild.ban(user, reason=reason, delete_message_days=daystodelete or 0)
         await ctx.followup.send(embed=embed)
 
     @app_commands.command(name="unban", description="Unban user from the server")
