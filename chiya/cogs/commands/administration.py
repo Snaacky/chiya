@@ -125,10 +125,10 @@ class AdministrationCommands(Cog):
                     # Output.
                     output = f"```py\n{value}\n```"
                     embed.add_field(name="Output:", value=output, inline=False)
-                    await ctx.followup.send(embed=embed)
                 else:
                     # no output, so remove the "bot is thinking... message"
-                    response = await ctx.followup.send("** **")
+                    embed.add_field(name="Output:", value="No return value!", inline=False)
+                await ctx.followup.send(embed=embed)
             else:
                 # Maybe the case where there's no output?
                 self._last_result = ret
