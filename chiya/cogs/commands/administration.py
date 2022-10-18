@@ -32,7 +32,7 @@ class AdministrationCommands(Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.eval_command = app_commands.ContextMenu(name="eval", callback=self.eval)
+        self.eval_command = app_commands.ContextMenu(name="Eval", callback=self.eval)
         self._last_result = None
         self.bot.tree.add_command(self.eval_command)
 
