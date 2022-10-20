@@ -66,7 +66,6 @@ class WarnCommands(commands.Cog):
                         "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})",
                         "inline": True,
                     },
-                    {"name": "Moderator:", "value": ctx.author.mention, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
             )
