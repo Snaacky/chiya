@@ -58,7 +58,7 @@ class MoveQuestionApp(Cog):
             await webhook.send(
                 content=content,
                 username=message.author.name,
-                avatar_url=message.author.display_avatar,
+                avatar_url=message.author.display_avatar.url,
             )
 
         success_embed = embeds.make_embed(
