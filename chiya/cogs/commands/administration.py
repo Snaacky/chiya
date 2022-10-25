@@ -43,7 +43,7 @@ class AdministrationCommands(Cog):
     class AdminGroup(app_commands.Group):
         pass
     admin = AdminGroup(name="admin", description="Admin commands", guild_ids=[config["guild_id"]])
-
+    embed = AdminGroup(name="embed", description="Embed creation commands", guild_ids=[config["guild_id"]], parent=admin)
 
     def _cleanup_code(self, content: str) -> str:
         """
@@ -136,7 +136,7 @@ class AdministrationCommands(Cog):
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.followup.send(embed=embed)
 
-    @admin.command(name="rules", description="Sends rule message to channel")
+    @embed.command(name="rules", description="Sends rule message to channel")
     async def rules(self, ctx: discord.Interaction) -> None:
         """Generates the #rules channel embeds."""
         await ctx.response.defer(ephemeral=True,thinking=True)
@@ -180,7 +180,7 @@ class AdministrationCommands(Cog):
         await ctx.channel.send(embed=embed)
         await ctx.followup.send("Rules added!", ephemeral=True)
 
-    @admin.command(name="createcolorrolesembed", description="Create the color roles embed message")
+    @embed.command(name="colorroles", description="Create the color roles embed message")
     async def create_color_roles_embed(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(ephemeral=True,thinking=True)
         embed = discord.Embed(
@@ -206,7 +206,7 @@ class AdministrationCommands(Cog):
         await msg.add_reaction(":purplesquare:805032172074696744")
         await ctx.followup.send("Color messaged sent!", ephemeral=True)
 
-    @admin.command(name="createassignablerolesembed", description="Create the assignable roles embed message")
+    @embed.command(name="reactroles", description="Create the assignable roles embed message")
     async def create_assignable_roles_embed(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(ephemeral=True,thinking=True)
         role_assignment_text = """
