@@ -22,7 +22,6 @@ class NoteCommands(commands.Cog):
     @app_commands.command(name="addnote", description="Add a note to the users profile")
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
-    @app_commands.checks.has_role(config["roles"]["staff"])
     @app_commands.describe(user="The user to add the note to")
     @app_commands.describe(note="The note to leave on the user")
     async def add_note(self, ctx: discord.Interaction, user: discord.Member | discord.User, note: str) -> None:
@@ -64,7 +63,6 @@ class NoteCommands(commands.Cog):
     @app_commands.command(name="search", description="Search through a users notes and mod logs")
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
-    @app_commands.checks.has_role(config["roles"]["staff"])
     @app_commands.describe(user="The user to lookup")
     @app_commands.describe(action="Filter specific actions")
     async def search_mod_actions(
@@ -147,7 +145,6 @@ class NoteCommands(commands.Cog):
     @app_commands.command(name="editlog", description="Edit a user's notes and mod logs")
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
-    @app_commands.checks.has_role(config["roles"]["staff"])
     @app_commands.describe(id="The ID of the log or note to be edited")
     @app_commands.describe(note="The updated message for the log or note")
     async def edit_log(self, ctx: discord.Interaction, id: int, note: str) -> None:

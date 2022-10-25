@@ -21,7 +21,6 @@ class MuteCommands(commands.Cog):
     @app_commands.command(name="mute", description="Mutes a member in the server")
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
-    @app_commands.checks.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
     @app_commands.describe(member="The member that will be muted")
     @app_commands.describe(reason="The reason why the member is being muted")
     @app_commands.describe(duration="The length of time the user will be muted for")
@@ -124,7 +123,6 @@ class MuteCommands(commands.Cog):
     @app_commands.command(name="unmute", description="Umutes a member in the server")
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
-    @app_commands.checks.has_any_role(config["roles"]["staff"], config["roles"]["chat_mod"])
     @app_commands.describe(member="The member that will be unmuted")
     @app_commands.describe(reason="The reason why the member is being unmuted")
     async def unmute(

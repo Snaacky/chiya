@@ -17,7 +17,6 @@ class SyncCog(commands.GroupCog, group_name="admin"):
     sync = app_commands.Group(name="sync", description="Sync commands")
 
     @sync.command(name="global", description="Sync commands globally.")
-    @app_commands.checks.has_role(config["roles"]["staff"])
     async def sync_global(self, interaction: discord.Interaction) -> None:
         """
         Does not sync all commands globally, just the ones registered as global.
@@ -27,7 +26,6 @@ class SyncCog(commands.GroupCog, group_name="admin"):
         await embeds.success_message(ctx=interaction, description=f"Synced {len(synced)} commands globally.")
 
     @sync.command(name="guild", description="Sync commands in the current guild")
-    @app_commands.checks.has_role(config["roles"]["staff"])
     async def sync_guild(self, interaction: discord.Interaction) -> None:
         """
         Does not sync all of your commands to that guild, just the ones registered to that guild.
@@ -37,7 +35,6 @@ class SyncCog(commands.GroupCog, group_name="admin"):
         await embeds.success_message(ctx=interaction, description=f"Synced {len(synced)} commands to the current guild.")
 
     @sync.command(name="copy", description="Copies all global app commands to current guild and syncs")
-    @app_commands.checks.has_role(config["roles"]["staff"])
     async def sync_global_to_guild(self, interaction: discord.Interaction) -> None:
         """
         This will copy the global list of commands in the tree into the list of commands for the specified guild.
@@ -49,7 +46,6 @@ class SyncCog(commands.GroupCog, group_name="admin"):
         await embeds.success_message(ctx=interaction, description=f"Copied and synced {len(synced)} global app commands to the current guild.")
 
     @sync.command(name="remove", description="Clears all commands from the current guild target and syncs")
-    @app_commands.checks.has_role(config["roles"]["staff"])
     async def sync_remove(self, interaction: discord.Interaction) -> None:
         await interaction.response.defer()
         self.bot.tree.clear_commands(guild=interaction.guild)

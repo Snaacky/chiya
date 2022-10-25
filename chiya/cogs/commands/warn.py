@@ -19,7 +19,6 @@ class WarnCommands(commands.Cog):
     @app_commands.command(name="warn", description="Warn the member")
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
-    @app_commands.checks.has_role(config["roles"]["staff"])
     @app_commands.describe(member="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")
     async def warn(self, ctx: discord.Interaction, member: discord.Member | discord.User, reason: str) -> None:
