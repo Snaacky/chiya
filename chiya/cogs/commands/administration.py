@@ -137,6 +137,7 @@ class AdministrationCommands(Cog):
                 await ctx.followup.send(embed=embed)
 
     @embed.command(name="rules", description="Sends rule message to channel")
+    @app_commands.guilds(config["guild_id"])
     async def rules(self, ctx: discord.Interaction) -> None:
         """Generates the #rules channel embeds."""
         await ctx.response.defer(ephemeral=True,thinking=True)
@@ -181,6 +182,7 @@ class AdministrationCommands(Cog):
         await ctx.followup.send("Rules added!", ephemeral=True)
 
     @embed.command(name="colorroles", description="Create the color roles embed message")
+    @app_commands.guilds(config["guild_id"])
     async def create_color_roles_embed(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(ephemeral=True,thinking=True)
         embed = discord.Embed(
@@ -207,6 +209,7 @@ class AdministrationCommands(Cog):
         await ctx.followup.send("Color messaged sent!", ephemeral=True)
 
     @embed.command(name="reactroles", description="Create the assignable roles embed message")
+    @app_commands.guilds(config["guild_id"])
     async def create_assignable_roles_embed(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(ephemeral=True,thinking=True)
         role_assignment_text = """
