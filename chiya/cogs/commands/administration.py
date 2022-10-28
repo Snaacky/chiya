@@ -43,7 +43,7 @@ class AdministrationCommands(Cog):
     class AdminGroup(app_commands.Group):
         pass
     admin = AdminGroup(name="admin", description="Admin commands", guild_ids=[config["guild_id"]])
-    embed = AdminGroup(name="embed", description="Embed creation commands", guild_ids=[config["guild_id"]], parent=admin)
+    embed = AdminGroup(name="embed", description="Embed creation commands", parent=admin)
 
     def _cleanup_code(self, content: str) -> str:
         """
