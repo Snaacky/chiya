@@ -7,7 +7,7 @@ from contextlib import redirect_stdout
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import GroupCog
+from discord.ext.commands import Cog
 
 from chiya import config
 from chiya.utils import embeds
@@ -16,7 +16,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class AdministrationCommands(GroupCog, group_name="admin"):
+class AdministrationCommands(Cog):
     """
     This class is legacy code that needs to eventually be
     split into separate files and removed from the codebase.
@@ -40,9 +40,12 @@ class AdministrationCommands(GroupCog, group_name="admin"):
         return self.bot.is_owner(interaction.user)
 
     @app_commands.check(app_is_owner)
-    class EmbedGroup(app_commands.Group):
+    class AdminGroup(app_commands.Group):
         pass
-    embed = EmbedGroup(name="embed", description="Embed creation commands")
+    admin = AdminGroup(name="admin", description="Admin commands", guild_ids=[config["guild_id"]])
+
+    embed = AdminGroup(name="embed", description="Embed creation commands", parent=admin)
+    sync = AdminGroup(name="sync", description="Sync commands", parent=admin)
 
     def _cleanup_code(self, content: str) -> str:
         """
@@ -134,6 +137,11 @@ class AdministrationCommands(GroupCog, group_name="admin"):
                 output = f"```py\n{value}{ret}\n```"
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.followup.send(embed=embed)
+
+
+    #[[
+    # EMBED COMMANDS
+    # ]]
 
     @embed.command(name="rules", description="Sends rule message to channel")
     async def rules(self, ctx: discord.Interaction) -> None:
@@ -231,6 +239,56 @@ class AdministrationCommands(GroupCog, group_name="admin"):
         await msg.add_reaction("🧩")
         await ctx.followup.send("Rules added!", ephemeral=True)
 
+    #[[
+    # SYNC COMMANDS
+    # ]]
+
+    @sync.command(name="global", description="Sync commands globally.")    
+    async def sync_global(self, interaction: discord.Interaction) -> None:
+        """
+        Does not sync all commands globally, just the ones registered as global.
+        """
+        await interaction.response.defer()
+        synced = await self.bot.tree.sync()
+        await embeds.success_message(ctx=interaction, description=f"Synced {len(synced)} commands globally.")
+
+    @sync.command(name="guild", description="Sync commands in the current guild")
+    async def sync_guild(self, interaction: discord.Interaction) -> None:
+        """
+        Does not sync all of your commands to that guild, just the ones registered to that guild.
+        """
+        await interaction.response.defer()
+        synced = await self.bot.tree.sync(guild=interaction.guild)
+        await embeds.success_message(ctx=interaction, description=f"Synced {len(synced)} commands to the current guild.")
+
+    @sync.command(name="copy", description="Copies all global app commands to current guild and syncs")
+    async def sync_global_to_guild(self, interaction: discord.Interaction) -> None:
+        """
+        This will copy the global list of commands in the tree into the list of commands for the specified guild.
+        This is not permanent between bot restarts, and it doesn't impact the state of the commands (you still have to sync).
+        """
+        await interaction.response.defer()
+        self.bot.tree.copy_global_to(guild=interaction.guild)
+        synced = await self.bot.tree.sync(guild=interaction.guild)
+        await embeds.success_message(ctx=interaction, description=f"Copied and synced {len(synced)} global app commands to the current guild.")
+
+    @sync.command(name="remove", description="Clears all commands from the current guild target and syncs")
+    async def sync_remove(self, interaction: discord.Interaction) -> None:
+        await interaction.response.defer()
+        self.bot.tree.clear_commands(guild=interaction.guild)
+        await self.bot.tree.sync(guild=interaction.guild)
+        await embeds.success_message(ctx=interaction, description="Cleared all commands from the current guild and synced.")
+
+    @sync_global.error
+    @sync_guild.error
+    @sync_global_to_guild.error
+    @sync_remove.error
+    async def sync_error(self, interaction: discord.Interaction, error: discord.HTTPException) -> None:
+        await interaction.response.defer()
+
+        if isinstance(error, discord.app_commands.errors.MissingRole):
+            embed = embeds.error_embed(ctx=interaction, description=f"Role <@&{error.missing_role}> is required to use this command.")
+            await interaction.followup.send(embed=embed)
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(AdministrationCommands(bot))
