@@ -7,7 +7,7 @@ from contextlib import redirect_stdout
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import Cog
+from discord.ext.commands import GroupCog
 
 from chiya import config
 from chiya.utils import embeds
@@ -16,7 +16,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class AdministrationCommands(Cog):
+class AdministrationCommands(GroupCog, group_name="admin"):
     """
     This class is legacy code that needs to eventually be
     split into separate files and removed from the codebase.
@@ -40,14 +40,9 @@ class AdministrationCommands(Cog):
         return self.bot.is_owner(interaction.user)
 
     @app_commands.check(app_is_owner)
-    class AdminGroup(app_commands.Group):
-        pass
-
-    @app_commands.check(app_is_owner)
     class EmbedGroup(app_commands.Group):
         pass
-    admin = AdminGroup(name="admin", description="Admin commands", guild_ids=[config["guild_id"]])
-    embed = EmbedGroup(name="embed", description="Embed creation commands", parent=admin)
+    embed = EmbedGroup(name="embed", description="Embed creation commands")
 
     def _cleanup_code(self, content: str) -> str:
         """
