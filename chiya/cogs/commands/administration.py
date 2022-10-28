@@ -42,8 +42,12 @@ class AdministrationCommands(Cog):
     @app_commands.check(app_is_owner)
     class AdminGroup(app_commands.Group):
         pass
+
+    @app_commands.check(app_is_owner)
+    class EmbedGroup(app_commands.Group):
+        pass
     admin = AdminGroup(name="admin", description="Admin commands", guild_ids=[config["guild_id"]])
-    embed = AdminGroup(name="embed", description="Embed creation commands", parent=admin)
+    embed = EmbedGroup(name="embed", description="Embed creation commands", parent=admin)
 
     def _cleanup_code(self, content: str) -> str:
         """
