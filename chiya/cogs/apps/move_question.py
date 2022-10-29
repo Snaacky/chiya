@@ -1,10 +1,11 @@
 import logging
+from subprocess import call
 
 import aiohttp
 import discord
-from discord import message_command, Webhook
-from discord.commands import context
+from discord import app_commands, Webhook
 from discord.ext import commands
+from discord.ext.commands import Cog
 
 from chiya import config
 from chiya.utils import embeds
@@ -13,19 +14,18 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class MoveQuestionApp(commands.Cog):
+class MoveQuestionApp(Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
+        self.move_question_command = app_commands.ContextMenu(name="Move Question", callback=self.move_question)
+        self.bot.tree.add_command(self.move_question_command)
 
-    @message_command(guild_ids=config["guild_ids"], name="Move Question")
-    async def move_question(self, ctx: context.ApplicationContext, message: discord.Message) -> None:
-        """
-        Context menu command for moving questions (messages) to
-        #questions-and-help.
-        """
-        await ctx.defer(ephemeral=True)
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    async def move_question(self, ctx: discord.Interaction, message: discord.Message):
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
-        staff = [x for x in ctx.author.roles if x.id == config["roles"]["staff"] or x.id == config["roles"]["trial"]]
+        staff = [x for x in ctx.user.roles if x.id == config["roles"]["staff"] or x.id == config["roles"]["trial"]]
         if not staff:
             return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
 
@@ -58,14 +58,15 @@ class MoveQuestionApp(commands.Cog):
             await webhook.send(
                 content=content,
                 username=message.author.name,
-                avatar_url=message.author.avatar,
+                avatar_url=message.author.display_avatar.url,
             )
 
         success_embed = embeds.make_embed(
             description=f"Successfully moved message to: {channel.mention}",
             color=discord.Color.green(),
         )
-        await ctx.send_followup(embed=success_embed)
+        await ctx.followup.send(embed=success_embed)
+
         await embeds.warning_message(
             ctx=ctx,
             title="Warning: Your question was moved",
@@ -80,6 +81,6 @@ class MoveQuestionApp(commands.Cog):
         await message.delete()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(MoveQuestionApp(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(MoveQuestionApp(bot))
     log.info("App loaded: move_question")

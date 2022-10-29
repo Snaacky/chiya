@@ -23,6 +23,8 @@ class BoostListeners(commands.Cog):
         if message.type == discord.MessageType.premium_guild_subscription:
             await self.on_new_boost(message)
 
+    NITRO_PINK = discord.Color(0xf47fff)
+
     async def on_new_boost(self, message: discord.Message) -> None:
         """
         Send a notification embed when a new boost was received.
@@ -31,7 +33,7 @@ class BoostListeners(commands.Cog):
         guild = message.guild
 
         embed = embeds.make_embed(
-            color=discord.Color.nitro_pink(),
+            color=self.NITRO_PINK,
             image_url="https://i.imgur.com/O8R98p9.gif",
             title="A new booster appeared!",
             description=(
@@ -46,7 +48,7 @@ class BoostListeners(commands.Cog):
 
         channel = discord.utils.get(guild.channels, id=config["channels"]["logs"]["nitro_log"])
         embed = embeds.make_embed(
-            color=discord.Color.nitro_pink(),
+            color=self.NITRO_PINK,
             title="New booster",
             description=(
                 f"{member.mention} [boosted]({boost_message.jump_url}) the server. "
@@ -63,7 +65,7 @@ class BoostListeners(commands.Cog):
         if before.premium_since and not after.premium_since:
             channel = discord.utils.get(after.guild.channels, id=config["channels"]["logs"]["nitro_log"])
             embed = embeds.make_embed(
-                color=discord.Color.nitro_pink(),
+                color=self.NITRO_PINK,
                 title="Lost booster",
                 description=(
                     f"{after.mention} no longer boosts the server. "
@@ -74,6 +76,6 @@ class BoostListeners(commands.Cog):
             log.info(f"{after} stopped boosting {after.guild.name}")
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(BoostListeners(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(BoostListeners(bot))
     log.info("Listeners loaded: boost")

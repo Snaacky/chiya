@@ -1,6 +1,7 @@
 import logging
 
-from discord.commands import slash_command, context, Option
+import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 
 from chiya import config
@@ -20,6 +21,7 @@ trackers: list[TrackerStatus] = [
     TrackerStatusMAM()
 ]
 trackers_dict = {item.tracker: item for item in trackers}
+trackers_list = sorted(list(trackers_dict.keys()))
 
 
 class TrackerStatusCommands(commands.Cog):
@@ -42,27 +44,30 @@ class TrackerStatusCommands(commands.Cog):
         for tracker in trackers:
             tracker.do_refresh()
 
-    @slash_command(guild_ids=config["guild_ids"], description="Get tracker uptime statuses")
+    async def tracker_autocomplete(self, ctx: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return [
+            app_commands.Choice(name=tracker, value=tracker)
+            for tracker in trackers_list
+            if current.lower() in tracker.lower()
+        ]
+
+    @app_commands.command(name="trackerstatus", description="Get tracker uptime statuses")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.autocomplete(tracker=tracker_autocomplete)
+    @app_commands.describe(tracker="Tracker to get uptime statuses for")
     async def trackerstatus(
         self,
-        ctx: context.ApplicationContext,
-        tracker: Option(
-            str,
-            description="Tracker to get uptime statuses for",
-            choices=sorted(list(trackers_dict.keys())),
-            required=True
-        ),
+        ctx: discord.Interaction,
+        tracker: str,
     ) -> None:
         # TODO: Change the color of the embed to green if all services are online,
         # yellow if one of the services is offline, and grey or red if all are offline.
-        await ctx.defer()
-
+        await ctx.response.defer()
         tracker: TrackerStatus = trackers_dict.get(tracker)
         embed = tracker.get_status_embed(ctx)
+        await ctx.followup.send(embed=embed)
 
-        await ctx.send_followup(embed=embed)
 
-
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(TrackerStatusCommands(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(TrackerStatusCommands(bot))
     log.info("Commands loaded: trackerstatus")

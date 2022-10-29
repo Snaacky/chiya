@@ -224,6 +224,6 @@ class Starboard(commands.Cog):
             db.close()
 
 
-def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Starboard(bot))
+async def setup(bot: commands.bot.Bot) -> None:
+    await bot.add_cog(Starboard(bot))
     log.info("Listener loaded: starboard")
