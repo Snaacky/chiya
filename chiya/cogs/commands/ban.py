@@ -81,8 +81,7 @@ class BansCommands(commands.Cog):
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
-                {"name": "Moderator:", "value": ctx.user.mention, "inline": True},
-                {"name": "Reason:", "value": reason, "inline": True},
+                {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
 
