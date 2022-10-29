@@ -24,7 +24,7 @@ class ReminderCommands(commands.Cog):
         pass
     reminder = ReminderGroup(name="reminder", description="Reminder management commands", guild_ids=[config["guild_id"]])
 
-    @reminder.command(name="me", description="Set a reminder")
+    @reminder.command(name="create", description="Set a reminder")
     @app_commands.describe(duration="Amount of time until the reminder is sent")
     @app_commands.describe(message="Reminder message")
     async def remindme(
