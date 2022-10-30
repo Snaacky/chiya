@@ -1,5 +1,6 @@
 import io
 import logging
+import os
 import textwrap
 import traceback
 from contextlib import redirect_stdout
@@ -81,6 +82,14 @@ class AdministrationCommands(Cog):
         }
 
         body = message.content
+        if not body:
+            for attach in message.attachments:
+                _, file_extension = os.path.splitext(attach.filename)
+                if "text/x-python" in attach.content_type and file_extension == ".py":
+                    read = await attach.read()
+                    body = read.decode("utf-8")
+                    break
+
         # Creating embed.
         embed = discord.Embed(title="Evaluating.", color=0xB134EB)
         env.update(globals())
