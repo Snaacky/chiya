@@ -127,7 +127,7 @@ class Starboard(commands.Cog):
             if message_embed.type in ["gif", "gifv"]:
                 if message_embed.provider and message_embed.provider.url:
                     urlinfo = urlparse(message_embed.provider.url)
-                    if urlinfo.netloc == "tenor.com":
+                    if urlinfo.netloc in ["tenor.com", "tenor.co"]:
                         async with httpx.AsyncClient() as client:
                             req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
                             images.append(req.url)
