@@ -1,8 +1,11 @@
 import datetime
 import logging
+import httpx
 
 import discord
 from discord.ext import commands
+
+from urllib.parse import urlparse
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -118,6 +121,16 @@ class Starboard(commands.Cog):
             # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
             if "image" in attachment.content_type:
                 images.append(attachment.url)
+
+        for embed in message.embeds:
+            # Other types may need to be added in future
+            if embed.type in ["gif", "gifv"]:
+                if embed.provider and embed.provider.url:
+                    urlinfo = urlparse(embed.provider.url)
+                    if urlinfo.netloc == "tenor.com":
+                        async with httpx.AsyncClient() as client:
+                            req = await client.head(f"{embed.url}.gif", follow_redirects=True)
+                            images.append(req.url)
 
         # Prioritize the first image over sticker if possible.
         if images:
