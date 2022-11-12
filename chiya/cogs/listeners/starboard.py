@@ -122,14 +122,14 @@ class Starboard(commands.Cog):
             if "image" in attachment.content_type:
                 images.append(attachment.url)
 
-        for embed in message.embeds:
+        for message_embed in message.embeds:
             # Other types may need to be added in future
-            if embed.type in ["gif", "gifv"]:
-                if embed.provider and embed.provider.url:
-                    urlinfo = urlparse(embed.provider.url)
-                    if urlinfo.netloc == "tenor.com":
+            if message_embed.type in ["gif", "gifv"]:
+                if message_embed.provider and message_embed.provider.url:
+                    urlinfo = urlparse(message_embed.provider.url)
+                    if urlinfo.netloc in ["tenor.com", "tenor.co"]:
                         async with httpx.AsyncClient() as client:
-                            req = await client.head(f"{embed.url}.gif", follow_redirects=True)
+                            req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
                             images.append(req.url)
 
         # Prioritize the first image over sticker if possible.
