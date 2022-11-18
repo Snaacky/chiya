@@ -218,11 +218,11 @@ class Joyboard(commands.Cog):
 
         try:
             joyboard_channel = self.bot.get_channel(config["channels"]["joyboard"]["channel_id"])
-            star_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
+            joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
-            await star_embed.delete()
+            await joy_embed.delete()
         except discord.NotFound:
             db.close()
 
