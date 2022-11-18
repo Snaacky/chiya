@@ -87,6 +87,13 @@ class Database:
             starboard.create_column("star_embed_id", db.types.bigint)
             log.info("Created missing table: starboard")
 
+        if "joyboard" not in db:
+            joyboard = db.create_table("joyboard")
+            joyboard.create_column("channel_id", db.types.bigint)
+            joyboard.create_column("message_id", db.types.bigint)
+            joyboard.create_column("joy_embed_id", db.types.bigint)
+            log.info("Created missing table: joyboard")
+
         for table in db.tables:
             db.query(f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
             log.info(f"Converted table to utf8mb4_unicode_ci: {table}")
