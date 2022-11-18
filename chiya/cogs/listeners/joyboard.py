@@ -54,7 +54,7 @@ class Joyboard(commands.Cog):
         Implements a cache to prevent race condition where if multiple joys were reacted on a message after it hits the
         joy threshold and the IDs were not written to the database quickly enough, a duplicated joy embed would be sent.
         """
-        joys = ("😂")
+        joys = ("😂",)
         if payload.emoji.name not in joys:
             return
 
@@ -157,7 +157,7 @@ class Joyboard(commands.Cog):
         """
         Update the joy count in the embed if the joys were reacted. Delete joy embed if the joy count is below threshold.
         """
-        joys = ("😂")
+        joys = ("😂",)
         cache_data = (payload.message_id, payload.channel_id)
 
         if (
