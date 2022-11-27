@@ -64,6 +64,11 @@ class TrackerStatusCommands(commands.Cog):
         # yellow if one of the services is offline, and grey or red if all are offline.
         await ctx.response.defer()
         tracker: TrackerStatus = trackers_dict.get(tracker)
+
+        if tracker is None:
+            await ctx.followup.send("Don't be a retard, please choose a listed Tracker.")
+            return
+
         embed = tracker.get_status_embed(ctx)
         await ctx.followup.send(embed=embed)
 
