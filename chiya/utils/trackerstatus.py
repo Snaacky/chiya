@@ -29,9 +29,6 @@ class TrackerStatus():
 
     def get_embed_color(self, embed: discord.Embed):
         status = set([field.value for field in embed.fields])
-
-        embed.color = self.get_embed_color(status)
-
         if len(status) == 1:
             if status[0] == "<:status_online:596576749790429200> Online":
                 return discord.Color.green
