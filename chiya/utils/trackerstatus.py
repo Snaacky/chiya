@@ -27,7 +27,11 @@ class TrackerStatus():
             log.error(e)
             pass
 
-    def get_embed_color(self, status: set):
+    def get_embed_color(self, embed: discord.Embed):
+        status = set([field.value for field in embed.fields])
+
+        embed.color = self.get_embed_color(status)
+
         if len(status) == 1:
             if status[0] == "<:status_online:596576749790429200> Online":
                 return discord.Color.green
@@ -65,6 +69,8 @@ class TrackerStatusInfo(TrackerStatus):
             if key in ["tweet", "TrackerHTTPAddresses", "TrackerHTTPSAddresses"]:
                 continue
             embed.add_field(name=key, value=self.normalize_value(value), inline=True)
+
+        embed.color = self.get_embed_color(embed)
 
         return embed
 
@@ -104,9 +110,7 @@ class TrackerStatusAB(TrackerStatus):
         for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
 
-        status = set([field.value for field in embed.fields])
-
-        embed.color = self.get_embed_color(status)
+        embed.color = self.get_embed_color(embed)
 
         return embed
 
@@ -144,6 +148,8 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         for monitor in monitors:
             dratio: dict = monitor.get("dailyRatios", [])[0]
             embed.add_field(name=monitor.get("name", "UNKNOWN"), value=self.normalize_value(dratio), inline=True)
+
+        embed.color = self.get_embed_color(embed)
 
         return embed
 
