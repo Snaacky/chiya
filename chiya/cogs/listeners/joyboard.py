@@ -15,9 +15,13 @@ log = logging.getLogger(__name__)
 
 
 class Joyboard(commands.Cog):
+
+    JOYS = ("😂", "😹", ":joy_pride:984917004928569355", ":joy_tone1:984912210172194906", ":joy_tone5:974633464655654922", ":joy_logga:1028828971384709171")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.cache = {"add": set(), "remove": set()}
+
 
     def generate_color(self, joy_count: int) -> int:
         """
@@ -54,13 +58,12 @@ class Joyboard(commands.Cog):
         Implements a cache to prevent race condition where if multiple joys were reacted on a message after it hits the
         joy threshold and the IDs were not written to the database quickly enough, a duplicated joy embed would be sent.
         """
-        joys = ("😂",)
-        if payload.emoji.name not in joys:
+        if payload.emoji.name not in self.JOYS:
             return
 
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        joy_count = await self.get_joy_count(message, joys)
+        joy_count = await self.get_joy_count(message, self.JOYS)
         cache_data = (payload.message_id, payload.channel_id)
 
         if (
@@ -157,11 +160,10 @@ class Joyboard(commands.Cog):
         """
         Update the joy count in the embed if the joys were reacted. Delete joy embed if the joy count is below threshold.
         """
-        joys = ("😂",)
         cache_data = (payload.message_id, payload.channel_id)
 
         if (
-            payload.emoji.name not in joys
+            payload.emoji.name not in self.JOYS
             or cache_data in self.cache["remove"]
         ):
             return
@@ -185,7 +187,7 @@ class Joyboard(commands.Cog):
             self.cache["remove"].remove(cache_data)
             return db.close()
 
-        joy_count = await self.get_joy_count(message, joys)
+        joy_count = await self.get_joy_count(message, self.JOYS)
 
         if joy_count < config["channels"]["joyboard"]["joy_limit"]:
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
