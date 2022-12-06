@@ -5,6 +5,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from chiya import config
+from chiya.utils.embeds import error_embed
 from chiya.utils.trackerstatus import TrackerStatus, TrackerStatusAB, TrackerStatusInfo, TrackerStatusMAM
 
 
@@ -66,7 +67,7 @@ class TrackerStatusCommands(commands.Cog):
         tracker: TrackerStatus = trackers_dict.get(tracker)
 
         if tracker is None:
-            await ctx.followup.send("Don't be a retard, please choose a listed Tracker.")
+            await ctx.followup.send(embed=error_embed(ctx, 'Please choose a listed tracker.'))
             return
 
         embed = tracker.get_status_embed(ctx)
