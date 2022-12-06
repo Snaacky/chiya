@@ -28,21 +28,21 @@ class TrackerStatus():
             pass
 
     def get_embed_color(self, embed: discord.Embed):
-        status = set([field.value for field in embed.fields])
+        status = list(set([field.value for field in embed.fields]))
         if len(status) == 1:
             if status[0] == "<:status_online:596576749790429200> Online":
-                return discord.Color.green
+                return discord.Color.green()
             elif status[0] == "<:status_dnd:596576774364856321> Unstable":
-                return discord.Color.orange
+                return discord.Color.orange()
             elif status[0] == "<:status_offline:596576752013279242> Offline":
-                return discord.Color.red
+                return discord.Color.red()
         else:
             if "<:status_online:596576749790429200> Online" not in status:
-                return discord.Color.red
+                return discord.Color.red()
             else:
-                return discord.Color.orange
+                return discord.Color.orange()
 
-        return discord.Color.red
+        return discord.Color.red()
 
 
 class TrackerStatusInfo(TrackerStatus):
