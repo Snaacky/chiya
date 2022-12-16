@@ -49,15 +49,20 @@ class Joyboard(commands.Cog):
 
         return len(unique_users)
 
-    def check_emoji(self, emoji: discord.PartialEmoji, guild_id: int):
-
-        if emoji.is_custom_emoji():
+    def check_emoji(self, emoji: discord.PartialEmoji | discord.Emoji, guild_id: int):
+        if isinstance(emoji, discord.PartialEmoji) and emoji.is_custom_emoji():
             guild = self.bot.get_guild(guild_id)
             if not guild:
                 return False
 
             global_emoji = discord.utils.get(guild.emojis, id=emoji.id)
             if not global_emoji:
+                return False
+        elif isinstance(emoji, discord.Emoji):
+            if emoji.guild_id is None:
+                return False
+
+            if emoji.guild_id != guild_id:
                 return False
 
         return emoji.name in self.JOYS
