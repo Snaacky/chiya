@@ -43,7 +43,7 @@ class HighlightCommands(commands.Cog):
         db = database.Database().get()
 
         # 20 term limit because 20 * 50 = 1000 characters max and embeds are 4096 max.
-        total = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
+        total = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.user.id}%"})]
         if len(total) >= 20:
             return await embeds.error_message(
                 ctx=ctx, description="You may only have up to 20 highlighted terms at once."
@@ -52,12 +52,12 @@ class HighlightCommands(commands.Cog):
         result = db["highlights"].find_one(term={"ilike": term})
         if result:
             users = orjson.loads(result["users"])
-            if ctx.author.id not in users:
-                users.append(ctx.author.id)
+            if ctx.user.id not in users:
+                users.append(ctx.user.id)
                 data = dict(id=result["id"], users=orjson.dumps(users))
                 db["highlights"].update(data, ["id"])
         else:
-            data = dict(term=term, users=orjson.dumps([ctx.author.id]))
+            data = dict(term=term, users=orjson.dumps([ctx.user.id]))
             db["highlights"].insert(data)
 
         db.commit()
@@ -83,7 +83,7 @@ class HighlightCommands(commands.Cog):
         await ctx.response.defer(thinking=True)
 
         db = database.Database().get()
-        results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
+        results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.user.id}%"})]
         if not results:
             return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
 
@@ -107,13 +107,13 @@ class HighlightCommands(commands.Cog):
         await ctx.response.defer(thinking=True)
 
         db = database.Database().get()
-        result = db["highlights"].find_one(term=term, users={"ilike": f"%{ctx.author.id}%"})
+        result = db["highlights"].find_one(term=term, users={"ilike": f"%{ctx.user.id}%"})
 
         if not result:
             return await embeds.error_message(ctx=ctx, description="You are not tracking that term.")
 
         users = orjson.loads(result["users"])
-        users.remove(ctx.author.id)
+        users.remove(ctx.user.id)
         db["highlights"].update(dict(id=result["id"], users=orjson.dumps(users)), ["id"])
 
         # Delete the term from the database if no users are tracking the keyword anymore.
@@ -139,14 +139,14 @@ class HighlightCommands(commands.Cog):
         await ctx.response.defer(thinking=True)
 
         db = database.Database().get()
-        results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.author.id}%"})]
+        results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.user.id}%"})]
 
         if not results:
             return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
 
         for result in results:
             users = orjson.loads(result["users"])
-            users.remove(ctx.author.id)
+            users.remove(ctx.user.id)
             db["highlights"].update(dict(id=result["id"], users=orjson.dumps(users)), ["id"])
 
             # Delete the term from the database if no users are tracking the keyword anymore.
