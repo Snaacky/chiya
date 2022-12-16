@@ -39,7 +39,7 @@ class HighlightListeners(commands.Cog):
         Checks if the user was active in chat recently.
         """
         after = datetime.datetime.now() - datetime.timedelta(minutes=config["hl"]["timeout"])
-        messages = await channel.history(after=after).flatten()
+        messages = [message async for message in await channel.history(after=after)]
         for message in messages:
             return True if message.author == member else False
 
@@ -58,7 +58,7 @@ class HighlightListeners(commands.Cog):
             if not result:
                 continue
 
-            messages = await message.channel.history(limit=4, before=message).flatten()
+            messages = [message async for message in message.channel.history(limit=4, before=message)]
             chat = ""
             for msg in reversed(messages):
                 chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
