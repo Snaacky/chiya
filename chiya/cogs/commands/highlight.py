@@ -34,7 +34,7 @@ class HighlightCommands(commands.Cog):
         Adds the user to the highlighted term list so they will be notified
         on subsquent messages containing the highlighted term.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         # Prevent /hl list from being extra long and being unable to be sent.
         if len(term) > 50:
@@ -80,7 +80,7 @@ class HighlightCommands(commands.Cog):
         Renders a list showing all of the terms that the user currently has
         highlighted to be notified on usage of.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.user.id}%"})]
@@ -104,7 +104,7 @@ class HighlightCommands(commands.Cog):
         ctx: discord.Interaction,
         term: str,
     ) -> None:
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         result = db["highlights"].find_one(term=term, users={"ilike": f"%{ctx.user.id}%"})
@@ -136,7 +136,7 @@ class HighlightCommands(commands.Cog):
 
     @highlight.command(name="clear", description="Clears all terms being tracked")
     async def clear_highlights(self, ctx: discord.Interaction) -> None:
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         results = [result for result in db["highlights"].find(users={"ilike": f"%{ctx.user.id}%"})]
