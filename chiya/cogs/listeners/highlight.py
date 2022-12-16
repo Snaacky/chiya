@@ -13,7 +13,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class HighlightsListener(commands.Cog):
+class HighlightListeners(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.db = database.Database().get()
@@ -94,5 +94,5 @@ class HighlightsListener(commands.Cog):
 
 
 def setup(bot: commands.Bot) -> None:
-    bot.add_cog(HighlightsListener(bot))
-    log.info("Listener loaded: highlights")
+    bot.add_cog(HighlightListeners(bot))
+    log.info("Listener loaded: highlight")

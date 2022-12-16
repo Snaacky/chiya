@@ -169,6 +169,6 @@ class HighlightCommands(commands.Cog):
         await ctx.followup.send(embed=embed)
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(HighlightCommands(bot))
-    log.info("Commands loaded: highlights")
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(HighlightCommands(bot))
+    log.info("Commands loaded: highlight")
