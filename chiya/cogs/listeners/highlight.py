@@ -93,6 +93,6 @@ class HighlightListeners(commands.Cog):
                     pass
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(HighlightListeners(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(HighlightListeners(bot))
     log.info("Listener loaded: highlight")
