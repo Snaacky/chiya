@@ -71,7 +71,7 @@ class HighlightCommands(commands.Cog):
             author=True,
         )
         await ctx.followup.send(embed=embed)
-        highlights = self.bot.get_cog("HighlightsListener")
+        highlights = self.bot.get_cog("HighlightListeners")
         highlights.refresh_highlights()
 
     @highlight.command(name="list", description="Lists the terms you're currently tracking")
@@ -131,7 +131,7 @@ class HighlightCommands(commands.Cog):
             author=True,
         )
         await ctx.followup.send(embed=embed)
-        highlights = self.bot.get_cog("HighlightsListener")
+        highlights = self.bot.get_cog("HighlightListeners")
         highlights.refresh_highlights()
 
     @highlight.command(name="clear", description="Clears all terms being tracked")
@@ -155,7 +155,7 @@ class HighlightCommands(commands.Cog):
 
         db.commit()
         db.close()
-        highlights = self.bot.get_cog("HighlightsListener")
+        highlights = self.bot.get_cog("HighlightListeners")
         highlights.refresh_highlights()
 
         embed = embeds.make_embed(
