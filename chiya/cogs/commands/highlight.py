@@ -23,9 +23,9 @@ class HighlightCommands(commands.Cog):
         pass
     highlight = HighlightGroup(name="hl", description="Highlight management commands", guild_ids=[config["guild_id"]])
 
-    @highlight.command(name="create", description="Sets a highlight to be notified when a message is sent in chat")
-    @app_commands.describe(message="Reminder message")
-    async def create(
+    @highlight.command(name="add", description="Adds a term to be tracked")
+    @app_commands.describe(term="Term to be highlighted")
+    async def add_highlight(
         self,
         ctx: discord.Interaction,
         term: str,
@@ -98,7 +98,7 @@ class HighlightCommands(commands.Cog):
         await ctx.followup.send(embed=embed)
 
     @highlight.command(name="remove", description="Remove a term from being tracked")
-    @app_commands.describe(message="Term to be removed")
+    @app_commands.describe(term="Term to be removed")
     async def remove_highlight(
         self,
         ctx: discord.Interaction,
@@ -135,7 +135,6 @@ class HighlightCommands(commands.Cog):
         highlights.refresh_highlights()
 
     @highlight.command(name="clear", description="Clears all terms being tracked")
-    @app_commands.describe(message="Term to be removed")
     async def clear_highlights(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(thinking=True)
 
