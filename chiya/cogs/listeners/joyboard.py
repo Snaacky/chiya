@@ -65,7 +65,7 @@ class Joyboard(commands.Cog):
             if emoji.guild_id != guild_id:
                 return False
 
-        return emoji.name in self.JOYS
+        return emoji.name in self.JOYS or emoji.name.startswith("joy_")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
