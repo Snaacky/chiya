@@ -39,9 +39,8 @@ class HighlightListeners(commands.Cog):
         Checks if the user was active in chat recently.
         """
         after = datetime.datetime.now() - datetime.timedelta(minutes=config["hl"]["timeout"])
-        messages = [message async for message in channel.history(after=after)]
-        for message in messages:
-            return True if message.author == member else False
+        message_auths = [message.author.id async for message in channel.history(after=after)]
+        return member.id in message_auths
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -52,7 +51,7 @@ class HighlightListeners(commands.Cog):
             return
 
         for highlight in self.highlights:
-            regex = rf"\b{highlight['term']}\b"
+            regex = rf"\b{re.escape(highlight['term'])}\b"
             result = re.search(regex, message.clean_content, re.IGNORECASE)
 
             if not result:
