@@ -57,7 +57,7 @@ class HighlightListeners(commands.Cog):
             if not result:
                 continue
 
-            messages = [message async for message in message.channel.history(limit=4, before=message)]
+            messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
             chat = ""
             for msg in reversed(messages):
                 chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
