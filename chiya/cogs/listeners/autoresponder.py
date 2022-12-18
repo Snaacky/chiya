@@ -58,7 +58,7 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule3":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 3: Do not attack others, troll, or instigate drama",
+                    title="Rule 3: Do not attack others, \"troll\", or instigate drama",
                     description=(
                         "Attacking, belittling, or instigating drama with others will result in your removal "
                         "from the community."
@@ -69,7 +69,7 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule4":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 4: Do not spam (text, images, links, Tenor gifs) or disrupt the flow of chat",
+                    title="Rule 4: Do not spam (text, images, links, Tenor GIFs) or disrupt the flow of chat",
                     description=(
                         "Avoid spamming, derailing conversations, trolling, posting in the incorrect channel, "
                         "or disregarding channel rules. We expect you to make a basic attempt to fit in and "
@@ -117,19 +117,7 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule8":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 8: Do not use offensive or edgy text or imagery on your profile",
-                    description=(
-                        "Users with excessively offensive usernames, nicknames, avatars, server "
-                        "profiles, or statuses may be asked to change the offending content or may be "
-                        "preemptively banned in more severe cases."
-                    ),
-                    color=0x7d98e9,
-                    thumbnail_url="https://i.imgur.com/xbvjFRq.png",
-                    title_url=rules_message
-                ))
-            case "rule9":
-                await message.reply(embed=embeds.make_embed(
-                    title="Rule 9: Do not attempt to evade automod or mod actions",
+                    title="Rule 8: Do not attempt to evade automod or mod actions",
                     description=(
                         "Abusing the rules, such as our automod system, will not be tolerated. Subsequently, "
                         "trying to find loopholes in the rules to evade mod action is not allowed and "
@@ -137,6 +125,18 @@ class AutoresponderListeners(commands.Cog):
                     ),
                     color=0x7d98e9,
                     thumbnail_url="https://i.imgur.com/Nfcrq1N.png",
+                    title_url=rules_message
+                ))
+            case "rule9":
+                await message.reply(embed=embeds.make_embed(
+                    title="Rule 9: References to banned users or banned communities are not allowed",
+                    description=(
+                        "Do not discuss or reference any banned users or banned communities as "
+                        "they have been banned for a reason already discussed by staff with no "
+                        "need for further discussions."
+                    ),
+                    color=0x7d98e9,
+                    thumbnail_url="https://i.imgur.com/2ZxCttO.png",
                     title_url=rules_message
                 ))
             case "rule10":
@@ -153,14 +153,14 @@ class AutoresponderListeners(commands.Cog):
                 ))
             case "rule11":
                 await message.reply(embed=embeds.make_embed(
-                    title="Rule 11: References to banned users or banned communities are not allowed",
+                    title="Rule 11: Do not use offensive or edgy text or imagery on your profile",
                     description=(
-                        "Do not discuss or reference any banned users or banned communities as "
-                        "they have been banned for a reason already discussed by staff with no "
-                        "need for further discussions."
+                        "Users with excessively offensive usernames, nicknames, avatars, server "
+                        "profiles, or statuses may be asked to change the offending content or may be "
+                        "preemptively banned in more severe cases."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url="https://i.imgur.com/2ZxCttO.png",
+                    thumbnail_url="https://i.imgur.com/xbvjFRq.png",
                     title_url=rules_message
                 ))
             case "rule12":
