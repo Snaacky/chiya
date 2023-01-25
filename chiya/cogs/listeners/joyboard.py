@@ -15,14 +15,18 @@ log = logging.getLogger(__name__)
 
 
 class Joyboard(commands.Cog):
+
+    JOYS = ("😂", "😹", "joy_pride", "joy_tone1", "joy_tone5", "joy_logga")
+
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.cache = {"add": set(), "remove": set()}
 
     def generate_color(self, joy_count: int) -> int:
         """
-        Hue, saturation, and value is divided by 360, 100, 100 respectively because it is using the fourth coordinate group
-        described in https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
+        Hue, saturation, and value is divided by 360, 100, 100 respectively because it is using the
+        fourth coordinate group described in
+        https://en.wikipedia.org/wiki/Wikipedia:WikiProject_Color/Normalized_Color_Coordinates#HSV_coordinates.
         """
         if joy_count <= 5:
             saturation = 0.4
@@ -33,10 +37,10 @@ class Joyboard(commands.Cog):
 
         return discord.Color.from_hsv(48 / 360, saturation, 1).value
 
-    async def get_joy_count(self, message: discord.Message, joys: tuple) -> int:
+    async def get_joy_count(self, message: discord.Message) -> int:
         unique_users = set()
         for reaction in message.reactions:
-            if reaction.emoji not in joys:
+            if not self.check_emoji(reaction.emoji, message.guild.id):
                 continue
 
             async for user in reaction.users():
@@ -44,6 +48,25 @@ class Joyboard(commands.Cog):
                     unique_users.add(user.id)
 
         return len(unique_users)
+
+    def check_emoji(self, emoji: discord.PartialEmoji | discord.Emoji, guild_id: int):
+        if isinstance(emoji, discord.PartialEmoji) and emoji.is_custom_emoji():
+            guild = self.bot.get_guild(guild_id)
+            if not guild:
+                return False
+
+            global_emoji = discord.utils.get(guild.emojis, id=emoji.id)
+            if not global_emoji:
+                return False
+        elif isinstance(emoji, discord.Emoji):
+            if emoji.guild_id is None:
+                return False
+
+            if emoji.guild_id != guild_id:
+                return False
+
+        name = emoji if isinstance(emoji, str) else emoji.name
+        return name in self.JOYS or name.startswith("joy_")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
@@ -54,13 +77,12 @@ class Joyboard(commands.Cog):
         Implements a cache to prevent race condition where if multiple joys were reacted on a message after it hits the
         joy threshold and the IDs were not written to the database quickly enough, a duplicated joy embed would be sent.
         """
-        joys = ("😂",)
-        if payload.emoji.name not in joys:
+        if not self.check_emoji(payload.emoji, payload.guild_id):
             return
 
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        joy_count = await self.get_joy_count(message, joys)
+        joy_count = await self.get_joy_count(message)
         cache_data = (payload.message_id, payload.channel_id)
 
         if (
@@ -155,13 +177,12 @@ class Joyboard(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
         """
-        Update the joy count in the embed if the joys were reacted. Delete joy embed if the joy count is below threshold.
+        Update the joy count in the embed if the joys were reacted. Delete joy embed if the joy count is below threshold
         """
-        joys = ("😂",)
         cache_data = (payload.message_id, payload.channel_id)
 
         if (
-            payload.emoji.name not in joys
+            not self.check_emoji(payload.emoji, payload.guild_id)
             or cache_data in self.cache["remove"]
         ):
             return
@@ -185,7 +206,7 @@ class Joyboard(commands.Cog):
             self.cache["remove"].remove(cache_data)
             return db.close()
 
-        joy_count = await self.get_joy_count(message, joys)
+        joy_count = await self.get_joy_count(message)
 
         if joy_count < config["channels"]["joyboard"]["joy_limit"]:
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
