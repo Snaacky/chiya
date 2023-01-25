@@ -45,7 +45,7 @@ class TrackerStatusCommands(commands.Cog):
         """
         async with aiohttp.ClientSession() as session:
             for tracker in trackers:
-                tracker.do_refresh(session)
+                await tracker.do_refresh(session)
 
     async def tracker_autocomplete(self, ctx: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         return [
