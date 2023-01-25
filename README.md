@@ -11,7 +11,7 @@
 </p>
 
 ## Features
-* Avatar Grabber
+* Avatar grabber
 * Bans
 * Message purging
 * Mutes
