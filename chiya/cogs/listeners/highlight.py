@@ -72,7 +72,12 @@ class HighlightListeners(commands.Cog):
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
             for subscriber in highlight["users"]:
-                member = await message.guild.fetch_member(subscriber)
+                try:
+                    member = await message.guild.fetch_member(subscriber)
+                except discord.errors.NotFound:
+                    log.debug("Attempting to find member failed: " + subscriber)
+                    continue
+
                 if (
                     subscriber == message.author.id
                     or not message.channel.permissions_for(member).view_channel
