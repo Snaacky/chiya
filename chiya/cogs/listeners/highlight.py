@@ -75,7 +75,7 @@ class HighlightListeners(commands.Cog):
                 try:
                     member = await message.guild.fetch_member(subscriber)
                 except discord.errors.NotFound:
-                    log.debug("Attempting to find member failed: " + subscriber)
+                    log.debug(f"Attempting to find member failed: {subscriber}")
                     continue
 
                 if (
