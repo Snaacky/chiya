@@ -12,8 +12,8 @@ ENV PYTHONIOENCODING=utf-8
 ENV PYTHONPATH=/app
 
 # Install MySQL and Poetry
-RUN apt-get update -y
-RUN apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl
+RUN apt update -y
+RUN apt install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python3-mysqldb git curl
 RUN curl -sSL https://install.python-poetry.org | python -
 
 # Add Poetry path to PATH
