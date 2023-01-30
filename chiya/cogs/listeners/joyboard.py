@@ -79,10 +79,10 @@ class Joyboard(commands.Cog):
         if not self.reactions:
             return
 
+        reactions = self.reactions.copy()
+        self.reactions.clear()
         payload: discord.RawReactionActionEvent
-        for message, payload in self.reactions.items():
-            del self.reactions[message]
-
+        for message, payload in reactions.items():
             channel = self.bot.get_channel(payload.channel_id)
             message = await channel.fetch_message(payload.message_id)
             joy_count = await self.get_joy_count(message)
