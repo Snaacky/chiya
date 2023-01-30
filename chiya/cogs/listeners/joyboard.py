@@ -75,7 +75,7 @@ class Joyboard(commands.Cog):
     reactions = {}
 
     @tasks.loop(seconds=5)
-    async def handle_reaction(self, message_id):
+    async def handle_reaction(self):
         if not self.reactions:
             return
 
