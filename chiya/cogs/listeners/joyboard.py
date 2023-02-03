@@ -96,7 +96,10 @@ class Joyboard(commands.Cog):
             ):
                 continue
 
-            joyboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["joyboard"]["channel_id"])
+            joyboard_channel = discord.utils.get(
+                message.guild.channels,
+                id=config["channels"]["joyboard"]["channel_id"]
+            )
 
             db = database.Database().get()
             result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
@@ -172,7 +175,6 @@ class Joyboard(commands.Cog):
             db.commit()
             db.close()
 
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         """
@@ -186,17 +188,14 @@ class Joyboard(commands.Cog):
             return
 
         channel = self.bot.get_channel(payload.channel_id)
-        message = await channel.fetch_message(payload.message_id)
 
         if (
-            message.author.bot
-            or message.author.id == payload.member.id
-            or channel.is_nsfw()
+            channel.is_nsfw()
             or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
         ):
             return
 
-        self.reactions[message.id] = payload
+        self.reactions[payload.message_id] = payload
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
