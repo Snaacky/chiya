@@ -8,7 +8,7 @@ from discord.ext import commands
 log = logging.getLogger(__name__)
 
 
-class MuteListeners(commands.Cog):
+class MuteListener(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -19,10 +19,8 @@ class MuteListeners(commands.Cog):
         """
         Add the user's mute entry to the database if they were timed out manually.
         """
-        if not before.timed_out and after.timed_out:
-            logs = await after.guild.audit_logs(
-                limit=1, action=discord.AuditLogAction.member_update
-            ).flatten()
+        if not before.timed_out_until and after.timed_out_until:
+            logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
             if logs[0].user != self.bot.user:
                 db = database.Database().get()
                 db["mod_logs"].insert(
@@ -36,8 +34,24 @@ class MuteListeners(commands.Cog):
                 )
                 db.commit()
                 db.close()
+        
+        if not after.timed_out_until and before.timed_out_until:
+            logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
+            if logs[0].user != self.bot.user:
+                db = database.Database().get()
+                db["mod_logs"].insert(
+                    dict(
+                        user_id=after.id,
+                        mod_id=logs[0].user.id,
+                        timestamp=int(time.time()),
+                        reason=logs[0].reason,
+                        type="unmute",
+                    )
+                )
+                db.commit()
+                db.close()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(MuteListeners(bot))
-    log.info("Listeners loaded: mute")
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(MuteListener(bot))
+    log.info("Listener loaded: mute")

@@ -1,6 +1,5 @@
 import logging
 import time
-from typing import Union
 
 import discord
 from discord.ext import commands
@@ -11,17 +10,18 @@ from chiya import database
 log = logging.getLogger(__name__)
 
 
-class BanListeners(commands.Cog):
+class BanListener(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_member_ban(self, guild: discord.Guild, user: Union[discord.User, discord.Member]) -> None:
+    async def on_member_ban(self, guild: discord.Guild, user: discord.Member | discord.User) -> None:
         """
         Add the user's ban entry to the database if they were banned manually.
         """
         ban_entry = await guild.fetch_ban(user)
-        logs = await guild.audit_logs(limit=1, action=discord.AuditLogAction.ban).flatten()
+        # flattening into a list
+        logs = [log async for log in guild.audit_logs(limit=1, action=discord.AuditLogAction.ban)]
         if logs[0].user != self.bot.user:
             db = database.Database().get()
             db["mod_logs"].insert(
@@ -37,6 +37,6 @@ class BanListeners(commands.Cog):
             db.close()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(BanListeners(bot))
-    log.info("Listeners loaded: ban")
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(BanListener(bot))
+    log.info("Listener loaded: ban")

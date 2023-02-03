@@ -57,6 +57,6 @@ class ReminderTasks(commands.Cog):
         db.close()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(ReminderTasks(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(ReminderTasks(bot))
     log.info("Tasks loaded: reminder")

@@ -12,17 +12,16 @@ log = logging.getLogger(__name__)
 
 class Database:
     def __init__(self) -> None:
-        self.host = config["database"]["host"]
-        self.database = config["database"]["database"]
-        self.user = config["database"]["user"]
-        self.password = config["database"]["password"]
+        host = config["database"]["host"]
+        database = config["database"]["database"]
+        user = config["database"]["user"]
+        password = config["database"]["password"]
 
-        if not all([self.host, self.database, self.user, self.password]):
+        if not all([host, database, user, password]):
             log.error("One or more database connection variables are missing, exiting...")
             raise SystemExit
 
-        self.url = f"mysql://{self.user}:{self.password}@{self.host}/{self.database}"
-        self.setup()
+        self.url = f"mysql://{user}:{password}@{host}/{database}?charset=utf8mb4"
 
     def get(self) -> dataset.Database:
         """
@@ -92,6 +91,18 @@ class Database:
             starboard.create_column("channel_id", db.types.bigint)
             starboard.create_column("message_id", db.types.bigint)
             starboard.create_column("star_embed_id", db.types.bigint)
+            log.info("Created missing table: starboard")
+
+        # utf8mb4_unicode_ci is required to support emojis and other unicode.
+        # dataset does not expose collation in any capacity so rather than
+        # checking an object property, we have to do this hacky way of checking
+        # the charset via queries and updating it where necessary.
+        for table in db.tables:
+            charset = next(db.query(f"SHOW TABLE STATUS WHERE NAME = '{table}';"))["Collation"]
+            if charset == "utf8mb4_unicode_ci":
+                continue
+            db.query(f"ALTER TABLE {table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;")
+            log.info(f"Converted table to utf8mb4_unicode_ci: {table}")
 
         db.commit()
         db.close()

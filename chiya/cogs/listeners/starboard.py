@@ -1,8 +1,11 @@
 import datetime
 import logging
+import httpx
 
 import discord
 from discord.ext import commands
+
+from urllib.parse import urlparse
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -93,19 +96,19 @@ class Starboard(commands.Cog):
                 embed_dict = star_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(star_count=star_count)
                 embed = discord.Embed.from_dict(embed_dict)
-                db.close()
                 self.cache["add"].remove(cache_data)
-                return await star_embed.edit(
+                await star_embed.edit(
                     content=f"{self.generate_star(star_count)} **{star_count}** {message.channel.mention}",
                     embed=embed,
                 )
+                return db.close()
             # Star embed found in database but the actual star embed was deleted.
             except discord.NotFound:
                 pass
 
         embed = embeds.make_embed(
             color=self.generate_color(star_count=star_count),
-            footer=payload.message_id,
+            footer=str(payload.message_id),
             timestamp=datetime.datetime.now(),
             fields=[{"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False}],
         )
@@ -118,6 +121,16 @@ class Starboard(commands.Cog):
             # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
             if "image" in attachment.content_type:
                 images.append(attachment.url)
+
+        for message_embed in message.embeds:
+            # Other types may need to be added in future
+            if message_embed.type in ["gif", "gifv"]:
+                if message_embed.provider and message_embed.provider.url:
+                    urlinfo = urlparse(message_embed.provider.url)
+                    if urlinfo.netloc in ["tenor.com", "tenor.co"]:
+                        async with httpx.AsyncClient() as client:
+                            req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
+                            images.append(req.url)
 
         # Prioritize the first image over sticker if possible.
         if images:
@@ -219,11 +232,11 @@ class Starboard(commands.Cog):
             db["starboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
-            return await star_embed.delete()
+            await star_embed.delete()
         except discord.NotFound:
             db.close()
 
 
-def setup(bot: commands.bot.Bot) -> None:
-    bot.add_cog(Starboard(bot))
+async def setup(bot: commands.bot.Bot) -> None:
+    await bot.add_cog(Starboard(bot))
     log.info("Listener loaded: starboard")

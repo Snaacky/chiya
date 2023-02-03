@@ -1,45 +1,47 @@
 import datetime
 import logging
 import re
-from typing import Tuple
 
 import discord
-from discord.commands import context
 
 
 log = logging.getLogger(__name__)
 
 
-async def can_action_member(ctx: context.ApplicationContext, member: discord.Member) -> bool:
+async def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
+    # Allow owner to override all limitations.
+    if member.id == ctx.guild.owner_id:
+        return True
+
     # Stop mods from actioning on the bot.
-    if member.bot:
+    if member.id == ctx.client.user.id:
         return False
+
+    # Skip over the rest of the checks if it's a discord.User and not a discord.Member.
+    if isinstance(member, discord.User):
+        return True
 
     # Checking if bot is able to perform the action.
     if member.top_role >= member.guild.me.top_role:
         return False
 
-    # Allow owner to override all limitations.
-    if member.id == ctx.guild.owner_id:
-        return True
-
     # Prevents mods from actioning other mods.
-    if ctx.author.top_role <= member.top_role:
+    if ctx.user.top_role <= member.top_role:
         return False
 
     return True
 
 
-def get_duration(duration) -> Tuple[str, int]:
+def get_duration(duration) -> tuple[str, int]:
     regex = (
         r"("
-        r"(?:(\d+)\s*y(?:ears|ear|rs|r)?)?\s*"
-        r"(?:(\d+)\s*mo(?:nths|nth)?)?\s*"
-        r"(?:(\d+)\s*w(?:eeks|eek|ks|k)?)?\s*"
-        r"(?:(\d+)\s*d(?:ays|ay)?)?\s*"
-        r"(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*"
-        r"(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*"
-        r"(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?"
+        r"(?:(\d+)\s*y(?:(?:ear|r)s?)?)?\s*"
+        r"(?:(\d+)\s*mo(?:(?:nth)s?)?)?\s*"
+        r"(?:(\d+)\s*w(?:(?:eek|k)s?)?)?\s*"
+        r"(?:(\d+)\s*d(?:(?:ay)s?)?)?\s*"
+        r"(?:(\d+)\s*h(?:(?:our|r)s?)?)?\s*"
+        r"(?:(\d+)\s*m(?:(?:inute|in)s?)?)?\s*"
+        r"(?:(\d+)\s*s(?:(?:econd|ec)s?)?)?"
         r")"
     )
 
