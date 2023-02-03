@@ -98,7 +98,6 @@ class NoteCommands(commands.Cog):
             results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
         else:
             results = db["mod_logs"].find(user_id=user.id, order_by="-id")
-        db.close()
 
         actions = []
         for action in results:
@@ -126,6 +125,7 @@ class NoteCommands(commands.Cog):
 
             actions.append(action_string)
 
+        db.close()
         if not actions:
             return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
 
