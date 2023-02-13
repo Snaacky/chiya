@@ -84,9 +84,15 @@ class Joyboard(commands.Cog):
             self.reactions.clear()
             payload: discord.RawReactionActionEvent
             for message, payload in reactions.items():
-                channel = self.bot.get_channel(payload.channel_id)
-                message = await channel.fetch_message(payload.message_id)
-                joy_count = await self.get_joy_count(message)
+                try:
+                    channel = self.bot.get_channel(payload.channel_id)
+                    message = await channel.fetch_message(payload.message_id)
+                    joy_count = await self.get_joy_count(message)
+                except discord.NotFound:
+                    continue
+                except Exception as e:
+                    log.error(e)
+                    continue
 
                 if (
                     message.author.bot
@@ -198,6 +204,8 @@ class Joyboard(commands.Cog):
         ):
             return
 
+        if not self.handle_reaction.is_running():
+            self.handle_reaction.start()
         self.reactions[payload.message_id] = payload
 
     @commands.Cog.listener()
