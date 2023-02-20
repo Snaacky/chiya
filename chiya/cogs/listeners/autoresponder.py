@@ -22,7 +22,12 @@ class AutoresponderListeners(commands.Cog):
         and replies with the appopriate embed. Currently only when invoked
         by a staff member.
         """
+        # Ignore messages from bots to avoid infinite loops and other fuckery.
         if message.author.bot:
+            return
+
+        # Ignore DMs between users and the bot because .roles below will throw an exception.
+        if isinstance(message.channel, discord.channel.DMChannel):
             return
 
         staff = [x for x in message.author.roles
