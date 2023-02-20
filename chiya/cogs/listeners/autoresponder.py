@@ -25,6 +25,13 @@ class AutoresponderListeners(commands.Cog):
         if message.author.bot:
             return
 
+        # Somehow, for some unknown reason, this function will randomly fire
+        # off passing a discord.User instead of a discord.Member, resulting
+        # in an exception because a User object obviously doesn't have roles,
+        # so we need to skip over instances of that occurring.
+        if not isinstance(message.author, discord.Member):
+            return
+
         staff = [x for x in message.author.roles
                  if x.id == config["roles"]["staff"]
                  or x.id == config["roles"]["trial"]]
