@@ -24,8 +24,8 @@ class TrackerStatus():
             async with session.get(self.url, timeout=10) as response:
                 response.raise_for_status()
                 self.cache_data = await response.json()
-        except Exception as e:
-            log.error(e)
+        except Exception:
+            log.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
 
     def get_embed_color(self, embed: discord.Embed):
