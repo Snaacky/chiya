@@ -1,5 +1,5 @@
 # For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.10.0-slim-buster
+FROM python:3.11.1-slim-bullseye
 LABEL maintainer="https://github.com/snaacky/chiya"
 
 # Keeps Python from generating .pyc files in the container
@@ -12,10 +12,9 @@ ENV PYTHONIOENCODING=utf-8
 ENV PYTHONPATH=/app
 
 # Install MySQL and Poetry
-RUN apt-get update -y
-RUN apt-get install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python-mysqldb git curl
-RUN pip install https://github.com/python-poetry/poetry/releases/download/1.2.0b2/poetry-1.2.0b2-py3-none-any.whl
-# RUN curl -sSL https://install.python-poetry.org | python -
+RUN apt update -y
+RUN apt install --no-install-recommends -y build-essential libmariadb-dev-compat libmariadb-dev python3-mysqldb git curl
+RUN curl -sSL https://install.python-poetry.org | python -
 
 # Add Poetry path to PATH
 ENV PATH="${PATH}:/root/.local/bin"
