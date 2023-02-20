@@ -1,4 +1,5 @@
 import logging
+import aiohttp
 
 import discord
 from discord import app_commands
@@ -42,8 +43,9 @@ class TrackerStatusCommands(commands.Cog):
         Grabs the latest API data from trackerstatus.info and caches it locally
         every 60 seconds, respecting API limits.
         """
-        for tracker in trackers:
-            tracker.do_refresh()
+        async with aiohttp.ClientSession() as session:
+            for tracker in trackers:
+                await tracker.do_refresh(session)
 
     async def tracker_autocomplete(self, ctx: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         return [
