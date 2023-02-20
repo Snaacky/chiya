@@ -23,8 +23,8 @@ class TrackerStatus():
             r = requests.get(url=self.url)
             r.raise_for_status()
             self.cache_data = r.json()
-        except Exception as e:
-            log.error(e)
+        except Exception:
+            log.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
 
     def get_embed_color(self, embed: discord.Embed):
