@@ -87,6 +87,19 @@ class Database:
             starboard.create_column("star_embed_id", db.types.bigint)
             log.info("Created missing table: starboard")
 
+        if "joyboard" not in db:
+            joyboard = db.create_table("joyboard")
+            joyboard.create_column("channel_id", db.types.bigint)
+            joyboard.create_column("message_id", db.types.bigint)
+            joyboard.create_column("joy_embed_id", db.types.bigint)
+            log.info("Created missing table: joyboard")
+
+        if "highlights" not in db:
+            highlights = db.create_table("highlights")
+            highlights.create_column("term", db.types.text)
+            highlights.create_column("users", db.types.text)
+            log.info("Created missing table: highlights")
+
         # utf8mb4_unicode_ci is required to support emojis and other unicode.
         # dataset does not expose collation in any capacity so rather than
         # checking an object property, we have to do this hacky way of checking
