@@ -191,9 +191,7 @@ class Joyboard(commands.Cog):
 
         channel = self.bot.get_channel(payload.channel_id)
 
-        if (
-            payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
-        ):
+        if payload.channel_id in config["channels"]["joyboard"]["blacklisted"]:
             return
 
         self.reactions[payload.message_id] = payload
