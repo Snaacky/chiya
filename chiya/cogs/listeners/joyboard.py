@@ -192,7 +192,7 @@ class Joyboard(commands.Cog):
         channel = self.bot.get_channel(payload.channel_id)
 
         if (
-            or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
+            payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
         ):
             return
 
