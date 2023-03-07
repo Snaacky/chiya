@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from chiya import config, database
 from chiya.utils import embeds
+from chiya.utils.helpers import log_embed_to_channel
 from chiya.utils.pagination import LinePaginator
 
 
@@ -25,14 +26,8 @@ class NoteCommands(commands.Cog):
     @app_commands.describe(user="The user to add the note to")
     @app_commands.describe(note="The note to leave on the user")
     async def add_note(self, ctx: discord.Interaction, user: discord.Member | discord.User, note: str) -> None:
-        """
-        Adds a note to the users profile.
-
-        Notes can only be seen by staff via the /search command and do not
-        punish the user in anyway. They are merely for staff to log relevant
-        information. Users are not alerted when a note is added to them.
-        """
-        await ctx.response.defer(thinking=True)
+        """Adds a note to the specified user queryable via /search."""
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         note_id = db["mod_logs"].insert(
@@ -58,6 +53,7 @@ class NoteCommands(commands.Cog):
             ],
         )
 
+        await log_embed_to_channel(ctx=ctx, embed=embed)
         await ctx.followup.send(embed=embed)
 
     @app_commands.command(name="search", description="Search through a users notes and mod logs")
@@ -73,24 +69,10 @@ class NoteCommands(commands.Cog):
     ) -> None:
         """
         Search for the mod actions and notes for a user. The search can be
-        filtered by ban, unban, unmute, warn, or notes.
-
-        Users are not alerted when they have a /search command ran on them.
-        Only the command invoking user can change pages on the pagination.
-        It is imperative that the command is not ran in public channels
-        because the output is not hidden.
-
-        TODO: Bug that occurs when running /search:
-            Traceback (most recent call last):
-            File "virtualenvs\\chiya-Z7ITmrUJ-py3.10\\lib\\site-packages\\sqlalchemy\\engine\\base.py", line 1995, in _safe_close_cursor
-                cursor.close()
-            File "virtualenvs\\chiya-Z7ITmrUJ-py3.10\\lib\\site-packages\\MySQLdb\\cursors.py", line 83, in close
-                while self.nextset():
-            File "virtualenvs\\chiya-Z7ITmrUJ-py3.10\\lib\\site-packages\\MySQLdb\\\cursors.py", line 137, in nextset
-                nr = db.next_result()
-            MySQLdb.OperationalError: (2006, '')
+        filtered by ban, unban, unmute, warn, or notes. Users are not alerted
+        when they have a /search command ran on them.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         # TODO: can't this be merged into one call because action will return None either way?
@@ -110,11 +92,7 @@ class NoteCommands(commands.Cog):
                 "note": "🗒️",
             }
 
-            action_type = action["type"]
-            action_type = action_type[0].upper() + action_type[1:]
-            action_type = f"{action_emoji[action['type']]} {action_type}"
-
-            action_string = f"""**{action_type}**
+            action_string = f"""**{action_emoji[action['type']]} {action['type'][0].title()}**
                 **ID:** {action["id"]}
                 **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
                 **Moderator:** <@!{action["mod_id"]}>
@@ -159,30 +137,31 @@ class NoteCommands(commands.Cog):
         latest edited message.
         """
         # TODO: Add some sort of support for history or editing mods.
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
-        mod_log = db["mod_logs"].find_one(id=id)
-        if not mod_log:
+        log = db["mod_logs"].find_one(id=id)
+        if not log:
             return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
 
-        user = await self.bot.fetch_user(mod_log["user_id"])
+        user = await self.bot.fetch_user(log["user_id"])
         embed = embeds.make_embed(
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.user.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=discord.Color.green(),
             fields=[
-                {"name": "Before:", "value": mod_log["reason"], "inline": False},
+                {"name": "Before:", "value": log["reason"], "inline": False},
                 {"name": "After:", "value": note, "inline": False},
             ],
         )
 
-        mod_log["reason"] = note
-        db["mod_logs"].update(mod_log, ["id"])
+        log["reason"] = note
+        db["mod_logs"].update(log, ["id"])
         db.commit()
         db.close()
 
+        await log_embed_to_channel(ctx=ctx, embed=embed)
         await ctx.followup.send(embed=embed)
 
 

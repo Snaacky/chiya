@@ -7,7 +7,7 @@ from discord.ext import commands
 
 from chiya import config, database
 from chiya.utils import embeds
-from chiya.utils.helpers import can_action_member
+from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
 log = logging.getLogger(__name__)
@@ -18,9 +18,7 @@ class BansCommands(commands.Cog):
         self.bot = bot
 
     async def is_user_banned(self, ctx: discord.Interaction, user: discord.Member | discord.User) -> bool:
-        """
-        Check if the user is banned from the context invoking guild.
-        """
+        """Check if the user is banned from the context guild."""
         try:
             return bool(await self.bot.get_guild(ctx.guild.id).fetch_ban(user))
         except discord.NotFound:
@@ -41,7 +39,7 @@ class BansCommands(commands.Cog):
     ) -> None:
         """
         Ban the user, log the action to the database, and attempt to send them
-        a direct message alerting them of their ban.
+        a direct message notfying them of their ban.
 
         If the user isn't in the server, has privacy settings enabled, or has
         the bot blocked they will be unable to receive the ban notification.
@@ -50,9 +48,9 @@ class BansCommands(commands.Cog):
         daystodelete is limited to a maximum value of 7. This is a Discord API
         limitation with the .ban() function.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
-        if not await can_action_member(ctx=ctx, member=user):
+        if not can_action_member(ctx=ctx, member=user):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if await self.is_user_banned(ctx=ctx, user=user):
@@ -61,7 +59,7 @@ class BansCommands(commands.Cog):
         if len(reason) > 1024:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        embed = embeds.make_embed(
+        mod_embed = embeds.make_embed(
             ctx=ctx,
             author=True,
             title=f"Banning user: {user}",
@@ -70,7 +68,7 @@ class BansCommands(commands.Cog):
             color=discord.Color.red(),
         )
 
-        dm_embed = embeds.make_embed(
+        user_embed = embeds.make_embed(
             author=False,
             title="Uh-oh, you've been banned!",
             description=(
@@ -86,9 +84,9 @@ class BansCommands(commands.Cog):
         )
 
         try:
-            await user.send(embed=dm_embed)
+            await user.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            embed.add_field(
+            mod_embed.add_field(
                 name="Notice:",
                 value=(
                     f"Unable to message {user.mention} about this action. "
@@ -110,8 +108,9 @@ class BansCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.guild.ban(user, reason=reason, delete_message_days=daystodelete or 0)
-        await ctx.followup.send(embed=embed)
+        await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await ctx.followup.send(embed=mod_embed)
 
     @app_commands.command(name="unban", description="Unban user from the server")
     @app_commands.guilds(config["guild_id"])
@@ -126,7 +125,7 @@ class BansCommands(commands.Cog):
         the user know that they were unbanned because it cannot communicate
         with users that it does not share a mutual server with.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.is_user_banned(ctx=ctx, user=user):
             return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
@@ -134,7 +133,7 @@ class BansCommands(commands.Cog):
         if len(reason) > 1024:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        embed = embeds.make_embed(
+        mod_embed = embeds.make_embed(
             ctx=ctx,
             author=True,
             title=f"Unbanning user: {user}",
@@ -151,7 +150,8 @@ class BansCommands(commands.Cog):
         db.close()
 
         await ctx.guild.unban(user, reason=reason)
-        await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await ctx.followup.send(embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:

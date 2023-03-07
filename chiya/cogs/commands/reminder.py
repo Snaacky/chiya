@@ -22,7 +22,7 @@ class ReminderCommands(commands.Cog):
     @app_commands.guild_only()
     class ReminderGroup(app_commands.Group):
         pass
-    reminder = ReminderGroup(name="reminder", description="Reminder management commands", guild_ids=[config["guild_id"]])
+    reminder = ReminderGroup(name="reminder", guild_ids=[config["guild_id"]])
 
     @reminder.command(name="create", description="Set a reminder")
     @app_commands.describe(duration="Amount of time until the reminder is sent")
@@ -33,14 +33,8 @@ class ReminderCommands(commands.Cog):
         duration: str,
         message: str,
     ) -> None:
-        """
-        Creates a reminder message that will be sent at the specified time.
-
-        The reminder will be sent in the same channel that it was originally
-        created at. If the channel no longer exists when the reminder is to
-        be sent, it will attempt to send the reminder to the user in DMs.
-        """
-        await ctx.response.defer(thinking=True)
+        """Creates a reminder message that will be sent at the specified time."""
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         duration_string, end_time = get_duration(duration=duration)
         if not duration_string:
@@ -77,6 +71,7 @@ class ReminderCommands(commands.Cog):
                 {"name": "ID:", "value": remind_id, "inline": False},
                 {"name": "Message:", "value": message, "inline": False},
             ],
+            footer="Make sure your DMs are open or you won't receive your reminder."
         )
 
         await ctx.followup.send(embed=embed)
@@ -93,7 +88,7 @@ class ReminderCommands(commands.Cog):
         """
         Edit a reminder message.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
 
@@ -102,7 +97,7 @@ class ReminderCommands(commands.Cog):
         old_message = result["message"]
 
         if result["author_id"] != ctx.user.id:
-            return await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
+            return await embeds.error_message(ctx, "That reminder is not yours.")
 
         if result["sent"]:
             return await embeds.error_message(ctx, "That reminder doesn't exist.")
@@ -132,7 +127,7 @@ class ReminderCommands(commands.Cog):
     @reminder.command(name="list", description="List your existing reminders")
     async def list(self, ctx: discord.Interaction) -> None:
         """List your reminders."""
-        await ctx.response.defer()
+        await ctx.response.defer(ephemeral=True)
 
         db = database.Database().get()
         results = db["remind_me"].find(sent=False, author_id=ctx.user.id)
@@ -175,7 +170,7 @@ class ReminderCommands(commands.Cog):
         """
         Delete a reminder.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
 
@@ -216,7 +211,7 @@ class ReminderCommands(commands.Cog):
         """
         Clears all reminders.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
 
@@ -245,6 +240,7 @@ class ReminderCommands(commands.Cog):
                 return await ctx.followup.send(embed=embed)
         except asyncio.TimeoutError:
             db.close()
+            # TODO: This needs to be moved to a ctx.followup, doesn't it?
             return await embeds.error_message(ctx, description=f"{ctx.user.mention}, your request has timed out.")
 
         remind_me = db["remind_me"]

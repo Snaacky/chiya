@@ -7,6 +7,7 @@ from discord.ext import commands
 
 from chiya import config, database
 from chiya.utils import embeds
+from chiya.utils.helpers import log_embed_to_channel
 
 
 log = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class WarnCommands(commands.Cog):
         the bot blocked they will be unable to receive the ban notification.
         The bot will let the invoking mod know if this is the case.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
@@ -42,7 +43,7 @@ class WarnCommands(commands.Cog):
         if len(reason) > 4096:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
 
-        embed = embeds.make_embed(
+        mod_embed = embeds.make_embed(
             ctx=ctx,
             author=True,
             title=f"Warning member: {member.name}",
@@ -52,7 +53,7 @@ class WarnCommands(commands.Cog):
         )
 
         try:
-            dm_embed = embeds.make_embed(
+            user_embed = embeds.make_embed(
                 author=False,
                 title="Uh-oh, you've received a warning!",
                 description="If you believe this was a mistake, contact staff.",
@@ -67,9 +68,9 @@ class WarnCommands(commands.Cog):
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
             )
-            await member.send(embed=dm_embed)
+            await member.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            embed.add_field(
+            mod_embed.add_field(
                 name="Notice:",
                 value=(
                     f"Unable to message {member.mention} about this action. "
@@ -91,7 +92,8 @@ class WarnCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await ctx.followup.send(embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:
