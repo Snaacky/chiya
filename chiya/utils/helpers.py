@@ -94,5 +94,7 @@ def get_duration(duration) -> tuple[str, int]:
 
 
 async def log_embed_to_channel(ctx: discord.Interaction, embed: discord.Embed):
-    channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["logs"]["chiya"])
-    await channel.send(embed=embed)
+    mod_channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["moderation"])
+    logs_channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["logs"]["chiya"])
+    await mod_channel.send(embed=embed)
+    await logs_channel.send(embed=embed)
