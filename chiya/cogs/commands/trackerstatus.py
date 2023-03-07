@@ -63,7 +63,7 @@ class TrackerStatusCommands(commands.Cog):
     ) -> None:
         # TODO: Change the color of the embed to green if all services are online,
         # yellow if one of the services is offline, and grey or red if all are offline.
-        await ctx.response.defer()
+        await ctx.response.defer(ephemeral=True)
         tracker: TrackerStatus = trackers_dict.get(tracker)
 
         if tracker is None:

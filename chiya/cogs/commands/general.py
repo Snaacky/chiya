@@ -25,15 +25,8 @@ class GeneralCommands(commands.Cog):
         user: discord.Member | discord.User = None,
         profile: bool = None
     ) -> None:
-        """
-        Grab a user's avatar and return it in a large-sized embed.
-
-        If the user parameter is not specified, the function will grab the
-        invokers avatar instead. Offers the ability to attempt to grab a users
-        server avatar and will fallback to their global avatar with a warning
-        attached if a server specific avatar is not set.
-        """
-        await ctx.response.defer(thinking=True)
+        """Send an embed with the specified users avatar."""
+        await ctx.response.defer(thinking=True, ephemeral=True)
         user = user or ctx.user
         embed = embeds.make_embed()
         if profile and isinstance(user, discord.Member):

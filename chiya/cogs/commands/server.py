@@ -18,22 +18,18 @@ class ServerCommands(commands.Cog):
     @app_commands.checks.has_role(config["roles"]["staff"])
     class ServerGroup(app_commands.Group):
         pass
-    server = ServerGroup(name="server", description="Server management commands", guild_ids=[config["guild_id"]])
+    server = ServerGroup(name="server", guild_ids=[config["guild_id"]])
 
     @server.command(name="pop", description="Gets the current server population")
     async def pop(self, ctx: discord.Interaction) -> None:
-        """
-        Send the current member count of the server.
-        """
+        """Send a message with the current guild member count."""
         await ctx.response.defer(thinking=True)
         await ctx.followup.send(ctx.guild.member_count)
 
     @server.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: discord.Interaction) -> None:
-        """
-        Send an embed with all current server boosters.
-        """
-        await ctx.response.defer(thinking=True)
+        """Send an embed listing all the current server boosters."""
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         embed = embeds.make_embed(
             title=f"Total boosts: {ctx.guild.premium_subscription_count}",

@@ -6,6 +6,7 @@ from discord.ext import commands
 
 from chiya import config
 from chiya.utils import embeds
+from chiya.utils.helpers import log_embed_to_channel
 
 
 log = logging.getLogger(__name__)
@@ -15,7 +16,7 @@ class PurgeCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    async def can_purge_messages(self, ctx: discord.Interaction) -> bool:
+    def can_purge_messages(self, ctx: discord.Interaction) -> bool:
         """
         Check used by purge function to make sure that the moderation,
         development, logs, and tickets categories can't be purged for
@@ -52,7 +53,7 @@ class PurgeCommands(commands.Cog):
         """
         await ctx.response.defer(thinking=True)
 
-        if not await self.can_purge_messages(ctx):
+        if not self.can_purge_messages(ctx):
             return await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
 
         if len(reason) > 4096:
@@ -62,12 +63,13 @@ class PurgeCommands(commands.Cog):
 
         embed = embeds.make_embed(
             title="Purged messages",
-            description=f"{ctx.user.mention} purged {amount} {'message' if amount == 1 else 'messages'}.",
+            description=f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}.",
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color=discord.Color.red(),
             fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )
         await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
         await ctx.followup.send(embed=embed)
 
 
