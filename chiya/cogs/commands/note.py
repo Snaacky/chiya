@@ -10,7 +10,7 @@ from discord.ext import commands
 from chiya import config, database
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
-from chiya.utils.pagination import LinePaginator
+from chiya.utils.pagination import MyMenuPages, MySource
 
 
 log = logging.getLogger(__name__)
@@ -110,15 +110,9 @@ class NoteCommands(commands.Cog):
         embed = embeds.make_embed(title="Mod Actions")
         embed.set_author(name=user, icon_url=user.display_avatar)
 
-        await LinePaginator.paginate(
-            lines=actions,
-            ctx=ctx,
-            embed=embed,
-            max_lines=4,
-            max_size=2000,
-            linesep="\n",
-            timeout=120,
-        )
+        formatter = MySource(actions, embed)
+        menu = MyMenuPages(formatter)
+        await menu.start(ctx)
 
     @app_commands.command(name="editlog", description="Edit a user's notes and mod logs")
     @app_commands.guilds(config["guild_id"])
