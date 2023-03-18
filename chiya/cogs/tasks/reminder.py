@@ -46,7 +46,7 @@ class ReminderTasks(commands.Cog):
                 channel = await user.create_dm()
                 await channel.send(embed=embed)
             except discord.Forbidden:
-                log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
+                log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']}.")
 
             db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
 
