@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime, timezone
+import discord
 
 from discord.ext import commands, tasks
 
@@ -33,16 +34,18 @@ class ReminderTasks(commands.Cog):
 
         for reminder in result:
             try:
-                user = await self.bot.fetch_user(reminder["author_id"])
-            except Exception:  # TODO: Add a proper Exception here
+                user = await self.bot.fetch_user(reminder['author_id'])
+            except discord.errors.NotFound:
                 db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
                 log.warning(f"Reminder entry with ID {reminder['id']} has an invalid user ID: {reminder['author_id']}.")
                 continue
 
             embed = embeds.make_embed(title="Here is your reminder", description=reminder["message"], color="blurple")
 
-            dm = await user.create_dm()
-            if not await dm.send(embed=embed):
+            try:
+                channel = await user.create_dm()
+                await channel.send(embed=embed)
+            except discord.Forbidden:
                 log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
 
             db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
