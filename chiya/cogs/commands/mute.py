@@ -169,7 +169,6 @@ class MuteCommands(commands.Cog):
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
-                {"name": "Moderator:", "value": ctx.user.mention, "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -198,7 +197,7 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.timeout(until=None, reason=reason)
+        await member.timeout(None, reason=reason)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
         await ctx.followup.send(embed=mod_embed)
 
