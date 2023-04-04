@@ -26,6 +26,7 @@ PrivateBinAPI = "^1.0.0"
 pyaml_env = "^1.2.1"
 requests = "2.28.2"
 sqlalchemy-utils = "0.39.0"
+discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus"}
 
 [tool.poetry.dev-dependencies]
 black = ">=22.12.0"
