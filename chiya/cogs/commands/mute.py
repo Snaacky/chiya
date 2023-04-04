@@ -153,7 +153,7 @@ class MuteCommands(commands.Cog):
         if len(reason) > 1024:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        user_embed = embeds.make_embed(
+        mod_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unmuting member: {member.name}",
             description=f"{member.mention} was unmuted by {ctx.user.mention} for: {reason}",
@@ -161,7 +161,7 @@ class MuteCommands(commands.Cog):
             thumbnail_url="https://i.imgur.com/W7DpUHC.png",
         )
 
-        mod_embed = embeds.make_embed(
+        user_embed = embeds.make_embed(
             author=False,
             title="Yay, you've been unmuted!",
             description="Review our server rules to avoid being actioned again in the future.",
