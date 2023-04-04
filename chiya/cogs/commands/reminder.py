@@ -8,7 +8,7 @@ from discord import app_commands
 from chiya import config, database
 from chiya.utils import embeds
 from chiya.utils.helpers import get_duration
-from chiya.utils.pagination import LinePaginator
+from chiya.utils.pagination import MyMenuPages, MySource
 
 
 log = logging.getLogger(__name__)
@@ -149,14 +149,9 @@ class ReminderCommands(commands.Cog):
             color=discord.Color.blurple(),
         )
 
-        await LinePaginator.paginate(
-            reminders,
-            ctx=ctx,
-            embed=embed,
-            max_lines=5,
-            max_size=2000,
-            restrict_to_user=ctx.user,
-        )
+        formatter = MySource(reminders, embed)
+        menu = MyMenuPages(formatter)
+        await menu.start(ctx)
 
         db.close()
 
