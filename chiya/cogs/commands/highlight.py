@@ -1,16 +1,11 @@
-import logging
-
 import discord
 import orjson
 from discord import app_commands
 from discord.ext import commands
-
+from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class HighlightCommands(commands.Cog):

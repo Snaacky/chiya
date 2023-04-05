@@ -1,13 +1,10 @@
-import logging
 import time
 
-import discord
 import aiohttp
+import discord
+from loguru import logger as log
 
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class TrackerStatus():

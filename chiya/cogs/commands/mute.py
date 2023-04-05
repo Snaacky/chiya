@@ -1,17 +1,14 @@
-import logging
 import time
 from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands
 from discord import app_commands
+from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member, get_duration, log_embed_to_channel
-
-
-log = logging.getLogger(__name__)
 
 
 class MuteCommands(commands.Cog):

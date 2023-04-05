@@ -1,12 +1,12 @@
 import asyncio
 import glob
-import logging
 import os
+import sys
 
 import discord
 from discord.ext import commands
+from loguru import logger as log
 
-import __init__  # noqa
 import database
 from config import config
 
@@ -25,7 +25,6 @@ bot = commands.Bot(
         reactions=config["bot"]["intents"]["reactions"],
     ),
 )
-log = logging.getLogger(__name__)
 
 
 @bot.event
@@ -38,8 +37,18 @@ async def on_ready() -> None:
 
 
 async def main():
+    log_level = config["bot"]["log_level"]
+    if not log_level:
+        log_level = "NOTSET"
+
+    log.remove()
+    fmt = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
+    log.add(sys.stdout, format=fmt, level=log_level)
+    log.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
+
     for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
         await bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
+
     await bot.start(config["bot"]["token"])
 
 if __name__ == "__main__":

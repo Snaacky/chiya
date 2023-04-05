@@ -1,13 +1,9 @@
-import logging
-
 import dataset
+from loguru import logger as log
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
 from config import config
-
-
-log = logging.getLogger(__name__)
 
 
 class Database:

@@ -1,10 +1,17 @@
-import logging
-import orjson
 import discord
+import orjson
 from discord import Interaction, ui
 from discord.ext import menus
+from loguru import logger as log
 
-log = logging.getLogger(__name__)
+
+FIRST_EMOJI = "\u23EE"  # [:track_previous:]
+LEFT_EMOJI = "\u2B05"  # [:arrow_left:]
+RIGHT_EMOJI = "\u27A1"  # [:arrow_right:]
+LAST_EMOJI = "\u23ED"  # [:track_next:]
+DELETE_EMOJI = "⛔"  # [:trashcan:]
+
+PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMOJI)
 
 
 class MyMenuPages(ui.View, menus.MenuPages):

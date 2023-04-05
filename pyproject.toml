@@ -17,9 +17,9 @@ repository = "https://github.com/Snaacky/Chiya"
 [tool.poetry.dependencies]
 python = "^3.11"
 asyncpraw = "7.6.1"
-coloredlogs = "15.0.1"
 dataset = "1.6.0"
 "discord.py" = {version = "^2.1.0", extras = ["speed"]}
+loguru = "^0.6.0"
 mysqlclient = "2.1.1"
 parsedatetime = "2.6"
 PrivateBinAPI = "^1.0.0"
