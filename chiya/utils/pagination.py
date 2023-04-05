@@ -73,7 +73,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
             elif max_pages > page_number >= 0:
                 await self.show_page(page_number, interaction)
             else:
-                await interaction.response.send_message("This page would go out of bounds.", ephemeral=True)
+                await self.show_page(page_number > 0 and 0 or max_pages - 1, interaction)
         except IndexError:
             # An error happened that can be handled, so ignore it.
             await interaction.response.send_message("This page would go out of bounds.", ephemeral=True)
