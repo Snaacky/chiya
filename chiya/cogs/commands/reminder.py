@@ -139,6 +139,9 @@ class ReminderCommands(commands.Cog):
                 )
             )
 
+        if not reminders:
+            return await embeds.error_message(ctx=ctx, description="No reminders found!")
+
         embed = embeds.make_embed(
             ctx=ctx,
             author=True,
