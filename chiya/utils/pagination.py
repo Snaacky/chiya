@@ -95,6 +95,7 @@ class MySource(menus.ListPageSource):
     async def format_page(self, menu, entries):
         log.debug(f"FORMAT_PAGE: {menu.current_page} | {menu}")
         page_info = await self.get_page(menu.current_page)
+        log.debug(f"FORMAT_PAGE_INFO: DONE {len(page_info)}")
         desc = '\n'.join(page_info)
         self.embed.description = desc
         self.embed.set_footer(text=f"Page {menu.current_page + 1}/{self.get_max_pages()}")
