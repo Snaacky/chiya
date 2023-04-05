@@ -59,6 +59,8 @@ class MyMenuPages(ui.View, menus.MenuPages):
         page = await self._source.get_page(page_number)
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
+        if interaction.response.is_done():
+            await interaction.followup.edit_message(**kwargs)
         await interaction.response.edit_message(**kwargs)
 
     async def show_checked_page(self, page_number, interaction):
