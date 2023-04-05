@@ -38,10 +38,12 @@ class MyMenuPages(ui.View, menus.MenuPages):
     # This is extremely similar to Custom MenuPages(I will not explain these)
     @ui.button(emoji='⏮', style=discord.ButtonStyle.blurple)
     async def first_page(self, interaction, clicked_button):
+        await interaction.response.defer(thinking=True, ephemeral=True)
         await self.show_page(0, interaction)
 
     @ui.button(emoji='⏪', style=discord.ButtonStyle.blurple)
     async def before_page(self, interaction, clicked_button):
+        await interaction.response.defer(thinking=True, ephemeral=True)
         await self.show_checked_page(self.current_page - 1, interaction)
 
     @ui.button(emoji='⏹', style=discord.ButtonStyle.blurple)
@@ -51,10 +53,12 @@ class MyMenuPages(ui.View, menus.MenuPages):
 
     @ui.button(emoji='⏩', style=discord.ButtonStyle.blurple)
     async def next_page(self, interaction, clicked_button):
+        await interaction.response.defer(thinking=True, ephemeral=True)
         await self.show_checked_page(self.current_page + 1, interaction)
 
     @ui.button(emoji='⏭', style=discord.ButtonStyle.blurple)
     async def last_page(self, interaction, clicked_button):
+        await interaction.response.defer(thinking=True, ephemeral=True)
         await self.show_page(self._source.get_max_pages() - 1, interaction)
 
     async def show_page(self, page_number, interaction: Interaction):
@@ -75,7 +79,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
                 await self.show_page(page_number, interaction)
         except IndexError:
             # An error happened that can be handled, so ignore it.
-            await interaction.response.send_message("This page would go out of bounds.", ephemeral=True)
+            await interaction.followup.send_message("This page would go out of bounds.", ephemeral=True)
 
     async def send_initial_message(self, ctx: Interaction, channel):
         page = await self._source.get_page(0)
