@@ -25,10 +25,12 @@ class MyMenuPages(ui.View, menus.MenuPages):
 
     async def _get_kwargs_from_page(self, page):
         """This method calls ListPageSource.format_page class"""
+        log.debug("Starting kwargs")
         value = await super()._get_kwargs_from_page(page)
+        log.debug("Got kwargs")
         if 'view' not in value:
             value.update({'view': self})
-        value["ephemeral"] = True
+        log.debug("Update finished")
         return value
 
     async def interaction_check(self, interaction: discord.Interaction):
@@ -83,8 +85,8 @@ class MyMenuPages(ui.View, menus.MenuPages):
         page = await self._source.get_page(0)
         kwargs = await self._get_kwargs_from_page(page)
         if ctx.response.is_done():
-            return await ctx.followup.send(**kwargs)
-        return await ctx.response.send_message(**kwargs)
+            return await ctx.followup.send(**kwargs, ephemeral=True)
+        return await ctx.response.send_message(**kwargs, ephemeral=True)
 
 
 class MySource(menus.ListPageSource):
