@@ -13,12 +13,14 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self._source = source
         self.current_page = 0
         self.ctx = None
+        self.user = None
         self.message = None
 
     async def start(self, ctx: Interaction, *, channel=None, wait=False):
         # We wont be using wait/channel, you can implement them yourself. This is to match the MenuPages signature.
         await self._source._prepare_once()
         self.ctx = ctx
+        self.user = ctx.user
         self.message = await self.send_initial_message(ctx, ctx.channel)
 
     async def _get_kwargs_from_page(self, page):
@@ -31,7 +33,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
 
     async def interaction_check(self, interaction: discord.Interaction):
         """Only allow the author that invoke the command to be able to use the interaction"""
-        return interaction.user == self.ctx.user
+        return interaction.user == self.user
 
     # This is extremely similar to Custom MenuPages(I will not explain these)
     @ui.button(emoji='⏮', style=discord.ButtonStyle.blurple)
@@ -63,7 +65,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
             await interaction.followup.edit_message(**kwargs)
         await interaction.response.edit_message(**kwargs)
 
-    async def show_checked_page(self, page_number, interaction):
+    async def show_checked_page(self, page_number, interaction: Interaction):
         max_pages = self._source.get_max_pages()
         try:
             if max_pages is None:
@@ -73,7 +75,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
                 await self.show_page(page_number, interaction)
         except IndexError:
             # An error happened that can be handled, so ignore it.
-            pass
+            await interaction.response.send_message("This page would go out of bounds.", ephemeral=True)
 
     async def send_initial_message(self, ctx: Interaction, channel):
         page = await self._source.get_page(0)
