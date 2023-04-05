@@ -1,16 +1,13 @@
-import logging
 import time
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member
-
-
-log = logging.getLogger(__name__)
 
 
 class BansCommands(commands.Cog):

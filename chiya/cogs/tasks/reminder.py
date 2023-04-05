@@ -1,14 +1,11 @@
-import logging
 from datetime import datetime, timezone
 
 import discord
 from discord.ext import commands, tasks
+from loguru import logger as log
 
 from chiya import database
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class ReminderTasks(commands.Cog):

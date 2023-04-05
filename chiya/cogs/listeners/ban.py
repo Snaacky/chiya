@@ -1,13 +1,10 @@
-import logging
 import time
 
 import discord
 from discord.ext import commands
+from loguru import logger as log
 
 from chiya import database
-
-
-log = logging.getLogger(__name__)
 
 
 class BanListener(commands.Cog):

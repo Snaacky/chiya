@@ -1,10 +1,7 @@
-import logging
 import os
 
+from loguru import logger as log
 from pyaml_env import parse_config
-
-
-log = logging.getLogger(__name__)
 
 
 path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.yml")

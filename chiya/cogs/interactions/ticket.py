@@ -1,15 +1,12 @@
-import logging
 import time
 
 import discord
 import privatebinapi
 from discord.ext import commands
+from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class TicketInteractions(commands.Cog):
@@ -207,7 +204,7 @@ class TicketCloseButton(discord.ui.View):
 
         value = " ".join(mod.mention for mod in mod_list) if mod_list else mod_list.add("None")
         url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
-        
+
         log_embed = embeds.make_embed(
             title=f"{interaction.channel.name} archived",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
@@ -244,7 +241,7 @@ class TicketCloseButton(discord.ui.View):
             )
             await member.send(embed=dm_embed)
         except (discord.Forbidden, discord.HTTPException):
-            logging.info(f"Unable to send ticket log to {member} because their DM is closed")
+            log.info(f"Unable to send ticket log to {member} because their DM is closed")
 
         ticket["status"] = True
         ticket["log_url"] = url

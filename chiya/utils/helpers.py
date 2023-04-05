@@ -1,11 +1,7 @@
 import datetime
-import logging
 import re
 
 import discord
-
-
-log = logging.getLogger(__name__)
 
 
 async def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:

@@ -1,10 +1,10 @@
 import asyncio
-import logging
 import typing
 
 import discord
 from discord.abc import User
 from discord.ext.commands import Paginator
+from loguru import logger as log
 
 
 FIRST_EMOJI = "\u23EE"  # [:track_previous:]
@@ -14,8 +14,6 @@ LAST_EMOJI = "\u23ED"  # [:track_next:]
 DELETE_EMOJI = "⛔"  # [:trashcan:]
 
 PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMOJI)
-
-log = logging.getLogger(__name__)
 
 
 class EmptyPaginatorEmbed(Exception):

@@ -1,4 +1,3 @@
-import logging
 import time
 from datetime import datetime
 from typing import Literal
@@ -6,13 +5,11 @@ from typing import Literal
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
 from chiya.utils.pagination import LinePaginator
-
-
-log = logging.getLogger(__name__)
 
 
 class NoteCommands(commands.Cog):

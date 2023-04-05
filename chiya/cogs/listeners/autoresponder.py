@@ -1,13 +1,9 @@
-import logging
-
 import discord
 from discord.ext import commands
+from loguru import logger as log
 
 from chiya import config
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class AutoresponderListeners(commands.Cog):

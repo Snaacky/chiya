@@ -1,17 +1,14 @@
 import asyncio
-import logging
 
 import discord
 from discord.ext import commands
 from discord import app_commands
+from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
 from chiya.utils.helpers import get_duration
 from chiya.utils.pagination import LinePaginator
-
-
-log = logging.getLogger(__name__)
 
 
 class ReminderCommands(commands.Cog):
