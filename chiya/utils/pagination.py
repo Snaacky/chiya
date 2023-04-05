@@ -26,6 +26,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
         value = await super()._get_kwargs_from_page(page)
         if 'view' not in value:
             value.update({'view': self})
+        value["ephemeral"] = True
         return value
 
     async def interaction_check(self, interaction: discord.Interaction):
@@ -75,6 +76,8 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def send_initial_message(self, ctx: Interaction, channel):
         page = await self._source.get_page(0)
         kwargs = await self._get_kwargs_from_page(page)
+        if ctx.response.is_done():
+            return ctx.followup.send(**kwargs)
         return await ctx.response.send_message(**kwargs)
 
 
