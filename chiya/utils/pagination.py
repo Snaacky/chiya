@@ -35,23 +35,42 @@ class MyMenuPages(ui.View, menus.MenuPages):
     # This is extremely similar to Custom MenuPages(I will not explain these)
     @ui.button(emoji='⏮', style=discord.ButtonStyle.blurple)
     async def first_page(self, clicked_button, interaction):
-        await self.show_page(0)
+        await self.show_page(0, interaction)
 
     @ui.button(emoji='⏪', style=discord.ButtonStyle.blurple)
     async def before_page(self, clicked_button, interaction):
-        await self.show_checked_page(self.current_page - 1)
+        await self.show_checked_page(self.current_page - 1, interaction)
 
     @ui.button(emoji='⏹', style=discord.ButtonStyle.blurple)
-    async def stop_page(self, clicked_button, interaction):
+    async def stop_page(self, clicked_button, interaction: Interaction):
         self.stop()
+        await interaction.response.send_message("Stopped interaction", ephemeral=True)
 
     @ui.button(emoji='⏩', style=discord.ButtonStyle.blurple)
     async def next_page(self, clicked_button, interaction):
-        await self.show_checked_page(self.current_page + 1)
+        await self.show_checked_page(self.current_page + 1, interaction)
 
     @ui.button(emoji='⏭', style=discord.ButtonStyle.blurple)
     async def last_page(self, clicked_button, interaction):
-        await self.show_page(self._source.get_max_pages() - 1)
+        await self.show_page(self._source.get_max_pages() - 1, interaction)
+
+    async def show_page(self, page_number, interaction: Interaction):
+        page = await self._source.get_page(page_number)
+        self.current_page = page_number
+        kwargs = await self._get_kwargs_from_page(page)
+        await interaction.response.edit_message(**kwargs)
+
+    async def show_checked_page(self, page_number, interaction):
+        max_pages = self._source.get_max_pages()
+        try:
+            if max_pages is None:
+                # If it doesn't give maximum pages, it cannot be checked
+                await self.show_page(page_number, interaction)
+            elif max_pages > page_number >= 0:
+                await self.show_page(page_number, interaction)
+        except IndexError:
+            # An error happened that can be handled, so ignore it.
+            pass
 
 
 class MySource(menus.ListPageSource):
@@ -60,7 +79,8 @@ class MySource(menus.ListPageSource):
         self.embed = embed
 
     async def format_page(self, menu, entries):
-        offset = menu.current_page * self.per_page
-        desc = '\n'.join(x for x in entries[offset:offset+self.per_page])
+        page_info = self.get_page(menu.current_page)
+        desc = '\n'.join(page_info)
         self.embed.description = desc
+        self.embed.set_footer(text=f"Page {menu.current_page + 1}/{self.get_max_pages()}")
         return self.embed
