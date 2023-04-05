@@ -8,7 +8,7 @@ from discord.ext import commands
 from loguru import logger as log
 
 import database
-from config import config
+from chiya.config import config
 
 
 bot = commands.Bot(

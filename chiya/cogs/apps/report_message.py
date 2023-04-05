@@ -1,15 +1,12 @@
 import asyncio
-import logging
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger as log
 
-from chiya import config
+from chiya.config import config
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 @commands.Cog.listener()
