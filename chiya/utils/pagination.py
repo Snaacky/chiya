@@ -72,6 +72,11 @@ class MyMenuPages(ui.View, menus.MenuPages):
             # An error happened that can be handled, so ignore it.
             pass
 
+    async def send_initial_message(self, ctx: Interaction, channel):
+        page = await self._source.get_page(0)
+        kwargs = await self._get_kwargs_from_page(page)
+        return await ctx.response.send_message(**kwargs)
+
 
 class MySource(menus.ListPageSource):
     def __init__(self, data, embed: discord.Embed):
