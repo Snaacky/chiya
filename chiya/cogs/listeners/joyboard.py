@@ -6,7 +6,8 @@ import httpx
 from discord.ext import commands, tasks
 from loguru import logger as log
 
-from chiya import config, database
+from chiya import database
+from chiya.config import config
 from chiya.utils import embeds
 
 

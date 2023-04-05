@@ -1910,4 +1910,4 @@ discord-py = []
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "bf02c40e80576e4dda4aedb2afec8e8d0c48068724ee489e92e93fdad3c76ccf"
+content-hash = "5549a2998e23a195fb3a998faa9389aee55f9b0937b5a52e555d75f377887399"

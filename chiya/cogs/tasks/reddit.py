@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands, tasks
 from loguru import logger as log
 
-from chiya import config
+from chiya.config import config
 
 
 class RedditTasks(commands.Cog):
