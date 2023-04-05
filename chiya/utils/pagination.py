@@ -35,24 +35,24 @@ class MyMenuPages(ui.View, menus.MenuPages):
 
     # This is extremely similar to Custom MenuPages(I will not explain these)
     @ui.button(emoji='⏮', style=discord.ButtonStyle.blurple)
-    async def first_page(self, clicked_button, interaction):
+    async def first_page(self, interaction, clicked_button):
         await self.show_page(0, interaction)
 
     @ui.button(emoji='⏪', style=discord.ButtonStyle.blurple)
-    async def before_page(self, clicked_button, interaction):
+    async def before_page(self, interaction, clicked_button):
         await self.show_checked_page(self.current_page - 1, interaction)
 
     @ui.button(emoji='⏹', style=discord.ButtonStyle.blurple)
-    async def stop_page(self, clicked_button, interaction: Interaction):
+    async def stop_page(self, interaction, clicked_button: Interaction):
         self.stop()
         await interaction.response.send_message("Stopped interaction", ephemeral=True)
 
     @ui.button(emoji='⏩', style=discord.ButtonStyle.blurple)
-    async def next_page(self, clicked_button, interaction):
+    async def next_page(self, interaction, clicked_button):
         await self.show_checked_page(self.current_page + 1, interaction)
 
     @ui.button(emoji='⏭', style=discord.ButtonStyle.blurple)
-    async def last_page(self, clicked_button, interaction):
+    async def last_page(self, interaction, clicked_button):
         await self.show_page(self._source.get_max_pages() - 1, interaction)
 
     async def show_page(self, page_number, interaction: Interaction):
