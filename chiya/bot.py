@@ -37,6 +37,12 @@ async def on_ready() -> None:
 
 
 async def main():
+    await setup_logger()
+    await load_cogs()
+    await bot.start(config["bot"]["token"])
+
+
+async def setup_logger():
     log_level = config["bot"]["log_level"]
     if not log_level:
         log_level = "NOTSET"
@@ -46,10 +52,11 @@ async def main():
     log.add(sys.stdout, format=fmt, level=log_level)
     log.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
 
+
+async def load_cogs():
     for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
         await bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
 
-    await bot.start(config["bot"]["token"])
 
 if __name__ == "__main__":
     database.Database().setup()
