@@ -64,7 +64,8 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self.current_page = page_number
         log.debug(f"Getting new page info {page_number} | {page}")
         kwargs = await self._get_kwargs_from_page(page)
-        log.debug(f"New page info {orjson.dumps(kwargs)}")
+        log.debug("New page info kwargs")
+        log.debug(kwargs)
         if interaction.response.is_done():
             await interaction.followup.edit_message(interaction.message.id, **kwargs)
         await interaction.response.edit_message(**kwargs)
