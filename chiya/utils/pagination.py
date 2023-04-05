@@ -67,7 +67,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def show_page(self, page_number, interaction: Interaction):
         page = await self._source.get_page(page_number)
         self.current_page = page_number
-        log.debug("Getting new page info")
+        log.debug(f"Getting new page info {page_number} | {page}")
         kwargs = await self._get_kwargs_from_page(page)
         log.debug(f"New page info {orjson.dumps(kwargs)}")
         if interaction.response.is_done():
@@ -100,6 +100,7 @@ class MySource(menus.ListPageSource):
         self.embed = embed
 
     async def format_page(self, menu, entries):
+        log.debug(f"FORMAT_PAGE: {menu.current_page} | {menu}")
         page_info = await self.get_page(menu.current_page)
         desc = '\n'.join(page_info)
         self.embed.description = desc
