@@ -77,7 +77,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
         page = await self._source.get_page(0)
         kwargs = await self._get_kwargs_from_page(page)
         if ctx.response.is_done():
-            return ctx.followup.send(**kwargs)
+            return await ctx.followup.send(**kwargs)
         return await ctx.response.send_message(**kwargs)
 
 
