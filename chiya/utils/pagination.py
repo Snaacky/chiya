@@ -1,5 +1,5 @@
 import logging
-
+import orjson
 import discord
 from discord import Interaction, ui
 from discord.ext import menus
@@ -60,9 +60,12 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def show_page(self, page_number, interaction: Interaction):
         page = await self._source.get_page(page_number)
         self.current_page = page_number
+        log.debug("Getting new page info")
         kwargs = await self._get_kwargs_from_page(page)
-        await self.message.edit(**kwargs)
-        await interaction.response.pong()
+        log.debug(f"New page info {orjson.dumps(kwargs)}")
+        if interaction.response.is_done():
+            await interaction.followup.edit_message(interaction.message.id, **kwargs)
+        await interaction.response.edit_message(**kwargs)
 
     async def show_checked_page(self, page_number, interaction: Interaction):
         max_pages = self._source.get_max_pages()
