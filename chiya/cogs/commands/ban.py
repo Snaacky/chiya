@@ -48,7 +48,7 @@ class BansCommands(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        if not can_action_member(ctx=ctx, member=user):
+        if not await can_action_member(ctx=ctx, member=user):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if await self.is_user_banned(ctx=ctx, user=user):

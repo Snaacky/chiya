@@ -43,7 +43,7 @@ class MuteCommands(commands.Cog):
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
-        if not can_action_member(ctx=ctx, member=member):
+        if not await can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         if member.is_timed_out():
@@ -142,7 +142,7 @@ class MuteCommands(commands.Cog):
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
-        if not can_action_member(ctx=ctx, member=member):
+        if not await can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         if not member.is_timed_out():

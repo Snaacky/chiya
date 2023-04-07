@@ -6,7 +6,7 @@ import discord
 from chiya import config
 
 
-def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
+async def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
     # Allow owner to override all limitations.
     if member.id == ctx.guild.owner_id:
         return True
