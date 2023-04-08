@@ -2,8 +2,10 @@ import logging
 import time
 
 import discord
-from chiya import database
 from discord.ext import commands
+
+from chiya import database
+
 
 log = logging.getLogger(__name__)
 
