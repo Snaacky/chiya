@@ -17,7 +17,7 @@ from chiya.utils import embeds
 log = logging.getLogger(__name__)
 
 
-class AdministrationCommands(Cog):
+class DevCommands(Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -25,32 +25,22 @@ class AdministrationCommands(Cog):
         self._last_result = None
         self.bot.tree.add_command(self.eval_command)
 
-    def app_is_owner(self, ctx: discord.Interaction, *kwargs):
-        return self.bot.is_owner(ctx.user)
+    def app_is_owner(self, interaction: discord.Interaction, *kwargs):
+        return self.bot.is_owner(interaction.user)
 
-    @app_commands.check(app_is_owner)
-    class AdminGroup(app_commands.Group):
+    class DevGroup(app_commands.Group):
         pass
-    admin = AdminGroup(name="admin", guild_ids=[config["guild_id"]])
-    sync = AdminGroup(name="sync", parent=admin)
-
-    def _cleanup_code(self, content: str) -> str:
-        """
-        Automatically removes code blocks from the code.
-        """
-        # remove ```py\n```
-        if content.startswith("```") and content.endswith("```"):
-            return "\n".join(content.split("\n")[1:-1])
-
-        # remove `foo`
-        return content.strip("` \n")
+    dev = DevGroup(name="dev", guild_ids=[config["guild_id"]])
 
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
     async def eval(self, ctx: discord.Interaction, message: discord.Message):
-        """
-        Evaluates input as Python code.
-        """
+        """Evaluates input as Python code."""
+        def _cleanup_code(self, content: str) -> str:
+            """Automatically removes code blocks from the code."""
+            if content.startswith("```") and content.endswith("```"):  # remove ```py\n```
+                return "\n".join(content.split("\n")[1:-1])
+            return content.strip("` \n")  # remove `foo`
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.bot.is_owner(ctx.user):
@@ -81,7 +71,7 @@ class AdministrationCommands(Cog):
         env.update(globals())
 
         # Calling cleanup command to remove the markdown traces.
-        body = self._cleanup_code(body)
+        body = _cleanup_code(body)
         embed.add_field(name="Input:", value=f"```py\n{body}\n```", inline=False)
         # Output stream.
         stdout = io.StringIO()
@@ -133,54 +123,12 @@ class AdministrationCommands(Cog):
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.followup.send(embed=embed)
 
-    @sync.command(name="global", description="Sync commands globally.")
-    async def sync_global(self, ctx: discord.Interaction) -> None:
-        """
-        Does not sync all commands globally, just the ones registered as global.
-        """
-        await ctx.response.defer()
-        synced = await self.bot.tree.sync()
-        await embeds.success_message(ctx=ctx, description=f"Synced {len(synced)} commands globally.")
-
-    @sync.command(name="guild", description="Sync commands in the current guild")
-    async def sync_guild(self, ctx: discord.Interaction) -> None:
-        """
-        Does not sync all of your commands to that guild, just the ones registered to that guild.
-        """
-        await ctx.response.defer()
-        synced = await self.bot.tree.sync(guild=ctx.guild)
-        await embeds.success_message(ctx=ctx, description=f"Synced {len(synced)} commands to the guild.")
-
-    @sync.command(name="copy", description="Copies all global app commands to current guild and syncs")
-    async def sync_global_to_guild(self, ctx: discord.Interaction) -> None:
-        """
-        This will copy the global list of commands in the tree into the list of commands for the specified guild.
-        This is not permanent between bot restarts.
-        """
-        await ctx.response.defer()
-        self.bot.tree.copy_global_to(guild=ctx.guild)
-        synced = await self.bot.tree.sync(guild=ctx.guild)
-        await embeds.success_message(ctx=ctx, description=f"Synced {len(synced)} global commands to the current guild.")
-
-    @sync.command(name="remove", description="Clears all commands from the current guild target and syncs")
-    async def sync_remove(self, ctx: discord.Interaction) -> None:
-        await ctx.response.defer()
-        self.bot.tree.clear_commands(guild=ctx.guild)
-        await self.bot.tree.sync(guild=ctx.guild)
-        await embeds.success_message(ctx=ctx, description="Cleared all commands from the current guild and synced.")
-
-    @sync_global.error
-    @sync_guild.error
-    @sync_global_to_guild.error
-    @sync_remove.error
-    async def sync_error(self, ctx: discord.Interaction, error: discord.HTTPException) -> None:
-        await ctx.response.defer()
-
-        if isinstance(error, discord.app_commands.errors.MissingRole):
-            embed = embeds.error_embed(ctx=ctx, description=f"<@&{error.missing_role}> is required for this command.")
-            await ctx.followup.send(embed=embed)
+    @dev.command(name="ping", description="Get bot latency")
+    async def ping(self, ctx: discord.Interaction):
+        await ctx.response.defer(thinking=True, ephemeral=True)
+        await ctx.followup.send(f"Pong! {round (self.bot.latency * 1000)}ms.")
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(AdministrationCommands(bot))
-    log.info("Commands loaded: administration")
+    await bot.add_cog(DevCommands(bot))
+    log.info("Commands loaded: dev")
