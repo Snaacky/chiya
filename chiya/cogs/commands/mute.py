@@ -8,7 +8,7 @@ from discord import app_commands
 
 from chiya import config, database
 from chiya.utils import embeds
-from chiya.utils.helpers import can_action_member, get_duration
+from chiya.utils.helpers import can_action_member, get_duration, log_embed_to_channel
 
 
 log = logging.getLogger(__name__)
@@ -40,12 +40,12 @@ class MuteCommands(commands.Cog):
         notification. The bot will let the invoking mod know if this
         is the case.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
-        if not await can_action_member(ctx=ctx, member=member):
+        if not can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         if member.is_timed_out():
@@ -69,7 +69,7 @@ class MuteCommands(commands.Cog):
         if time_delta >= 2419200:
             return await embeds.error_message(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
 
-        mute_embed = embeds.make_embed(
+        mod_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Muting member: {member}",
             description=f"{member.mention} was muted by {ctx.user.mention} for: {reason}",
@@ -78,7 +78,7 @@ class MuteCommands(commands.Cog):
             fields=[{"name": "Duration:", "value": duration_string, "inline": False}],
         )
 
-        dm_embed = embeds.make_embed(
+        user_embed = embeds.make_embed(
             title="Uh-oh, you've been muted!",
             description="If you believe this was a mistake, contact staff.",
             image_url="https://i.imgur.com/840Q48l.gif",
@@ -91,9 +91,9 @@ class MuteCommands(commands.Cog):
         )
 
         try:
-            await member.send(embed=dm_embed)
+            await member.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            mute_embed.add_field(
+            mod_embed.add_field(
                 name="Notice:",
                 value=(
                     f"Unable to message {member.mention} about this action. "
@@ -117,7 +117,8 @@ class MuteCommands(commands.Cog):
         db.close()
 
         await member.timeout(datetime.fromtimestamp(mute_end_time, timezone.utc), reason=reason)
-        await ctx.followup.send(embed=mute_embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await ctx.followup.send(embed=mod_embed)
 
     @app_commands.command(name="unmute", description="Umutes a member in the server")
     @app_commands.guilds(config["guild_id"])
@@ -138,12 +139,12 @@ class MuteCommands(commands.Cog):
         will be unable to receive the ban notification. The bot will let the
         invoking mod know if this is the case.
         """
-        await ctx.response.defer(thinking=True)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
             return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
 
-        if not await can_action_member(ctx=ctx, member=member):
+        if not can_action_member(ctx=ctx, member=member):
             return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         if not member.is_timed_out():
@@ -152,7 +153,7 @@ class MuteCommands(commands.Cog):
         if len(reason) > 1024:
             return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        unmute_embed = embeds.make_embed(
+        mod_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unmuting member: {member.name}",
             description=f"{member.mention} was unmuted by {ctx.user.mention} for: {reason}",
@@ -160,7 +161,7 @@ class MuteCommands(commands.Cog):
             thumbnail_url="https://i.imgur.com/W7DpUHC.png",
         )
 
-        dm_embed = embeds.make_embed(
+        user_embed = embeds.make_embed(
             author=False,
             title="Yay, you've been unmuted!",
             description="Review our server rules to avoid being actioned again in the future.",
@@ -173,9 +174,9 @@ class MuteCommands(commands.Cog):
             ],
         )
         try:
-            await member.send(embed=dm_embed)
+            await member.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            unmute_embed.add_field(
+            mod_embed.add_field(
                 name="Notice:",
                 value=(
                     f"Unable to message {member.mention} about this action. "
@@ -197,8 +198,9 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.timeout(None, reason=reason)
-        await ctx.followup.send(embed=unmute_embed)
+        await member.timeout(until=None, reason=reason)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await ctx.followup.send(embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:

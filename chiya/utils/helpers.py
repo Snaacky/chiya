@@ -4,11 +4,13 @@ import re
 
 import discord
 
+from chiya import config
+
 
 log = logging.getLogger(__name__)
 
 
-async def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
+def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
     # Allow owner to override all limitations.
     if member.id == ctx.guild.owner_id:
         return True
@@ -89,3 +91,10 @@ def get_duration(duration) -> tuple[str, int]:
     end_time = int(datetime.datetime.timestamp(datetime.datetime.now(tz=datetime.timezone.utc) + time_delta))
 
     return duration_string, end_time
+
+
+async def log_embed_to_channel(ctx: discord.Interaction, embed: discord.Embed):
+    mod_channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["moderation"])
+    logs_channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["logs"]["chiya"])
+    await mod_channel.send(embed=embed)
+    await logs_channel.send(embed=embed)
