@@ -3,7 +3,7 @@ import re
 
 import discord
 
-from chiya import config
+from chiya.config import config
 
 
 async def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
