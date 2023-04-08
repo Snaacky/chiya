@@ -1,13 +1,9 @@
 import datetime
-import logging
 import re
 
 import discord
 
 from chiya import config
-
-
-log = logging.getLogger(__name__)
 
 
 def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
