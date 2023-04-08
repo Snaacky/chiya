@@ -5,7 +5,6 @@ import orjson
 from discord import app_commands
 from discord.ext import commands
 
-
 from chiya import config, database
 from chiya.utils import embeds
 

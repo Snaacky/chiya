@@ -1,8 +1,8 @@
 import logging
 import time
 
-import discord
 import aiohttp
+import discord
 
 from chiya.utils import embeds
 
