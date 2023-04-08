@@ -244,7 +244,7 @@ class TicketCloseButton(discord.ui.View):
             )
             await member.send(embed=dm_embed)
         except (discord.Forbidden, discord.HTTPException):
-            logging.info(f"Unable to send ticket log to {member} because their DM is closed")
+            log.info(f"Unable to send ticket log to {member} because their DM is closed")
 
         ticket["status"] = True
         ticket["log_url"] = url
