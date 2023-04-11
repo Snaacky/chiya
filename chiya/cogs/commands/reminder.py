@@ -16,6 +16,32 @@ class ReminderCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    class Confirm(discord.ui.View):
+        def __init__(self):
+            super().__init__()
+            self.value = None
+
+        @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
+        async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+            embed = embeds.make_embed(
+                description=f"{interaction.user.mention}, all your reminders have been cleared.",
+                color=discord.Color.green(),
+            )
+
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            self.value = True
+            self.stop()
+
+        @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
+        async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+            embed = embeds.make_embed(
+                description=f"{interaction.user.mention}, your request has been canceled.",
+                color=discord.Color.blurple(),
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+            self.value = False
+            self.stop()
+
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
     class ReminderGroup(app_commands.Group):
@@ -212,45 +238,23 @@ class ReminderCommands(commands.Cog):
         db = database.Database().get()
 
         confirm_embed = embeds.make_embed(
-            description=f"{ctx.user.mention}, clear all your reminders? (yes/no/y/n)",
+            description=f"{ctx.user.mention}, clear all your reminders?",
             color=discord.Color.blurple(),
         )
 
-        await ctx.followup.send(embed=confirm_embed)
+        view = self.Confirm()
+        await ctx.followup.send(embed=confirm_embed, view=view)
+        await view.wait()
 
-        def check(message: discord.Message):
-            return (
-                message.author == ctx.user
-                and message.channel == ctx.channel
-                and message.content.lower() in ("yes", "no", "y", "n")
-            )
-
-        try:
-            msg: discord.Message = await self.bot.wait_for("message", timeout=60, check=check)
-            if msg.content.lower() in ("no", "n"):
-                db.close()
-                embed = embeds.make_embed(
-                    description=f"{ctx.user.mention}, your request has been canceled.",
-                    color=discord.Color.blurple(),
-                )
-                return await ctx.followup.send(embed=embed)
-        except asyncio.TimeoutError:
+        if not view.value or view.value is None:
             db.close()
-            # TODO: This needs to be moved to a ctx.followup, doesn't it?
-            return await embeds.error_message(ctx, description=f"{ctx.user.mention}, your request has timed out.")
+            return
 
         remind_me = db["remind_me"]
         results = remind_me.find(author_id=ctx.user.id, sent=False)
         for result in results:
             updated_data = dict(id=result["id"], sent=True)
             remind_me.update(updated_data, ["id"])
-
-        embed = embeds.make_embed(
-            description=f"{ctx.user.mention}, all your reminders have been cleared.",
-            color=discord.Color.green(),
-        )
-
-        await ctx.followup.send(embed=embed)
 
         db.commit()
         db.close()
