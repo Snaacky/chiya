@@ -51,9 +51,9 @@ class MyMenuPages(ui.View, menus.MenuPages):
         await self.show_checked_page(self.current_page - 1, interaction)
 
     @ui.button(emoji='⬜', style=discord.ButtonStyle.danger)
-    async def stop_page(self, interaction, clicked_button: Interaction):
+    async def stop_page(self, interaction: discord.Interaction, clicked_button: Interaction):
         self.stop()
-        await interaction.response.send_message("Stopped interaction", ephemeral=True)
+        await interaction.edit_original_response(content="Ended")
 
     @ui.button(emoji=discord.PartialEmoji(name="right_next", id=1093296333156274186), style=discord.ButtonStyle.primary)
     async def next_page(self, interaction, clicked_button):
