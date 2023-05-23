@@ -24,7 +24,7 @@ mysqlclient = "2.1.1"
 parsedatetime = "2.6"
 PrivateBinAPI = "^1.0.0"
 pyaml_env = "^1.2.1"
-requests = "2.28.2"
+requests = "2.31.0"
 sqlalchemy-utils = "0.40.0"
 
 [tool.poetry.dev-dependencies]
