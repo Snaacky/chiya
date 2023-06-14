@@ -92,6 +92,13 @@ class Database:
             highlights.create_column("users", db.types.text)
             log.info("Created missing table: highlights")
 
+        if "poll" not in db:
+            poll = db.create_table("poll")
+            poll.create_column("message_id", db.types.bigint)
+            poll.create_column("user_id", db.types.bigint)
+            poll.create_column("option", db.types.integer)
+            log.info("Created missing table: poll")
+
         # utf8mb4_unicode_ci is required to support emojis and other unicode.
         # dataset does not expose collation in any capacity so rather than
         # checking an object property, we have to do this hacky way of checking
