@@ -39,8 +39,5 @@ Style Guide
 Make the Pull Request
 ---------------------
 
-Once you have made all your changes,
-make a pull request to move everything back into the master branch of the
-Chiya. Be sure to reference the original issue in the pull request.
-Expect some back-and-forth with regards to style and compliance of these
-rules.
+- Once you have made all your changes, make a pull request to move everything back into the master branch of the Chiya. Be sure to reference the original issue in the pull request. Expect some back-and-forth with regards to style and compliance of these rules.
+- Commits should be using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) formatting.
