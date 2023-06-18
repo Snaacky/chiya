@@ -53,8 +53,8 @@ class NoteCommands(commands.Cog):
             ],
         )
 
-        await log_embed_to_channel(ctx=ctx, embed=embed)
         await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
 
     @app_commands.command(name="search", description="Search through a users notes and mod logs")
     @app_commands.guilds(config["guild_id"])
@@ -65,7 +65,7 @@ class NoteCommands(commands.Cog):
         self,
         ctx: discord.Interaction,
         user: discord.Member | discord.User,
-        action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] = None
+        action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] = None,
     ) -> None:
         """
         Search for the mod actions and notes for a user. The search can be
@@ -161,8 +161,8 @@ class NoteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await log_embed_to_channel(ctx=ctx, embed=embed)
         await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:

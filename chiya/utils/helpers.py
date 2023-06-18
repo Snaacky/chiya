@@ -1,9 +1,13 @@
 import datetime
+import logging
 import re
 
 import discord
 
 from chiya import config
+
+
+log = logging.getLogger(__name__)
 
 
 def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
@@ -90,7 +94,15 @@ def get_duration(duration) -> tuple[str, int]:
 
 
 async def log_embed_to_channel(ctx: discord.Interaction, embed: discord.Embed):
-    mod_channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["moderation"])
-    logs_channel = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["logs"]["chiya"])
-    await mod_channel.send(embed=embed)
-    await logs_channel.send(embed=embed)
+    moderation = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["moderation"])
+    chiya = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["logs"]["chiya"])
+
+    if moderation:
+        await moderation.send(embed=embed)
+    else:
+        logging.error(f"Unable to log to {moderation.name} because it doesn't exist.")
+
+    if chiya:
+        await chiya.send(embed=embed)
+    else:
+        logging.error(f"Unable to log to {chiya.name} because it doesn't exist.")
