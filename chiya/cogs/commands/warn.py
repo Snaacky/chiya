@@ -92,8 +92,8 @@ class WarnCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
         await ctx.followup.send(embed=mod_embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:
