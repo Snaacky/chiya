@@ -1,13 +1,15 @@
 import logging
 import time
 from datetime import datetime
+from typing import Literal
 
 import discord
-from discord.commands import Option, context, slash_command
+from discord import app_commands
 from discord.ext import commands
 
 from chiya import config, database
 from chiya.utils import embeds
+from chiya.utils.helpers import log_embed_to_channel
 from chiya.utils.pagination import LinePaginator
 
 
@@ -18,31 +20,20 @@ class NoteCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @slash_command(name="addnote", guild_ids=config["guild_ids"])
-    @commands.has_role(config["roles"]["staff"])
-    async def add_note(
-        self,
-        ctx: context.ApplicationContext,
-        user: Option(discord.User, description="The user to add the note to", required=True),
-        note: Option(str, description="The note to leave on the user", required=True),
-    ) -> None:
-        """
-        Adds a note to the users profile.
-
-        Notes can only be seen by staff via the /search command and do not
-        punish the user in anyway. They are merely for staff to log relevant
-        information. Users are not alerted when a note is added to them.
-        """
-        await ctx.defer()
-
-        if not isinstance(user, discord.Member):
-            user = await self.bot.fetch_user(user)
+    @app_commands.command(name="addnote", description="Add a note to the users profile")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.describe(user="The user to add the note to")
+    @app_commands.describe(note="The note to leave on the user")
+    async def add_note(self, ctx: discord.Interaction, user: discord.Member | discord.User, note: str) -> None:
+        """Adds a note to the specified user queryable via /search."""
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         note_id = db["mod_logs"].insert(
             dict(
                 user_id=user.id,
-                mod_id=ctx.author.id,
+                mod_id=ctx.user.id,
                 timestamp=int(time.time()),
                 reason=note,
                 type="note",
@@ -53,7 +44,7 @@ class NoteCommands(commands.Cog):
 
         embed = embeds.make_embed(
             title=f"Noting user: {user.name}",
-            description=f"{user.mention} was noted by {ctx.author.mention}",
+            description=f"{user.mention} was noted by {ctx.user.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=discord.Color.blurple(),
             fields=[
@@ -62,34 +53,26 @@ class NoteCommands(commands.Cog):
             ],
         )
 
-        await ctx.send_followup(embed=embed)
+        await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
 
-    @slash_command(name="search", guild_ids=config["guild_ids"])
-    @commands.has_role(config["roles"]["staff"])
+    @app_commands.command(name="search", description="Search through a users notes and mod logs")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.describe(user="The user to lookup")
+    @app_commands.describe(action="Filter specific actions")
     async def search_mod_actions(
         self,
-        ctx: context.ApplicationContext,
-        user: Option(discord.User, description="The user to lookup", required=True),
-        action: Option(
-            str,
-            description="Filter specific actions",
-            choices=["ban", "unban", "mute", "unmute", "warn", "note"],
-            required=False,
-        ),
+        ctx: discord.Interaction,
+        user: discord.Member | discord.User,
+        action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] = None,
     ) -> None:
         """
         Search for the mod actions and notes for a user. The search can be
-        filtered by ban, unban, unmute, warn, or notes.
-
-        Users are not alerted when they have a /search command ran on them.
-        Only the command invoking user can change pages on the pagination.
-        It is imperative that the command is not ran in public channels
-        because the output is not hidden.
+        filtered by ban, unban, unmute, warn, or notes. Users are not alerted
+        when they have a /search command ran on them.
         """
-        await ctx.defer()
-
-        if not isinstance(user, discord.Member):
-            user = await self.bot.fetch_user(user.id)
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
         # TODO: can't this be merged into one call because action will return None either way?
@@ -110,11 +93,7 @@ class NoteCommands(commands.Cog):
                 "note": "🗒️",
             }
 
-            action_type = action["type"]
-            action_type = action_type[0].upper() + action_type[1:]
-            action_type = f"{action_emoji[action['type']]} {action_type}"
-
-            action_string = f"""**{action_type}**
+            action_string = f"""**{action_emoji[action['type']]} {action['type'][0].title()}**
                 **ID:** {action["id"]}
                 **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
                 **Moderator:** <@!{action["mod_id"]}>
@@ -141,14 +120,12 @@ class NoteCommands(commands.Cog):
             timeout=120,
         )
 
-    @slash_command(name="editlog", guild_ids=config["guild_ids"])
-    @commands.has_role(config["roles"]["staff"])
-    async def edit_log(
-        self,
-        ctx: context.ApplicationContext,
-        id: Option(int, description="The ID of the log or note to be edited", required=True),
-        note: Option(str, description="The updated message for the log or note", required=True),
-    ) -> None:
+    @app_commands.command(name="editlog", description="Edit a user's notes and mod logs")
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    @app_commands.describe(id="The ID of the log or note to be edited")
+    @app_commands.describe(note="The updated message for the log or note")
+    async def edit_log(self, ctx: discord.Interaction, id: int, note: str) -> None:
         """
         Edit a mod action or note on a users /search history.
 
@@ -160,33 +137,34 @@ class NoteCommands(commands.Cog):
         latest edited message.
         """
         # TODO: Add some sort of support for history or editing mods.
-        await ctx.defer()
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
-        mod_log = db["mod_logs"].find_one(id=id)
-        if not mod_log:
+        log = db["mod_logs"].find_one(id=id)
+        if not log:
             return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
 
-        user = await self.bot.fetch_user(mod_log["user_id"])
+        user = await self.bot.fetch_user(log["user_id"])
         embed = embeds.make_embed(
             title=f"Edited log: {user.name}",
-            description=f"Log #{id} for {user.mention} was updated by {ctx.author.mention}",
+            description=f"Log #{id} for {user.mention} was updated by {ctx.user.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=discord.Color.green(),
             fields=[
-                {"name": "Before:", "value": mod_log["reason"], "inline": False},
+                {"name": "Before:", "value": log["reason"], "inline": False},
                 {"name": "After:", "value": note, "inline": False},
             ],
         )
 
-        mod_log["reason"] = note
-        db["mod_logs"].update(mod_log, ["id"])
+        log["reason"] = note
+        db["mod_logs"].update(log, ["id"])
         db.commit()
         db.close()
 
-        await ctx.send_followup(embed=embed)
+        await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(NoteCommands(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(NoteCommands(bot))
     log.info("Commands loaded: note")

@@ -1,45 +1,49 @@
 import datetime
 import logging
 import re
-from typing import Tuple
 
 import discord
-from discord.commands import context
+
+from chiya import config
 
 
 log = logging.getLogger(__name__)
 
 
-async def can_action_member(ctx: context.ApplicationContext, member: discord.Member) -> bool:
+def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
+    # Allow owner to override all limitations.
+    if member.id == ctx.guild.owner_id:
+        return True
+
     # Stop mods from actioning on the bot.
-    if member.bot:
+    if member.id == ctx.client.user.id:
         return False
+
+    # Skip over the rest of the checks if it's a discord.User and not a discord.Member.
+    if isinstance(member, discord.User):
+        return True
 
     # Checking if bot is able to perform the action.
     if member.top_role >= member.guild.me.top_role:
         return False
 
-    # Allow owner to override all limitations.
-    if member.id == ctx.guild.owner_id:
-        return True
-
     # Prevents mods from actioning other mods.
-    if ctx.author.top_role <= member.top_role:
+    if ctx.user.top_role <= member.top_role:
         return False
 
     return True
 
 
-def get_duration(duration) -> Tuple[str, int]:
+def get_duration(duration) -> tuple[str, int]:
     regex = (
         r"("
-        r"(?:(\d+)\s*y(?:ears|ear|rs|r)?)?\s*"
-        r"(?:(\d+)\s*mo(?:nths|nth)?)?\s*"
-        r"(?:(\d+)\s*w(?:eeks|eek|ks|k)?)?\s*"
-        r"(?:(\d+)\s*d(?:ays|ay)?)?\s*"
-        r"(?:(\d+)\s*h(?:ours|our|rs|r)?)?\s*"
-        r"(?:(\d+)\s*m(?:inutes|inute|ins|in)?)?\s*"
-        r"(?:(\d+)\s*s(?:econds|econd|ecs|ec)?)?"
+        r"(?:(\d+)\s*y(?:(?:ear|r)s?)?)?\s*"
+        r"(?:(\d+)\s*mo(?:(?:nth)s?)?)?\s*"
+        r"(?:(\d+)\s*w(?:(?:eek|k)s?)?)?\s*"
+        r"(?:(\d+)\s*d(?:(?:ay)s?)?)?\s*"
+        r"(?:(\d+)\s*h(?:(?:our|r)s?)?)?\s*"
+        r"(?:(\d+)\s*m(?:(?:inute|in)s?)?)?\s*"
+        r"(?:(\d+)\s*s(?:(?:econd|ec)s?)?)?"
         r")"
     )
 
@@ -87,3 +91,18 @@ def get_duration(duration) -> Tuple[str, int]:
     end_time = int(datetime.datetime.timestamp(datetime.datetime.now(tz=datetime.timezone.utc) + time_delta))
 
     return duration_string, end_time
+
+
+async def log_embed_to_channel(ctx: discord.Interaction, embed: discord.Embed):
+    moderation = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["mod"]["moderation"])
+    chiya = discord.utils.get(ctx.guild.text_channels, id=config["channels"]["logs"]["chiya"])
+
+    if moderation:
+        await moderation.send(embed=embed)
+    else:
+        logging.error(f"Unable to log to {moderation.name} because it doesn't exist.")
+
+    if chiya:
+        await chiya.send(embed=embed)
+    else:
+        logging.error(f"Unable to log to {chiya.name} because it doesn't exist.")

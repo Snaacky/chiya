@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timezone
 
-import discord
 from discord.ext import commands, tasks
 
 from chiya import database
@@ -33,7 +32,6 @@ class ReminderTasks(commands.Cog):
             return db.close()
 
         for reminder in result:
-            channel = self.bot.get_channel(reminder["reminder_location"])
             try:
                 user = await self.bot.fetch_user(reminder["author_id"])
             except Exception:  # TODO: Add a proper Exception here
@@ -43,13 +41,9 @@ class ReminderTasks(commands.Cog):
 
             embed = embeds.make_embed(title="Here is your reminder", description=reminder["message"], color="blurple")
 
-            if channel:
-                try:
-                    await channel.send(user.mention, embed=embed)
-                except discord.HTTPException:
-                    dm = await user.create_dm()
-                    if not await dm.send(embed=embed):
-                        log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
+            dm = await user.create_dm()
+            if not await dm.send(embed=embed):
+                log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
 
             db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
 
@@ -57,6 +51,6 @@ class ReminderTasks(commands.Cog):
         db.close()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(ReminderTasks(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(ReminderTasks(bot))
     log.info("Tasks loaded: reminder")

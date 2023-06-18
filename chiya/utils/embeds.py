@@ -1,11 +1,12 @@
 import datetime
+from typing import Union
 
 import discord
-from discord.commands import context
+from discord.ext import commands
 
 
 def make_embed(
-    ctx: context.ApplicationContext = None,
+    ctx: Union[commands.Context, discord.Interaction] = None,
     author: bool = None,
     title: str = "",
     description: str = "",
@@ -19,7 +20,6 @@ def make_embed(
 ) -> discord.Embed:
     """
     A wrapper for discord.Embed with added support for non-native attributes.
-
     `color` can either be of type discord.Color or a hexadecimal value.
     `timestamp` can either be a unix timestamp or a datetime object.
     """
@@ -30,7 +30,11 @@ def make_embed(
         embed = discord.Embed(title=title, description=description, color=color)
 
     if ctx and author:
-        embed.set_author(icon_url=ctx.author.display_avatar, name=ctx.author.name)
+        if isinstance(ctx, commands.Context):
+            embed.set_author(icon_url=ctx.author.display_avatar, name=ctx.author.name)
+
+        if isinstance(ctx, discord.Interaction):
+            embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
 
     if title_url:
         embed.url = title_url
@@ -43,8 +47,8 @@ def make_embed(
 
     if fields:
         for field in fields:
-            name = field.get("name", "​")
-            value = field.get("value", "​")
+            name = field.get("name", "​") or "​"
+            value = field.get("value", "​") or "​"
             inline = field["inline"] if isinstance(field["inline"], bool) else False
             embed.add_field(name=name, value=value, inline=inline)
 
@@ -60,14 +64,25 @@ def make_embed(
     return embed
 
 
-async def success_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
+async def send_interaction_message(ctx: discord.Interaction, embed: discord.Embed):
+    if ctx.response.is_done():
+        await ctx.followup.send(embed=embed, ephemeral=True)
+    else:
+        await ctx.response.send_message(embed=embed, ephemeral=True)
+
+
+async def success_message(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None) -> None:
     """Send a simple, self-destruct success message."""
     embed = make_embed(title=title if title else "Success:", description=description, color=discord.Color.green())
 
-    await ctx.send_followup(embed=embed, delete_after=30)
+    if isinstance(ctx, commands.Context):
+        await ctx.send(embed=embed, delete_after=30)
+
+    if isinstance(ctx, discord.Interaction):
+        await send_interaction_message(ctx, embed)
 
 
-async def error_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
+async def error_message(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None) -> None:
     """Send a simple, self-destruct error message."""
     embed = make_embed(
         title=title if title else "Error:",
@@ -75,10 +90,14 @@ async def error_message(ctx: context.ApplicationContext, description: str, title
         color=discord.Color.red(),
     )
 
-    await ctx.send_followup(embed=embed, delete_after=30)
+    if isinstance(ctx, commands.Context):
+        await ctx.send(embed=embed, delete_after=30)
+
+    if isinstance(ctx, discord.Interaction):
+        await send_interaction_message(ctx, embed)
 
 
-async def warning_message(ctx: context.ApplicationContext, description: str, title: str = None) -> None:
+async def warning_message(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None) -> None:
     """Send a simple, self-destruct warning message."""
     embed = make_embed(
         title=title if title else "Warning:",
@@ -86,10 +105,14 @@ async def warning_message(ctx: context.ApplicationContext, description: str, tit
         color=discord.Color.dark_gold(),
     )
 
-    await ctx.send_followup(embed=embed, delete_after=30)
+    if isinstance(ctx, commands.Context):
+        await ctx.send(embed=embed, delete_after=30)
+
+    if isinstance(ctx, discord.Interaction):
+        await send_interaction_message(ctx, embed)
 
 
-def error_embed(ctx: context.ApplicationContext, title: str, description: str, author: bool = True) -> discord.Embed:
+def error_embed(ctx: Union[commands.Context, discord.Interaction], description: str, title: str = None, author: bool = True) -> discord.Embed:
     """Make a basic error message embed."""
     return make_embed(
         ctx=ctx,

@@ -2,8 +2,8 @@ import asyncio
 import logging
 
 import discord
-from discord.commands import Option, SlashCommandGroup, context, slash_command
 from discord.ext import commands
+from discord import app_commands
 
 from chiya import config, database
 from chiya.utils import embeds
@@ -18,27 +18,23 @@ class ReminderCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    reminder = SlashCommandGroup(
-        "reminder",
-        "Sets a reminder note to be sent at a future date",
-        guild_ids=config["guild_ids"],
-    )
+    @app_commands.guilds(config["guild_id"])
+    @app_commands.guild_only()
+    class ReminderGroup(app_commands.Group):
+        pass
+    reminder = ReminderGroup(name="reminder", guild_ids=[config["guild_id"]])
 
-    @slash_command(guild_ids=config["guild_ids"], description="Set a reminder")
+    @reminder.command(name="create", description="Set a reminder")
+    @app_commands.describe(duration="Amount of time until the reminder is sent")
+    @app_commands.describe(message="Reminder message")
     async def remindme(
         self,
-        ctx: context.ApplicationContext,
-        duration: Option(str, description="Amount of time until the reminder is sent", required=True),
-        message: Option(str, description="Reminder message", required=True),
+        ctx: discord.Interaction,
+        duration: str,
+        message: str,
     ) -> None:
-        """
-        Creates a reminder message that will be sent at the specified time.
-
-        The reminder will be sent in the same channel that it was originally
-        created at. If the channel no longer exists when the reminder is to
-        be sent, it will attempt to send the reminder to the user in DMs.
-        """
-        await ctx.defer()
+        """Creates a reminder message that will be sent at the specified time."""
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         duration_string, end_time = get_duration(duration=duration)
         if not duration_string:
@@ -54,7 +50,7 @@ class ReminderCommands(commands.Cog):
         remind_id = db["remind_me"].insert(
             dict(
                 reminder_location=ctx.channel.id,
-                author_id=ctx.author.id,
+                author_id=ctx.user.id,
                 date_to_remind=end_time,
                 message=message,
                 sent=False,
@@ -75,21 +71,24 @@ class ReminderCommands(commands.Cog):
                 {"name": "ID:", "value": remind_id, "inline": False},
                 {"name": "Message:", "value": message, "inline": False},
             ],
+            footer="Make sure your DMs are open or you won't receive your reminder."
         )
 
-        await ctx.send_followup(embed=embed)
+        await ctx.followup.send(embed=embed)
 
-    @reminder.command(name="edit", descrption="Edit an existing reminder")
+    @reminder.command(name="edit", description="Edit an existing reminder")
+    @app_commands.describe(reminder_id="The ID of the reminder to be updated")
+    @app_commands.describe(new_message="The updated message for the reminder")
     async def edit(
         self,
-        ctx: context.ApplicationContext,
-        reminder_id: Option(int, description="The ID of the reminder to be updated", required=True),
-        new_message: Option(str, description="The updated message for the reminder", required=True),
+        ctx: discord.Interaction,
+        reminder_id: int,
+        new_message: str,
     ) -> None:
         """
         Edit a reminder message.
         """
-        await ctx.defer()
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
 
@@ -97,8 +96,8 @@ class ReminderCommands(commands.Cog):
         result = remind_me.find_one(id=reminder_id)
         old_message = result["message"]
 
-        if result["author_id"] != ctx.author.id:
-            return await embeds.error_message(ctx, "That reminder isn't yours, so you can't edit it.")
+        if result["author_id"] != ctx.user.id:
+            return await embeds.error_message(ctx, "That reminder is not yours.")
 
         if result["sent"]:
             return await embeds.error_message(ctx, "That reminder doesn't exist.")
@@ -123,15 +122,15 @@ class ReminderCommands(commands.Cog):
             ],
         )
 
-        await ctx.send_followup(embed=embed)
+        await ctx.followup.send(embed=embed)
 
     @reminder.command(name="list", description="List your existing reminders")
-    async def list(self, ctx: context.ApplicationContext) -> None:
+    async def list(self, ctx: discord.Interaction) -> None:
         """List your reminders."""
-        await ctx.defer()
+        await ctx.response.defer(ephemeral=True)
 
         db = database.Database().get()
-        results = db["remind_me"].find(sent=False, author_id=ctx.author.id)
+        results = db["remind_me"].find(sent=False, author_id=ctx.user.id)
         reminders = []
         for result in results:
             reminders.append(
@@ -156,21 +155,22 @@ class ReminderCommands(commands.Cog):
             embed=embed,
             max_lines=5,
             max_size=2000,
-            restrict_to_user=ctx.author,
+            restrict_to_user=ctx.user,
         )
 
         db.close()
 
     @reminder.command(name="delete", description="Delete an existing reminder")
+    @app_commands.describe(reminder_id="The ID of the reminder to be deleted")
     async def delete(
         self,
-        ctx: context.ApplicationContext,
-        reminder_id: Option(int, description="The ID of the reminder to be deleted", required=True),
+        ctx: discord.Interaction,
+        reminder_id: int,
     ) -> None:
         """
         Delete a reminder.
         """
-        await ctx.defer()
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
 
@@ -180,7 +180,7 @@ class ReminderCommands(commands.Cog):
         if not result:
             return await embeds.error_message(ctx=ctx, description="Invalid ID.")
 
-        if result["author_id"] != ctx.author.id:
+        if result["author_id"] != ctx.user.id:
             return await embeds.error_message(ctx=ctx, description="This reminder is not yours.")
 
         if result["sent"]:
@@ -204,61 +204,62 @@ class ReminderCommands(commands.Cog):
                 {"name": "Message: ", "value": result["message"], "inline": False},
             ],
         )
-        await ctx.send_followup(embed=embed)
+        await ctx.followup.send(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
-    async def clear(self, ctx: context.ApplicationContext) -> None:
+    async def clear(self, ctx: discord.Interaction) -> None:
         """
         Clears all reminders.
         """
-        await ctx.defer()
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
         db = database.Database().get()
 
         confirm_embed = embeds.make_embed(
-            description=f"{ctx.author.mention}, clear all your reminders? (yes/no/y/n)",
+            description=f"{ctx.user.mention}, clear all your reminders? (yes/no/y/n)",
             color=discord.Color.blurple(),
         )
 
-        await ctx.send_followup(embed=confirm_embed)
+        await ctx.followup.send(embed=confirm_embed)
 
-        def check(message):
+        def check(message: discord.Message):
             return (
-                message.author == ctx.author
+                message.author == ctx.user
                 and message.channel == ctx.channel
                 and message.content.lower() in ("yes", "no", "y", "n")
             )
 
         try:
-            msg = await self.bot.wait_for("message", timeout=60, check=check)
+            msg: discord.Message = await self.bot.wait_for("message", timeout=60, check=check)
             if msg.content.lower() in ("no", "n"):
                 db.close()
                 embed = embeds.make_embed(
-                    description=f"{ctx.author.mention}, your request has been canceled.",
+                    description=f"{ctx.user.mention}, your request has been canceled.",
                     color=discord.Color.blurple(),
                 )
-                return await ctx.send_followup(embed=embed)
+                return await ctx.followup.send(embed=embed)
         except asyncio.TimeoutError:
             db.close()
-            return await embeds.error_message(ctx, description=f"{ctx.author.mention}, your request has timed out.")
+            # TODO: This needs to be moved to a ctx.followup, doesn't it?
+            return await embeds.error_message(ctx, description=f"{ctx.user.mention}, your request has timed out.")
 
         remind_me = db["remind_me"]
-        results = remind_me.find(author_id=ctx.author.id, sent=False)
+        results = remind_me.find(author_id=ctx.user.id, sent=False)
         for result in results:
             updated_data = dict(id=result["id"], sent=True)
             remind_me.update(updated_data, ["id"])
 
         embed = embeds.make_embed(
-            description=f"{ctx.author.mention}, all your reminders have been cleared.",
+            description=f"{ctx.user.mention}, all your reminders have been cleared.",
             color=discord.Color.green(),
         )
 
-        await ctx.send_followup(embed=embed)
+        await ctx.followup.send(embed=embed)
 
         db.commit()
         db.close()
 
 
-def setup(bot: commands.Bot) -> None:
-    bot.add_cog(ReminderCommands(bot))
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(ReminderCommands(bot))
     log.info("Commands loaded: reminder")
