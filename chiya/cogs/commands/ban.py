@@ -33,7 +33,7 @@ class BansCommands(commands.Cog):
         ctx: discord.Interaction,
         user: discord.Member | discord.User,
         reason: str,
-        daystodelete: app_commands.Range[int, 1, 7] = None
+        daystodelete: app_commands.Range[int, 1, 7] = None,
     ) -> None:
         """
         Ban the user, log the action to the database, and attempt to send them
@@ -107,8 +107,8 @@ class BansCommands(commands.Cog):
         db.close()
 
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
-        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
         await ctx.followup.send(embed=mod_embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
     @app_commands.command(name="unban", description="Unban user from the server")
     @app_commands.guilds(config["guild_id"])
@@ -148,8 +148,8 @@ class BansCommands(commands.Cog):
         db.close()
 
         await ctx.guild.unban(user, reason=reason)
-        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
         await ctx.followup.send(embed=mod_embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:

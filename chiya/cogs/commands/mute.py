@@ -115,8 +115,8 @@ class MuteCommands(commands.Cog):
         db.close()
 
         await member.timeout(datetime.fromtimestamp(mute_end_time, timezone.utc), reason=reason)
-        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
         await ctx.followup.send(embed=mod_embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
     @app_commands.command(name="unmute", description="Umutes a member in the server")
     @app_commands.guilds(config["guild_id"])
@@ -195,9 +195,9 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.timeout(None, reason=reason)
-        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await member.timeout(until=None, reason=reason)
         await ctx.followup.send(embed=mod_embed)
+        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:

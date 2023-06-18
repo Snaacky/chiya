@@ -65,8 +65,8 @@ class PurgeCommands(commands.Cog):
             fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )
         await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
-        await log_embed_to_channel(ctx=ctx, embed=embed)
         await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
