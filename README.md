@@ -40,4 +40,4 @@ Chiya is deployed into a production environment using [Docker](https://docs.dock
 
 ## Contributing
 
-Contributors are more than welcome to help make Chiya a better bot. If you are a developer, we encourage you to fork the bot, make changes, and PR your changes upstream. For more information about contributing, [check out our contributing guide](https://github.com/Snaacky/chiya/blob/readme-rework/CONTRIBUTING.md).
+Contributors are more than welcome to help make Chiya a better bot. If you are a developer, we encourage you to fork the bot, make changes, and PR your changes upstream. For more information about contributing, [check out our contributing guide](https://github.com/Snaacky/chiya/blob/master/CONTRIBUTING.md).
