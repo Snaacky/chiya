@@ -195,7 +195,7 @@ class MuteCommands(commands.Cog):
         db.commit()
         db.close()
 
-        await member.timeout(until=None, reason=reason)
+        await member.timeout(None, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
