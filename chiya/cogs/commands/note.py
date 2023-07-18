@@ -90,7 +90,7 @@ class NoteCommands(commands.Cog):
                 "note": "🗒️",
             }
 
-            action_string = f"""**{action_emoji[action['type']]} {action['type'][0].title()}**
+            action_string = f"""**{action_emoji[action['type']]} {action['type'].title()}**
                 **ID:** {action["id"]}
                 **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
                 **Moderator:** <@!{action["mod_id"]}>
