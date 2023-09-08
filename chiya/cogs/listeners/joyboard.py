@@ -82,11 +82,9 @@ class Joyboard(commands.Cog):
 
         if (
             not self.check_emoji(payload.emoji, payload.guild_id)
-            or cache_data in self.cache["remove"]
+            or cache_data in self.cache["add"]
         ):
             return
-
-        self.cache["remove"].add(cache_data)
 
         channel = self.bot.get_channel(payload.channel_id)
 
@@ -95,6 +93,8 @@ class Joyboard(commands.Cog):
             or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
         ):
             return
+
+        self.cache["add"].add(cache_data)
 
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
