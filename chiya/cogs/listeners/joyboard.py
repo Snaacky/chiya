@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 import discord
 import httpx
-from discord.ext import commands, tasks
+from discord.ext import commands
 from loguru import logger as log
 
 from chiya import database
@@ -69,112 +69,6 @@ class Joyboard(commands.Cog):
         name = emoji if isinstance(emoji, str) else emoji.name
         return name in self.JOYS or name.startswith("joy_")
 
-    reactions = {}
-
-    @tasks.loop(seconds=5)
-    async def handle_reaction(self):
-        try:
-            if not self.reactions:
-                return
-
-            reactions = self.reactions.copy()
-            self.reactions.clear()
-            payload: discord.RawReactionActionEvent
-            for message, payload in reactions.items():
-                channel = self.bot.get_channel(payload.channel_id)
-                message = await channel.fetch_message(payload.message_id)
-                joy_count = await self.get_joy_count(message)
-
-                if (
-                    message.author.bot
-                    or message.author.id == payload.member.id
-                    or channel.is_nsfw()
-                    or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
-                    or joy_count < config["channels"]["joyboard"]["joy_limit"]
-                ):
-                    continue
-
-                joyboard_channel = discord.utils.get(
-                    message.guild.channels,
-                    id=config["channels"]["joyboard"]["channel_id"]
-                )
-
-                db = database.Database().get()
-                result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
-
-                if result:
-                    try:
-                        joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
-                        embed_dict = joy_embed.embeds[0].to_dict()
-                        embed_dict["color"] = self.generate_color(joy_count=joy_count)
-                        embed = discord.Embed.from_dict(embed_dict)
-                        await joy_embed.edit(
-                            content=f"😂 **{joy_count}** {message.channel.mention}",
-                            embed=embed,
-                        )
-                        db.close()
-                        continue
-                    # Joy embed found in database but the actual joy embed was deleted.
-                    except discord.NotFound:
-                        pass
-
-                embed = embeds.make_embed(
-                    color=self.generate_color(joy_count=joy_count),
-                    footer=str(payload.message_id),
-                    timestamp=datetime.datetime.now(),
-                    fields=[{"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False}],
-                )
-
-                description = f"{message.content}\n\n"
-
-                images = []
-                for attachment in message.attachments:
-                    description += f"{attachment.url}\n"
-                    # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
-                    if "image" in attachment.content_type:
-                        images.append(attachment.url)
-
-                for message_embed in message.embeds:
-                    # Other types may need to be added in future
-                    if message_embed.type in ["gif", "gifv"]:
-                        if message_embed.provider and message_embed.provider.url:
-                            urlinfo = urlparse(message_embed.provider.url)
-                            if urlinfo.netloc in ["tenor.com", "tenor.co"]:
-                                async with httpx.AsyncClient() as client:
-                                    req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
-                                    images.append(req.url)
-
-                # Prioritize the first image over sticker if possible.
-                if images:
-                    embed.set_image(url=images[0])
-                elif message.stickers:
-                    embed.set_image(url=message.stickers[0].url)
-
-                embed.description = description
-                embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
-
-                joyed_message = await joyboard_channel.send(
-                    content=f"😂 **{joy_count}** {message.channel.mention}",
-                    embed=embed,
-                )
-
-                # Update the joy embed ID since the original one was probably deleted.
-                if result:
-                    result["joy_embed_id"] = joyed_message.id
-                    db["joyboard"].update(result, ["id"])
-                else:
-                    data = dict(
-                        channel_id=payload.channel_id,
-                        message_id=payload.message_id,
-                        joy_embed_id=joyed_message.id,
-                    )
-                    db["joyboard"].insert(data, ["id"])
-
-                db.commit()
-                db.close()
-        except Exception as e:
-            log.error(e)
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
         """
@@ -184,8 +78,15 @@ class Joyboard(commands.Cog):
         Implements a cache to prevent race condition where if multiple joys were reacted on a message after it hits the
         joy threshold and the IDs were not written to the database quickly enough, a duplicated joy embed would be sent.
         """
-        if not self.check_emoji(payload.emoji, payload.guild_id):
+        cache_data = (payload.message_id, payload.channel_id)
+
+        if (
+            not self.check_emoji(payload.emoji, payload.guild_id)
+            or cache_data in self.cache["remove"]
+        ):
             return
+
+        self.cache["remove"].add(cache_data)
 
         channel = self.bot.get_channel(payload.channel_id)
 
@@ -195,7 +96,98 @@ class Joyboard(commands.Cog):
         ):
             return
 
-        self.reactions[payload.message_id] = payload
+        channel = self.bot.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
+        joy_count = await self.get_joy_count(message)
+
+        if (
+            message.author.bot
+            or message.author.id == payload.member.id
+            or channel.is_nsfw()
+            or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
+            or joy_count < config["channels"]["joyboard"]["joy_limit"]
+        ):
+            return
+
+        joyboard_channel = discord.utils.get(
+            message.guild.channels,
+            id=config["channels"]["joyboard"]["channel_id"]
+        )
+
+        db = database.Database().get()
+        result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
+
+        if result:
+            try:
+                joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
+                embed_dict = joy_embed.embeds[0].to_dict()
+                embed_dict["color"] = self.generate_color(joy_count=joy_count)
+                embed = discord.Embed.from_dict(embed_dict)
+                await joy_embed.edit(
+                    content=f"😂 **{joy_count}** {message.channel.mention}",
+                    embed=embed,
+                )
+                db.close()
+                return
+            # Joy embed found in database but the actual joy embed was deleted.
+            except discord.NotFound:
+                pass
+
+        embed = embeds.make_embed(
+            color=self.generate_color(joy_count=joy_count),
+            footer=str(payload.message_id),
+            timestamp=datetime.datetime.now(),
+            fields=[{"name": "Source:", "value": f"[Jump!]({message.jump_url})", "inline": False}],
+        )
+
+        description = f"{message.content}\n\n"
+
+        images = []
+        for attachment in message.attachments:
+            description += f"{attachment.url}\n"
+            # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
+            if "image" in attachment.content_type:
+                images.append(attachment.url)
+
+        for message_embed in message.embeds:
+            # Other types may need to be added in future
+            if message_embed.type in ["gif", "gifv"]:
+                if message_embed.provider and message_embed.provider.url:
+                    urlinfo = urlparse(message_embed.provider.url)
+                    if urlinfo.netloc in ["tenor.com", "tenor.co"]:
+                        async with httpx.AsyncClient() as client:
+                            req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
+                            images.append(req.url)
+
+        # Prioritize the first image over sticker if possible.
+        if images:
+            embed.set_image(url=images[0])
+        elif message.stickers:
+            embed.set_image(url=message.stickers[0].url)
+
+        embed.description = description
+        embed.set_author(name=message.author.display_name, icon_url=message.author.display_avatar)
+
+        joyed_message = await joyboard_channel.send(
+            content=f"😂 **{joy_count}** {message.channel.mention}",
+            embed=embed,
+        )
+
+        # Update the joy embed ID since the original one was probably deleted.
+        if result:
+            result["joy_embed_id"] = joyed_message.id
+            db["joyboard"].update(result, ["id"])
+        else:
+            data = dict(
+                channel_id=payload.channel_id,
+                message_id=payload.message_id,
+                joy_embed_id=joyed_message.id,
+            )
+            db["joyboard"].insert(data, ["id"])
+
+        db.commit()
+        db.close()
+        self.cache["add"].remove(cache_data)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
