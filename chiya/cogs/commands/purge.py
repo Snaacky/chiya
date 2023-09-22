@@ -64,7 +64,7 @@ class PurgeCommands(commands.Cog):
             color=discord.Color.red(),
             fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )
-        await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
+        await ctx.channel.purge(limit=amount, bulk=True)
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
 
