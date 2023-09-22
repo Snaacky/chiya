@@ -21,10 +21,6 @@ class Joyboard(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.cache = {"add": set(), "remove": set()}
-        self.handle_reaction.start()
-
-    def cog_unload(self) -> None:
-        self.handle_reaction.cancel()
 
     def generate_color(self, joy_count: int) -> int:
         """
