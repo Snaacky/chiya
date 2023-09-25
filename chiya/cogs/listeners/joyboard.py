@@ -83,16 +83,6 @@ class Joyboard(commands.Cog):
             return
 
         channel = self.bot.get_channel(payload.channel_id)
-
-        if (
-            channel.is_nsfw()
-            or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
-        ):
-            return
-
-        self.cache["add"].add(cache_data)
-
-        channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         joy_count = await self.get_joy_count(message)
 
@@ -104,6 +94,8 @@ class Joyboard(commands.Cog):
             or joy_count < config["channels"]["joyboard"]["joy_limit"]
         ):
             return
+
+        self.cache["add"].add(cache_data)
 
         joyboard_channel = discord.utils.get(
             message.guild.channels,
