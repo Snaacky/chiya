@@ -9,15 +9,6 @@ from chiya.config import config
 from chiya.utils import embeds
 
 
-@commands.Cog.listener()
-async def on_ready(self) -> None:
-    """
-    Register the close report button that persists between bot
-    restarts.
-    """
-    self.bot.add_view(ReportCloseButton())
-
-
 class ReportCloseButton(discord.ui.View):
     def __init__(self) -> None:
         super().__init__(timeout=None)
@@ -88,6 +79,14 @@ class ReportMessageApp(commands.Cog):
         self.bot = bot
         self.report_message_command = app_commands.ContextMenu(name="Report Message", callback=self.report_message)
         self.bot.tree.add_command(self.report_message_command)
+
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        """
+        Register the close report button that persists between bot
+        restarts.
+        """
+        self.bot.add_view(ReportCloseButton())
 
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()
