@@ -65,7 +65,7 @@ class ReportMessageButtons(discord.ui.View):
         style=discord.ButtonStyle.secondary,
         custom_id="cancel_report",
     )
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         Create a View for the report message embed cancel button.
         """
