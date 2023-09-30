@@ -1,11 +1,10 @@
 import datetime
 import logging
-import httpx
+from urllib.parse import urlparse
 
 import discord
 import httpx
 from discord.ext import commands
-from loguru import logger as log
 
 from chiya import config, database
 from chiya.utils import embeds
