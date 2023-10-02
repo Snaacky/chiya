@@ -61,3 +61,4 @@ database:
 privatebin:
   url: "https://privatebin.net"
 timeout_limit: 3600
+lfs_url: "https://media.githubusercontent.com/media/user/bot/dir"
