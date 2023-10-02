@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya import config
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 from chiya.utils.helpers import log_embed_to_channel
 
 
@@ -64,7 +64,7 @@ class PurgeCommands(commands.Cog):
         embed = embeds.make_embed(
             title="Purged messages",
             description=f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}.",
-            thumbnail_url="https://i.imgur.com/EDy6jCp.png",
+            thumbnail_url=lfs.get_image("purge-logo.png"),
             color=discord.Color.red(),
             fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )

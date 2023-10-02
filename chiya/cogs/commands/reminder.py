@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from chiya import config, database
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 from chiya.utils.helpers import get_duration
 from chiya.utils.pagination import LinePaginator
 
@@ -65,7 +65,7 @@ class ReminderCommands(commands.Cog):
             author=True,
             title="Reminder set",
             description=f"I'll remind you about this <t:{end_time}:R>.",
-            thumbnail_url="https://i.imgur.com/VZV64W0.png",
+            thumbnail_url=lfs.get_image("reminder-blue.png"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "ID:", "value": remind_id, "inline": False},
@@ -113,7 +113,7 @@ class ReminderCommands(commands.Cog):
             author=True,
             title="Reminder set",
             description="Your reminder was updated",
-            thumbnail_url="https://i.imgur.com/UUbR5J1.png",
+            thumbnail_url=lfs.get_image("reminder-green.png"),
             color=discord.Color.green(),
             fields=[
                 {"name": "ID:", "value": str(reminder_id), "inline": False},
@@ -145,7 +145,7 @@ class ReminderCommands(commands.Cog):
             ctx=ctx,
             author=True,
             title="Reminders",
-            thumbnail_url="https://i.imgur.com/VZV64W0.png",
+            thumbnail_url=lfs.get_image("reminder-green.png"),
             color=discord.Color.blurple(),
         )
 
@@ -197,7 +197,7 @@ class ReminderCommands(commands.Cog):
             author=True,
             title="Reminder deleted",
             description="Your reminder was deleted",
-            thumbnail_url="https://i.imgur.com/03bmvBX.png",
+            thumbnail_url=lfs.get_image("reminder-red.png"),
             color=discord.Color.red(),
             fields=[
                 {"name": "ID:", "value": str(reminder_id), "inline": False},

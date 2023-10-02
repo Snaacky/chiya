@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya import config, database
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 from chiya.utils.helpers import log_embed_to_channel
 from chiya.utils.pagination import LinePaginator
 
@@ -45,7 +45,7 @@ class NoteCommands(commands.Cog):
         embed = embeds.make_embed(
             title=f"Noting user: {user.name}",
             description=f"{user.mention} was noted by {ctx.user.mention}",
-            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
+            thumbnail_url=lfs.get_image("note.png"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "ID:", "value": note_id, "inline": False},
@@ -148,7 +148,7 @@ class NoteCommands(commands.Cog):
         embed = embeds.make_embed(
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.user.mention}",
-            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
+            thumbnail_url=lfs.get_image("note.png"),
             color=discord.Color.green(),
             fields=[
                 {"name": "Before:", "value": log["reason"], "inline": False},
