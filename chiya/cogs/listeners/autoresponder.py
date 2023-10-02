@@ -4,8 +4,7 @@ import discord
 from discord.ext import commands
 
 from chiya import config
-from chiya.utils import embeds
-from chiya.utils.lfs import get_image
+from chiya.utils import embeds,lfs
 
 
 log = logging.getLogger(__name__)
@@ -48,7 +47,7 @@ class AutoresponderListeners(commands.Cog):
                         "We are a discussion community, not a file-sharing hub."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule01.png"),
+                    thumbnail_url=lfs.get_image("rule01.png"),
                     title_url=rules_message
                 ))
             case "rule2":
@@ -59,7 +58,7 @@ class AutoresponderListeners(commands.Cog):
                         "religion, gender, sexual identity, or ethnic background, will not be tolerated."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule02.png"),
+                    thumbnail_url=lfs.get_image("rule02.png"),
                     title_url=rules_message
                 ))
             case "rule3":
@@ -70,7 +69,7 @@ class AutoresponderListeners(commands.Cog):
                         "from the community."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule03.png"),
+                    thumbnail_url=lfs.get_image("rule03.png"),
                     title_url=rules_message
                 ))
             case "rule4":
@@ -82,7 +81,7 @@ class AutoresponderListeners(commands.Cog):
                         "not cause problems."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule04.png"),
+                    thumbnail_url=lfs.get_image("rule04.png"),
                     title_url=rules_message
                 ))
             case "rule5":
@@ -94,7 +93,7 @@ class AutoresponderListeners(commands.Cog):
                         "should only be pinged when the situation calls for their immediate attention."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule05.png"),
+                    thumbnail_url=lfs.get_image("rule05.png"),
                     title_url=rules_message
                 ))
             case "rule6":
@@ -106,7 +105,7 @@ class AutoresponderListeners(commands.Cog):
                         "DDL communities, or Usenet indexers is not allowed."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule06.png"),
+                    thumbnail_url=lfs.get_image("rule06.png"),
                     title_url=rules_message
                 ))
             case "rule7":
@@ -118,7 +117,7 @@ class AutoresponderListeners(commands.Cog):
                         "Unsolicited spam via DMs will result in an immediate ban."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule07.png"),
+                    thumbnail_url=lfs.get_image("rule07.png"),
                     title_url=rules_message
                 ))
             case "rule8":
@@ -130,7 +129,7 @@ class AutoresponderListeners(commands.Cog):
                         "preemptively banned in more severe cases."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule08.png"),
+                    thumbnail_url=lfs.get_image("rule08.png"),
                     title_url=rules_message
                 ))
             case "rule9":
@@ -142,7 +141,7 @@ class AutoresponderListeners(commands.Cog):
                         "will result in a permanent ban."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule09.png"),
+                    thumbnail_url=lfs.get_image("rule09.png"),
                     title_url=rules_message
                 ))
             case "rule10":
@@ -154,7 +153,7 @@ class AutoresponderListeners(commands.Cog):
                         "so that people don't blindly click a spoiler."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule10.png"),
+                    thumbnail_url=lfs.get_image("rule10.png"),
                     title_url=rules_message
                 ))
             case "rule11":
@@ -166,7 +165,7 @@ class AutoresponderListeners(commands.Cog):
                         "need for further discussions."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule11.png"),
+                    thumbnail_url=lfs.get_image("rule11.png"),
                     title_url=rules_message
                 ))
             case "rule12":
@@ -177,7 +176,7 @@ class AutoresponderListeners(commands.Cog):
                         "and cultures, but we can only moderate the content we understand."
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule12.png"),
+                    thumbnail_url=lfs.get_image("rule12.png"),
                     title_url=rules_message
                 ))
             case "rule13":
@@ -188,7 +187,7 @@ class AutoresponderListeners(commands.Cog):
                         "outside of NSFW channels. "
                     ),
                     color=0x7d98e9,
-                    thumbnail_url=get_image("rule13.png"),
+                    thumbnail_url=lfs.get_image("rule13.png"),
                     title_url=rules_message
                 ))
 
