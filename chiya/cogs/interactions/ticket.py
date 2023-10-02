@@ -6,7 +6,7 @@ import privatebinapi
 from discord.ext import commands
 
 from chiya import config, database
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 
 
 log = logging.getLogger(__name__)
@@ -210,7 +210,7 @@ class TicketCloseButton(discord.ui.View):
         
         log_embed = embeds.make_embed(
             title=f"{interaction.channel.name} archived",
-            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
+            thumbnail_url=lfs.get_image("ticket-logo.png"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Ticket Creator:", "value": member.mention, "inline": True},
@@ -226,7 +226,7 @@ class TicketCloseButton(discord.ui.View):
 
         try:
             dm_embed = embeds.make_embed(
-                image_url="https://i.imgur.com/21nJqGC.gif",
+                image_url=lfs.get_image("ticket-closed.gif"),
                 color=discord.Color.blurple(),
                 title="Ticket closed",
                 description=(

@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from chiya import config
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 
 
 log = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class BoostListeners(commands.Cog):
 
         embed = embeds.make_embed(
             color=self.NITRO_PINK,
-            image_url="https://i.imgur.com/O8R98p9.gif",
+            image_url=lfs.get_image("new-boost.gif"),
             title="A new booster appeared!",
             description=(
                 f"{member.mention}, thank you so much for the server boost! "

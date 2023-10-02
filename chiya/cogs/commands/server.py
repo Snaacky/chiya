@@ -5,7 +5,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from chiya import config
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 
 
 log = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class ServerCommands(commands.Cog):
         embed = embeds.make_embed(
             title=f"Total boosts: {ctx.guild.premium_subscription_count}",
             description="\n".join(user.mention for user in ctx.guild.premium_subscribers),
-            thumbnail_url="https://i.imgur.com/22ZZG7h.png",
+            thumbnail_url=lfs.get_image("boost-logo.png"),
             footer=f"Total boosters: {len(ctx.guild.premium_subscribers)}",
             color=discord.Color(0xf47fff),
         )
