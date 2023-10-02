@@ -1,5 +1,5 @@
 <p align="center">
-<img width="150" height="150" src="https://i.imgur.com/Lkqobis.png">
+<img width="150" height="150" src="https://media.githubusercontent.com/media/Snaacky/chiya/git-lfs/media/readme/logo.png">
 </p>
 
 <p align="center">
