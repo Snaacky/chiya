@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord import app_commands
 
 from chiya import config, database
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 from chiya.utils.helpers import can_action_member, get_duration, log_embed_to_channel
 
 
@@ -73,7 +73,7 @@ class MuteCommands(commands.Cog):
             ctx=ctx,
             title=f"Muting member: {member}",
             description=f"{member.mention} was muted by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/rHtYWIt.png",
+            thumbnail_url=lfs.get_image("mute-logo.png"),
             color=discord.Color.red(),
             fields=[{"name": "Duration:", "value": duration_string, "inline": False}],
         )
@@ -81,7 +81,7 @@ class MuteCommands(commands.Cog):
         user_embed = embeds.make_embed(
             title="Uh-oh, you've been muted!",
             description="If you believe this was a mistake, contact staff.",
-            image_url="https://i.imgur.com/840Q48l.gif",
+            image_url=lfs.get_image("mute.gif"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
@@ -158,14 +158,14 @@ class MuteCommands(commands.Cog):
             title=f"Unmuting member: {member.name}",
             description=f"{member.mention} was unmuted by {ctx.user.mention} for: {reason}",
             color=discord.Color.green(),
-            thumbnail_url="https://i.imgur.com/W7DpUHC.png",
+            thumbnail_url=lfs.get_image("unmute-logo.png"),
         )
 
         user_embed = embeds.make_embed(
             author=False,
             title="Yay, you've been unmuted!",
             description="Review our server rules to avoid being actioned again in the future.",
-            image_url="https://i.imgur.com/U5Fvr2Y.gif",
+            image_url=lfs.get_image("unmute.gif"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},

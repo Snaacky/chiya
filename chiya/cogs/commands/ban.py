@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya import config, database
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
@@ -64,7 +64,7 @@ class BansCommands(commands.Cog):
             author=True,
             title=f"Banning user: {user}",
             description=f"{user.mention} was banned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/l0jyxkz.png",
+            thumbnail_url=lfs.get_image("ban-logo.png"),
             color=discord.Color.red(),
         )
 
@@ -75,7 +75,7 @@ class BansCommands(commands.Cog):
                 "You can submit a ban appeal on our subreddit [here]"
                 "(https://www.reddit.com/message/compose/?to=/r/snackbox)."
             ),
-            image_url="https://i.imgur.com/CglQwK5.gif",
+            image_url=lfs.get_image("mai-point.gif"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
@@ -138,7 +138,7 @@ class BansCommands(commands.Cog):
             author=True,
             title=f"Unbanning user: {user}",
             description=f"{user.mention} was unbanned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/4H0IYJH.png",
+            thumbnail_url=lfs.get_image("unban-logo.png"),
             color=discord.Color.green(),
         )
 

@@ -6,7 +6,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya import config, database
-from chiya.utils import embeds
+from chiya.utils import embeds, lfs
 from chiya.utils.helpers import log_embed_to_channel
 
 
@@ -48,7 +48,7 @@ class WarnCommands(commands.Cog):
             author=True,
             title=f"Warning member: {member.name}",
             description=f"{member.mention} was warned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/4jeFA3h.png",
+            thumbnail_url=lfs.get_image("warning-logo.png"),
             color=discord.Color.gold(),
         )
 
@@ -57,7 +57,7 @@ class WarnCommands(commands.Cog):
                 author=False,
                 title="Uh-oh, you've received a warning!",
                 description="If you believe this was a mistake, contact staff.",
-                image_url="https://i.imgur.com/rVf0mlG.gif",
+                image_url=lfs.get_image("warning.gif"),
                 color=discord.Color.blurple(),
                 fields=[
                     {
