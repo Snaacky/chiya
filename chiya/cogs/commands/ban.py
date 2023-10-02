@@ -75,7 +75,7 @@ class BansCommands(commands.Cog):
                 "You can submit a ban appeal on our subreddit [here]"
                 "(https://www.reddit.com/message/compose/?to=/r/snackbox)."
             ),
-            image_url=lfs.get_image("mai-point.gif"),
+            image_url=lfs.get_image("ban.gif"),
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
