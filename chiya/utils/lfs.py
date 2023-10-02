@@ -11,7 +11,7 @@ def get_image(imgname: str) -> str:
         Returns: 
             The URL of the image file.
     """
-    base_url = config["lfs-url"]
+    base_url = config["lfs_url"]
     full_path = inspect.stack()[1].filename
     filename = Path(full_path).stem 
     image_url = f"{base_url}/{filename}/{imgname}"

@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 from chiya import config
-from chiya.utils import embeds,lfs
+from chiya.utils import embeds, lfs
 
 
 log = logging.getLogger(__name__)
