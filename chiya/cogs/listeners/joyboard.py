@@ -111,6 +111,7 @@ class Joyboard(commands.Cog):
                 embed_dict = joy_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(joy_count=joy_count)
                 embed = discord.Embed.from_dict(embed_dict)
+                self.cache["add"].remove(cache_data)
                 await joy_embed.edit(
                     content=f"😂 **{joy_count}** {message.channel.mention}",
                     embed=embed,
