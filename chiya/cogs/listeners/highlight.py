@@ -42,6 +42,7 @@ class HighlightListeners(commands.Cog):
         if message.author.bot:
             return
 
+        active_members, chat = None, None
         for highlight in self.highlights:
             regex = rf"\b{re.escape(highlight['term'])}\b"
             result = re.search(regex, message.clean_content, re.IGNORECASE)
@@ -49,12 +50,16 @@ class HighlightListeners(commands.Cog):
             if not result:
                 continue
 
-            messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
-            chat = ""
-            for msg in reversed(messages):
-                chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
-            chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
-                {message.clean_content[0:256]}\n"
+            if active_members is None:
+                active_members = await self.active_members(message.channel)
+
+            if chat is None:
+                messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
+                chat = ""
+                for msg in reversed(messages):
+                    chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
+                    {message.clean_content[0:256]}\n"
 
             embed = embeds.make_embed(
                 title=highlight["term"],
@@ -63,7 +68,6 @@ class HighlightListeners(commands.Cog):
             )
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
-            active_members = await self.active_members(message.channel)
             for subscriber in highlight["users"]:
                 if (
                     subscriber == message.author.id
