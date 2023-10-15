@@ -25,6 +25,7 @@ class HighlightListeners(commands.Cog):
             }
             for highlight in db["highlights"].find()
         ]
+        db.close()
 
     async def active_members(self, channel: discord.TextChannel) -> set:
         """
