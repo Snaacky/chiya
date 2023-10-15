@@ -14,31 +14,25 @@ from chiya.utils import embeds
 class HighlightListeners(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.db = database.Database().get()
-        self.highlights = [
-            {
-                "term": highlight["term"],
-                "users": orjson.loads(highlight["users"])
-            }
-            for highlight in self.db["highlights"].find()
-        ]
+        self.refresh_highlights()
 
     def refresh_highlights(self):
+        db = database.Database().get()
         self.highlights = [
             {
                 "term": highlight["term"],
                 "users": orjson.loads(highlight["users"])
             }
-            for highlight in self.db["highlights"].find()
+            for highlight in db["highlights"].find()
         ]
 
-    async def is_user_active(self, channel: discord.TextChannel, member: discord.Member) -> bool:
+    async def active_members(self, channel: discord.TextChannel) -> set:
         """
-        Checks if the user was active in chat recently.
+        Returns a set of all the active members in a channel.
         """
         after = datetime.datetime.now() - datetime.timedelta(minutes=config["hl"]["timeout"])
-        message_auths = [message.author.id async for message in channel.history(after=after)]
-        return member.id in message_auths
+        message_auths = set([message.author.id async for message in channel.history(after=after)])
+        return message_auths
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -69,18 +63,21 @@ class HighlightListeners(commands.Cog):
             )
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
+            active_members = await self.active_members(message.channel)
             for subscriber in highlight["users"]:
+                if (
+                    subscriber == message.author.id
+                    or subscriber in active_members
+                ):
+                    continue
+
                 try:
                     member = await message.guild.fetch_member(subscriber)
                 except discord.errors.NotFound:
                     log.debug(f"Attempting to find member failed: {subscriber}")
                     continue
 
-                if (
-                    subscriber == message.author.id
-                    or not message.channel.permissions_for(member).view_channel
-                    or await self.is_user_active(message.channel, member)
-                ):
+                if (not message.channel.permissions_for(member).view_channel):
                     continue
 
                 try:
