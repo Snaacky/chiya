@@ -111,6 +111,12 @@ class Joyboard(commands.Cog):
                 embed_dict = joy_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(joy_count=joy_count)
                 embed = discord.Embed.from_dict(embed_dict)
+
+                # Logs the user and message to console if the message is older than the configured limit
+                time_since_message = (datetime.datetime.now(datetime.timezone.utc) - message.created_at)
+                if time_since_message.days > config["channels"]["joyboard"]["timeout"]:
+                    log.info(f"{payload.member.name} reacted to a message from {time_since_message.days} days ago - #{message.channel.name}-{message.id}")
+
                 self.cache["add"].remove(cache_data)
                 await joy_embed.edit(
                     content=f"😂 **{joy_count}** {message.channel.mention}",
