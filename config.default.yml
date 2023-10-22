@@ -47,6 +47,11 @@ channels:
     star_limit: 0
     channel_id: 000000000000000000
     blacklisted: [000000000000000000]
+  joyboard:
+    joy_limit: 0 
+    channel_id: 000000000000000000
+    blacklisted: [000000000000000000]
+    timeout: 0
 reddit:
   subreddit: "snackbox"
   channel: 000000000000000000
