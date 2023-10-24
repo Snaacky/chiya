@@ -36,7 +36,11 @@ class BotCommands(Cog):
         def _cleanup_code(self, content: str) -> str:
             """Automatically removes code blocks from the code."""
             if content.startswith("```") and content.endswith("```"):  # remove ```py\n```
-                return "\n".join(content.split("\n")[1:-1])
+                split_code = content.split("\n")
+                if len(split_code) == 1:
+                    return content.split("```")[1]
+                else: 
+                    return "\n".join(content.split("\n")[1:-1])
             return content.strip("` \n")  # remove `foo`
         await ctx.response.defer(thinking=True, ephemeral=True)
 
@@ -68,7 +72,7 @@ class BotCommands(Cog):
         env.update(globals())
 
         # Calling cleanup command to remove the markdown traces.
-        body = _cleanup_code(body)
+        body = _cleanup_code(self, body)
         embed.add_field(name="Input:", value=f"```py\n{body}\n```", inline=False)
         # Output stream.
         stdout = io.StringIO()
