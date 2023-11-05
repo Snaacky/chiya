@@ -140,7 +140,7 @@ class Joyboard(commands.Cog):
         for attachment in message.attachments:
             description += f"{attachment.url}\n"
             # Must be of image MIME type. `content_type` will fail otherwise (NoneType).
-            if "image" in attachment.content_type:
+            if "image" in attachment.content_type and not attachment.is_spoiler():
                 images.append(attachment.url)
 
         for message_embed in message.embeds:
