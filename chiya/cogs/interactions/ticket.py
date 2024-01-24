@@ -224,7 +224,7 @@ class TicketCloseButton(discord.ui.View):
 
         try:
             dm_embed = embeds.make_embed(
-                image_url="https://i.imgur.com/21nJqGC.gif",
+                image_url="https://i.imgur.com/bf3vqei.gif",
                 color=discord.Color.blurple(),
                 title="Ticket closed",
                 description=(
