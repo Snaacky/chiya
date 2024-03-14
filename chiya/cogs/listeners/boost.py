@@ -68,7 +68,7 @@ class BoostListeners(commands.Cog):
                     f"We're now at {after.guild.premium_subscription_count} boosts."
                 ),
             )
-            await channel.send(content=member.mention, embed=embed)
+            await channel.send(content=after.mention, embed=embed)
             log.info(f"{after} stopped boosting {after.guild.name}")
 
 
