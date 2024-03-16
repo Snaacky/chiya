@@ -17,7 +17,7 @@ class Joyboard(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.cache = {"add": set(), "remove": set()}
+        self.cache = {"add": set()}
 
     def generate_color(self, joy_count: int) -> int:
         """
@@ -188,15 +188,11 @@ class Joyboard(commands.Cog):
         """
         Update the joy count in the embed if the joys were reacted. Delete joy embed if the joy count is below threshold
         """
-        cache_data = (payload.message_id, payload.channel_id)
-
         if (
             not self.check_emoji(payload.emoji, payload.guild_id)
-            or cache_data in self.cache["remove"]
         ):
             return
 
-        self.cache["remove"].add(cache_data)
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
@@ -204,7 +200,6 @@ class Joyboard(commands.Cog):
         result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
 
         if not result:
-            self.cache["remove"].remove(cache_data)
             return db.close()
 
         joyboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["joyboard"]["channel_id"])
@@ -212,7 +207,6 @@ class Joyboard(commands.Cog):
         try:
             joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
         except discord.NotFound:
-            self.cache["remove"].remove(cache_data)
             return db.close()
 
         joy_count = await self.get_joy_count(message)
@@ -221,7 +215,6 @@ class Joyboard(commands.Cog):
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
-            self.cache["remove"].remove(cache_data)
             return await joy_embed.delete()
 
         embed_dict = joy_embed.embeds[0].to_dict()
@@ -233,7 +226,6 @@ class Joyboard(commands.Cog):
         )
 
         db.close()
-        self.cache["remove"].remove(cache_data)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload):
