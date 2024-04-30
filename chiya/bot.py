@@ -2,6 +2,7 @@ import asyncio
 import glob
 import os
 import sys
+import logging
 
 import discord
 from discord.ext import commands
@@ -46,8 +47,24 @@ async def setup_logger():
     log_level = config["bot"]["log_level"]
     if not log_level:
         log_level = "NOTSET"
-
     log.remove()
+    
+    class InterceptHandler(logging.Handler):
+        """
+        Setup up an Interceptor class to redirect all logs from the standard logging library to loguru.
+        """
+        def emit(self, record: logging.LogRecord) -> None:
+            # Get corresponding Loguru level if it exists.
+            level: str | int
+            try:
+                level = log.level(record.levelname).name
+            except ValueError:
+                level = record.levelno
+
+            log.opt(exception=record.exc_info).log(level, record.getMessage())
+
+    discord.utils.setup_logging(handler=InterceptHandler(),level=logging.getLevelName(config["bot"]["log_level"]), root=False)
+
     fmt = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
     log.add(sys.stdout, format=fmt, level=log_level)
     log.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
