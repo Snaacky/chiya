@@ -66,7 +66,7 @@ async def setup_logger():
     discord.utils.setup_logging(handler=InterceptHandler(),level=logging.getLevelName(config["bot"]["log_level"]), root=False)
 
     fmt = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
-    log.add(sys.stdout, format=fmt, level=log_level)
+    log.add(sys.stdout, format=fmt, level=log_level, backtrace=False)
     log.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
 
 
