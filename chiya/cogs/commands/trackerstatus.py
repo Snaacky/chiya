@@ -17,6 +17,7 @@ trackers: list[TrackerStatus] = [
     TrackerStatusInfo("PTP"),
     TrackerStatusInfo("RED"),
     TrackerStatusInfo("OPS"),
+    TrackerStatusInfo("NBL"),
     TrackerStatusAB(),
     TrackerStatusMAM()
 ]
