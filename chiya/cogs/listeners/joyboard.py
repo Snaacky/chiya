@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 from urllib.parse import urlparse
 
 import discord
@@ -152,6 +153,8 @@ class Joyboard(commands.Cog):
                         async with httpx.AsyncClient() as client:
                             req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
                             images.append(req.url)
+            elif message_embed.type in ["image"]:
+                images.append(message_embed.url)
 
         # Prioritize the first image over sticker if possible.
         if images:
