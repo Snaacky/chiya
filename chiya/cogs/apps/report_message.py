@@ -1,24 +1,12 @@
 import asyncio
-import logging
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger as log
 
-from chiya import config
+from chiya.config import config
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
-
-
-@commands.Cog.listener()
-async def on_ready(self) -> None:
-    """
-    Register the close report button that persists between bot
-    restarts.
-    """
-    self.bot.add_view(ReportCloseButton())
 
 
 class ReportCloseButton(discord.ui.View):
@@ -77,7 +65,7 @@ class ReportMessageButtons(discord.ui.View):
         style=discord.ButtonStyle.secondary,
         custom_id="cancel_report",
     )
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction) -> None:
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         Create a View for the report message embed cancel button.
         """
@@ -91,6 +79,14 @@ class ReportMessageApp(commands.Cog):
         self.bot = bot
         self.report_message_command = app_commands.ContextMenu(name="Report Message", callback=self.report_message)
         self.bot.tree.add_command(self.report_message_command)
+
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        """
+        Register the close report button that persists between bot
+        restarts.
+        """
+        self.bot.add_view(ReportCloseButton())
 
     @app_commands.guilds(config["guild_id"])
     @app_commands.guild_only()

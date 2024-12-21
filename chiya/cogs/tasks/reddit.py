@@ -1,14 +1,11 @@
-import logging
 import time
 
 import asyncpraw
 import discord
 from discord.ext import commands, tasks
+from loguru import logger as log
 
-from chiya import config
-
-
-log = logging.getLogger(__name__)
+from chiya.config import config
 
 
 class RedditTasks(commands.Cog):

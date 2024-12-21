@@ -1,13 +1,9 @@
-import logging
-
 import discord
 from discord.ext import commands
+from loguru import logger as log
 
-from chiya import config
+from chiya.config import config
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class BoostListeners(commands.Cog):
@@ -55,7 +51,7 @@ class BoostListeners(commands.Cog):
                 f"We're now at {guild.premium_subscription_count} boosts."
             ),
         )
-        await channel.send(embed=embed)
+        await channel.send(content=member.mention, embed=embed)
         log.info(f"{member} boosted {guild.name}")
 
     async def on_lost_booster(self, before: discord.Member, after: discord.Member) -> None:
@@ -72,7 +68,7 @@ class BoostListeners(commands.Cog):
                     f"We're now at {after.guild.premium_subscription_count} boosts."
                 ),
             )
-            await channel.send(embed=embed)
+            await channel.send(content=after.mention, embed=embed)
             log.info(f"{after} stopped boosting {after.guild.name}")
 
 

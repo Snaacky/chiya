@@ -1,13 +1,10 @@
-import logging
 import time
 
 import discord
 from discord.ext import commands
+from loguru import logger as log
 
 from chiya import database
-
-
-log = logging.getLogger(__name__)
 
 
 class MuteListener(commands.Cog):
@@ -36,7 +33,7 @@ class MuteListener(commands.Cog):
                 )
                 db.commit()
                 db.close()
-        
+
         if not after.timed_out_until and before.timed_out_until:
             logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
             if logs[0].user != self.bot.user:

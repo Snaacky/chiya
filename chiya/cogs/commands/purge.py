@@ -1,15 +1,11 @@
-import logging
-
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger as log
 
-from chiya import config
+from chiya.config import config
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
-
-
-log = logging.getLogger(__name__)
 
 
 class PurgeCommands(commands.Cog):
@@ -68,7 +64,7 @@ class PurgeCommands(commands.Cog):
             color=discord.Color.red(),
             fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )
-        await ctx.channel.purge(limit=amount, before=ctx.channel.last_message.created_at, bulk=True)
+        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
 

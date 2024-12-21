@@ -1,4 +1,3 @@
-import logging
 import time
 from datetime import datetime
 from typing import Literal
@@ -6,14 +5,13 @@ from typing import Literal
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger as log
 
-from chiya import config, database
+from chiya import database
+from chiya.config import config
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
-from chiya.utils.pagination import LinePaginator
-
-
-log = logging.getLogger(__name__)
+from chiya.utils.pagination import MyMenuPages, MySource
 
 
 class NoteCommands(commands.Cog):
@@ -80,7 +78,6 @@ class NoteCommands(commands.Cog):
             results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
         else:
             results = db["mod_logs"].find(user_id=user.id, order_by="-id")
-        db.close()
 
         actions = []
         for action in results:
@@ -93,7 +90,7 @@ class NoteCommands(commands.Cog):
                 "note": "🗒️",
             }
 
-            action_string = f"""**{action_emoji[action['type']]} {action['type'][0].title()}**
+            action_string = f"""**{action_emoji[action['type']]} {action['type'].title()}**
                 **ID:** {action["id"]}
                 **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
                 **Moderator:** <@!{action["mod_id"]}>
@@ -104,21 +101,16 @@ class NoteCommands(commands.Cog):
 
             actions.append(action_string)
 
+        db.close()
         if not actions:
             return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
 
         embed = embeds.make_embed(title="Mod Actions")
         embed.set_author(name=user, icon_url=user.display_avatar)
 
-        await LinePaginator.paginate(
-            lines=actions,
-            ctx=ctx,
-            embed=embed,
-            max_lines=4,
-            max_size=2000,
-            linesep="\n",
-            timeout=120,
-        )
+        formatter = MySource(actions, embed)
+        menu = MyMenuPages(formatter)
+        await menu.start(ctx)
 
     @app_commands.command(name="editlog", description="Edit a user's notes and mod logs")
     @app_commands.guilds(config["guild_id"])

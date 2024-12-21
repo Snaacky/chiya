@@ -1,13 +1,9 @@
-import logging
-
 import dataset
+from loguru import logger as log
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 
-from config import config
-
-
-log = logging.getLogger(__name__)
+from chiya.config import config
 
 
 class Database:
@@ -24,15 +20,11 @@ class Database:
         self.url = f"mysql://{user}:{password}@{host}/{database}?charset=utf8mb4"
 
     def get(self) -> dataset.Database:
-        """
-        Returns the dataset database object.
-        """
+        """Returns the dataset database object."""
         return dataset.connect(url=self.url)
 
     def setup(self) -> None:
-        """
-        Sets up the tables needed for Chiya.
-        """
+        """Sets up the tables needed for Chiya."""
         engine = create_engine(self.url)
         if not database_exists(engine.url):
             create_database(engine.url)

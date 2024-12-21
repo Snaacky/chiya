@@ -1,13 +1,10 @@
-import logging
 import time
 
 import aiohttp
 import discord
+from loguru import logger as log
 
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class TrackerStatus():
@@ -31,14 +28,14 @@ class TrackerStatus():
     def get_embed_color(self, embed: discord.Embed):
         status = list(set([field.value for field in embed.fields]))
         if len(status) == 1:
-            if status[0] == "<:status_online:596576749790429200> Online":
+            if status[0] == "🟢 Online":
                 return discord.Color.green()
-            elif status[0] == "<:status_dnd:596576774364856321> Unstable":
+            elif status[0] == "🟠 Unstable":
                 return discord.Color.orange()
-            elif status[0] == "<:status_offline:596576752013279242> Offline":
+            elif status[0] == "🔴 Offline":
                 return discord.Color.red()
         else:
-            if "<:status_online:596576749790429200> Online" not in status:
+            if "🟢 Online" not in status:
                 return discord.Color.red()
             else:
                 return discord.Color.orange()
@@ -88,11 +85,11 @@ class TrackerStatusInfo(TrackerStatus):
         """
         match value:
             case "1":
-                return "<:status_online:596576749790429200> Online"
+                return "🟢 Online"
             case "2":
-                return "<:status_dnd:596576774364856321> Unstable"
+                return "🟠 Unstable"
             case "0":
-                return "<:status_offline:596576752013279242> Offline"
+                return "🔴 Offline"
 
 
 class TrackerStatusAB(TrackerStatus):
@@ -113,7 +110,7 @@ class TrackerStatusAB(TrackerStatus):
             self.do_refresh()
 
         if not self.cache_data.get("status", False):
-            embed.set_footer("<:status_offline:596576752013279242> API Failed")
+            embed.set_footer("🔴 API Failed")
 
         for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
@@ -128,11 +125,11 @@ class TrackerStatusAB(TrackerStatus):
         """
         match value:
             case 1:
-                return "<:status_online:596576749790429200> Online"
+                return "🟢 Online"
             case 2:
-                return "<:status_dnd:596576774364856321> Unstable"
+                return "🟠 Unstable"
             case 0:
-                return "<:status_offline:596576752013279242> Offline"
+                return "🔴 Offline"
 
 
 class TrackerStatusUptimeRobot(TrackerStatus):
@@ -166,16 +163,13 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         Converts API data values into user-friendly text with status availability icon.
         """
         if value.get("label") == "success":
-            return "<:status_online:596576749790429200> Online"
+            return "🟢 Online"
         ratio = float(value.get("ratio", "0"))
         if float(value.get("ratio")) > 95:
-            return "<:status_dnd:596576774364856321> Unstable"
+            return "🟠 Unstable"
         elif ratio > 0:
-            return "<:status_offline:596576752013279242> Offline"
-
-        return "<:status_offline:596576752013279242> Unknown"
-
-
+            return "🔴 Offline"
+        return "🔴 Unknown"
 class TrackerStatusMAM(TrackerStatusUptimeRobot):
     def __init__(self) -> None:
         super().__init__("MAM", "https://status.myanonamouse.net/api/getMonitorList/vl59BTEJX")

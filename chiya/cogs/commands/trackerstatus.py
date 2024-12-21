@@ -1,16 +1,15 @@
-import logging
+import aiohttp
 
 import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+from loguru import logger as log
 
-from chiya import config
+from chiya.config import config
 from chiya.utils.embeds import error_embed
 from chiya.utils.trackerstatus import TrackerStatus, TrackerStatusAB, TrackerStatusInfo, TrackerStatusMAM
 
-
-log = logging.getLogger(__name__)
 
 trackers: list[TrackerStatus] = [
     TrackerStatusInfo("AR"),
@@ -19,6 +18,7 @@ trackers: list[TrackerStatus] = [
     TrackerStatusInfo("PTP"),
     TrackerStatusInfo("RED"),
     TrackerStatusInfo("OPS"),
+    TrackerStatusInfo("NBL"),
     TrackerStatusAB(),
     TrackerStatusMAM()
 ]

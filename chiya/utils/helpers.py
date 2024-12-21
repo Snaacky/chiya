@@ -4,7 +4,7 @@ import re
 
 import discord
 
-from chiya import config
+from chiya.config import config
 
 
 log = logging.getLogger(__name__)

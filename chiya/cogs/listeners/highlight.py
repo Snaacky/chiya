@@ -1,46 +1,39 @@
 import datetime
-import logging
 import re
 
 import discord
 import orjson
 from discord.ext import commands
+from loguru import logger as log
 
-from chiya import config, database
+from chiya import database
+from chiya.config import config
 from chiya.utils import embeds
-
-
-log = logging.getLogger(__name__)
 
 
 class HighlightListeners(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.db = database.Database().get()
-        self.highlights = [
-            {
-                "term": highlight["term"],
-                "users": orjson.loads(highlight["users"])
-            }
-            for highlight in self.db["highlights"].find()
-        ]
+        self.refresh_highlights()
 
     def refresh_highlights(self):
+        db = database.Database().get()
         self.highlights = [
             {
                 "term": highlight["term"],
                 "users": orjson.loads(highlight["users"])
             }
-            for highlight in self.db["highlights"].find()
+            for highlight in db["highlights"].find()
         ]
+        db.close()
 
-    async def is_user_active(self, channel: discord.TextChannel, member: discord.Member) -> bool:
+    async def active_members(self, channel: discord.TextChannel) -> set:
         """
-        Checks if the user was active in chat recently.
+        Returns a set of all the active members in a channel.
         """
         after = datetime.datetime.now() - datetime.timedelta(minutes=config["hl"]["timeout"])
-        message_auths = [message.author.id async for message in channel.history(after=after)]
-        return member.id in message_auths
+        message_auths = set([message.author.id async for message in channel.history(after=after)])
+        return message_auths
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -50,6 +43,7 @@ class HighlightListeners(commands.Cog):
         if message.author.bot:
             return
 
+        active_members, chat = None, None
         for highlight in self.highlights:
             regex = rf"\b{re.escape(highlight['term'])}\b"
             result = re.search(regex, message.clean_content, re.IGNORECASE)
@@ -57,12 +51,16 @@ class HighlightListeners(commands.Cog):
             if not result:
                 continue
 
-            messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
-            chat = ""
-            for msg in reversed(messages):
-                chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
-            chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
-                {message.clean_content[0:256]}\n"
+            if active_members is None:
+                active_members = await self.active_members(message.channel)
+
+            if chat is None:
+                messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
+                chat = ""
+                for msg in reversed(messages):
+                    chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
+                    {message.clean_content[0:256]}\n"
 
             embed = embeds.make_embed(
                 title=highlight["term"],
@@ -72,17 +70,19 @@ class HighlightListeners(commands.Cog):
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
             for subscriber in highlight["users"]:
+                if (
+                    subscriber == message.author.id
+                    or subscriber in active_members
+                ):
+                    continue
+
                 try:
                     member = await message.guild.fetch_member(subscriber)
                 except discord.errors.NotFound:
                     log.debug(f"Attempting to find member failed: {subscriber}")
                     continue
 
-                if (
-                    subscriber == message.author.id
-                    or not message.channel.permissions_for(member).view_channel
-                    or await self.is_user_active(message.channel, member)
-                ):
+                if (not message.channel.permissions_for(member).view_channel):
                     continue
 
                 try:

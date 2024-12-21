@@ -16,16 +16,17 @@ repository = "https://github.com/Snaacky/Chiya"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-asyncpraw = "7.7.0"
-coloredlogs = "15.0.1"
+asyncpraw = "7.6.1"
 dataset = "1.6.0"
 "discord.py" = {version = "^2.2.2", extras = ["speed"]}
+loguru = "^0.6.0"
 mysqlclient = "2.1.1"
 parsedatetime = "2.6"
 PrivateBinAPI = "^1.0.0"
 pyaml_env = "^1.2.1"
-requests = "2.31.0"
-sqlalchemy-utils = "0.40.0"
+requests = "2.28.2"
+sqlalchemy-utils = "0.39.0"
+discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus"}
 
 [tool.poetry.dev-dependencies]
 black = ">=22.12.0"
