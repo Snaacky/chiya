@@ -75,8 +75,7 @@ class ChiyaConfig(ParentModel):
 workspace = Path(__file__).parent.parent
 config_file = workspace / "config.toml"
 
-
 if not config_file.is_file():
-    raise FileNotFoundError("Unable to load config.yml, exiting...")
+    raise FileNotFoundError("Unable to load config.toml, exiting...")
 
 config = ChiyaConfig.model_validate(tomllib.load(config_file.open("rb")))

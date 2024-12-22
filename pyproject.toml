@@ -5,6 +5,8 @@ description = "A moderation-heavy general purpose Discord bot"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "alembic>=1.14.0",
+    "arrow>=1.3.0",
     "dataset==1.6.2",
     "discord-ext-menus>=1.1",
     "discord-py[speed]==2.4.0",
@@ -14,6 +16,7 @@ dependencies = [
     "privatebinapi==1.0.0",
     "pydantic>=2.10.4",
     "requests>=2.32.3",
+    "sqlalchemy>=1.4.54",
     "sqlalchemy-utils>=0.41.2",
 ]
 

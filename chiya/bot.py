@@ -23,9 +23,7 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready() -> None:
-    """
-    Called when the client is done preparing the data received from Discord.
-    """
+    "Called when the client is done preparing the data received from Discord."
     log.info(f"Logged in as: {str(bot.user)}")
     await bot.tree.sync(guild=discord.Object(config.guild_id))
 
@@ -43,9 +41,7 @@ async def setup_logger():
     log.remove()
 
     class InterceptHandler(logging.Handler):
-        """
-        Setup up an Interceptor class to redirect all logs from the standard logging library to loguru.
-        """
+        "Setup up an Interceptor class to redirect all logs from the standard logging library to loguru."
 
         def emit(self, record: logging.LogRecord) -> None:
             # Get corresponding Loguru level if it exists.
