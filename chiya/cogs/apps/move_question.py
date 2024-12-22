@@ -1,5 +1,3 @@
-from subprocess import call
-
 import aiohttp
 import discord
 from discord import app_commands, Webhook
@@ -10,14 +8,13 @@ from chiya.config import config
 from chiya.utils import embeds
 
 
-
 class MoveQuestionApp(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.move_question_command = app_commands.ContextMenu(name="Move Question", callback=self.move_question)
         self.bot.tree.add_command(self.move_question_command)
 
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     async def move_question(self, ctx: discord.Interaction, message: discord.Message) -> None:
         """
@@ -25,29 +22,26 @@ class MoveQuestionApp(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        staff = [x for x in ctx.user.roles if x.id == config["roles"]["staff"] or x.id == config["roles"]["trial"]]
+        staff = [x for x in ctx.user.roles if x.id == config.roles.staff or x.id == config.roles.trial]
         if not staff:
             return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
 
         if ctx.channel.category_id in [
-            config["categories"]["moderation"],
-            config["categories"]["development"],
-            config["categories"]["logs"],
-            config["categories"]["tickets"],
+            config.categories.moderation,
+            config.categories.development,
+            config.categories.logs,
+            config.categories.tickets,
         ]:
             return await embeds.error_message(
                 ctx=ctx,
                 description="You do not have permissions to use this command in this category.",
             )
 
-        channel = discord.utils.get(
-            ctx.guild.text_channels,
-            id=config["channels"]["public"]["questions_and_help"],
-        )
+        channel = discord.utils.get(ctx.guild.text_channels, id=config.channels.questions)
 
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(
-                url=config["bot"]["webhook_url"],
+                url=config.bot.webhook_url,
                 session=session,
             )
 

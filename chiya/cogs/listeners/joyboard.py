@@ -13,7 +13,6 @@ from chiya.utils import embeds
 
 
 class Joyboard(commands.Cog):
-
     JOYS = ("😂", "😹", "joy_pride", "joy_tone1", "joy_tone5", "joy_logga")
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -77,10 +76,7 @@ class Joyboard(commands.Cog):
         """
         cache_data = (payload.message_id, payload.channel_id)
 
-        if (
-            not self.check_emoji(payload.emoji, payload.guild_id)
-            or cache_data in self.cache["add"]
-        ):
+        if not self.check_emoji(payload.emoji, payload.guild_id) or cache_data in self.cache["add"]:
             return
 
         channel = self.bot.get_channel(payload.channel_id)
@@ -88,24 +84,23 @@ class Joyboard(commands.Cog):
         joy_count = await self.get_joy_count(message)
 
         # Logs the user and message to console if the message is older than the configured limit
-        time_since_message = (datetime.datetime.now(datetime.timezone.utc) - message.created_at)
-        if time_since_message.days > config["channels"]["joyboard"]["timeout"]:
-            log.info(f"{payload.member.name} reacted to a message from {time_since_message.days} days ago - #{message.channel.name}-{message.id}")
+        time_since_message = datetime.datetime.now(datetime.timezone.utc) - message.created_at
+        if time_since_message.days > config.joyboard.timeout:
+            log.info(
+                f"{payload.member.name} reacted to a message from {time_since_message.days} days ago - #{message.channel.name}-{message.id}"
+            )
 
         if (
             message.author.bot
             or message.author.id == payload.member.id
-            or payload.channel_id in config["channels"]["joyboard"]["blacklisted"]
-            or joy_count < config["channels"]["joyboard"]["joy_limit"]
+            or payload.channel_id in config.joyboard.blacklisted
+            or joy_count < config.joyboard.joy_limit
         ):
             return
 
         self.cache["add"].add(cache_data)
 
-        joyboard_channel = discord.utils.get(
-            message.guild.channels,
-            id=config["channels"]["joyboard"]["channel_id"]
-        )
+        joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
 
         db = database.Database().get()
         result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
@@ -192,10 +187,7 @@ class Joyboard(commands.Cog):
         """
         cache_data = (payload.message_id, payload.channel_id)
 
-        if (
-            not self.check_emoji(payload.emoji, payload.guild_id)
-            or cache_data in self.cache["remove"]
-        ):
+        if not self.check_emoji(payload.emoji, payload.guild_id) or cache_data in self.cache["remove"]:
             return
 
         self.cache["remove"].add(cache_data)
@@ -209,7 +201,7 @@ class Joyboard(commands.Cog):
             self.cache["remove"].remove(cache_data)
             return db.close()
 
-        joyboard_channel = discord.utils.get(message.guild.channels, id=config["channels"]["joyboard"]["channel_id"])
+        joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
 
         try:
             joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
@@ -219,7 +211,7 @@ class Joyboard(commands.Cog):
 
         joy_count = await self.get_joy_count(message)
 
-        if joy_count < config["channels"]["joyboard"]["joy_limit"]:
+        if joy_count < config.joyboard.joy_limit:
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()
             db.close()
@@ -249,7 +241,7 @@ class Joyboard(commands.Cog):
             return db.close()
 
         try:
-            joyboard_channel = self.bot.get_channel(config["channels"]["joyboard"]["channel_id"])
+            joyboard_channel = self.bot.get_channel(config.joyboard.channel_id)
             joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
             db.commit()

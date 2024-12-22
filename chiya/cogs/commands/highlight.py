@@ -13,11 +13,12 @@ class HighlightCommands(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     class HighlightGroup(app_commands.Group):
         pass
-    highlight = HighlightGroup(name="hl", description="Highlight management commands", guild_ids=[config["guild_id"]])
+
+    highlight = HighlightGroup(name="hl", description="Highlight management commands", guild_ids=[config.guild_id])
 
     @highlight.command(name="add", description="Adds a term to be tracked")
     @app_commands.describe(term="Term to be highlighted")

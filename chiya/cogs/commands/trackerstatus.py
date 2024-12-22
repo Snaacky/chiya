@@ -20,7 +20,7 @@ trackers: list[TrackerStatus] = [
     TrackerStatusInfo("OPS"),
     TrackerStatusInfo("NBL"),
     TrackerStatusAB(),
-    TrackerStatusMAM()
+    TrackerStatusMAM(),
 ]
 trackers_dict = {item.tracker: item for item in trackers}
 trackers_list = sorted(list(trackers_dict.keys()))
@@ -55,7 +55,7 @@ class TrackerStatusCommands(commands.Cog):
         ]
 
     @app_commands.command(name="trackerstatus", description="Get tracker uptime statuses")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.autocomplete(tracker=tracker_autocomplete)
     @app_commands.describe(tracker="Tracker to get uptime statuses for")
     async def trackerstatus(
@@ -69,7 +69,7 @@ class TrackerStatusCommands(commands.Cog):
         tracker: TrackerStatus = trackers_dict.get(tracker)
 
         if tracker is None:
-            await ctx.followup.send(embed=error_embed(ctx, 'Please choose a listed tracker.'))
+            await ctx.followup.send(embed=error_embed(ctx, "Please choose a listed tracker."))
             return
 
         embed = tracker.get_status_embed(ctx)

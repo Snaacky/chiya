@@ -23,7 +23,7 @@ class BansCommands(commands.Cog):
             return False
 
     @app_commands.command(name="ban", description="Ban user from the server")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(user="User to ban from the server")
     @app_commands.describe(reason="Reason why the user is being banned")
@@ -111,7 +111,7 @@ class BansCommands(commands.Cog):
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
     @app_commands.command(name="unban", description="Unban user from the server")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(user="User to unban from the server")
     @app_commands.describe(reason="Reason why the user is being unbanned")

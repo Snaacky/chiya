@@ -21,7 +21,7 @@ class ReminderCommands(commands.Cog):
             super().__init__()
             self.value = None
 
-        @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green)
+        @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
         async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
             embed = embeds.make_embed(
                 description=f"{interaction.user.mention}, all your reminders have been cleared.",
@@ -32,7 +32,7 @@ class ReminderCommands(commands.Cog):
             self.value = True
             self.stop()
 
-        @discord.ui.button(label='Cancel', style=discord.ButtonStyle.grey)
+        @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey)
         async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
             embed = embeds.make_embed(
                 description=f"{interaction.user.mention}, your request has been canceled.",
@@ -42,11 +42,12 @@ class ReminderCommands(commands.Cog):
             self.value = False
             self.stop()
 
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     class ReminderGroup(app_commands.Group):
         pass
-    reminder = ReminderGroup(name="reminder", guild_ids=[config["guild_id"]])
+
+    reminder = ReminderGroup(name="reminder", guild_ids=[config.guild_id])
 
     @reminder.command(name="create", description="Set a reminder")
     @app_commands.describe(duration="Amount of time until the reminder is sent")
@@ -95,7 +96,7 @@ class ReminderCommands(commands.Cog):
                 {"name": "ID:", "value": remind_id, "inline": False},
                 {"name": "Message:", "value": message, "inline": False},
             ],
-            footer="Make sure your DMs are open or you won't receive your reminder."
+            footer="Make sure your DMs are open or you won't receive your reminder.",
         )
 
         await ctx.followup.send(embed=embed)

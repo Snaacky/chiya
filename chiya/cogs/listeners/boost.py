@@ -19,7 +19,7 @@ class BoostListeners(commands.Cog):
         if message.type == discord.MessageType.premium_guild_subscription:
             await self.on_new_boost(message)
 
-    NITRO_PINK = discord.Color(0xf47fff)
+    NITRO_PINK = discord.Color(0xF47FFF)
 
     async def on_new_boost(self, message: discord.Message) -> None:
         """
@@ -35,14 +35,14 @@ class BoostListeners(commands.Cog):
             description=(
                 f"{member.mention}, thank you so much for the server boost! "
                 f"We are now at {guild.premium_subscription_count} boosts! "
-                f"You can create a new ticket in <#{config['channels']['server']['tickets']}> "
+                f"You can create a new ticket in <#{config.channels.tickets}> "
                 "with your desired role name, icon (must be transparent), "
                 "and [hex color](https://www.google.com/search?q=hex+color) for a custom booster role."
             ),
         )
         boost_message = await message.channel.send(embed=embed)
 
-        channel = discord.utils.get(guild.channels, id=config["channels"]["logs"]["nitro_log"])
+        channel = discord.utils.get(guild.channels, id=config.channels.nitro_log)
         embed = embeds.make_embed(
             color=self.NITRO_PINK,
             title="New booster",
@@ -59,7 +59,7 @@ class BoostListeners(commands.Cog):
         Send an embed in #nitro-logs when a boost was lost.
         """
         if before.premium_since and not after.premium_since:
-            channel = discord.utils.get(after.guild.channels, id=config["channels"]["logs"]["nitro_log"])
+            channel = discord.utils.get(after.guild.channels, id=config.channels.nitro_log)
             embed = embeds.make_embed(
                 color=self.NITRO_PINK,
                 title="Lost booster",

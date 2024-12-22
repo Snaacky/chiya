@@ -24,26 +24,36 @@ class ReminderTasks(commands.Cog):
         await self.bot.wait_until_ready()
 
         db = database.Database().get()
-        result = db["remind_me"].find(sent=False, date_to_remind={"<": datetime.now(tz=timezone.utc).timestamp()})
+        result = db["remind_me"].find(
+            sent=False, date_to_remind={"<": datetime.now(tz=timezone.utc).timestamp()}
+        )
 
         if not result:
             return db.close()
 
         for reminder in result:
             try:
-                user = await self.bot.fetch_user(reminder['author_id'])
+                user = await self.bot.fetch_user(reminder["author_id"])
             except discord.errors.NotFound:
                 db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
-                log.warning(f"Reminder entry with ID {reminder['id']} has an invalid user ID: {reminder['author_id']}.")
+                log.warning(
+                    f"Reminder entry with ID {reminder['id']} has an invalid user ID: {reminder['author_id']}."
+                )
                 continue
 
-            embed = embeds.make_embed(title="Here is your reminder", description=reminder["message"], color="blurple")
+            embed = embeds.make_embed(
+                title="Here is your reminder",
+                description=reminder["message"],
+                color="blurple",
+            )
 
             try:
                 channel = await user.create_dm()
                 await channel.send(embed=embed)
             except discord.Forbidden:
-                log.warning(f"Unable to post or DM {user}'s reminder {reminder['id']=}.")
+                log.warning(
+                    f"Unable to post or DM {user}'s reminder {reminder['id']=}."
+                )
 
             db["remind_me"].update(dict(id=reminder["id"], sent=True), ["id"])
 

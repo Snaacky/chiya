@@ -19,10 +19,7 @@ class HighlightListeners(commands.Cog):
     def refresh_highlights(self):
         db = database.Database().get()
         self.highlights = [
-            {
-                "term": highlight["term"],
-                "users": orjson.loads(highlight["users"])
-            }
+            {"term": highlight["term"], "users": orjson.loads(highlight["users"])}
             for highlight in db["highlights"].find()
         ]
         db.close()
@@ -31,7 +28,7 @@ class HighlightListeners(commands.Cog):
         """
         Returns a set of all the active members in a channel.
         """
-        after = datetime.datetime.now() - datetime.timedelta(minutes=config["hl"]["timeout"])
+        after = datetime.datetime.now() - datetime.timedelta(minutes=config.hl.timeout)
         message_auths = set([message.author.id async for message in channel.history(after=after)])
         return message_auths
 
@@ -58,7 +55,9 @@ class HighlightListeners(commands.Cog):
                 messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
                 chat = ""
                 for msg in reversed(messages):
-                    chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                    chat += (
+                        f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                    )
                 chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
                     {message.clean_content[0:256]}\n"
 
@@ -70,10 +69,7 @@ class HighlightListeners(commands.Cog):
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
             for subscriber in highlight["users"]:
-                if (
-                    subscriber == message.author.id
-                    or subscriber in active_members
-                ):
+                if subscriber == message.author.id or subscriber in active_members:
                     continue
 
                 try:
@@ -82,7 +78,7 @@ class HighlightListeners(commands.Cog):
                     log.debug(f"Attempting to find member failed: {subscriber}")
                     continue
 
-                if (not message.channel.permissions_for(member).view_channel):
+                if not message.channel.permissions_for(member).view_channel:
                     continue
 
                 try:
@@ -92,7 +88,7 @@ class HighlightListeners(commands.Cog):
                         content=(
                             f"You were mentioned with the highlight term `{highlight['term']}` "
                             f"in **{message.guild.name}** {message.channel.mention}."
-                        )
+                        ),
                     )
                 except discord.Forbidden:
                     pass

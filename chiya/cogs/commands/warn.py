@@ -16,7 +16,7 @@ class WarnCommands(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="warn", description="Warn the member")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(member="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")

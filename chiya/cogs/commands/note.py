@@ -19,7 +19,7 @@ class NoteCommands(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="addnote", description="Add a note to the users profile")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(user="The user to add the note to")
     @app_commands.describe(note="The note to leave on the user")
@@ -55,7 +55,7 @@ class NoteCommands(commands.Cog):
         await log_embed_to_channel(ctx=ctx, embed=embed)
 
     @app_commands.command(name="search", description="Search through a users notes and mod logs")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(user="The user to lookup")
     @app_commands.describe(action="Filter specific actions")
@@ -113,7 +113,7 @@ class NoteCommands(commands.Cog):
         await menu.start(ctx)
 
     @app_commands.command(name="editlog", description="Edit a user's notes and mod logs")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(id="The ID of the log or note to be edited")
     @app_commands.describe(note="The updated message for the log or note")

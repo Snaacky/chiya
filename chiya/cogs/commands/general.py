@@ -12,14 +12,11 @@ class GeneralCommands(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="pfp", description="Gets a users profile picture")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.describe(user="User whose profile picture will be grabbed")
     @app_commands.describe(profile="Prefer global profile picture")
     async def pfp(
-        self,
-        ctx: discord.Interaction,
-        user: discord.Member | discord.User = None,
-        profile: bool = None
+        self, ctx: discord.Interaction, user: discord.Member | discord.User = None, profile: bool = None
     ) -> None:
         """Send an embed with the specified users avatar."""
         await ctx.response.defer(thinking=True, ephemeral=True)

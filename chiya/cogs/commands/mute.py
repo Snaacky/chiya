@@ -17,7 +17,7 @@ class MuteCommands(commands.Cog):
         self.bot = bot
 
     @app_commands.command(name="mute", description="Mutes a member in the server")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(member="The member that will be muted")
     @app_commands.describe(reason="The reason why the member is being muted")
@@ -119,7 +119,7 @@ class MuteCommands(commands.Cog):
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
     @app_commands.command(name="unmute", description="Umutes a member in the server")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(member="The member that will be unmuted")
     @app_commands.describe(reason="The reason why the member is being unmuted")

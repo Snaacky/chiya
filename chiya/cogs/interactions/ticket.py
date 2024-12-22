@@ -64,8 +64,8 @@ class TicketSubmissionModal(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
-        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
-        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
+        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
+        role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
         permission = {
             role_staff: discord.PermissionOverwrite(read_messages=True),
             interaction.guild.default_role: discord.PermissionOverwrite(
@@ -82,9 +82,6 @@ class TicketSubmissionModal(discord.ui.Modal):
             category=category,
             overwrites=permission,
         )
-
-        if any(role.id == config["roles"]["vip"] for role in interaction.user.roles):
-            await channel.send(f"<@&{config['roles']['staff']}>")
 
         ticket_subject = self.children[0].value
         ticket_message = self.children[1].value
@@ -142,7 +139,7 @@ class TicketCreateButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
+        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
 
         if ticket:
@@ -182,8 +179,8 @@ class TicketCloseButton(discord.ui.View):
         ticket_subject = ticket["ticket_subject"]
         ticket_message = ticket["ticket_message"]
 
-        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
-        role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
+        role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
+        role_trial_mod = discord.utils.get(interaction.guild.roles, id=config.roles.trial)
 
         member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
         if not member:
@@ -204,7 +201,7 @@ class TicketCloseButton(discord.ui.View):
                 mod_list.add(message.author)
 
         value = " ".join(mod.mention for mod in mod_list) if mod_list else mod_list.add("None")
-        url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
+        url = privatebinapi.send(config.privatebin.url, text=message_log, expiration="never")["full_url"]
 
         log_embed = embeds.make_embed(
             title=f"{interaction.channel.name} archived",
@@ -219,7 +216,7 @@ class TicketCloseButton(discord.ui.View):
                 {"name": "Ticket Log:", "value": url, "inline": False},
             ],
         )
-        ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["logs"]["ticket_log"])
+        ticket_log = discord.utils.get(interaction.guild.channels, id=config.channels.ticket_log)
         await ticket_log.send(embed=log_embed)
 
         try:

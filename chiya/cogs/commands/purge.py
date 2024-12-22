@@ -22,19 +22,19 @@ class PurgeCommands(commands.Cog):
             return True
 
         if ctx.channel.category_id in [
-            config["categories"]["moderation"],
-            config["categories"]["development"],
-            config["categories"]["logs"],
-            config["categories"]["tickets"],
+            config.categories.moderation,
+            config.categories.development,
+            config.categories.logs,
+            config.categories.tickets,
         ]:
             return False
 
         return True
 
     @app_commands.command(name="purge", description="Purge the last X amount of messages")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
-    @app_commands.checks.has_role(config["roles"]["staff"])
+    @app_commands.checks.has_role(config.roles.staff)
     @app_commands.describe(amount="The amount of messages to be purged")
     @app_commands.describe(reason="The reason why the messages are being purged")
     async def purge(self, ctx: discord.Interaction, amount: int, reason: str) -> None:

@@ -23,7 +23,7 @@ class ReportCloseButton(discord.ui.View):
         """
         The close button to close and archive an existing report.
         """
-        role_staff = discord.utils.get(interaction.message.guild.roles, id=config["roles"]["staff"])
+        role_staff = discord.utils.get(interaction.message.guild.roles, id=config.roles.staff)
         if role_staff not in interaction.user.roles:
             embed = embeds.make_embed(
                 title="Failed to close report",
@@ -88,7 +88,7 @@ class ReportMessageApp(commands.Cog):
         """
         self.bot.add_view(ReportCloseButton())
 
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     async def report_message(self, ctx: discord.Interaction, message: discord.Message) -> None:
         """
@@ -97,10 +97,10 @@ class ReportMessageApp(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if ctx.channel.category_id in [
-            config["categories"]["moderation"],
-            config["categories"]["development"],
-            config["categories"]["logs"],
-            config["categories"]["tickets"],
+            config.categories.moderation,
+            config.categories.development,
+            config.categories.logs,
+            config.categories.tickets,
         ]:
             return await embeds.error_message(
                 ctx=ctx,
@@ -113,7 +113,7 @@ class ReportMessageApp(commands.Cog):
                 description="You do not have permissions to use this command on this user.",
             )
 
-        category = discord.utils.get(ctx.guild.categories, id=config["categories"]["tickets"])
+        category = discord.utils.get(ctx.guild.categories, id=config.categories.tickets)
         report = discord.utils.get(category.text_channels, name=f"report-{message.id + ctx.user.id}")
         if report:
             return await embeds.error_message(ctx, description=f"You already have a report open: {report.mention}")
@@ -152,7 +152,7 @@ class ReportMessageApp(commands.Cog):
                 name=f"report-{message.id + ctx.user.id}",
                 category=category,
                 overwrites={
-                    discord.utils.get(ctx.guild.roles, id=config["roles"]["staff"]): discord.PermissionOverwrite(
+                    discord.utils.get(ctx.guild.roles, id=config.roles.staff): discord.PermissionOverwrite(
                         read_messages=True
                     ),
                     ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),

@@ -15,7 +15,6 @@ from chiya.utils import embeds
 
 
 class BotCommands(Cog):
-
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.eval_command = app_commands.ContextMenu(name="Eval", callback=self.eval)
@@ -27,21 +26,24 @@ class BotCommands(Cog):
 
     class BotGroup(app_commands.Group):
         pass
-    bot = BotGroup(name="bot", guild_ids=[config["guild_id"]])
 
-    @app_commands.guilds(config["guild_id"])
+    bot = BotGroup(name="bot", guild_ids=[config.guild_id])
+
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     async def eval(self, ctx: discord.Interaction, message: discord.Message):
         """Evaluates input as Python code."""
+
         def _cleanup_code(self, content: str) -> str:
             """Automatically removes code blocks from the code."""
             if content.startswith("```") and content.endswith("```"):  # remove ```py\n```
                 split_code = content.split("\n")
                 if len(split_code) == 1:
                     return content.split("```")[1]
-                else: 
+                else:
                     return "\n".join(content.split("\n")[1:-1])
             return content.strip("` \n")  # remove `foo`
+
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.bot.is_owner(ctx.user):
