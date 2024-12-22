@@ -1,0 +1,45 @@
+guild_id = 111111111111111111
+
+[bot]    
+token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+prefix = "xxxxxxxxxxxxxx"
+status = "your commands!"
+log_level = "INFO"
+webhook_url = "https://discord.com/api/webhooks/xxxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+[database]
+"host" = "127.0.0.1"
+"user" = "chiya"
+"password" = "xxxxxxxxx"
+"database" = "chiya"
+"url" = "sqlite:///chiya.db?charset=utf8mb4"
+
+[roles]
+"staff" = 111111111111111111
+"trial" = 111111111111111111
+
+[categories]
+"tickets" = 111111111111111111
+"moderation" = 111111111111111111
+"logs" = 111111111111111111
+"development" = 111111111111111111
+
+[channels]
+tickets = 111111111111111111
+questions = 111111111111111111
+moderation = 111111111111111111
+ticket_log = 111111111111111111
+nitro_log = 111111111111111111
+chiya_log = 111111111111111111
+
+[joyboard]
+joy_limit = 10
+channel_id = 111111111111111111
+blacklisted = [111111111111111111, 222222222222222222, 333333333333333333]
+timeout = 3
+
+[hl]
+timeout = 5
+
+[privatebin]
+url = "https://privatebin.net"
