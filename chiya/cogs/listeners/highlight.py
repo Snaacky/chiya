@@ -6,8 +6,8 @@ import orjson
 from discord.ext import commands
 from loguru import logger as log
 
-from chiya import database
 from chiya.config import config
+from chiya.database import Highlight, Session
 from chiya.utils import embeds
 
 
@@ -17,12 +17,10 @@ class HighlightListeners(commands.Cog):
         self.refresh_highlights()
 
     def refresh_highlights(self):
-        db = database.Database().get()
-        self.highlights = [
-            {"term": highlight["term"], "users": orjson.loads(highlight["users"])}
-            for highlight in db["highlights"].find()
-        ]
-        db.close()
+        with Session() as session:
+            self.highlights = [
+                {"term": row.term, "users": orjson.loads(row.users)} for row in session.query(Highlight).all()
+            ]
 
     async def active_members(self, channel: discord.TextChannel) -> set:
         """

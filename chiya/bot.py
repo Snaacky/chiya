@@ -8,9 +8,8 @@ import discord
 from discord.ext import commands
 from loguru import logger as log
 
-import database
+from chiya import database  # noqa
 from chiya.config import config
-
 
 bot = commands.Bot(
     activity=discord.Activity(type=discord.ActivityType.listening, name=config.bot.status),
@@ -76,5 +75,4 @@ if __name__ == "__main__":
     if sys.platform == "win32":
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
-    database.Database().setup()
     asyncio.run(main())

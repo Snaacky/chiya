@@ -6,33 +6,12 @@ from chiya.config import config
 
 
 Base = declarative_base()
-engine = create_engine(config.database.url, connect_args={"check_same_thread": False})
-session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-
-class BaseModel(Base):
-    __abstract__ = True
-
-    def save(self):
-        session.add(self)
-        session.commit()
-        return self
-
-    def delete(self):
-        session.delete(self)
-        session.commit()
-        return self
-
-    def flush(self):
-        session.add(self)
-        session.flush()
-        return self
 
 
 class ModLog(Base):
     __tablename__ = "mod_logs"
 
-    id = Column(Integer, primar_key=True)
+    id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger, nullable=False)
     mod_id = Column(BigInteger, nullable=False)
     timestamp = Column(BigInteger, nullable=False)
@@ -44,7 +23,7 @@ class ModLog(Base):
 class RemindMe(Base):
     __tablename__ = "remind_me"
 
-    id = Column(Integer, primar_key=True)
+    id = Column(Integer, primary_key=True)
     reminder_location = Column(BigInteger, nullable=False)
     author_id = Column(BigInteger, nullable=False)
     date_to_remind = Column(BigInteger, nullable=False)
@@ -80,3 +59,8 @@ class Highlight(Base):
     id = Column(Integer, primary_key=True)
     term = Column(Text, nullable=False)
     users = Column(Text, nullable=False)
+
+
+engine = create_engine(config.database.url, connect_args={"check_same_thread": False})
+Session = sessionmaker(bind=engine)
+Base.metadata.create_all(engine)
