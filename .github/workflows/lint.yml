@@ -5,16 +5,12 @@ on:
     branches:
       - "*"
     paths:
-      - 'src/**'
-      - 'tests/**'
-      - '.github/workflows/lint-and-type-check.yml'
+      - 'chiya/**'
   pull_request:
     branches:
       - "*"
     paths:
-      - 'src/**'
-      - 'tests/**'
-      - '.github/workflows/lint-and-type-check.yml'
+      - 'chiya/**'
   workflow_dispatch:
 
 defaults:
