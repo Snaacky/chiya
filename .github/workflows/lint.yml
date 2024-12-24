@@ -2,15 +2,15 @@ name: Lint, Format, and Type Check
 
 on:
   push:
-    # branches:
-    #   - main
+    branches:
+      - "*"
     paths:
       - 'src/**'
       - 'tests/**'
       - '.github/workflows/lint-and-type-check.yml'
   pull_request:
-    # branches:
-    #   - main
+    branches:
+      - "*"
     paths:
       - 'src/**'
       - 'tests/**'
