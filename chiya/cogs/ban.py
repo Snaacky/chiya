@@ -1,4 +1,4 @@
-import time
+import arrow
 
 import discord
 from discord import app_commands
@@ -61,8 +61,8 @@ class BanCog(commands.Cog):
             author=True,
             title=f"Banning user: {user}",
             description=f"{user.mention} was banned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/l0jyxkz.png",
-            color=discord.Color.red(),
+            thumbnail_url="https://files.catbox.moe/6hd0uw.png",
+            color=0xCD6D6D,
         )
 
         user_embed = embeds.make_embed(
@@ -72,10 +72,10 @@ class BanCog(commands.Cog):
                 "You can submit a ban appeal on our subreddit [here]"
                 "(https://www.reddit.com/message/compose/?to=/r/snackbox)."
             ),
-            image_url="https://i.imgur.com/CglQwK5.gif",
+            image_url="https://files.catbox.moe/jp1wmf.gif",
             color=discord.Color.blurple(),
             fields=[
-                {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
+                {"name": "Server:", "value": ctx.guild.name, "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -83,14 +83,7 @@ class BanCog(commands.Cog):
         try:
             await user.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            mod_embed.add_field(
-                name="Notice:",
-                value=(
-                    f"Unable to message {user.mention} about this action. "
-                    "This can be caused by the user not being in the server, "
-                    "having DMs disabled, or having the bot blocked."
-                ),
-            )
+            mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
         ModLog(
             user_id=user.id,
@@ -130,7 +123,7 @@ class BanCog(commands.Cog):
             author=True,
             title=f"Unbanning user: {user}",
             description=f"{user.mention} was unbanned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/4H0IYJH.png",
+            thumbnail_url="https://files.catbox.moe/qhc82k.png",
             color=discord.Color.green(),
         )
 
@@ -158,7 +151,7 @@ class BanCog(commands.Cog):
             ModLog(
                 user_id=user.id,
                 mod_log=logs[0].user.id,
-                timestamp=int(time.time()),
+                timestamp=arrow.utcnow().int_timestamp,
                 reason=ban_entry.reason,
                 type="ban",
             )
