@@ -1,14 +1,11 @@
 import discord
-import orjson
 from discord import Interaction, ui
 from discord.ext import menus
-from loguru import logger as log
 
-
-FIRST_EMOJI = "\u23EE"  # [:track_previous:]
-LEFT_EMOJI = "\u2B05"  # [:arrow_left:]
-RIGHT_EMOJI = "\u27A1"  # [:arrow_right:]
-LAST_EMOJI = "\u23ED"  # [:track_next:]
+FIRST_EMOJI = "\u23ee"  # [:track_previous:]
+LEFT_EMOJI = "\u2b05"  # [:arrow_left:]
+RIGHT_EMOJI = "\u27a1"  # [:arrow_right:]
+LAST_EMOJI = "\u23ed"  # [:track_next:]
 DELETE_EMOJI = "⛔"  # [:trashcan:]
 
 PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMOJI)
@@ -33,8 +30,8 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def _get_kwargs_from_page(self, page):
         """This method calls ListPageSource.format_page class"""
         value = await super()._get_kwargs_from_page(page)
-        if 'view' not in value:
-            value.update({'view': self})
+        if "view" not in value:
+            value.update({"view": self})
         return value
 
     async def interaction_check(self, interaction: discord.Interaction):
@@ -50,7 +47,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def before_page(self, interaction, clicked_button):
         await self.show_checked_page(self.current_page - 1, interaction)
 
-    @ui.button(emoji='⬜', style=discord.ButtonStyle.danger)
+    @ui.button(emoji="⬜", style=discord.ButtonStyle.danger)
     async def stop_page(self, interaction: discord.Interaction, clicked_button: Interaction):
         self.stop()
         await interaction.edit_original_response(content="Ended")
@@ -103,7 +100,7 @@ class MySource(menus.ListPageSource):
 
     async def format_page(self, menu, entries):
         page_info = await self.get_page(menu.current_page)
-        desc = '\n'.join(page_info)
+        desc = "\n".join(page_info)
         self.embed.description = desc
         self.embed.set_footer(text=f"Page {menu.current_page + 1}/{self.get_max_pages()}")
         return self.embed

@@ -1,18 +1,17 @@
 import time
-from datetime import datetime, timezone
 
+import arrow
 import discord
-from discord.ext import commands
 from discord import app_commands
-from loguru import logger as log
+from discord.ext import commands
 
-from chiya import database
 from chiya.config import config
+from chiya.database import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member, get_duration, log_embed_to_channel
 
 
-class MuteCommands(commands.Cog):
+class MuteCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -62,7 +61,7 @@ class MuteCommands(commands.Cog):
                 ),
             )
 
-        time_delta = mute_end_time - datetime.now(tz=timezone.utc).timestamp()
+        time_delta = mute_end_time.delta(arrow.utcnow()).total_seconds()
 
         if time_delta >= 2419200:
             return await embeds.error_message(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
@@ -100,21 +99,16 @@ class MuteCommands(commands.Cog):
                 ),
             )
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(
-                user_id=member.id,
-                mod_id=ctx.user.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                duration=duration_string,
-                type="mute",
-            )
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=member.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().timestamp(),
+            reason=reason,
+            duration=duration_string,
+            type="mute",
+        ).save()
 
-        await member.timeout(datetime.fromtimestamp(mute_end_time, timezone.utc), reason=reason)
+        await member.timeout(arrow.get(mute_end_time).datetime, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
@@ -182,24 +176,45 @@ class MuteCommands(commands.Cog):
                 ),
             )
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(
-                user_id=member.id,
-                mod_id=ctx.user.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="unmute",
-            )
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=member.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().timestamp(),
+            reason=reason,
+            type="unmute",
+        ).save()
 
         await member.timeout(None, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
+    @commands.Cog.listener()
+    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
+        """
+        Add the user's mute entry to the database if they were timed out manually.
+        """
+        if not before.timed_out_until and after.timed_out_until:
+            logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
+            if logs[0].user != self.bot.user:
+                ModLog(
+                    user_id=after.id,
+                    mod_id=logs[0].user.id,
+                    timestamp=int(time.time()),
+                    reason=logs[0].reason,
+                    type="mute",
+                ).save()
+
+        if not after.timed_out_until and before.timed_out_until:
+            logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
+            if logs[0].user != self.bot.user:
+                ModLog(
+                    user_id=after.id,
+                    mod_id=logs[0].user.id,
+                    timestamp=int(time.time()),
+                    reason=logs[0].reason,
+                    type="unmute",
+                )
+
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(MuteCommands(bot))
-    log.info("Commands loaded: mute")
+    await bot.add_cog(MuteCog(bot))

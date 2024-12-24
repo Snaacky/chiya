@@ -1,14 +1,13 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
 from chiya.config import config
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 
 
-class PurgeCommands(commands.Cog):
+class PurgeCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -70,5 +69,4 @@ class PurgeCommands(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(PurgeCommands(bot))
-    log.info("Commands loaded: purge")
+    await bot.add_cog(PurgeCog(bot))

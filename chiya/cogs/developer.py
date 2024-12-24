@@ -8,13 +8,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Cog
-from loguru import logger as log
 
 from chiya.config import config
 from chiya.utils import embeds
 
 
-class BotCommands(Cog):
+class DeveloperCog(Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.eval_command = app_commands.ContextMenu(name="Eval", callback=self.eval)
@@ -48,6 +47,7 @@ class BotCommands(Cog):
 
         if not await self.bot.is_owner(ctx.user):
             return await embeds.error_message(ctx=ctx, description="You do not own this bot.")
+
         # Required environment variables.
         env = {
             "bot": self.bot,
@@ -146,5 +146,4 @@ class BotCommands(Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(BotCommands(bot))
-    log.info("Commands loaded: bot")
+    await bot.add_cog(DeveloperCog(bot))

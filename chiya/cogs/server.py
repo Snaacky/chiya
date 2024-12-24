@@ -1,13 +1,12 @@
 import discord
-from discord.ext import commands
 from discord import app_commands
-from loguru import logger as log
+from discord.ext import commands
 
 from chiya.config import config
 from chiya.utils import embeds
 
 
-class ServerCommands(commands.Cog):
+class ServerCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -39,5 +38,4 @@ class ServerCommands(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(ServerCommands(bot))
-    log.info("Commands loaded: server")
+    await bot.add_cog(ServerCog(bot))

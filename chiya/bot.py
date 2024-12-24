@@ -1,12 +1,12 @@
 import asyncio
 import glob
+import logging
 import os
 import sys
-import logging
 
 import discord
 from discord.ext import commands
-from loguru import logger as log
+from loguru import logger
 
 from chiya import database  # noqa
 from chiya.config import config
@@ -23,7 +23,7 @@ bot = commands.Bot(
 @bot.event
 async def on_ready() -> None:
     "Called when the client is done preparing the data received from Discord."
-    log.info(f"Logged in as: {str(bot.user)}")
+    logger.info(f"Logged in as: {str(bot.user)}")
     await bot.tree.sync(guild=discord.Object(config.guild_id))
 
 
@@ -37,7 +37,7 @@ async def setup_logger():
     log_level = config.bot.log_level
     if not log_level:
         log_level = "NOTSET"
-    log.remove()
+    logger.remove()
 
     class InterceptHandler(logging.Handler):
         "Setup up an Interceptor class to redirect all logs from the standard logging library to loguru."
@@ -46,11 +46,11 @@ async def setup_logger():
             # Get corresponding Loguru level if it exists.
             level: str | int
             try:
-                level = log.level(record.levelname).name
+                level = logger.level(record.levelname).name
             except ValueError:
                 level = record.levelno
 
-            log.opt(exception=record.exc_info).log(level, record.getMessage())
+            logger.opt(exception=record.exc_info).log(level, record.getMessage())
 
     # TODO: Replace deprecated getLevelName call
     discord.utils.setup_logging(
@@ -59,8 +59,8 @@ async def setup_logger():
 
     # TODO: Replace with pathlib
     fmt = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
-    log.add(sys.stdout, format=fmt, level=log_level, backtrace=False)
-    log.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
+    logger.add(sys.stdout, format=fmt, level=log_level, backtrace=False)
+    logger.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
 
 
 async def load_cogs():
@@ -68,6 +68,7 @@ async def load_cogs():
     # TODO: Honestly, rewrite this logic, it's so icky
     for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
         await bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
+        logger.info(f"Cog loaded: {list(bot.cogs.keys())[-1]}")
 
 
 if __name__ == "__main__":

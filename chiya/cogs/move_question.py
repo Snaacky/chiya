@@ -1,14 +1,13 @@
 import aiohttp
 import discord
-from discord import app_commands, Webhook
+from discord import Webhook, app_commands
 from discord.ext import commands
-from loguru import logger as log
 
 from chiya.config import config
 from chiya.utils import embeds
 
 
-class MoveQuestionApp(commands.Cog):
+class MoveQuestionCog(commands.Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
         self.move_question_command = app_commands.ContextMenu(name="Move Question", callback=self.move_question)
@@ -76,5 +75,4 @@ class MoveQuestionApp(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(MoveQuestionApp(bot))
-    log.info("App loaded: move_question")
+    await bot.add_cog(MoveQuestionCog(bot))

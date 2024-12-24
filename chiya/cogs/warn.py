@@ -3,7 +3,6 @@ import time
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
 from chiya import database
 from chiya.config import config
@@ -11,7 +10,7 @@ from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 
 
-class WarnCommands(commands.Cog):
+class WarnCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -95,5 +94,4 @@ class WarnCommands(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(WarnCommands(bot))
-    log.info("Commands loaded: warn")
+    await bot.add_cog(WarnCog(bot))

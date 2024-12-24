@@ -1,15 +1,11 @@
 import aiohttp
-
-import aiohttp
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from loguru import logger as log
 
 from chiya.config import config
 from chiya.utils.embeds import error_embed
 from chiya.utils.trackerstatus import TrackerStatus, TrackerStatusAB, TrackerStatusInfo, TrackerStatusMAM
-
 
 trackers: list[TrackerStatus] = [
     TrackerStatusInfo("AR"),
@@ -26,7 +22,7 @@ trackers_dict = {item.tracker: item for item in trackers}
 trackers_list = sorted(list(trackers_dict.keys()))
 
 
-class TrackerStatusCommands(commands.Cog):
+class TrackerStatusCog(commands.Cog):
     # TODO: Add support for trackers that offer their own status page.
     # http://about.empornium.ph/
     # http://is.morethantv.online/
@@ -77,5 +73,4 @@ class TrackerStatusCommands(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(TrackerStatusCommands(bot))
-    log.info("Commands loaded: trackerstatus")
+    await bot.add_cog(TrackerStatusCog(bot))

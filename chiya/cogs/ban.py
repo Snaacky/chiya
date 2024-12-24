@@ -1,17 +1,17 @@
 import time
 
+import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
-from chiya import database
 from chiya.config import config
+from chiya.database import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
-class BansCommands(commands.Cog):
+class BanCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -93,18 +93,13 @@ class BansCommands(commands.Cog):
                 ),
             )
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(
-                user_id=user.id,
-                mod_id=ctx.user.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="ban",
-            )
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=user.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().timestamp(),
+            reason=reason,
+            type="ban",
+        ).save()
 
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
         await ctx.followup.send(embed=mod_embed)
@@ -140,18 +135,35 @@ class BansCommands(commands.Cog):
             color=discord.Color.green(),
         )
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(user_id=user.id, mod_id=ctx.user.id, timestamp=int(time.time()), reason=reason, type="unban")
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=user.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().timestamp(),
+            reason=reason,
+            type="unban",
+        ).save()
 
         await ctx.guild.unban(user, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
+    @commands.Cog.listener()
+    async def on_member_ban(self, guild: discord.Guild, user: discord.Member | discord.User) -> None:
+        """
+        Add the user's ban entry to the database if they were banned manually.
+        """
+        # TODO: Emit an embed in #moderation when this happens
+        ban_entry = await guild.fetch_ban(user)
+        logs = [log async for log in guild.audit_logs(limit=1, action=discord.AuditLogAction.ban)]
+        if logs[0].user != self.bot.user:
+            ModLog(
+                user_id=user.id,
+                mod_log=logs[0].user.id,
+                timestamp=int(time.time()),
+                reason=ban_entry.reason,
+                type="ban",
+            )
+
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(BansCommands(bot))
-    log.info("Commands loaded: ban")
+    await bot.add_cog(BanCog(bot))

@@ -6,7 +6,6 @@ import discord
 
 from chiya.config import config
 
-
 log = logging.getLogger(__name__)
 
 

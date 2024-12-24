@@ -5,7 +5,6 @@ from typing import Literal
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
 from chiya import database
 from chiya.config import config
@@ -14,7 +13,7 @@ from chiya.utils.helpers import log_embed_to_channel
 from chiya.utils.pagination import MyMenuPages, MySource
 
 
-class NoteCommands(commands.Cog):
+class NoteCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -158,5 +157,4 @@ class NoteCommands(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(NoteCommands(bot))
-    log.info("Commands loaded: note")
+    await bot.add_cog(NoteCog(bot))

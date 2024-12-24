@@ -3,14 +3,14 @@ import time
 import discord
 import privatebinapi
 from discord.ext import commands
-from loguru import logger as log
+from loguru import logger
 
 from chiya import database
 from chiya.config import config
 from chiya.utils import embeds
 
 
-class TicketInteractions(commands.Cog):
+class TicketCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -239,7 +239,7 @@ class TicketCloseButton(discord.ui.View):
             )
             await member.send(embed=dm_embed)
         except (discord.Forbidden, discord.HTTPException):
-            log.info(f"Unable to send ticket log to {member} because their DM is closed")
+            logger.info(f"Unable to send ticket log to {member} because their DM is closed")
 
         ticket["status"] = True
         ticket["log_url"] = url
@@ -252,5 +252,4 @@ class TicketCloseButton(discord.ui.View):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(TicketInteractions(bot))
-    log.info("Interactions loaded: ticket")
+    await bot.add_cog(TicketCog(bot))

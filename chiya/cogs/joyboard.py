@@ -1,18 +1,17 @@
 import datetime
-from pathlib import Path
 from urllib.parse import urlparse
 
 import discord
 import httpx
 from discord.ext import commands
-from loguru import logger as log
+from loguru import logger
 
-from chiya import database
 from chiya.config import config
+from chiya.database import Joyboard
 from chiya.utils import embeds
 
 
-class Joyboard(commands.Cog):
+class JoyboardCog(commands.Cog):
     JOYS = ("😂", "😹", "joy_pride", "joy_tone1", "joy_tone5", "joy_logga")
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -86,7 +85,7 @@ class Joyboard(commands.Cog):
         # Logs the user and message to console if the message is older than the configured limit
         time_since_message = datetime.datetime.now(datetime.timezone.utc) - message.created_at
         if time_since_message.days > config.joyboard.timeout:
-            log.info(
+            logger.info(
                 f"{payload.member.name} reacted to a message from {time_since_message.days} days ago - #{message.channel.name}-{message.id}"
             )
 
@@ -101,9 +100,7 @@ class Joyboard(commands.Cog):
         self.cache["add"].add(cache_data)
 
         joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
-
-        db = database.Database().get()
-        result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
+        result = Joyboard.query.filter_by(channel_id=payload.channel_id, message_id=payload.message_id).first()
 
         if result:
             try:
@@ -116,7 +113,6 @@ class Joyboard(commands.Cog):
                     content=f"😂 **{joy_count}** {message.channel.mention}",
                     embed=embed,
                 )
-                db.close()
                 return
             # Joy embed found in database but the actual joy embed was deleted.
             except discord.NotFound:
@@ -176,8 +172,6 @@ class Joyboard(commands.Cog):
             )
             db["joyboard"].insert(data, ["id"])
 
-        db.commit()
-        db.close()
         self.cache["add"].remove(cache_data)
 
     @commands.Cog.listener()
@@ -194,12 +188,9 @@ class Joyboard(commands.Cog):
 
         message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 
-        db = database.Database().get()
-        result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
-
+        result = Joyboard.query.filter_by(channel_id=payload.channel_id, message_id=payload.message_id).first()
         if not result:
             self.cache["remove"].remove(cache_data)
-            return db.close()
 
         joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
 
@@ -207,14 +198,11 @@ class Joyboard(commands.Cog):
             joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
         except discord.NotFound:
             self.cache["remove"].remove(cache_data)
-            return db.close()
 
         joy_count = await self.get_joy_count(message)
 
         if joy_count < config.joyboard.joy_limit:
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
-            db.commit()
-            db.close()
             self.cache["remove"].remove(cache_data)
             return await joy_embed.delete()
 
@@ -226,7 +214,6 @@ class Joyboard(commands.Cog):
             embed=embed,
         )
 
-        db.close()
         self.cache["remove"].remove(cache_data)
 
     @commands.Cog.listener()
@@ -234,23 +221,18 @@ class Joyboard(commands.Cog):
         """
         Automatically remove the joyboard embed if the message linked to it is deleted.
         """
-        db = database.Database().get()
-        result = db["joyboard"].find_one(channel_id=payload.channel_id, message_id=payload.message_id)
-
+        result = Joyboard.query.filter_by(channel_id=payload.channel_id, message_id=payload.message_id).first()
         if not result:
-            return db.close()
+            return
 
         try:
             joyboard_channel = self.bot.get_channel(config.joyboard.channel_id)
             joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
             db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
-            db.commit()
-            db.close()
             await joy_embed.delete()
         except discord.NotFound:
-            db.close()
+            return
 
 
 async def setup(bot: commands.bot.Bot) -> None:
-    await bot.add_cog(Joyboard(bot))
-    log.info("Listener loaded: joyboard")
+    await bot.add_cog(JoyboardCog(bot))

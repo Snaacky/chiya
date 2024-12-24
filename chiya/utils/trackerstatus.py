@@ -2,12 +2,12 @@ import time
 
 import aiohttp
 import discord
-from loguru import logger as log
+from loguru import logger
 
 from chiya.utils import embeds
 
 
-class TrackerStatus():
+class TrackerStatus:
     def __init__(self, tracker: str, url: str) -> None:
         self.tracker = tracker
         self.cache_data: dict = None
@@ -22,7 +22,7 @@ class TrackerStatus():
                 response.raise_for_status()
                 self.cache_data = await response.json()
         except Exception:
-            log.debug(f"Unable to refresh {self.tracker} tracker status")
+            logger.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
 
     def get_embed_color(self, embed: discord.Embed):
@@ -47,6 +47,7 @@ class TrackerStatusInfo(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
+
     last_update = 0
     global_data: dict = None
 
@@ -54,7 +55,7 @@ class TrackerStatusInfo(TrackerStatus):
         super().__init__(tracker, "https://trackerstatus.info/api/list/")
 
     async def do_refresh(self, session: aiohttp.ClientSession) -> None:
-        if (time.time() - self.last_update > 10):
+        if time.time() - self.last_update > 10:
             await super().do_refresh(session)
             self.global_data = self.cache_data
             self.last_update = time.time()
@@ -136,6 +137,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
+
     def __init__(self, tracker: str, url: str) -> None:
         super().__init__(tracker, url)
 
@@ -170,6 +172,8 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         elif ratio > 0:
             return "🔴 Offline"
         return "🔴 Unknown"
+
+
 class TrackerStatusMAM(TrackerStatusUptimeRobot):
     def __init__(self) -> None:
         super().__init__("MAM", "https://status.myanonamouse.net/api/getMonitorList/vl59BTEJX")
