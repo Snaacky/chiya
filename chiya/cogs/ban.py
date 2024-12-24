@@ -1,6 +1,5 @@
 import time
 
-import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -49,13 +48,13 @@ class BanCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not can_action_member(ctx=ctx, member=user):
-            return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if await self.is_user_banned(ctx=ctx, user=user):
-            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
+            return await embeds.send_error(ctx=ctx, description=f"{user.mention} is already banned.")
 
         if len(reason) > 1024:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,
@@ -121,10 +120,10 @@ class BanCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.is_user_banned(ctx=ctx, user=user):
-            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
+            return await embeds.send_error(ctx=ctx, description=f"{user.mention} is not banned.")
 
         if len(reason) > 1024:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,

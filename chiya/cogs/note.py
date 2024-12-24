@@ -1,4 +1,3 @@
-import time
 from datetime import datetime
 from typing import Literal
 
@@ -6,8 +5,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from chiya import database
 from chiya.config import config
+from chiya.database import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 from chiya.utils.pagination import MyMenuPages, MySource
@@ -26,18 +25,13 @@ class NoteCog(commands.Cog):
         """Adds a note to the specified user queryable via /search."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        db = database.Database().get()
-        note_id = db["mod_logs"].insert(
-            dict(
-                user_id=user.id,
-                mod_id=ctx.user.id,
-                timestamp=int(time.time()),
-                reason=note,
-                type="note",
-            )
-        )
-        db.commit()
-        db.close()
+        note = ModLog(
+            user_id=user.id,
+            mod_id=ctx.user.id,
+            timestamp=datetime.now().timestamp(),
+            reason=note,
+            type="note",
+        ).save()
 
         embed = embeds.make_embed(
             title=f"Noting user: {user.name}",
@@ -45,7 +39,7 @@ class NoteCog(commands.Cog):
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=discord.Color.blurple(),
             fields=[
-                {"name": "ID:", "value": note_id, "inline": False},
+                {"name": "ID:", "value": note.id, "inline": False},
                 {"name": "Note:", "value": note, "inline": False},
             ],
         )
@@ -71,12 +65,12 @@ class NoteCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        db = database.Database().get()
+        results = ModLog.query.filter_by(user_id=user.id, type=action).order_by(ModLog.id.asc()).all()
         # TODO: can't this be merged into one call because action will return None either way?
-        if action:
-            results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
-        else:
-            results = db["mod_logs"].find(user_id=user.id, order_by="-id")
+        # if action:
+        #     results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
+        # else:
+        #     results = db["mod_logs"].find(user_id=user.id, order_by="-id")
 
         actions = []
         for action in results:
@@ -100,9 +94,8 @@ class NoteCog(commands.Cog):
 
             actions.append(action_string)
 
-        db.close()
         if not actions:
-            return await embeds.error_message(ctx=ctx, description="No mod actions found for that user!")
+            return await embeds.send_error(ctx=ctx, description="No mod actions found for that user!")
 
         embed = embeds.make_embed(title="Mod Actions")
         embed.set_author(name=user, icon_url=user.display_avatar)
@@ -133,7 +126,7 @@ class NoteCog(commands.Cog):
         db = database.Database().get()
         log = db["mod_logs"].find_one(id=id)
         if not log:
-            return await embeds.error_message(ctx=ctx, description="Could not find a log with that ID!")
+            return await embeds.send_error(ctx=ctx, description="Could not find a log with that ID!")
 
         user = await self.bot.fetch_user(log["user_id"])
         embed = embeds.make_embed(

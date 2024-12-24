@@ -135,7 +135,7 @@ class HighlightCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not (results := HighlightUser.query.filter_by(user_id=ctx.user.id)):
-            return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
+            return await embeds.send_error(ctx=ctx, description="You are not tracking any terms.")
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -157,7 +157,7 @@ class HighlightCog(commands.Cog):
 
         result = Highlight.query.filter(Highlight.users.ilike(f"%{ctx.user.id}%")).all()
         if not result:
-            return await embeds.error_message(ctx=ctx, description="You are not tracking that term.")
+            return await embeds.send_error(ctx=ctx, description="You are not tracking that term.")
 
         users = orjson.loads(result.users)
         users.remove(ctx.user.id)
@@ -185,7 +185,7 @@ class HighlightCog(commands.Cog):
         results = Highlight.query.filter(Highlight.users.ilike(f"%{ctx.user.id}%")).all()
 
         if not results:
-            return await embeds.error_message(ctx=ctx, description="You are not tracking any terms.")
+            return await embeds.send_error(ctx=ctx, description="You are not tracking any terms.")
 
         for result in results:
             users = orjson.loads(result.users)

@@ -49,10 +49,10 @@ class PurgeCog(commands.Cog):
         await ctx.response.defer(thinking=True)
 
         if not self.can_purge_messages(ctx):
-            return await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
+            return await embeds.send_error(ctx=ctx, description="You cannot use that command in this category.")
 
         if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         amount = 100 if amount > 100 else amount
 

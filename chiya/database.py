@@ -1,7 +1,6 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
-from sqlalchemy_utils.types import JSONType
 
 from chiya.config import config
 
@@ -85,7 +84,7 @@ class Highlight(Base):
 
     id = Column(Integer, primary_key=True)
     term = Column(Text, nullable=False)
-    users = Column(JSONType, nullable=False)
+    users = Column(Text, nullable=False)
 
 
 class HighlightTerm(Base):

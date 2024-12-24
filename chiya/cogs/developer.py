@@ -46,7 +46,7 @@ class DeveloperCog(Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.bot.is_owner(ctx.user):
-            return await embeds.error_message(ctx=ctx, description="You do not own this bot.")
+            return await embeds.send_error(ctx=ctx, description="You do not own this bot.")
 
         # Required environment variables.
         env = {
@@ -135,7 +135,7 @@ class DeveloperCog(Cog):
     async def console(self, ctx: discord.Interaction, lines: int):
         await ctx.response.defer(thinking=True, ephemeral=True)
         if lines >= 500:
-            return await embeds.error_message(ctx=ctx, description="Please specify <= 500 lines max.")
+            return await embeds.send_error(ctx=ctx, description="Please specify <= 500 lines max.")
         with open(os.path.join("logs", "bot.log")) as f:
             lines = f.readlines()[-lines:]
         with io.StringIO() as file:

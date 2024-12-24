@@ -35,10 +35,10 @@ class WarnCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
+            return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
 
         if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,

@@ -1,14 +1,14 @@
-import time
-
 import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
+from loguru import logger
+from parsedatetime import Calendar
 
 from chiya.config import config
 from chiya.database import ModLog
 from chiya.utils import embeds
-from chiya.utils.helpers import can_action_member, get_duration, log_embed_to_channel
+from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
 class MuteCog(commands.Cog):
@@ -40,49 +40,49 @@ class MuteCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
+            return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
 
         if not can_action_member(ctx=ctx, member=member):
-            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         if member.is_timed_out():
-            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is already muted.")
+            return await embeds.send_error(ctx=ctx, description=f"{member.mention} is already muted.")
 
         if len(reason) > 1024:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        duration_string, mute_end_time = get_duration(duration=duration)
-        if not duration_string:
-            return await embeds.error_message(
-                ctx=ctx,
-                description=(
-                    "Duration syntax: `y#mo#w#d#h#m#s` (year, month, week, day, hour, min, sec)\n"
-                    "You can specify up to all seven but you only need one."
-                ),
-            )
+        struct, status = Calendar().parse(duration)
+        if not status:
+            return await embeds.send_error(ctx=ctx, description="Unable to decipher duration, please try again")
 
-        time_delta = mute_end_time.delta(arrow.utcnow()).total_seconds()
+        # TODO: Apparently arrow expects struct to be UTC but it's based on the local time instead which throws it off
+        muted_until = arrow.get(*struct[:6], tzinfo=arrow.now().tzinfo.zone)
+        logger.info(f"Before: {muted_until}")
+        logger.info(f"After: {muted_until.to('utc')}")
 
-        if time_delta >= 2419200:
-            return await embeds.error_message(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
+        if muted_until >= arrow.utcnow().shift(days=+28):
+            return await embeds.send_error(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Muting member: {member}",
             description=f"{member.mention} was muted by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/rHtYWIt.png",
+            thumbnail_url="https://files.catbox.moe/6rs4fn.png",
             color=discord.Color.red(),
-            fields=[{"name": "Duration:", "value": duration_string, "inline": False}],
+            fields=[
+                {"name": "Duration:", "value": muted_until.humanize(), "inline": True},
+                {"name": "Expires:", "value": f"<t:{int(muted_until.timestamp())}:R>", "inline": True},
+            ],
         )
 
         user_embed = embeds.make_embed(
             title="Uh-oh, you've been muted!",
             description="If you believe this was a mistake, contact staff.",
-            image_url="https://i.imgur.com/840Q48l.gif",
+            image_url="https://files.catbox.moe/b05gg3.gif",
             color=discord.Color.blurple(),
             fields=[
-                {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
-                {"name": "Duration:", "value": duration_string, "inline": True},
+                {"name": "Server:", "value": f"{ctx.guild.name}", "inline": True},
+                {"name": "Duration:", "value": f"<t:{int(muted_until.timestamp())}:R>", "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -97,18 +97,19 @@ class MuteCog(commands.Cog):
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
                 ),
+                inline=False,
             )
 
         ModLog(
             user_id=member.id,
             mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().timestamp(),
+            timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
-            duration=duration_string,
+            duration=duration,
             type="mute",
         ).save()
 
-        await member.timeout(arrow.get(mute_end_time).datetime, reason=reason)
+        await member.timeout(muted_until.datetime, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
@@ -134,30 +135,30 @@ class MuteCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
+            return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
 
         if not can_action_member(ctx=ctx, member=member):
-            return await embeds.error_message(ctx=ctx, description=f"You cannot action {member.mention}.")
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {member.mention}.")
 
         if not member.is_timed_out():
-            return await embeds.error_message(ctx=ctx, description=f"{member.mention} is not muted.")
+            return await embeds.send_error(ctx=ctx, description=f"{member.mention} is not muted.")
 
         if len(reason) > 1024:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,
             title=f"Unmuting member: {member.name}",
             description=f"{member.mention} was unmuted by {ctx.user.mention} for: {reason}",
             color=discord.Color.green(),
-            thumbnail_url="https://i.imgur.com/W7DpUHC.png",
+            thumbnail_url="https://files.catbox.moe/izm83m.png",
         )
 
         user_embed = embeds.make_embed(
             author=False,
             title="Yay, you've been unmuted!",
             description="Review our server rules to avoid being actioned again in the future.",
-            image_url="https://i.imgur.com/U5Fvr2Y.gif",
+            image_url="https://files.catbox.moe/razmf6.gif",
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
@@ -174,12 +175,13 @@ class MuteCog(commands.Cog):
                     "This can be caused by the user not being in the server, "
                     "having DMs disabled, or having the bot blocked."
                 ),
+                inline=False,
             )
 
         ModLog(
             user_id=member.id,
             mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().timestamp(),
+            timestamp=arrow.now().int_timestamp,
             reason=reason,
             type="unmute",
         ).save()
@@ -199,7 +201,7 @@ class MuteCog(commands.Cog):
                 ModLog(
                     user_id=after.id,
                     mod_id=logs[0].user.id,
-                    timestamp=int(time.time()),
+                    timestamp=arrow.now().int_timestamp,
                     reason=logs[0].reason,
                     type="mute",
                 ).save()
@@ -210,7 +212,7 @@ class MuteCog(commands.Cog):
                 ModLog(
                     user_id=after.id,
                     mod_id=logs[0].user.id,
-                    timestamp=int(time.time()),
+                    timestamp=arrow.now().int_timestamp,
                     reason=logs[0].reason,
                     type="unmute",
                 )

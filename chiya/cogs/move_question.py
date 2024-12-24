@@ -23,7 +23,7 @@ class MoveQuestionCog(commands.Cog):
 
         staff = [x for x in ctx.user.roles if x.id == config.roles.staff or x.id == config.roles.trial]
         if not staff:
-            return await embeds.error_message(ctx=ctx, description="You do not have permissions to use this command.")
+            return await embeds.send_error(ctx=ctx, description="You do not have permissions to use this command.")
 
         if ctx.channel.category_id in [
             config.categories.moderation,
@@ -31,7 +31,7 @@ class MoveQuestionCog(commands.Cog):
             config.categories.logs,
             config.categories.tickets,
         ]:
-            return await embeds.error_message(
+            return await embeds.send_error(
                 ctx=ctx,
                 description="You do not have permissions to use this command in this category.",
             )
