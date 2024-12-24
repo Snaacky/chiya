@@ -42,7 +42,7 @@ class ModLog(Base):
     mod_id = Column(Integer, nullable=False)
     timestamp = Column(Integer, nullable=False)
     reason = Column(Text, nullable=False)
-    duration = Column(Text, nullable=False)
+    duration = Column(Text, nullable=True)
     type = Column(Text, nullable=False)
 
 
