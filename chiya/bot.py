@@ -1,8 +1,8 @@
 import asyncio
-import glob
 import logging
 import os
 import sys
+from pathlib import Path
 
 import discord
 from discord.ext import commands
@@ -64,10 +64,9 @@ async def setup_logger():
 
 
 async def load_cogs():
-    # TODO: Replace with pathlib
-    # TODO: Honestly, rewrite this logic, it's so icky
-    for cog in glob.iglob(os.path.join("cogs", "**", "[!^_]*.py"), root_dir="chiya", recursive=True):
-        await bot.load_extension(cog.replace("/", ".").replace("\\", ".").replace(".py", ""))
+    folder = Path(__file__).parent / "cogs"
+    for file in folder.glob("*.py"):
+        await bot.load_extension(f"cogs.{file.stem}")
         logger.info(f"Cog loaded: {list(bot.cogs.keys())[-1]}")
 
 
