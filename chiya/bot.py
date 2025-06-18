@@ -9,7 +9,7 @@ from discord.ext import commands
 from loguru import logger
 
 from chiya import models  # noqa
-from chiya.config import config
+from chiya.config import config, workspace
 
 bot = commands.Bot(
     activity=discord.Activity(type=discord.ActivityType.listening, name=config.bot.status),
@@ -34,9 +34,7 @@ async def main() -> None:
 
 
 async def setup_logger() -> None:
-    log_level = config.bot.log_level
-    if not log_level:
-        log_level = "NOTSET"
+    log_folder = workspace / "logs"
     logger.remove()
 
     class InterceptHandler(logging.Handler):
@@ -52,19 +50,17 @@ async def setup_logger() -> None:
 
             logger.opt(exception=record.exc_info).log(level, record.getMessage())
 
-    # TODO: Replace deprecated getLevelName call
     discord.utils.setup_logging(
-        handler=InterceptHandler(), level=logging.getLevelName(config.bot.log_level), root=False
+        handler=InterceptHandler(), level=logging.getLevelNamesMapping().get(config.bot.log_level, "NOTSET"), root=False
     )
 
-    # TODO: Replace with pathlib
     fmt = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
-    logger.add(sys.stdout, format=fmt, level=log_level, backtrace=False)
-    logger.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
+    logger.add(sys.stdout, format=fmt, level=config.bot.log_level, backtrace=False)
+    logger.add(log_folder / "bot.log", format=fmt, rotation="1 day")
 
 
 async def load_cogs() -> None:
-    folder = Path(__file__).parent / "cogs"
+    folder = workspace / "chiya" / "cogs"
     for file in folder.glob("*.py"):
         await bot.load_extension(f"cogs.{file.stem}")
         logger.info(f"Cog loaded: {list(bot.cogs.keys())[-1]}")
