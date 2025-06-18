@@ -1,8 +1,7 @@
 from typing import Self
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, UniqueConstraint, create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker, DeclarativeBase
 
 from chiya.config import config
 
@@ -11,7 +10,7 @@ session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 
 
-class BaseModel:
+class Base(DeclarativeBase):
     __abstract__ = True
 
     query = Session.query_property()
@@ -33,9 +32,6 @@ class BaseModel:
         session.add(self)
         session.flush()
         return self
-
-
-Base = declarative_base(cls=BaseModel)
 
 
 class ModLog(Base):
