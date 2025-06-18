@@ -45,6 +45,18 @@ class TrackerStatus:
 
         return discord.Color.red()
 
+    def normalize_value(self, value: str | int):
+        """
+        Converts API data values into user-friendly text with status availability icon.
+        """
+        match value:
+            case "1" | 1:
+                return "🟢 Online"
+            case "2" | 2:
+                return "🟠 Unstable"
+            case "0" | 0:
+                return "🔴 Offline"
+
 
 class TrackerStatusInfo(TrackerStatus):
     """
@@ -52,7 +64,6 @@ class TrackerStatusInfo(TrackerStatus):
     """
 
     last_update = 0
-    global_data: dict = None
 
     def __init__(self, tracker: str) -> None:
         super().__init__(tracker, "https://trackerstatus.info/api/list/")
@@ -60,7 +71,6 @@ class TrackerStatusInfo(TrackerStatus):
     async def do_refresh(self, session: aiohttp.ClientSession) -> None:
         if time.time() - self.last_update > 10:
             await super().do_refresh(session)
-            self.global_data = self.cache_data
             self.last_update = time.time()
 
     def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
@@ -69,11 +79,11 @@ class TrackerStatusInfo(TrackerStatus):
             title=f"Tracker Status: {self.tracker}",
         )
 
-        if self.global_data is None:
+        if self.cache_data is None:
             self.last_update = 0
             self.do_refresh()
 
-        for key, value in self.global_data[self.tracker.lower()]["Details"].items():
+        for key, value in self.cache_data[self.tracker.lower()]["Details"].items():
             # Skip over any keys that we don't want to return in the embed.
             if key in ["tweet", "TrackerHTTPAddresses", "TrackerHTTPSAddresses"]:
                 continue
@@ -82,19 +92,6 @@ class TrackerStatusInfo(TrackerStatus):
         embed.color = self.get_embed_color(embed)
 
         return embed
-
-
-def normalize_value(self, value):
-    """
-    Converts API data values into user-friendly text with status availability icon.
-    """
-    match value:
-        case "1":
-            return "🟢 Online"
-        case "2":
-            return "🟠 Unstable"
-        case "0":
-            return "🔴 Offline"
 
 
 class TrackerStatusAB(TrackerStatus):
@@ -123,18 +120,6 @@ class TrackerStatusAB(TrackerStatus):
         embed.color = self.get_embed_color(embed)
 
         return embed
-
-    def normalize_value(self, value):
-        """
-        Converts API data values into user-friendly text with status availability icon.
-        """
-        match value:
-            case 1:
-                return "🟢 Online"
-            case 2:
-                return "🟠 Unstable"
-            case 0:
-                return "🔴 Offline"
 
 
 class TrackerStatusUptimeRobot(TrackerStatus):
@@ -183,21 +168,6 @@ class TrackerStatusMAM(TrackerStatusUptimeRobot):
         super().__init__("MAM", "https://status.myanonamouse.net/api/getMonitorList/vl59BTEJX")
 
 
-trackers: list[TrackerStatus] = [
-    TrackerStatusInfo("AR"),
-    TrackerStatusInfo("BTN"),
-    TrackerStatusInfo("GGn"),
-    TrackerStatusInfo("PTP"),
-    TrackerStatusInfo("RED"),
-    TrackerStatusInfo("OPS"),
-    TrackerStatusInfo("NBL"),
-    TrackerStatusAB(),
-    TrackerStatusMAM(),
-]
-trackers_dict = {item.tracker: item for item in trackers}
-trackers_list = sorted(list(trackers_dict.keys()))
-
-
 class TrackerStatusCog(commands.Cog):
     # TODO: Add support for trackers that offer their own status page.
     # http://about.empornium.ph/
@@ -206,23 +176,37 @@ class TrackerStatusCog(commands.Cog):
         self.bot = bot
         self.refresh_data.start()
 
+        self.trackers: tuple[TrackerStatus] = (
+            TrackerStatusInfo("AR"),
+            TrackerStatusInfo("BTN"),
+            TrackerStatusInfo("GGn"),
+            TrackerStatusInfo("PTP"),
+            TrackerStatusInfo("RED"),
+            TrackerStatusInfo("OPS"),
+            TrackerStatusInfo("NBL"),
+            TrackerStatusAB(),
+            TrackerStatusMAM(),
+        )
+
+        self.trackers_list = tuple(sorted((tracker.tracker for tracker in self.trackers)))
+
     def cog_unload(self) -> None:
         self.refresh_data.cancel()
 
     @tasks.loop(seconds=60)
     async def refresh_data(self):
         """
-        Grabs the latest API data from trackerstatus.info and caches it locally
+        Grabs the latest API data from each tracker and caches it locally
         every 60 seconds, respecting API limits.
         """
         async with aiohttp.ClientSession() as session:
-            for tracker in trackers:
+            for tracker in self.trackers:
                 await tracker.do_refresh(session)
 
     async def tracker_autocomplete(self, ctx: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         return [
             app_commands.Choice(name=tracker, value=tracker)
-            for tracker in trackers_list
+            for tracker in self.trackers_list
             if current.lower() in tracker.lower()
         ]
 
@@ -235,10 +219,8 @@ class TrackerStatusCog(commands.Cog):
         ctx: discord.Interaction,
         tracker: str,
     ) -> None:
-        # TODO: Change the color of the embed to green if all services are online,
-        # yellow if one of the services is offline, and grey or red if all are offline.
         await ctx.response.defer(ephemeral=True)
-        tracker: TrackerStatus = trackers_dict.get(tracker)
+        tracker: TrackerStatus = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker))
 
         if tracker is None:
             await ctx.followup.send(embed=error_embed(ctx, "Please choose a listed tracker."))
