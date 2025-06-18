@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya.config import config
-from chiya.database import ModLog
+from chiya.models import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 

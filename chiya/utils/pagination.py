@@ -12,7 +12,7 @@ PAGINATION_EMOJI = (FIRST_EMOJI, LEFT_EMOJI, RIGHT_EMOJI, LAST_EMOJI, DELETE_EMO
 
 
 class MyMenuPages(ui.View, menus.MenuPages):
-    def __init__(self, source):
+    def __init__(self, source) -> None:
         super().__init__(timeout=60)
         self._source = source
         self.current_page = 0
@@ -20,7 +20,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self.user = None
         self.message = None
 
-    async def start(self, ctx: Interaction, *, channel=None, wait=False):
+    async def start(self, ctx: Interaction, *, channel=None, wait=False) -> None:
         # We wont be using wait/channel, you can implement them yourself. This is to match the MenuPages signature.
         await self._source._prepare_once()
         self.ctx = ctx
@@ -34,7 +34,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
             value.update({"view": self})
         return value
 
-    async def interaction_check(self, interaction: discord.Interaction):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Only allow the author that invoke the command to be able to use the interaction"""
         return interaction.user == self.user
 
@@ -47,11 +47,6 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def before_page(self, interaction, clicked_button):
         await self.show_checked_page(self.current_page - 1, interaction)
 
-    @ui.button(emoji="⬜", style=discord.ButtonStyle.danger)
-    async def stop_page(self, interaction: discord.Interaction, clicked_button: Interaction):
-        self.stop()
-        await interaction.edit_original_response(content="Ended")
-
     @ui.button(emoji=discord.PartialEmoji(name="right_next", id=1093296333156274186), style=discord.ButtonStyle.primary)
     async def next_page(self, interaction, clicked_button):
         await self.show_checked_page(self.current_page + 1, interaction)
@@ -60,7 +55,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def last_page(self, interaction, clicked_button):
         await self.show_page(self._source.get_max_pages() - 1, interaction)
 
-    async def show_page(self, page_number, interaction: Interaction):
+    async def show_page(self, page_number, interaction: Interaction) -> None:
         page = await self._source.get_page(page_number)
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
@@ -68,7 +63,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
             await interaction.followup.edit_message(interaction.message.id, **kwargs)
         await interaction.response.edit_message(**kwargs)
 
-    async def show_checked_page(self, page_number, interaction: Interaction):
+    async def show_checked_page(self, page_number, interaction: Interaction) -> None:
         max_pages = self._source.get_max_pages()
         try:
             if max_pages is None:
@@ -94,11 +89,11 @@ class MyMenuPages(ui.View, menus.MenuPages):
 
 
 class MySource(menus.ListPageSource):
-    def __init__(self, data, embed: discord.Embed):
+    def __init__(self, data, embed: discord.Embed) -> None:
         super().__init__(data, per_page=4)
         self.embed = embed
 
-    async def format_page(self, menu, entries):
+    async def format_page(self, menu, entries) -> discord.Embed:
         page_info = await self.get_page(menu.current_page)
         desc = "\n".join(page_info)
         self.embed.description = desc

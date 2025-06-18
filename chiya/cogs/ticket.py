@@ -1,12 +1,11 @@
-import time
-
+import arrow
 import discord
 import privatebinapi
 from discord.ext import commands
 from loguru import logger
 
-from chiya import database
 from chiya.config import config
+from chiya.models import Ticket
 from chiya.utils import embeds
 
 
@@ -110,21 +109,15 @@ class TicketSubmissionModal(discord.ui.Modal):
         )
         await interaction.followup.send(embed=embed)
 
-        db = database.Database().get()
-        db["tickets"].insert(
-            dict(
-                user_id=interaction.user.id,
-                guild=interaction.guild.id,
-                timestamp=int(time.time()),
-                ticket_subject=ticket_subject,
-                ticket_message=ticket_message,
-                log_url=None,
-                status=False,
-            )
-        )
-
-        db.commit()
-        db.close()
+        Ticket(
+            user_id=interaction.user.id,
+            guild=interaction.guild.id,
+            timestamp=arrow.utcnow().int_timestamp,
+            ticket_subject=ticket_subject,
+            ticket_message=ticket_message,
+            log_url=None,
+            status=False,
+        ).save()
 
 
 class TicketCreateButton(discord.ui.View):
@@ -172,12 +165,13 @@ class TicketCloseButton(discord.ui.View):
         )
         await interaction.response.send_message(embed=close_embed)
 
-        db = database.Database().get()
-        table = db["tickets"]
-        ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status=False)
+        ticket = Ticket.query.filter_by(
+            user_id=int(interaction.channel.name.replace("ticket-", "")), status=False
+        ).first()
+
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
-        ticket_subject = ticket["ticket_subject"]
-        ticket_message = ticket["ticket_message"]
+        ticket_subject = ticket.ticket_subject
+        ticket_message = ticket.ticket_message
 
         role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
         role_trial_mod = discord.utils.get(interaction.guild.roles, id=config.roles.trial)
@@ -241,12 +235,9 @@ class TicketCloseButton(discord.ui.View):
         except (discord.Forbidden, discord.HTTPException):
             logger.info(f"Unable to send ticket log to {member} because their DM is closed")
 
-        ticket["status"] = True
-        ticket["log_url"] = url
-        table.update(ticket, ["id"])
-
-        db.commit()
-        db.close()
+        ticket.status = True
+        ticket.log_url = url
+        ticket.save()
 
         await interaction.channel.delete()
 

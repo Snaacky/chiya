@@ -80,7 +80,7 @@ class DeveloperCog(Cog):
         stdout = io.StringIO()
 
         # Exact code to be compiled.
-        to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
+        to_compile = f"async def func():\n{textwrap.indent(body, '  ')}"
 
         try:
             # Attempting execution
@@ -129,7 +129,7 @@ class DeveloperCog(Cog):
     @bot.command(name="ping", description="Get bot latency")
     async def ping(self, ctx: discord.Interaction):
         await ctx.response.defer(thinking=True, ephemeral=True)
-        await ctx.followup.send(f"Pong! {round (self.bot.latency * 1000)}ms.")
+        await ctx.followup.send(f"Pong! {round(self.bot.latency * 1000)}ms.")
 
     @bot.command(name="console", description="Get console output")
     async def console(self, ctx: discord.Interaction, lines: int):

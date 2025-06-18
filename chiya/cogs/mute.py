@@ -5,7 +5,7 @@ from discord.ext import commands
 from parsedatetime import Calendar
 
 from chiya.config import config
-from chiya.database import ModLog
+from chiya.models import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
@@ -67,7 +67,7 @@ class MuteCog(commands.Cog):
             thumbnail_url="https://files.catbox.moe/6rs4fn.png",
             color=0xCD6D6D,
             fields=[
-                {"name": "Expires:", "value": f"<t:{int(muted_until.timestamp())}:R>", "inline": True},
+                {"name": "Expires:", "value": f"<t:{int(muted_until.int_timestamp)}:R>", "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -79,7 +79,7 @@ class MuteCog(commands.Cog):
             color=discord.Color.blurple(),
             fields=[
                 {"name": "Server:", "value": f"{ctx.guild.name}", "inline": True},
-                {"name": "Duration:", "value": f"<t:{int(muted_until.timestamp())}:R>", "inline": True},
+                {"name": "Duration:", "value": f"<t:{int(muted_until.int_timestamp)}:R>", "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -179,6 +179,7 @@ class MuteCog(commands.Cog):
         """
         Add the user's mute entry to the database if they were timed out manually.
         """
+        # TODO: Emit an embed in #moderation when this happens
         if not before.timed_out_until and after.timed_out_until:
             logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
             if logs[0].user != self.bot.user:

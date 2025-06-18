@@ -5,7 +5,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya.config import config
-from chiya.database import ModLog
+from chiya.models import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
@@ -88,7 +88,7 @@ class BanCog(commands.Cog):
         ModLog(
             user_id=user.id,
             mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().timestamp(),
+            timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             type="ban",
         ).save()
@@ -130,7 +130,7 @@ class BanCog(commands.Cog):
         ModLog(
             user_id=user.id,
             mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().timestamp(),
+            timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             type="unban",
         ).save()
@@ -154,7 +154,7 @@ class BanCog(commands.Cog):
                 timestamp=arrow.utcnow().int_timestamp,
                 reason=ban_entry.reason,
                 type="ban",
-            )
+            ).save()
 
 
 async def setup(bot: commands.Bot) -> None:

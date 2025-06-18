@@ -13,14 +13,9 @@ class Bot(ParentModel):
     prefix: str
     status: str
     log_level: str
-    webhook_url: str
 
 
 class Database(ParentModel):
-    host: str
-    user: str
-    password: str
-    database: str
     url: str
 
 
@@ -38,7 +33,6 @@ class Categories(ParentModel):
 
 class Channels(ParentModel):
     tickets: int
-    questions: int
     moderation: int
     ticket_log: int
     nitro_log: int

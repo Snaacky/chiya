@@ -5,13 +5,8 @@ token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 prefix = "xxxxxxxxxxxxxx"
 status = "your commands!"
 log_level = "INFO"
-webhook_url = "https://discord.com/api/webhooks/xxxxxxxxxxxxxxxxxx/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 [database]
-"host" = "127.0.0.1"
-"user" = "chiya"
-"password" = "xxxxxxxxx"
-"database" = "chiya"
 "url" = "sqlite:///chiya.db?charset=utf8mb4"
 
 [roles]
@@ -26,7 +21,6 @@ webhook_url = "https://discord.com/api/webhooks/xxxxxxxxxxxxxxxxxx/xxxxxxxxxxxxx
 
 [channels]
 tickets = 111111111111111111
-questions = 111111111111111111
 moderation = 111111111111111111
 ticket_log = 111111111111111111
 nitro_log = 111111111111111111

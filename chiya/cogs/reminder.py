@@ -4,9 +4,8 @@ from discord import app_commands
 from discord.ext import commands, tasks
 from loguru import logger
 
-from chiya import database
 from chiya.config import config
-from chiya.database import RemindMe, Session
+from chiya.models import RemindMe
 from chiya.utils import embeds
 from chiya.utils.helpers import get_duration
 from chiya.utils.pagination import MyMenuPages, MySource
@@ -27,20 +26,19 @@ class ReminderCog(commands.Cog):
         """
         await self.bot.wait_until_ready()
 
-        with Session() as session:
-            result = session.query(RemindMe).filter(RemindMe.date_to_remind < arrow.utcnow().timestamp())
-
-        if not result:
+        results = RemindMe.query.filter(
+            RemindMe.date_to_remind < arrow.utcnow().int_timestamp,
+            RemindMe.sent.is_(False),
+        ).all()
+        if not results:
             return
 
-        for reminder in result:
+        for reminder in results:
             try:
                 user = await self.bot.fetch_user(reminder.author_id)
             except discord.errors.NotFound:
-                with Session() as session:
-                    result = session.query(RemindMe).filter_by(id=reminder.id).first()
-                    result.sent = True
-                    session.commit()
+                reminder.sent = True
+                reminder.save()
                 logger.warning(f"Reminder entry with ID {reminder.id} has an invalid user ID: {reminder.author_id}.")
                 continue
 
@@ -56,18 +54,16 @@ class ReminderCog(commands.Cog):
             except discord.Forbidden:
                 logger.warning(f"Unable to post or DM {user}'s reminder {reminder.id=}.")
 
-            with Session() as session:
-                result = session.query(RemindMe).filter_by(id=reminder.id).first()
-                result.sent = True
-                session.commit()
+            reminder.sent = True
+            reminder.save()
 
     class Confirm(discord.ui.View):
-        def __init__(self):
+        def __init__(self) -> None:
             super().__init__()
             self.value = None
 
         @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
-        async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
             embed = embeds.make_embed(
                 description=f"{interaction.user.mention}, all your reminders have been cleared.",
                 color=discord.Color.green(),
@@ -78,7 +74,7 @@ class ReminderCog(commands.Cog):
             self.stop()
 
         @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey)
-        async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
             embed = embeds.make_embed(
                 description=f"{interaction.user.mention}, your request has been canceled.",
                 color=discord.Color.blurple(),
@@ -97,12 +93,7 @@ class ReminderCog(commands.Cog):
     @reminder.command(name="create", description="Set a reminder")
     @app_commands.describe(duration="Amount of time until the reminder is sent")
     @app_commands.describe(message="Reminder message")
-    async def remindme(
-        self,
-        ctx: discord.Interaction,
-        duration: str,
-        message: str,
-    ) -> None:
+    async def remindme(self, ctx: discord.Interaction, duration: str, message: str) -> None:
         """Creates a reminder message that will be sent at the specified time."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
@@ -116,19 +107,13 @@ class ReminderCog(commands.Cog):
                 ),
             )
 
-        db = database.Database().get()
-        remind_id = db["remind_me"].insert(
-            dict(
-                reminder_location=ctx.channel.id,
-                author_id=ctx.user.id,
-                date_to_remind=end_time,
-                message=message,
-                sent=False,
-            )
-        )
-
-        db.commit()
-        db.close()
+        saved = RemindMe(
+            reminder_location=ctx.channel.id,
+            author_id=ctx.user.id,
+            date_to_remind=end_time,
+            message=message,
+            sent=False,
+        ).save()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -138,7 +123,7 @@ class ReminderCog(commands.Cog):
             thumbnail_url="https://i.imgur.com/VZV64W0.png",
             color=discord.Color.blurple(),
             fields=[
-                {"name": "ID:", "value": remind_id, "inline": False},
+                {"name": "ID:", "value": saved.id, "inline": False},
                 {"name": "Message:", "value": message, "inline": False},
             ],
             footer="Make sure your DMs are open or you won't receive your reminder.",
@@ -149,34 +134,25 @@ class ReminderCog(commands.Cog):
     @reminder.command(name="edit", description="Edit an existing reminder")
     @app_commands.describe(reminder_id="The ID of the reminder to be updated")
     @app_commands.describe(new_message="The updated message for the reminder")
-    async def edit(
-        self,
-        ctx: discord.Interaction,
-        reminder_id: int,
-        new_message: str,
-    ) -> None:
+    async def edit(self, ctx: discord.Interaction, reminder_id: int, new_message: str) -> None:
         """
         Edit a reminder message.
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        db = database.Database().get()
+        result = RemindMe.query.filter_by(id=reminder_id).first()
+        if not result:
+            return await embeds.send_error(ctx, "That reminder ID doesn't exist.")
 
-        remind_me = db["remind_me"]
-        result = remind_me.find_one(id=reminder_id)
-        old_message = result["message"]
-
-        if result["author_id"] != ctx.user.id:
+        if result.author_id != ctx.user.id:
             return await embeds.send_error(ctx, "That reminder is not yours.")
 
-        if result["sent"]:
-            return await embeds.send_error(ctx, "That reminder doesn't exist.")
+        if result.sent:
+            return await embeds.send_error(ctx, "That reminder was already sent.")
 
-        data = dict(id=result["id"], message=new_message)
-        remind_me.update(data, ["id"])
-
-        db.commit()
-        db.close()
+        old_message = result.message
+        result.message = new_message
+        result.save()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -199,19 +175,8 @@ class ReminderCog(commands.Cog):
         """List your reminders."""
         await ctx.response.defer(ephemeral=True)
 
-        db = database.Database().get()
-        results = db["remind_me"].find(sent=False, author_id=ctx.user.id)
-        reminders = []
-        for result in results:
-            reminders.append(
-                (
-                    f"**ID: {result['id']}**\n"
-                    f"**Alert on:** <t:{result['date_to_remind']}:F>\n"
-                    f"**Message: **{result['message']}"
-                )
-            )
-
-        if not reminders:
+        results = RemindMe.query.filter_by(author_id=ctx.user.id, sent=False).all()
+        if not results:
             return await embeds.send_error(ctx=ctx, description="No reminders found!")
 
         embed = embeds.make_embed(
@@ -222,43 +187,36 @@ class ReminderCog(commands.Cog):
             color=discord.Color.blurple(),
         )
 
+        reminders = []
+        for result in results:
+            reminders.append(
+                (f"**ID: {result.id}**\n**Alert on:** <t:{result.date_to_remind}:F>\n**Message: **{result.message}")
+            )
+
         formatter = MySource(reminders, embed)
         menu = MyMenuPages(formatter)
         await menu.start(ctx)
 
-        db.close()
-
     @reminder.command(name="delete", description="Delete an existing reminder")
     @app_commands.describe(reminder_id="The ID of the reminder to be deleted")
-    async def delete(
-        self,
-        ctx: discord.Interaction,
-        reminder_id: int,
-    ) -> None:
+    async def delete(self, ctx: discord.Interaction, reminder_id: int) -> None:
         """
         Delete a reminder.
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        db = database.Database().get()
-
-        table = db["remind_me"]
-        result = table.find_one(id=reminder_id)
-
+        result = RemindMe.query.filter_by(id=reminder_id).first()
         if not result:
             return await embeds.send_error(ctx=ctx, description="Invalid ID.")
 
-        if result["author_id"] != ctx.user.id:
+        if result.author_id != ctx.user.id:
             return await embeds.send_error(ctx=ctx, description="This reminder is not yours.")
 
-        if result["sent"]:
+        if result.sent:
             return await embeds.send_error(ctx=ctx, description="This reminder has already been deleted.")
 
-        data = dict(id=reminder_id, sent=True)
-        table.update(data, ["id"])
-
-        db.commit()
-        db.close()
+        result.sent = True
+        result.save()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -269,7 +227,7 @@ class ReminderCog(commands.Cog):
             color=discord.Color.red(),
             fields=[
                 {"name": "ID:", "value": str(reminder_id), "inline": False},
-                {"name": "Message: ", "value": result["message"], "inline": False},
+                {"name": "Message:", "value": result.message, "inline": False},
             ],
         )
         await ctx.followup.send(embed=embed)
@@ -281,8 +239,6 @@ class ReminderCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        db = database.Database().get()
-
         confirm_embed = embeds.make_embed(
             description=f"{ctx.user.mention}, clear all your reminders?",
             color=discord.Color.blurple(),
@@ -293,17 +249,12 @@ class ReminderCog(commands.Cog):
         await view.wait()
 
         if not view.value or view.value is None:
-            db.close()
             return
 
-        remind_me = db["remind_me"]
-        results = remind_me.find(author_id=ctx.user.id, sent=False)
+        results = RemindMe.query.filter_by(author_id=ctx.user.id, sent=False).all()
         for result in results:
-            updated_data = dict(id=result["id"], sent=True)
-            remind_me.update(updated_data, ["id"])
-
-        db.commit()
-        db.close()
+            result.sent = True
+            result.save()
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 from loguru import logger
 
-from chiya import database  # noqa
+from chiya import models  # noqa
 from chiya.config import config
 
 bot = commands.Bot(
@@ -27,13 +27,13 @@ async def on_ready() -> None:
     await bot.tree.sync(guild=discord.Object(config.guild_id))
 
 
-async def main():
+async def main() -> None:
     await setup_logger()
     await load_cogs()
     await bot.start(config.bot.token)
 
 
-async def setup_logger():
+async def setup_logger() -> None:
     log_level = config.bot.log_level
     if not log_level:
         log_level = "NOTSET"
@@ -63,7 +63,7 @@ async def setup_logger():
     logger.add(os.path.join("logs", "bot.log"), format=fmt, rotation="1 day")
 
 
-async def load_cogs():
+async def load_cogs() -> None:
     folder = Path(__file__).parent / "cogs"
     for file in folder.glob("*.py"):
         await bot.load_extension(f"cogs.{file.stem}")

@@ -7,7 +7,7 @@ from discord.ext import commands
 from loguru import logger
 
 from chiya.config import config
-from chiya.database import Joyboard
+from chiya.models import Joyboard
 from chiya.utils import embeds
 
 
@@ -45,7 +45,7 @@ class JoyboardCog(commands.Cog):
 
         return len(unique_users)
 
-    def check_emoji(self, emoji: discord.PartialEmoji | discord.Emoji, guild_id: int):
+    def check_emoji(self, emoji: discord.PartialEmoji | discord.Emoji, guild_id: int) -> bool:
         if isinstance(emoji, discord.PartialEmoji) and emoji.is_custom_emoji():
             guild = self.bot.get_guild(guild_id)
             if not guild:
@@ -104,7 +104,7 @@ class JoyboardCog(commands.Cog):
 
         if result:
             try:
-                joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
+                joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
                 embed_dict = joy_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(joy_count=joy_count)
                 embed = discord.Embed.from_dict(embed_dict)
@@ -162,15 +162,14 @@ class JoyboardCog(commands.Cog):
 
         # Update the joy embed ID since the original one was probably deleted.
         if result:
-            result["joy_embed_id"] = joyed_message.id
-            db["joyboard"].update(result, ["id"])
+            result.joy_embed_id = joyed_message.id
+            result.save()
         else:
-            data = dict(
+            Joyboard(
                 channel_id=payload.channel_id,
                 message_id=payload.message_id,
                 joy_embed_id=joyed_message.id,
-            )
-            db["joyboard"].insert(data, ["id"])
+            ).save()
 
         self.cache["add"].remove(cache_data)
 
@@ -195,14 +194,14 @@ class JoyboardCog(commands.Cog):
         joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
 
         try:
-            joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
+            joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
         except discord.NotFound:
             self.cache["remove"].remove(cache_data)
 
         joy_count = await self.get_joy_count(message)
 
         if joy_count < config.joyboard.joy_limit:
-            db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
+            result.delete()
             self.cache["remove"].remove(cache_data)
             return await joy_embed.delete()
 
@@ -217,7 +216,7 @@ class JoyboardCog(commands.Cog):
         self.cache["remove"].remove(cache_data)
 
     @commands.Cog.listener()
-    async def on_raw_message_delete(self, payload):
+    async def on_raw_message_delete(self, payload) -> None:
         """
         Automatically remove the joyboard embed if the message linked to it is deleted.
         """
@@ -227,8 +226,8 @@ class JoyboardCog(commands.Cog):
 
         try:
             joyboard_channel = self.bot.get_channel(config.joyboard.channel_id)
-            joy_embed = await joyboard_channel.fetch_message(result["joy_embed_id"])
-            db["joyboard"].delete(channel_id=payload.channel_id, message_id=payload.message_id)
+            joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
+            result.delete()
             await joy_embed.delete()
         except discord.NotFound:
             return

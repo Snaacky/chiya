@@ -1,12 +1,12 @@
-from datetime import datetime
 from typing import Literal
 
+import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from chiya.config import config
-from chiya.database import ModLog
+from chiya.models import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 from chiya.utils.pagination import MyMenuPages, MySource
@@ -25,10 +25,10 @@ class NoteCog(commands.Cog):
         """Adds a note to the specified user queryable via /search."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        note = ModLog(
+        log = ModLog(
             user_id=user.id,
             mod_id=ctx.user.id,
-            timestamp=datetime.now().timestamp(),
+            timestamp=arrow.utcnow().int_timestamp,
             reason=note,
             type="note",
         ).save()
@@ -39,8 +39,8 @@ class NoteCog(commands.Cog):
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=discord.Color.blurple(),
             fields=[
-                {"name": "ID:", "value": note.id, "inline": False},
-                {"name": "Note:", "value": note, "inline": False},
+                {"name": "ID:", "value": log.id, "inline": False},
+                {"name": "Note:", "value": log.reason, "inline": False},
             ],
         )
 
@@ -65,12 +65,10 @@ class NoteCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        results = ModLog.query.filter_by(user_id=user.id, type=action).order_by(ModLog.id.asc()).all()
-        # TODO: can't this be merged into one call because action will return None either way?
-        # if action:
-        #     results = db["mod_logs"].find(user_id=user.id, type=action, order_by="-id")
-        # else:
-        #     results = db["mod_logs"].find(user_id=user.id, order_by="-id")
+        if action:
+            results = ModLog.query.filter_by(user_id=user.id, type=action).order_by(ModLog.id.asc()).all()
+        else:
+            results = ModLog.query.filter_by(user_id=user.id).order_by(ModLog.id.asc()).all()
 
         actions = []
         for action in results:
@@ -83,14 +81,14 @@ class NoteCog(commands.Cog):
                 "note": "🗒️",
             }
 
-            action_string = f"""**{action_emoji[action['type']]} {action['type'].title()}**
-                **ID:** {action["id"]}
-                **Timestamp:** {datetime.fromtimestamp(action["timestamp"])} UTC
-                **Moderator:** <@!{action["mod_id"]}>
-                **Reason:** {action["reason"]}"""
+            action_string = f"""**{action_emoji[action.type]} {action.type.title()}**
+                **ID:** {action.id}
+                **Timestamp:** {arrow.get(action.timestamp)} UTC
+                **Moderator:** <@!{action.mod_id}>
+                **Reason:** {action.reason}"""
 
-            if action["type"] == "mute":
-                action_string += f"\n**Duration:** {action['duration']}"
+            if action.type == "mute":
+                action_string += f"\n**Duration:** {action.duration}"
 
             actions.append(action_string)
 
@@ -123,27 +121,24 @@ class NoteCog(commands.Cog):
         # TODO: Add some sort of support for history or editing mods.
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        db = database.Database().get()
-        log = db["mod_logs"].find_one(id=id)
+        log = ModLog.query.filter_by(id=id).first()
         if not log:
             return await embeds.send_error(ctx=ctx, description="Could not find a log with that ID!")
 
-        user = await self.bot.fetch_user(log["user_id"])
+        user = await self.bot.fetch_user(log.user_id)
         embed = embeds.make_embed(
             title=f"Edited log: {user.name}",
             description=f"Log #{id} for {user.mention} was updated by {ctx.user.mention}",
             thumbnail_url="https://i.imgur.com/A4c19BJ.png",
             color=discord.Color.green(),
             fields=[
-                {"name": "Before:", "value": log["reason"], "inline": False},
+                {"name": "Before:", "value": log.reason, "inline": False},
                 {"name": "After:", "value": note, "inline": False},
             ],
         )
 
-        log["reason"] = note
-        db["mod_logs"].update(log, ["id"])
-        db.commit()
-        db.close()
+        log.reason = note
+        log.save()
 
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)

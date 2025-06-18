@@ -1,4 +1,6 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, create_engine
+from typing import Self
+
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, UniqueConstraint, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 
@@ -9,29 +11,31 @@ session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 
 
-class Base:
-    class QueryDescriptor:
-        def __get__(self, instance, owner):
-            return Session().query(owner)
+class BaseModel:
+    __abstract__ = True
 
-    query = QueryDescriptor()
+    query = Session.query_property()
 
-    def save(self):
-        "Save the current instance to the database."
+    def save(self) -> Self:
         session = Session()
-        try:
-            session.add(self)
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            raise e
-        finally:
-            session.close()
+        session.add(self)
+        session.commit()
+        return self
 
+    def delete(self) -> Self:
+        session = Session()
+        session.delete(self)
+        session.commit()
+        return self
+
+    def flush(self) -> Self:
+        session = Session()
+        session.add(self)
+        session.flush()
         return self
 
 
-Base = declarative_base(cls=Base)
+Base = declarative_base(cls=BaseModel)
 
 
 class ModLog(Base):
@@ -81,27 +85,11 @@ class Joyboard(Base):
 
 class Highlight(Base):
     __tablename__ = "highlights"
+    __table_args__ = (UniqueConstraint("term", "user_id", name="uq_user_term"),)
 
     id = Column(Integer, primary_key=True)
     term = Column(Text, nullable=False)
-    users = Column(Text, nullable=False)
-
-
-class HighlightTerm(Base):
-    __tablename__ = "highlight_terms"
-
-    id = Column(Integer, primary_key=True)
-    term = Column(Text, nullable=False, unique=True)
-    users = relationship("HighlightUser", back_populates="term")
-
-
-class HighlightUser(Base):
-    __tablename__ = "highlight_users"
-
-    id = Column(Integer, primary_key=True)
     user_id = Column(Integer, nullable=False)
-    term_id = Column(Integer, ForeignKey("highlight_terms.id"), nullable=False)
-    term = relationship("HighlightTerm", back_populates="users")
 
 
 Base.metadata.create_all(engine)
