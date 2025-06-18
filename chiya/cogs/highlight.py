@@ -1,8 +1,8 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import discord
-import orjson
+from collections import defaultdict
 from discord import app_commands
 from discord.ext import commands
 from loguru import logger
@@ -18,9 +18,9 @@ class HighlightCog(commands.Cog):
         self.refresh_highlights()
 
     def refresh_highlights(self) -> None:
-        # TODO: Probably gonna have to rewrite this...
-        # self.highlights = [{"term": row.term, "users": orjson.loads(row.users)} for row in Highlight.query.all()]
-        ...
+        self.highlights = defaultdict(set)
+        for highlight in Highlight.query.all():
+            self.highlights[highlight.term].add(highlight.user_id)
 
     @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
@@ -31,35 +31,39 @@ class HighlightCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
-        # TODO: Need to finish rewriting this!
         """
         Scan incoming messages for highlights and notify the subscribed users.
         """
         if message.author.bot:
             return
 
-        active_members = await self.active_members(message.channel)
-        chat = None
+        # These are set as None here to reduce the number of queries to discord
+        # We only want to fetch this data when we have a match otherwise we will
+        # fetch this data every message which gets us rate limited
+        active_members, chat = None, None
 
-        for highlight in self.highlights:
-            regex = rf"\b{re.escape(highlight['term'])}\b"
+        for term, users in self.highlights.items():
+            regex = rf"\b{re.escape(term)}\b"
             result = re.search(regex, message.clean_content, re.IGNORECASE)
 
             if not result:
                 continue
 
+            if active_members is None:
+                active_members = await self.active_members(message.channel)
+
             if chat is None:
                 messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
                 chat = ""
                 for msg in reversed(messages):
-                    chat += f"**[<t:{int(msg.created_at.int_timestamp)}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
-                chat += f"✨ **[<t:{int(message.created_at.int_timestamp)}:T>] {message.author.name}:** \
+                    chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
                     {message.clean_content[0:256]}\n"
 
-            embed = embeds.make_embed(title=highlight.term, description=chat, color=discord.Color.gold())
+            embed = embeds.make_embed(title=term, description=chat, color=discord.Color.gold())
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
-            for subscriber in highlight["users"]:
+            for subscriber in users:
                 if subscriber == message.author.id or subscriber in active_members:
                     continue
 
@@ -76,7 +80,7 @@ class HighlightCog(commands.Cog):
                     channel = await member.create_dm()
                     await channel.send(
                         content=(
-                            f"You were mentioned with the highlight term `{highlight['term']}` "
+                            f"You were mentioned with the highlight term `{term}` "
                             f"in **{message.guild.name}** {message.channel.mention}."
                         ),
                         embed=embed,
@@ -191,7 +195,7 @@ class HighlightCog(commands.Cog):
         """
         Returns a set of all the active members in a channel.
         """
-        after = datetime.datetime.now() - datetime.timedelta(minutes=config.hl.timeout)
+        after = datetime.now() - timedelta(minutes=config.hl.timeout)
         message_auths = set([message.author.id async for message in channel.history(after=after)])
         return message_auths
 
