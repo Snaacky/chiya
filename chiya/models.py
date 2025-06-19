@@ -1,7 +1,7 @@
 from typing import Self
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, Text, UniqueConstraint, create_engine
-from sqlalchemy.orm import relationship, scoped_session, sessionmaker, DeclarativeBase
+from sqlalchemy import Boolean, Column, Integer, Text, UniqueConstraint, create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker, DeclarativeBase
 
 from chiya.config import config
 

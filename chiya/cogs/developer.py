@@ -30,7 +30,7 @@ class DeveloperCog(Cog):
 
     @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
-    async def eval(self, ctx: discord.Interaction, message: discord.Message):
+    async def eval(self, ctx: discord.Interaction, message: discord.Message) -> None | str:
         """Evaluates input as Python code."""
 
         def _cleanup_code(self, content: str) -> str:
@@ -127,12 +127,12 @@ class DeveloperCog(Cog):
                 await ctx.followup.send(embed=embed)
 
     @bot.command(name="ping", description="Get bot latency")
-    async def ping(self, ctx: discord.Interaction):
+    async def ping(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
         await ctx.followup.send(f"Pong! {round(self.bot.latency * 1000)}ms.")
 
     @bot.command(name="console", description="Get console output")
-    async def console(self, ctx: discord.Interaction, lines: int):
+    async def console(self, ctx: discord.Interaction, lines: int) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
         if lines >= 500:
             return await embeds.send_error(ctx=ctx, description="Please specify <= 500 lines max.")

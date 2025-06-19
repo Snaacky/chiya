@@ -64,7 +64,7 @@ def make_embed(
     return embed
 
 
-async def send_interaction_message(ctx: discord.Interaction, embed: discord.Embed):
+async def send_interaction_message(ctx: discord.Interaction, embed: discord.Embed) -> None:
     if ctx.response.is_done():
         await ctx.followup.send(embed=embed, ephemeral=True)
     else:

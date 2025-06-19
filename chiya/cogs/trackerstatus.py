@@ -28,7 +28,7 @@ class TrackerStatus:
             logger.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
 
-    def get_embed_color(self, embed: discord.Embed):
+    def get_embed_color(self, embed: discord.Embed) -> discord.Color:
         status = list(set([field.value for field in embed.fields]))
         if len(status) == 1:
             if status[0] == "🟢 Online":
@@ -45,7 +45,7 @@ class TrackerStatus:
 
         return discord.Color.red()
 
-    def normalize_value(self, value: str | int):
+    def normalize_value(self, value: str | int) -> str | None:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
@@ -149,7 +149,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         return embed
 
-    def normalize_value(self, value: dict):
+    def normalize_value(self, value: dict) -> str:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
@@ -194,7 +194,7 @@ class TrackerStatusCog(commands.Cog):
         self.refresh_data.cancel()
 
     @tasks.loop(seconds=60)
-    async def refresh_data(self):
+    async def refresh_data(self) -> None:
         """
         Grabs the latest API data from each tracker and caches it locally
         every 60 seconds, respecting API limits.

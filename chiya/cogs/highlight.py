@@ -56,7 +56,9 @@ class HighlightCog(commands.Cog):
                 messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
                 chat = ""
                 for msg in reversed(messages):
-                    chat += f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                    chat += (
+                        f"**[<t:{int(msg.created_at.timestamp())}:T>] {msg.author.name}:** {msg.clean_content[0:256]}\n"
+                    )
                 chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
                     {message.clean_content[0:256]}\n"
 
@@ -146,11 +148,7 @@ class HighlightCog(commands.Cog):
 
     @highlight.command(name="remove", description="Remove a term from being tracked")
     @app_commands.describe(term="Term to be removed")
-    async def remove_highlight(
-        self,
-        ctx: discord.Interaction,
-        term: str,
-    ) -> None:
+    async def remove_highlight(self, ctx: discord.Interaction, term: str) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         result = Highlight.query.filter_by(user_id=ctx.user.id, term=term).first()

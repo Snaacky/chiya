@@ -51,7 +51,9 @@ async def setup_logger() -> None:
             logger.opt(exception=record.exc_info).log(level, record.getMessage())
 
     discord.utils.setup_logging(
-        handler=InterceptHandler(), level=logging.getLevelNamesMapping().get(config.bot.log_level, "NOTSET"), root=False
+        handler=InterceptHandler(),
+        level=logging.getLevelNamesMapping().get(config.bot.log_level, "NOTSET"),
+        root=False,
     )
 
     fmt = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> | <level>{message}</level>"
