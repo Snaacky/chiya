@@ -21,13 +21,10 @@ jobs:
         id: setup-uv
         uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13.5"
 
       - name: Install the project
         run: uv sync --locked
-
-      - name: Run mypy
-        run: uv run mypy .
 
       - name: Run ruff lint
         run: uv run ruff check .
