@@ -1,40 +1,69 @@
-name: Docker
+name: Build and publish a Docker image
 
-on: [push]
+on: [push, pull_request, workflow_dispatch]
 
 env:
-  IMAGE_NAME: chiya
-  REPOSITORY: ghcr.io
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  FORCE_COLOR: 1
+  # This environment variable determines whether to push the Docker image to the registry.
+  # It evaluates to 'true' if the workflow is NOT triggered by a pull request,
+  # or if the pull request originates from the 'Snaacky/chiya' repository.
+  # This prevents pushing images from forks or untrusted sources.
+  PUSH_TO_REGISTRY: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'Snaacky/chiya' }}
 
 jobs:
-  push:
+  build-and-push-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Prepare metadata for build
-        id: prep
-        run: |
-          VERSION=edge
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/}
-          elif [[ $GITHUB_REF == refs/heads/* ]]; then
-            VERSION=$(echo ${GITHUB_REF#refs/heads/} | sed -r 's#/+#-#g')
-          elif [[ $GITHUB_REF == refs/pull/* ]]; then
-            VERSION=pr-${{ github.event.number }}
-          fi
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "master" ] && VERSION=latest
-
-          echo ::set-output name=version::${VERSION}
-
-      - name: Build and publish Docker image (using cache)
-        uses: whoan/docker-build-with-cache-action@v5
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          registry: ${{ env.REPOSITORY }}
-          username: ${{ github.repository_owner }}
+          persist-credentials: false
+
+      - name: Log in to the Container registry
+        if: ${{ env.PUSH_TO_REGISTRY == 'true' }}
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          image_name: ${{ env.IMAGE_NAME }}
-          image_tag: ${{ steps.prep.outputs.version }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5.7.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+        with:
+          context: .
+          push: ${{ env.PUSH_TO_REGISTRY == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate artifact attestation
+        if: ${{ env.PUSH_TO_REGISTRY == 'true' }}
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2.4.0
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true
