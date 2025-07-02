@@ -1,16 +1,15 @@
-import time
-
+import arrow
 import discord
 import privatebinapi
 from discord.ext import commands
-from loguru import logger as log
+from loguru import logger
 
-from chiya import database
 from chiya.config import config
+from chiya.models import Ticket
 from chiya.utils import embeds
 
 
-class TicketInteractions(commands.Cog):
+class TicketCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -64,8 +63,8 @@ class TicketSubmissionModal(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
-        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
-        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
+        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
+        role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
         permission = {
             role_staff: discord.PermissionOverwrite(read_messages=True),
             interaction.guild.default_role: discord.PermissionOverwrite(
@@ -82,9 +81,6 @@ class TicketSubmissionModal(discord.ui.Modal):
             category=category,
             overwrites=permission,
         )
-
-        if any(role.id == config["roles"]["vip"] for role in interaction.user.roles):
-            await channel.send(f"<@&{config['roles']['staff']}>")
 
         ticket_subject = self.children[0].value
         ticket_message = self.children[1].value
@@ -113,21 +109,15 @@ class TicketSubmissionModal(discord.ui.Modal):
         )
         await interaction.followup.send(embed=embed)
 
-        db = database.Database().get()
-        db["tickets"].insert(
-            dict(
-                user_id=interaction.user.id,
-                guild=interaction.guild.id,
-                timestamp=int(time.time()),
-                ticket_subject=ticket_subject,
-                ticket_message=ticket_message,
-                log_url=None,
-                status=False,
-            )
-        )
-
-        db.commit()
-        db.close()
+        Ticket(
+            user_id=interaction.user.id,
+            guild=interaction.guild.id,
+            timestamp=arrow.utcnow().int_timestamp,
+            ticket_subject=ticket_subject,
+            ticket_message=ticket_message,
+            log_url=None,
+            status=False,
+        ).save()
 
 
 class TicketCreateButton(discord.ui.View):
@@ -142,7 +132,7 @@ class TicketCreateButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        category = discord.utils.get(interaction.guild.categories, id=config["categories"]["tickets"])
+        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
         ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
 
         if ticket:
@@ -175,15 +165,16 @@ class TicketCloseButton(discord.ui.View):
         )
         await interaction.response.send_message(embed=close_embed)
 
-        db = database.Database().get()
-        table = db["tickets"]
-        ticket = table.find_one(user_id=int(interaction.channel.name.replace("ticket-", "")), status=False)
-        ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
-        ticket_subject = ticket["ticket_subject"]
-        ticket_message = ticket["ticket_message"]
+        ticket = Ticket.query.filter_by(
+            user_id=int(interaction.channel.name.replace("ticket-", "")), status=False
+        ).first()
 
-        role_staff = discord.utils.get(interaction.guild.roles, id=config["roles"]["staff"])
-        role_trial_mod = discord.utils.get(interaction.guild.roles, id=config["roles"]["trial"])
+        ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
+        ticket_subject = ticket.ticket_subject
+        ticket_message = ticket.ticket_message
+
+        role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
+        role_trial_mod = discord.utils.get(interaction.guild.roles, id=config.roles.trial)
 
         member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
         if not member:
@@ -204,7 +195,7 @@ class TicketCloseButton(discord.ui.View):
                 mod_list.add(message.author)
 
         value = " ".join(mod.mention for mod in mod_list) if mod_list else mod_list.add("None")
-        url = privatebinapi.send(config["privatebin"]["url"], text=message_log, expiration="never")["full_url"]
+        url = privatebinapi.send(config.privatebin.url, text=message_log, expiration="never")["full_url"]
 
         log_embed = embeds.make_embed(
             title=f"{interaction.channel.name} archived",
@@ -219,7 +210,7 @@ class TicketCloseButton(discord.ui.View):
                 {"name": "Ticket Log:", "value": url, "inline": False},
             ],
         )
-        ticket_log = discord.utils.get(interaction.guild.channels, id=config["channels"]["logs"]["ticket_log"])
+        ticket_log = discord.utils.get(interaction.guild.channels, id=config.channels.ticket_log)
         await ticket_log.send(embed=log_embed)
 
         try:
@@ -242,18 +233,14 @@ class TicketCloseButton(discord.ui.View):
             )
             await member.send(embed=dm_embed)
         except (discord.Forbidden, discord.HTTPException):
-            log.info(f"Unable to send ticket log to {member} because their DM is closed")
+            logger.info(f"Unable to send ticket log to {member} because their DM is closed")
 
-        ticket["status"] = True
-        ticket["log_url"] = url
-        table.update(ticket, ["id"])
-
-        db.commit()
-        db.close()
+        ticket.status = True
+        ticket.log_url = url
+        ticket.save()
 
         await interaction.channel.delete()
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(TicketInteractions(bot))
-    log.info("Interactions loaded: ticket")
+    await bot.add_cog(TicketCog(bot))

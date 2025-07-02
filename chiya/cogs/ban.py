@@ -1,17 +1,16 @@
-import time
+import arrow
 
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
-from chiya import database
 from chiya.config import config
+from chiya.models import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
-class BansCommands(commands.Cog):
+class BanCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -23,7 +22,7 @@ class BansCommands(commands.Cog):
             return False
 
     @app_commands.command(name="ban", description="Ban user from the server")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(user="User to ban from the server")
     @app_commands.describe(reason="Reason why the user is being banned")
@@ -49,21 +48,21 @@ class BansCommands(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not can_action_member(ctx=ctx, member=user):
-            return await embeds.error_message(ctx=ctx, description=f"You cannot action {user.mention}.")
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if await self.is_user_banned(ctx=ctx, user=user):
-            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is already banned.")
+            return await embeds.send_error(ctx=ctx, description=f"{user.mention} is already banned.")
 
         if len(reason) > 1024:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,
             author=True,
             title=f"Banning user: {user}",
             description=f"{user.mention} was banned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/l0jyxkz.png",
-            color=discord.Color.red(),
+            thumbnail_url="https://files.catbox.moe/6hd0uw.png",
+            color=0xCD6D6D,
         )
 
         user_embed = embeds.make_embed(
@@ -73,10 +72,10 @@ class BansCommands(commands.Cog):
                 "You can submit a ban appeal on our subreddit [here]"
                 "(https://www.reddit.com/message/compose/?to=/r/snackbox)."
             ),
-            image_url="https://i.imgur.com/CglQwK5.gif",
+            image_url="https://files.catbox.moe/jp1wmf.gif",
             color=discord.Color.blurple(),
             fields=[
-                {"name": "Server:", "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", "inline": True},
+                {"name": "Server:", "value": ctx.guild.name, "inline": True},
                 {"name": "Reason:", "value": reason, "inline": False},
             ],
         )
@@ -84,34 +83,22 @@ class BansCommands(commands.Cog):
         try:
             await user.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            mod_embed.add_field(
-                name="Notice:",
-                value=(
-                    f"Unable to message {user.mention} about this action. "
-                    "This can be caused by the user not being in the server, "
-                    "having DMs disabled, or having the bot blocked."
-                ),
-            )
+            mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(
-                user_id=user.id,
-                mod_id=ctx.user.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="ban",
-            )
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=user.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().int_timestamp,
+            reason=reason,
+            type="ban",
+        ).save()
 
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
     @app_commands.command(name="unban", description="Unban user from the server")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(user="User to unban from the server")
     @app_commands.describe(reason="Reason why the user is being unbanned")
@@ -126,32 +113,49 @@ class BansCommands(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.is_user_banned(ctx=ctx, user=user):
-            return await embeds.error_message(ctx=ctx, description=f"{user.mention} is not banned.")
+            return await embeds.send_error(ctx=ctx, description=f"{user.mention} is not banned.")
 
         if len(reason) > 1024:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 1024 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,
             author=True,
             title=f"Unbanning user: {user}",
             description=f"{user.mention} was unbanned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/4H0IYJH.png",
+            thumbnail_url="https://files.catbox.moe/qhc82k.png",
             color=discord.Color.green(),
         )
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(user_id=user.id, mod_id=ctx.user.id, timestamp=int(time.time()), reason=reason, type="unban")
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=user.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().int_timestamp,
+            reason=reason,
+            type="unban",
+        ).save()
 
         await ctx.guild.unban(user, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
+    @commands.Cog.listener()
+    async def on_member_ban(self, guild: discord.Guild, user: discord.Member | discord.User) -> None:
+        """
+        Add the user's ban entry to the database if they were banned manually.
+        """
+        # TODO: Emit an embed in #moderation when this happens
+        ban_entry = await guild.fetch_ban(user)
+        logs = [log async for log in guild.audit_logs(limit=1, action=discord.AuditLogAction.ban)]
+        if logs[0].user != self.bot.user:
+            ModLog(
+                user_id=user.id,
+                mod_log=logs[0].user.id,
+                timestamp=arrow.utcnow().int_timestamp,
+                reason=ban_entry.reason,
+                type="ban",
+            ).save()
+
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(BansCommands(bot))
-    log.info("Commands loaded: ban")
+    await bot.add_cog(BanCog(bot))

@@ -8,14 +8,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands import Cog
-from loguru import logger as log
 
 from chiya.config import config
 from chiya.utils import embeds
 
 
-class BotCommands(Cog):
-
+class DeveloperCog(Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.eval_command = app_commands.ContextMenu(name="Eval", callback=self.eval)
@@ -27,25 +25,29 @@ class BotCommands(Cog):
 
     class BotGroup(app_commands.Group):
         pass
-    bot = BotGroup(name="bot", guild_ids=[config["guild_id"]])
 
-    @app_commands.guilds(config["guild_id"])
+    bot = BotGroup(name="bot", guild_ids=[config.guild_id])
+
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
-    async def eval(self, ctx: discord.Interaction, message: discord.Message):
+    async def eval(self, ctx: discord.Interaction, message: discord.Message) -> None | str:
         """Evaluates input as Python code."""
+
         def _cleanup_code(self, content: str) -> str:
             """Automatically removes code blocks from the code."""
             if content.startswith("```") and content.endswith("```"):  # remove ```py\n```
                 split_code = content.split("\n")
                 if len(split_code) == 1:
                     return content.split("```")[1]
-                else: 
+                else:
                     return "\n".join(content.split("\n")[1:-1])
             return content.strip("` \n")  # remove `foo`
+
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not await self.bot.is_owner(ctx.user):
-            return await embeds.error_message(ctx=ctx, description="You do not own this bot.")
+            return await embeds.send_error(ctx=ctx, description="You do not own this bot.")
+
         # Required environment variables.
         env = {
             "bot": self.bot,
@@ -78,7 +80,7 @@ class BotCommands(Cog):
         stdout = io.StringIO()
 
         # Exact code to be compiled.
-        to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
+        to_compile = f"async def func():\n{textwrap.indent(body, '  ')}"
 
         try:
             # Attempting execution
@@ -125,15 +127,15 @@ class BotCommands(Cog):
                 await ctx.followup.send(embed=embed)
 
     @bot.command(name="ping", description="Get bot latency")
-    async def ping(self, ctx: discord.Interaction):
+    async def ping(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
-        await ctx.followup.send(f"Pong! {round (self.bot.latency * 1000)}ms.")
+        await ctx.followup.send(f"Pong! {round(self.bot.latency * 1000)}ms.")
 
     @bot.command(name="console", description="Get console output")
-    async def console(self, ctx: discord.Interaction, lines: int):
+    async def console(self, ctx: discord.Interaction, lines: int) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
         if lines >= 500:
-            return await embeds.error_message(ctx=ctx, description="Please specify <= 500 lines max.")
+            return await embeds.send_error(ctx=ctx, description="Please specify <= 500 lines max.")
         with open(os.path.join("logs", "bot.log")) as f:
             lines = f.readlines()[-lines:]
         with io.StringIO() as file:
@@ -144,5 +146,4 @@ class BotCommands(Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(BotCommands(bot))
-    log.info("Commands loaded: bot")
+    await bot.add_cog(DeveloperCog(bot))

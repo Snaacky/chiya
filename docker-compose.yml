@@ -1,22 +1,8 @@
-version: "3.7"
 services:
   chiya:
     container_name: chiya
     image: ghcr.io/snaacky/chiya:latest
     restart: unless-stopped
     volumes:
-        - ./config/config.yml:/app/config.yml
+        - ./config/config.toml:/app/config.toml
         - ./config/logs:/app/logs/
-    depends_on:
-        - mariadb
-  mariadb:
-    container_name: mariadb
-    image: mariadb
-    restart: unless-stopped
-    volumes:
-        - ./config/db:/var/lib/mysql
-    environment:
-        MYSQL_DATABASE: chiya
-        MYSQL_USER: chiya
-        MYSQL_PASSWORD: your_secure_password
-        MYSQL_ROOT_PASSWORD: your_more_secure_password

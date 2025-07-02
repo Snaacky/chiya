@@ -1,13 +1,16 @@
 import time
-
 import aiohttp
 import discord
-from loguru import logger as log
+from discord import app_commands
+from discord.ext import commands, tasks
+from loguru import logger
 
+from chiya.config import config
 from chiya.utils import embeds
+from chiya.utils.embeds import error_embed
 
 
-class TrackerStatus():
+class TrackerStatus:
     def __init__(self, tracker: str, url: str) -> None:
         self.tracker = tracker
         self.cache_data: dict = None
@@ -22,10 +25,10 @@ class TrackerStatus():
                 response.raise_for_status()
                 self.cache_data = await response.json()
         except Exception:
-            log.debug(f"Unable to refresh {self.tracker} tracker status")
+            logger.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
 
-    def get_embed_color(self, embed: discord.Embed):
+    def get_embed_color(self, embed: discord.Embed) -> discord.Color:
         status = list(set([field.value for field in embed.fields]))
         if len(status) == 1:
             if status[0] == "🟢 Online":
@@ -42,21 +45,32 @@ class TrackerStatus():
 
         return discord.Color.red()
 
+    def normalize_value(self, value: str | int) -> str | None:
+        """
+        Converts API data values into user-friendly text with status availability icon.
+        """
+        match value:
+            case "1" | 1:
+                return "🟢 Online"
+            case "2" | 2:
+                return "🟠 Unstable"
+            case "0" | 0:
+                return "🔴 Offline"
+
 
 class TrackerStatusInfo(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
+
     last_update = 0
-    global_data: dict = None
 
     def __init__(self, tracker: str) -> None:
         super().__init__(tracker, "https://trackerstatus.info/api/list/")
 
     async def do_refresh(self, session: aiohttp.ClientSession) -> None:
-        if (time.time() - self.last_update > 10):
+        if time.time() - self.last_update > 10:
             await super().do_refresh(session)
-            self.global_data = self.cache_data
             self.last_update = time.time()
 
     def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
@@ -65,11 +79,11 @@ class TrackerStatusInfo(TrackerStatus):
             title=f"Tracker Status: {self.tracker}",
         )
 
-        if self.global_data is None:
+        if self.cache_data is None:
             self.last_update = 0
             self.do_refresh()
 
-        for key, value in self.global_data[self.tracker.lower()]["Details"].items():
+        for key, value in self.cache_data[self.tracker.lower()]["Details"].items():
             # Skip over any keys that we don't want to return in the embed.
             if key in ["tweet", "TrackerHTTPAddresses", "TrackerHTTPSAddresses"]:
                 continue
@@ -78,18 +92,6 @@ class TrackerStatusInfo(TrackerStatus):
         embed.color = self.get_embed_color(embed)
 
         return embed
-
-    def normalize_value(self, value):
-        """
-        Converts API data values into user-friendly text with status availability icon.
-        """
-        match value:
-            case "1":
-                return "🟢 Online"
-            case "2":
-                return "🟠 Unstable"
-            case "0":
-                return "🔴 Offline"
 
 
 class TrackerStatusAB(TrackerStatus):
@@ -119,23 +121,12 @@ class TrackerStatusAB(TrackerStatus):
 
         return embed
 
-    def normalize_value(self, value):
-        """
-        Converts API data values into user-friendly text with status availability icon.
-        """
-        match value:
-            case 1:
-                return "🟢 Online"
-            case 2:
-                return "🟠 Unstable"
-            case 0:
-                return "🔴 Offline"
-
 
 class TrackerStatusUptimeRobot(TrackerStatus):
     """
     Gets status of a tracker from trackerstatus.info
     """
+
     def __init__(self, tracker: str, url: str) -> None:
         super().__init__(tracker, url)
 
@@ -158,7 +149,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         return embed
 
-    def normalize_value(self, value: dict):
+    def normalize_value(self, value: dict) -> str:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
@@ -170,6 +161,74 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         elif ratio > 0:
             return "🔴 Offline"
         return "🔴 Unknown"
+
+
 class TrackerStatusMAM(TrackerStatusUptimeRobot):
     def __init__(self) -> None:
         super().__init__("MAM", "https://status.myanonamouse.net/api/getMonitorList/vl59BTEJX")
+
+
+class TrackerStatusCog(commands.Cog):
+    # TODO: Add support for trackers that offer their own status page.
+    # http://about.empornium.ph/
+    # http://is.morethantv.online/
+    def __init__(self, bot: commands.Bot) -> None:
+        self.bot = bot
+        self.refresh_data.start()
+
+        self.trackers: tuple[TrackerStatus] = (
+            TrackerStatusInfo("AR"),
+            TrackerStatusInfo("BTN"),
+            TrackerStatusInfo("GGn"),
+            TrackerStatusInfo("PTP"),
+            TrackerStatusInfo("RED"),
+            TrackerStatusInfo("OPS"),
+            TrackerStatusInfo("NBL"),
+            TrackerStatusAB(),
+            TrackerStatusMAM(),
+        )
+
+        self.trackers_list = tuple(sorted((tracker.tracker for tracker in self.trackers)))
+
+    def cog_unload(self) -> None:
+        self.refresh_data.cancel()
+
+    @tasks.loop(seconds=60)
+    async def refresh_data(self) -> None:
+        """
+        Grabs the latest API data from each tracker and caches it locally
+        every 60 seconds, respecting API limits.
+        """
+        async with aiohttp.ClientSession() as session:
+            for tracker in self.trackers:
+                await tracker.do_refresh(session)
+
+    async def tracker_autocomplete(self, ctx: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return [
+            app_commands.Choice(name=tracker, value=tracker)
+            for tracker in self.trackers_list
+            if current.lower() in tracker.lower()
+        ]
+
+    @app_commands.command(name="trackerstatus", description="Get tracker uptime statuses")
+    @app_commands.guilds(config.guild_id)
+    @app_commands.autocomplete(tracker=tracker_autocomplete)
+    @app_commands.describe(tracker="Tracker to get uptime statuses for")
+    async def trackerstatus(
+        self,
+        ctx: discord.Interaction,
+        tracker: str,
+    ) -> None:
+        await ctx.response.defer(ephemeral=True)
+        tracker: TrackerStatus = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker))
+
+        if tracker is None:
+            await ctx.followup.send(embed=error_embed(ctx, "Please choose a listed tracker."))
+            return
+
+        embed = tracker.get_status_embed(ctx)
+        await ctx.followup.send(embed=embed)
+
+
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(TrackerStatusCog(bot))

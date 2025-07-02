@@ -148,3 +148,4 @@ notes.txt
 db/*
 *.lnk
 test.py
+*config.toml

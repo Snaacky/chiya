@@ -1,22 +1,21 @@
-import time
+import arrow
 
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
-from chiya import database
 from chiya.config import config
+from chiya.models import ModLog
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 
 
-class WarnCommands(commands.Cog):
+class WarnCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
     @app_commands.command(name="warn", description="Warn the member")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
     @app_commands.describe(member="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")
@@ -36,18 +35,21 @@ class WarnCommands(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
-            return await embeds.error_message(ctx=ctx, description="That user is not in the server.")
+            return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
 
         if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         mod_embed = embeds.make_embed(
             ctx=ctx,
             author=True,
-            title=f"Warning member: {member.name}",
-            description=f"{member.mention} was warned by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://i.imgur.com/4jeFA3h.png",
+            title="Warned member",
+            description=f"{member.mention} was warned by {ctx.user.mention}",
+            thumbnail_url="https://files.catbox.moe/xbwoe8.png",
             color=discord.Color.gold(),
+            fields=[
+                {"name": "Reason:", "value": reason, "inline": False},
+            ],
         )
 
         try:
@@ -55,45 +57,28 @@ class WarnCommands(commands.Cog):
                 author=False,
                 title="Uh-oh, you've received a warning!",
                 description="If you believe this was a mistake, contact staff.",
-                image_url="https://i.imgur.com/rVf0mlG.gif",
+                image_url="https://files.catbox.moe/2mscuu.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {
-                        "name": "Server:",
-                        "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})",
-                        "inline": True,
-                    },
+                    {"name": "Server:", "value": ctx.guild.name, "inline": True},
                     {"name": "Reason:", "value": reason, "inline": False},
                 ],
             )
             await member.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
-            mod_embed.add_field(
-                name="Notice:",
-                value=(
-                    f"Unable to message {member.mention} about this action. "
-                    "This can be caused by the user not being in the server, "
-                    "having DMs disabled, or having the bot blocked."
-                ),
-            )
+            mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        db = database.Database().get()
-        db["mod_logs"].insert(
-            dict(
-                user_id=member.id,
-                mod_id=ctx.user.id,
-                timestamp=int(time.time()),
-                reason=reason,
-                type="warn",
-            )
-        )
-        db.commit()
-        db.close()
+        ModLog(
+            user_id=member.id,
+            mod_id=ctx.user.id,
+            timestamp=arrow.utcnow().int_timestamp,
+            reason=reason,
+            type="warn",
+        ).save()
 
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(WarnCommands(bot))
-    log.info("Commands loaded: warn")
+    await bot.add_cog(WarnCog(bot))

@@ -1,14 +1,13 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
-from loguru import logger as log
 
 from chiya.config import config
 from chiya.utils import embeds
 from chiya.utils.helpers import log_embed_to_channel
 
 
-class PurgeCommands(commands.Cog):
+class PurgeCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
@@ -22,19 +21,19 @@ class PurgeCommands(commands.Cog):
             return True
 
         if ctx.channel.category_id in [
-            config["categories"]["moderation"],
-            config["categories"]["development"],
-            config["categories"]["logs"],
-            config["categories"]["tickets"],
+            config.categories.moderation,
+            config.categories.development,
+            config.categories.logs,
+            config.categories.tickets,
         ]:
             return False
 
         return True
 
     @app_commands.command(name="purge", description="Purge the last X amount of messages")
-    @app_commands.guilds(config["guild_id"])
+    @app_commands.guilds(config.guild_id)
     @app_commands.guild_only()
-    @app_commands.checks.has_role(config["roles"]["staff"])
+    @app_commands.checks.has_role(config.roles.staff)
     @app_commands.describe(amount="The amount of messages to be purged")
     @app_commands.describe(reason="The reason why the messages are being purged")
     async def purge(self, ctx: discord.Interaction, amount: int, reason: str) -> None:
@@ -50,10 +49,10 @@ class PurgeCommands(commands.Cog):
         await ctx.response.defer(thinking=True)
 
         if not self.can_purge_messages(ctx):
-            return await embeds.error_message(ctx=ctx, description="You cannot use that command in this category.")
+            return await embeds.send_error(ctx=ctx, description="You cannot use that command in this category.")
 
         if len(reason) > 4096:
-            return await embeds.error_message(ctx=ctx, description="Reason must be less than 4096 characters.")
+            return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         amount = 100 if amount > 100 else amount
 
@@ -70,5 +69,4 @@ class PurgeCommands(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(PurgeCommands(bot))
-    log.info("Commands loaded: purge")
+    await bot.add_cog(PurgeCog(bot))
