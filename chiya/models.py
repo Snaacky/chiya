@@ -1,7 +1,7 @@
 from typing import Self
 
-from sqlalchemy import Boolean, Column, Integer, Text, UniqueConstraint, create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker, DeclarativeBase
+from sqlalchemy import UniqueConstraint, create_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column, scoped_session, sessionmaker
 
 from chiya.config import config
 
@@ -10,7 +10,7 @@ session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
 
 
-class Base(DeclarativeBase):
+class Base(MappedAsDataclass, DeclarativeBase):
     __abstract__ = True
 
     query = Session.query_property()
@@ -37,55 +37,55 @@ class Base(DeclarativeBase):
 class ModLog(Base):
     __tablename__ = "mod_logs"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)
-    mod_id = Column(Integer, nullable=False)
-    timestamp = Column(Integer, nullable=False)
-    reason = Column(Text, nullable=False)
-    duration = Column(Text, nullable=True)
-    type = Column(Text, nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    user_id: Mapped[int]
+    mod_id: Mapped[int]
+    timestamp: Mapped[int]
+    reason: Mapped[str]
+    duration: Mapped[str | None]
+    type: Mapped[str]
 
 
 class RemindMe(Base):
     __tablename__ = "remind_me"
 
-    id = Column(Integer, primary_key=True)
-    reminder_location = Column(Integer, nullable=False)
-    author_id = Column(Integer, nullable=False)
-    date_to_remind = Column(Integer, nullable=False)
-    message = Column(Text, nullable=False)
-    sent = Column(Boolean, nullable=False, default=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    reminder_location: Mapped[int]
+    author_id: Mapped[int]
+    date_to_remind: Mapped[int]
+    message: Mapped[str]
+    sent: Mapped[bool] = mapped_column(default=False)
 
 
 class Ticket(Base):
     __tablename__ = "tickets"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)
-    guild = Column(Integer, nullable=False)
-    timestamp = Column(Integer, nullable=False)
-    ticket_subject = Column(Text, nullable=False)
-    ticket_message = Column(Text, nullable=False)
-    log_url = Column(Text, nullable=False)
-    status = Column(Boolean)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    user_id: Mapped[int]
+    guild: Mapped[int]
+    timestamp: Mapped[int]
+    ticket_subject: Mapped[str]
+    ticket_message: Mapped[str]
+    log_url: Mapped[str]
+    status: Mapped[bool]
 
 
 class Joyboard(Base):
     __tablename__ = "joyboard"
 
-    id = Column(Integer, primary_key=True)
-    channel_id = Column(Integer, nullable=False)
-    message_id = Column(Integer, nullable=False)
-    joy_embed_id = Column(Integer, nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    channel_id: Mapped[int]
+    message_id: Mapped[int]
+    joy_embed_id: Mapped[int]
 
 
 class Highlight(Base):
     __tablename__ = "highlights"
     __table_args__ = (UniqueConstraint("term", "user_id", name="uq_user_term"),)
 
-    id = Column(Integer, primary_key=True)
-    term = Column(Text, nullable=False)
-    user_id = Column(Integer, nullable=False)
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    term: Mapped[str]
+    user_id: Mapped[int]
 
 
 Base.metadata.create_all(engine)
