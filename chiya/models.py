@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Annotated, Self, TypeAlias
 
 from sqlalchemy import UniqueConstraint, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, MappedAsDataclass, mapped_column, scoped_session, sessionmaker
@@ -8,6 +8,9 @@ from chiya.config import config
 engine = create_engine(config.database.url, connect_args={"check_same_thread": False})
 session_factory = sessionmaker(bind=engine)
 Session = scoped_session(session_factory)
+
+
+PrimaryIntKey: TypeAlias = Annotated[int, mapped_column(primary_key=True)]
 
 
 class Base(MappedAsDataclass, DeclarativeBase):
@@ -37,7 +40,7 @@ class Base(MappedAsDataclass, DeclarativeBase):
 class ModLog(Base):
     __tablename__ = "mod_logs"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    id: Mapped[PrimaryIntKey] = mapped_column(init=False)
     user_id: Mapped[int]
     mod_id: Mapped[int]
     timestamp: Mapped[int]
@@ -49,7 +52,7 @@ class ModLog(Base):
 class RemindMe(Base):
     __tablename__ = "remind_me"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    id: Mapped[PrimaryIntKey] = mapped_column(init=False)
     reminder_location: Mapped[int]
     author_id: Mapped[int]
     date_to_remind: Mapped[int]
@@ -60,7 +63,7 @@ class RemindMe(Base):
 class Ticket(Base):
     __tablename__ = "tickets"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    id: Mapped[PrimaryIntKey] = mapped_column(init=False)
     user_id: Mapped[int]
     guild: Mapped[int]
     timestamp: Mapped[int]
@@ -73,7 +76,7 @@ class Ticket(Base):
 class Joyboard(Base):
     __tablename__ = "joyboard"
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    id: Mapped[PrimaryIntKey] = mapped_column(init=False)
     channel_id: Mapped[int]
     message_id: Mapped[int]
     joy_embed_id: Mapped[int]
@@ -83,7 +86,7 @@ class Highlight(Base):
     __tablename__ = "highlights"
     __table_args__ = (UniqueConstraint("term", "user_id", name="uq_user_term"),)
 
-    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    id: Mapped[PrimaryIntKey] = mapped_column(init=False)
     term: Mapped[str]
     user_id: Mapped[int]
 
