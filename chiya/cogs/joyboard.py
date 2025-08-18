@@ -1,5 +1,5 @@
 import datetime
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import discord
 import httpx
@@ -12,7 +12,7 @@ from chiya.utils import embeds
 
 
 class JoyboardCog(commands.Cog):
-    JOYS = ("😂", "😹", "joy_pride", "joy_tone1", "joy_tone5", "joy_logga")
+    JOYS = ("😂", "😹", "joy_pride", "joy_tone1", "joy_tone5", "joy_logga", "🕹️")
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -63,6 +63,21 @@ class JoyboardCog(commands.Cog):
 
         name = emoji if isinstance(emoji, str) else emoji.name
         return name in self.JOYS or name.startswith("joy_")
+    
+    def convert_tenor_url(self, url: str) -> str:
+        parsed = urlparse(url)
+        new_netloc = "c.tenor.com"
+        new_path = parsed.path[2:]
+
+        # Rebuild the URL
+        new_url = urlunparse((
+            parsed.scheme,
+            new_netloc,
+            new_path,
+            "", "", ""
+        ))
+
+        return new_url
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
@@ -141,8 +156,9 @@ class JoyboardCog(commands.Cog):
                     urlinfo = urlparse(message_embed.provider.url)
                     if urlinfo.netloc in ["tenor.com", "tenor.co"]:
                         async with httpx.AsyncClient() as client:
-                            req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
-                            images.append(req.url)
+                            req = await client.head(f"{message_embed.url}.gif")
+                            if req.status_code == 302:
+                                images.append(self.convert_tenor_url(req.headers["Location"]))
             elif message_embed.type in ["image"]:
                 images.append(message_embed.url)
 
