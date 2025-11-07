@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:debian-slim
+FROM ghcr.io/astral-sh/uv:0.9.8-python3.14-bookworm-slim
 LABEL maintainer="https://github.com/snaacky/chiya"
 
 # Setup environment
