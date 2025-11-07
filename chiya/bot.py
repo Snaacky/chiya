@@ -6,7 +6,6 @@ import discord
 from discord.ext import commands
 from loguru import logger
 
-from chiya import models  # noqa
 from chiya.config import config, workspace
 
 bot = commands.Bot(
@@ -62,7 +61,7 @@ async def setup_logger() -> None:
 async def load_cogs() -> None:
     folder = workspace / "chiya" / "cogs"
     for file in folder.glob("*.py"):
-        await bot.load_extension(f"cogs.{file.stem}")
+        await bot.load_extension(f"chiya.cogs.{file.stem}")
         logger.info(f"Cog loaded: {list(bot.cogs.keys())[-1]}")
 
 
