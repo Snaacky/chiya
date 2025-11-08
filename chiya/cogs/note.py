@@ -4,7 +4,9 @@ import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
+from sqlalchemy import select
 
+from chiya import db
 from chiya.config import config
 from chiya.models import ModLog
 from chiya.utils import embeds
@@ -66,9 +68,9 @@ class NoteCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if action:
-            results = ModLog.query.filter_by(user_id=user.id, type=action).order_by(ModLog.id.asc()).all()
+            results = db.session.scalars(select(ModLog).where(ModLog.user_id == user.id, ModLog.type == action).order_by(ModLog.id.asc()))
         else:
-            results = ModLog.query.filter_by(user_id=user.id).order_by(ModLog.id.asc()).all()
+            results = db.session.scalars(select(ModLog).where(ModLog.user_id == user.id).order_by(ModLog.id.asc()))
 
         actions = []
         for action in results:
@@ -121,7 +123,7 @@ class NoteCog(commands.Cog):
         # TODO: Add some sort of support for history or editing mods.
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        log = ModLog.query.filter_by(id=id).first()
+        log = db.session.scalar(select(ModLog).where(ModLog.id == id))
         if not log:
             return await embeds.send_error(ctx=ctx, description="Could not find a log with that ID!")
 
@@ -138,7 +140,7 @@ class NoteCog(commands.Cog):
         )
 
         log.reason = note
-        log.save()
+        db.session.commit()
 
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
