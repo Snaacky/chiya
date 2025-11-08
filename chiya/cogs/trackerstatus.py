@@ -1,4 +1,6 @@
 import time
+from typing import Any
+
 import aiohttp
 import discord
 from discord import app_commands
@@ -13,17 +15,19 @@ from chiya.utils.embeds import error_embed
 class TrackerStatus:
     def __init__(self, tracker: str, url: str) -> None:
         self.tracker = tracker
-        self.cache_data: dict = None
+        self.cache_data: dict[str, Any] = {}
         self.url = url
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
-        pass
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
+        raise NotImplementedError
 
-    async def do_refresh(self, session: aiohttp.ClientSession) -> None:
+    async def do_refresh(self, session: aiohttp.ClientSession | None = None) -> None:
         try:
-            async with session.get(self.url, timeout=10) as response:
-                response.raise_for_status()
-                self.cache_data = await response.json()
+            session = session or aiohttp.ClientSession()
+            async with session:
+                async with session.get(self.url, timeout=aiohttp.ClientTimeout(10)) as response:
+                    response.raise_for_status()
+                    self.cache_data = await response.json()
         except Exception:
             logger.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
@@ -68,20 +72,20 @@ class TrackerStatusInfo(TrackerStatus):
     def __init__(self, tracker: str) -> None:
         super().__init__(tracker, "https://trackerstatus.info/api/list/")
 
-    async def do_refresh(self, session: aiohttp.ClientSession) -> None:
+    async def do_refresh(self, session: aiohttp.ClientSession | None = None) -> None:
         if time.time() - self.last_update > 10:
             await super().do_refresh(session)
             self.last_update = time.time()
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Tracker Status: {self.tracker}",
         )
 
-        if self.cache_data is None:
+        if self.cache_data:
             self.last_update = 0
-            self.do_refresh()
+            await self.do_refresh()
 
         for key, value in self.cache_data[self.tracker.lower()]["Details"].items():
             # Skip over any keys that we don't want to return in the embed.
@@ -102,17 +106,17 @@ class TrackerStatusAB(TrackerStatus):
     def __init__(self) -> None:
         super().__init__("AB", "https://status.animebytes.tv/api/status")
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Tracker Status: {self.tracker}",
         )
 
-        if self.cache_data is None:
-            self.do_refresh()
+        if self.cache_data:
+            await self.do_refresh()
 
         if not self.cache_data.get("status", False):
-            embed.set_footer("🔴 API Failed")
+            embed.set_footer(text="🔴 API Failed")
 
         for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
@@ -130,14 +134,14 @@ class TrackerStatusUptimeRobot(TrackerStatus):
     def __init__(self, tracker: str, url: str) -> None:
         super().__init__(tracker, url)
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
         embed = embeds.make_embed(
             ctx=ctx,
             title=f"Tracker Status: {self.tracker}",
         )
 
-        if self.cache_data is None:
-            self.do_refresh()
+        if self.cache_data:
+            await self.do_refresh()
 
         monitors: list[dict] = self.cache_data.get("psp", {}).get("monitors", [])
 
@@ -149,14 +153,14 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         return embed
 
-    def normalize_value(self, value: dict) -> str:
+    def normalize_value(self, value: dict[str, Any]) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
         """
         Converts API data values into user-friendly text with status availability icon.
         """
         if value.get("label") == "success":
             return "🟢 Online"
         ratio = float(value.get("ratio", "0"))
-        if float(value.get("ratio")) > 95:
+        if ratio > 95:
             return "🟠 Unstable"
         elif ratio > 0:
             return "🔴 Offline"
@@ -176,7 +180,7 @@ class TrackerStatusCog(commands.Cog):
         self.bot = bot
         self.refresh_data.start()
 
-        self.trackers: tuple[TrackerStatus] = (
+        self.trackers: tuple[TrackerStatus, ...] = (
             TrackerStatusInfo("AR"),
             TrackerStatusInfo("BTN"),
             TrackerStatusInfo("GGn"),
@@ -190,7 +194,7 @@ class TrackerStatusCog(commands.Cog):
 
         self.trackers_list = tuple(sorted((tracker.tracker for tracker in self.trackers)))
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.refresh_data.cancel()
 
     @tasks.loop(seconds=60)
@@ -220,13 +224,13 @@ class TrackerStatusCog(commands.Cog):
         tracker: str,
     ) -> None:
         await ctx.response.defer(ephemeral=True)
-        tracker: TrackerStatus = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker))
+        tracker_status = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker), None)
 
-        if tracker is None:
+        if tracker_status is None:
             await ctx.followup.send(embed=error_embed(ctx, "Please choose a listed tracker."))
             return
 
-        embed = tracker.get_status_embed(ctx)
+        embed = await tracker_status.get_status_embed(ctx)
         await ctx.followup.send(embed=embed)
 
 
