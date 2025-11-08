@@ -8,6 +8,7 @@ from loguru import logger
 
 from chiya.config import config, workspace
 
+
 bot = commands.Bot(
     activity=discord.Activity(type=discord.ActivityType.listening, name=config.bot.status),
     case_insensitive=True,
@@ -66,8 +67,4 @@ async def load_cogs() -> None:
 
 
 if __name__ == "__main__":
-    # Needed so the bot can run under Windows, see: https://github.com/aio-libs/aiodns/issues/86
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
     asyncio.run(main())
