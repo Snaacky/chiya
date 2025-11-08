@@ -6,7 +6,6 @@ import discord
 from discord.ext import commands
 from loguru import logger
 
-from chiya import models  # noqa
 from chiya.config import config, workspace
 
 bot = commands.Bot(
@@ -50,7 +49,7 @@ async def setup_logger() -> None:
 
     discord.utils.setup_logging(
         handler=InterceptHandler(),
-        level=logging.getLevelNamesMapping().get(config.bot.log_level, "NOTSET"),
+        level=logging.getLevelNamesMapping().get(config.bot.log_level, logging.NOTSET),
         root=False,
     )
 
@@ -62,13 +61,9 @@ async def setup_logger() -> None:
 async def load_cogs() -> None:
     folder = workspace / "chiya" / "cogs"
     for file in folder.glob("*.py"):
-        await bot.load_extension(f"cogs.{file.stem}")
+        await bot.load_extension(f"chiya.cogs.{file.stem}")
         logger.info(f"Cog loaded: {list(bot.cogs.keys())[-1]}")
 
 
 if __name__ == "__main__":
-    # Needed so the bot can run under Windows, see: https://github.com/aio-libs/aiodns/issues/86
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
     asyncio.run(main())
