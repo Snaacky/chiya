@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from chiya import db
 from chiya.config import config
 from chiya.models import ModLog
 from chiya.utils import embeds
@@ -85,13 +86,15 @@ class BanCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        ModLog(
+        new = ModLog(
             user_id=user.id,
             mod_id=ctx.user.id,
             timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             type="ban",
-        ).save()
+        )
+        db.session.add(new)
+        db.session.commit()
 
         await ctx.guild.ban(user=user, reason=reason, delete_message_days=daystodelete or 0)
         await ctx.followup.send(embed=mod_embed)
@@ -127,13 +130,15 @@ class BanCog(commands.Cog):
             color=discord.Color.green(),
         )
 
-        ModLog(
+        new = ModLog(
             user_id=user.id,
             mod_id=ctx.user.id,
             timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             type="unban",
-        ).save()
+        )
+        db.session.add(new)
+        db.session.commit()
 
         await ctx.guild.unban(user, reason=reason)
         await ctx.followup.send(embed=mod_embed)
@@ -148,13 +153,15 @@ class BanCog(commands.Cog):
         ban_entry = await guild.fetch_ban(user)
         logs = [log async for log in guild.audit_logs(limit=1, action=discord.AuditLogAction.ban)]
         if logs[0].user != self.bot.user:
-            ModLog(
+            new = ModLog(
                 user_id=user.id,
                 mod_log=logs[0].user.id,
                 timestamp=arrow.utcnow().int_timestamp,
                 reason=ban_entry.reason,
                 type="ban",
-            ).save()
+            )
+            db.session.add(new)
+            db.session.commit()
 
 
 async def setup(bot: commands.Bot) -> None:
