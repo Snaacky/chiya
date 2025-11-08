@@ -32,11 +32,10 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def _get_kwargs_from_page(self, page) -> dict[str, Any]:
         """This method calls ListPageSource.format_page class"""
         value = await super()._get_kwargs_from_page(page)
-        if value:
-            if "view" not in value:
-                value.update({"view": self})
-            return value
-        return {}
+        value = value or {}
+        if "view" not in value:
+            value.update({"view": self})
+        return value
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """Only allow the author that invoke the command to be able to use the interaction"""
