@@ -6,6 +6,7 @@ import httpx
 from discord.ext import commands
 from loguru import logger
 
+from chiya import db
 from chiya.config import config
 from chiya.models import Joyboard
 from chiya.utils import embeds
@@ -165,11 +166,12 @@ class JoyboardCog(commands.Cog):
             result.joy_embed_id = joyed_message.id
             result.save()
         else:
-            Joyboard(
+            db.session.add(Joyboard(
                 channel_id=payload.channel_id,
                 message_id=payload.message_id,
                 joy_embed_id=joyed_message.id,
-            ).save()
+            ))
+            db.session.commit()
 
         self.cache["add"].remove(cache_data)
 
