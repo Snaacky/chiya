@@ -4,6 +4,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from chiya import db
 from chiya.config import config
 from chiya.models import ModLog
 from chiya.utils import embeds
@@ -68,13 +69,15 @@ class WarnCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        ModLog(
+        new = ModLog(
             user_id=member.id,
             mod_id=ctx.user.id,
             timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             type="warn",
-        ).save()
+        )
+        db.session.add(new)
+        db.session.commit()
 
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
