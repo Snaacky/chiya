@@ -184,29 +184,31 @@ class MuteCog(commands.Cog):
         """
         Add the user's mute entry to the database if they were timed out manually.
         """
-        # TODO: Emit an embed in #moderation when this happens
-        if not before.timed_out_until and after.timed_out_until:
-            logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
-            if logs[0].user != self.bot.user:
-                # TODO: need to log duration here
-                ModLog(
-                    user_id=after.id,
-                    mod_id=logs[0].user.id,
-                    timestamp=arrow.utcnow().int_timestamp,
-                    reason=logs[0].reason,
-                    type="mute",
-                ).save()
+        if not before.timed_out_until and not after.timed_out_until:
+            return
 
-        if not after.timed_out_until and before.timed_out_until:
-            logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
-            if logs[0].user != self.bot.user:
-                ModLog(
-                    user_id=after.id,
-                    mod_id=logs[0].user.id,
-                    timestamp=arrow.utcnow().int_timestamp,
-                    reason=logs[0].reason,
-                    type="unmute",
-                )
+        logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
+        
+        if not logs:
+            return
+        
+        if logs[0].user == self.bot.user:
+            return
+        
+        new = ModLog(
+            user_id=after.id,
+            mod_id=logs[0].user.id,
+            timestamp=arrow.utcnow().int_timestamp,
+            reason=logs[0].reason
+        )
+        
+        if not before.timed_out_until:
+            new.type = "mute"
+        else:
+            new.type = "unmute"
+            
+        db.session.add(new)
+        db.session.commit()
 
 
 async def setup(bot: commands.Bot) -> None:
