@@ -49,7 +49,7 @@ async def setup_logger() -> None:
 
     discord.utils.setup_logging(
         handler=InterceptHandler(),
-        level=logging.getLevelNamesMapping().get(config.bot.log_level, "NOTSET"),
+        level=logging.getLevelNamesMapping().get(config.bot.log_level, logging.NOTSET),
         root=False,
     )
 
@@ -66,8 +66,4 @@ async def load_cogs() -> None:
 
 
 if __name__ == "__main__":
-    # Needed so the bot can run under Windows, see: https://github.com/aio-libs/aiodns/issues/86
-    if sys.platform == "win32":
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
     asyncio.run(main())

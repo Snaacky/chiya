@@ -1,20 +1,20 @@
 import datetime
-from typing import Union
+from typing import Any, Union
 
 import discord
 from discord.ext import commands
 
 
 def make_embed(
-    ctx: Union[commands.Context, discord.Interaction] = None,
-    author: bool = None,
+    ctx: commands.Context[Any] | discord.Interaction | None = None,
+    author: bool | None = None,
     title: str = "",
     description: str = "",
-    title_url: str = None,
-    thumbnail_url: str = None,
-    image_url: str = None,
-    fields: list = None,
-    footer: str = None,
+    title_url: str | None = None,
+    thumbnail_url: str | None = None,
+    image_url: str | None = None,
+    fields: list[Any] | None = None,
+    footer: str | None = None,
     color=None,
     timestamp=None,
 ) -> discord.Embed:
@@ -127,7 +127,7 @@ async def send_warning(
 def error_embed(
     ctx: Union[commands.Context, discord.Interaction],
     description: str,
-    title: str = None,
+    title: str | None = None,
     author: bool = True,
 ) -> discord.Embed:
     """Make a basic error message embed."""
