@@ -26,7 +26,7 @@ class TicketCog(commands.Cog):
 
     @commands.is_owner()
     @commands.command(name="createticketembed")
-    async def ticket(self, ctx: commands.context) -> None:
+    async def ticket(self, ctx: commands.Context) -> None:
         # TODO: Move this into the commands/administration.py cog.
         """
         Command to create an embed that allows creating tickets.
@@ -63,7 +63,9 @@ class TicketSubmissionModal(discord.ui.Modal):
             )
         )
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        assert interaction.guild is not None
+
         await interaction.response.defer(thinking=True, ephemeral=True)
         category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
         role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
@@ -84,8 +86,8 @@ class TicketSubmissionModal(discord.ui.Modal):
             overwrites=permission,
         )
 
-        ticket_subject = self.children[0].value
-        ticket_message = self.children[1].value
+        ticket_subject = self.children[0].value  # pyright: ignore[reportAttributeAccessIssue]
+        ticket_message = self.children[1].value  # pyright: ignore[reportAttributeAccessIssue]
 
         embed = embeds.make_embed(
             title="🎫  Ticket created",
@@ -136,8 +138,8 @@ class TicketCreateButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
-        ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")
+        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)  # pyright: ignore[reportOptionalMemberAccess]
+        ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")  # pyright: ignore[reportOptionalMemberAccess]
 
         if ticket:
             embed = embeds.make_embed(
@@ -145,7 +147,7 @@ class TicketCreateButton(discord.ui.View):
                 title="Error:",
                 description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}",
             )
-            return await interaction.response.send_message(embed=embed, view=None, ephemeral=True)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
         modal = TicketSubmissionModal(title="Ticket Submission")
         await interaction.response.send_modal(modal)
@@ -164,12 +166,17 @@ class TicketCloseButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
+        assert interaction.guild is not None
+        assert isinstance(interaction.channel, discord.TextChannel)
+
         close_embed = embeds.make_embed(
             color=discord.Color.blurple(), description="This ticket will be archived and closed momentarily..."
         )
         await interaction.response.send_message(embed=close_embed)
 
-        ticket = db.session.scalar(select(Ticket).where(Ticket.user_id == int(interaction.channel.name.replace("ticket-", "")), Ticket.status.is_(False)))
+        user_id = int(interaction.channel.name.replace("ticket-", ""))  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
+        ticket = db.session.scalar(select(Ticket).where(Ticket.user_id == user_id, Ticket.status.is_(False)))
+        assert ticket
 
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
         ticket_subject = ticket.ticket_subject
@@ -213,7 +220,7 @@ class TicketCloseButton(discord.ui.View):
             ],
         )
         ticket_log = discord.utils.get(interaction.guild.channels, id=config.channels.ticket_log)
-        await ticket_log.send(embed=log_embed)
+        await ticket_log.send(embed=log_embed)  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
 
         try:
             dm_embed = embeds.make_embed(
