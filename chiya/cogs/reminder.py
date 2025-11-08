@@ -18,7 +18,7 @@ class ReminderCog(commands.Cog):
         self.bot = bot
         self.check_for_reminder.start()
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.check_for_reminder.cancel()
 
     @tasks.loop(seconds=3.0)
@@ -110,6 +110,7 @@ class ReminderCog(commands.Cog):
                 ),
             )
 
+        assert ctx.channel
         saved = RemindMe(
             reminder_location=ctx.channel.id,
             author_id=ctx.user.id,
@@ -255,7 +256,7 @@ class ReminderCog(commands.Cog):
         if not view.value or view.value is None:
             return
 
-        results = db.session.scalars(select(RemindMe).where(RemindMe.author_id == ctx.user.id, RemindMe.sent_is(False)))
+        results = db.session.scalars(select(RemindMe).where(RemindMe.author_id == ctx.user.id, RemindMe.sent_is(False)))  # pyright: ignore[reportAttributeAccessIssue]
         for result in results:
             result.sent = True
         db.session.commit()
