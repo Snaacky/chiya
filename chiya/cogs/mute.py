@@ -4,6 +4,7 @@ from discord import app_commands
 from discord.ext import commands
 from parsedatetime import Calendar
 
+from chiya import db
 from chiya.config import config
 from chiya.models import ModLog
 from chiya.utils import embeds
@@ -89,14 +90,16 @@ class MuteCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        ModLog(
+        new = ModLog(
             user_id=member.id,
             mod_id=ctx.user.id,
             timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             duration=duration,
             type="mute",
-        ).save()
+        )
+        db.session.add(new)
+        db.session.commit()
 
         await member.timeout(muted_until.datetime, reason=reason)
         await ctx.followup.send(embed=mod_embed)
@@ -162,13 +165,15 @@ class MuteCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        ModLog(
+        new = ModLog(
             user_id=member.id,
             mod_id=ctx.user.id,
             timestamp=arrow.utcnow().int_timestamp,
             reason=reason,
             type="unmute",
-        ).save()
+        )
+        db.session.add(new)
+        db.session.commit()
 
         await member.timeout(None, reason=reason)
         await ctx.followup.send(embed=mod_embed)
