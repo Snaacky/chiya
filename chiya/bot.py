@@ -50,7 +50,7 @@ async def setup_logger() -> None:
 
     discord.utils.setup_logging(
         handler=InterceptHandler(),
-        level=logging.getLevelNamesMapping().get(config.bot.log_level, "NOTSET"),
+        level=logging.getLevelNamesMapping().get(config.bot.log_level, logging.NOTSET),
         root=False,
     )
 
