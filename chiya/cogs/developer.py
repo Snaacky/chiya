@@ -131,19 +131,6 @@ class DeveloperCog(Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
         await ctx.followup.send(f"Pong! {round(self.bot.latency * 1000)}ms.")
 
-    @bot.command(name="console", description="Get console output")
-    async def console(self, ctx: discord.Interaction, lines: int) -> None:
-        await ctx.response.defer(thinking=True, ephemeral=True)
-        if lines >= 500:
-            return await embeds.send_error(ctx=ctx, description="Please specify <= 500 lines max.")
-        with open(os.path.join("logs", "bot.log")) as f:
-            lines = f.readlines()[-lines:]
-        with io.StringIO() as file:
-            file.write("".join(lines))
-            file.seek(0)
-            in_memory = discord.File(file, filename="output.log")
-        await ctx.followup.send(file=in_memory)
-
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(DeveloperCog(bot))
