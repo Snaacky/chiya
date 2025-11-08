@@ -3,7 +3,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from loguru import logger
+from sqlalchemy import select
 
+from chiya import db
 from chiya.config import config
 from chiya.models import RemindMe
 from chiya.utils import embeds
@@ -26,10 +28,11 @@ class ReminderCog(commands.Cog):
         """
         await self.bot.wait_until_ready()
 
-        results = RemindMe.query.filter(
+        results = db.session.scalars(select(RemindMe).where(
             RemindMe.date_to_remind < arrow.utcnow().int_timestamp,
-            RemindMe.sent.is_(False),
-        ).all()
+            RemindMe.sent.is_(False)
+        ))
+        
         if not results:
             return
 
@@ -38,7 +41,7 @@ class ReminderCog(commands.Cog):
                 user = await self.bot.fetch_user(reminder.author_id)
             except discord.errors.NotFound:
                 reminder.sent = True
-                reminder.save()
+                db.session.commit()
                 logger.warning(f"Reminder entry with ID {reminder.id} has an invalid user ID: {reminder.author_id}.")
                 continue
 
@@ -55,7 +58,7 @@ class ReminderCog(commands.Cog):
                 logger.warning(f"Unable to post or DM {user}'s reminder {reminder.id=}.")
 
             reminder.sent = True
-            reminder.save()
+            db.session.commit()
 
     class Confirm(discord.ui.View):
         def __init__(self) -> None:
@@ -113,7 +116,8 @@ class ReminderCog(commands.Cog):
             date_to_remind=end_time,
             message=message,
             sent=False,
-        ).save()
+        )
+        db.session.add(saved)
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -139,8 +143,8 @@ class ReminderCog(commands.Cog):
         Edit a reminder message.
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
-
-        result = RemindMe.query.filter_by(id=reminder_id).first()
+        
+        result = db.session.scalar(select(RemindMe).where(RemindMe.id == reminder_id))
         if not result:
             return await embeds.send_error(ctx, "That reminder ID doesn't exist.")
 
@@ -152,7 +156,7 @@ class ReminderCog(commands.Cog):
 
         old_message = result.message
         result.message = new_message
-        result.save()
+        db.session.commit()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -175,7 +179,7 @@ class ReminderCog(commands.Cog):
         """List your reminders."""
         await ctx.response.defer(ephemeral=True)
 
-        results = RemindMe.query.filter_by(author_id=ctx.user.id, sent=False).all()
+        results = db.session.scalars(select(RemindMe).where(RemindMe.author_id == ctx.user.id, RemindMe.sent.is_(False))).all()
         if not results:
             return await embeds.send_error(ctx=ctx, description="No reminders found!")
 
@@ -205,7 +209,7 @@ class ReminderCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        result = RemindMe.query.filter_by(id=reminder_id).first()
+        result = db.session.scalar(select(RemindMe).where(RemindMe.id == reminder_id))
         if not result:
             return await embeds.send_error(ctx=ctx, description="Invalid ID.")
 
@@ -216,7 +220,7 @@ class ReminderCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="This reminder has already been deleted.")
 
         result.sent = True
-        result.save()
+        db.session.commit()
 
         embed = embeds.make_embed(
             ctx=ctx,
@@ -251,10 +255,10 @@ class ReminderCog(commands.Cog):
         if not view.value or view.value is None:
             return
 
-        results = RemindMe.query.filter_by(author_id=ctx.user.id, sent=False).all()
+        results = db.session.scalars(select(RemindMe).where(RemindMe.author_id == ctx.user.id, RemindMe.sent_is(False)))
         for result in results:
             result.sent = True
-            result.save()
+        db.session.commit()
 
 
 async def setup(bot: commands.Bot) -> None:
