@@ -6,9 +6,10 @@ from collections import defaultdict
 from discord import app_commands
 from discord.ext import commands
 from loguru import logger
+from sqlalchemy import func, select
 
 from chiya.config import config
-from chiya.models import Highlight
+from chiya.models import Highlight, session
 from chiya.utils import embeds
 
 
@@ -19,7 +20,7 @@ class HighlightCog(commands.Cog):
 
     def refresh_highlights(self) -> None:
         self.highlights = defaultdict(set)
-        for highlight in Highlight.query.all():
+        for highlight in session.scalars(select(Highlight)):
             self.highlights[highlight.term].add(highlight.user_id)
 
     @app_commands.guilds(config.guild_id)
@@ -104,7 +105,7 @@ class HighlightCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Highlighted terms must be less than 50 characters.")
 
         # 20 term limit because 20 * 50 = 1000 characters max and embeds are 4096 max.
-        if Highlight.query.filter_by(user_id=ctx.user.id).count() >= 20:
+        if session.scalar(select(func.count()).select_from(Highlight).where(Highlight.user_id == ctx.user.id)) >= 20:
             return await embeds.send_error(
                 ctx=ctx,
                 description="You may only have up to 20 highlighted terms at once.",
