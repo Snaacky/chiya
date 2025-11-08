@@ -3,7 +3,9 @@ import discord
 import privatebinapi
 from discord.ext import commands
 from loguru import logger
+from sqlalchemy import select
 
+from chiya import db
 from chiya.config import config
 from chiya.models import Ticket
 from chiya.utils import embeds
@@ -109,7 +111,7 @@ class TicketSubmissionModal(discord.ui.Modal):
         )
         await interaction.followup.send(embed=embed)
 
-        Ticket(
+        new = Ticket(
             user_id=interaction.user.id,
             guild=interaction.guild.id,
             timestamp=arrow.utcnow().int_timestamp,
@@ -117,7 +119,9 @@ class TicketSubmissionModal(discord.ui.Modal):
             ticket_message=ticket_message,
             log_url=None,
             status=False,
-        ).save()
+        )
+        db.session.add(new)
+        db.session.commit()
 
 
 class TicketCreateButton(discord.ui.View):
@@ -165,9 +169,7 @@ class TicketCloseButton(discord.ui.View):
         )
         await interaction.response.send_message(embed=close_embed)
 
-        ticket = Ticket.query.filter_by(
-            user_id=int(interaction.channel.name.replace("ticket-", "")), status=False
-        ).first()
+        ticket = db.session.scalar(select(Ticket).where(Ticket.user_id == int(interaction.channel.name.replace("ticket-", "")), Ticket.status.is_(False)))
 
         ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
         ticket_subject = ticket.ticket_subject
@@ -237,7 +239,7 @@ class TicketCloseButton(discord.ui.View):
 
         ticket.status = True
         ticket.log_url = url
-        ticket.save()
+        db.session.commit()
 
         await interaction.channel.delete()
 
