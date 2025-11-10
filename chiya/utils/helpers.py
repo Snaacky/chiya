@@ -8,12 +8,15 @@ from chiya.config import config
 
 
 def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
+    if not ctx.guild:
+        return False
+
     # Allow owner to override all limitations.
     if member.id == ctx.guild.owner_id:
         return True
 
     # Stop mods from actioning on the bot.
-    if member.id == ctx.client.user.id:
+    if member.id == ctx.client.user.id:  # pyright: ignore[reportOptionalMemberAccess]
         return False
 
     # Skip over the rest of the checks if it's a discord.User and not a discord.Member.
@@ -25,7 +28,7 @@ def can_action_member(ctx: discord.Interaction, member: discord.Member | discord
         return False
 
     # Prevents mods from actioning other mods.
-    if ctx.user.top_role <= member.top_role:
+    if ctx.user.top_role <= member.top_role:  # pyright: ignore[reportAttributeAccessIssue]
         return False
 
     return True
@@ -91,8 +94,10 @@ def get_duration(duration) -> tuple[str, int]:
 
 
 async def log_embed_to_channel(ctx: discord.Interaction, embed: discord.Embed) -> None:
-    moderation = discord.utils.get(ctx.guild.text_channels, id=config.channels.moderation)
-    chiya = discord.utils.get(ctx.guild.text_channels, id=config.channels.chiya_log)
+    text_channels = ctx.guild.text_channels if ctx.guild else []
+
+    moderation = discord.utils.get(text_channels, id=config.channels.moderation)
+    chiya = discord.utils.get(text_channels, id=config.channels.chiya_log)
 
     if moderation:
         await moderation.send(embed=embed)

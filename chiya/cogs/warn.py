@@ -1,5 +1,4 @@
 import arrow
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -33,6 +32,10 @@ class WarnCog(commands.Cog):
         the bot blocked they will be unable to receive the ban notification.
         The bot will let the invoking mod know if this is the case.
         """
+        # This command is already decorated with @app_commands.guild_only()
+        # Unfortunately, that typecheckers do not understand that.
+        assert ctx.guild is not None
+
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):

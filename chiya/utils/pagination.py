@@ -1,3 +1,5 @@
+from typing import Any
+
 import discord
 from discord import Interaction, ui
 from discord.ext import menus
@@ -27,9 +29,10 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self.user = ctx.user
         self.message = await self.send_initial_message(ctx, ctx.channel)
 
-    async def _get_kwargs_from_page(self, page):
+    async def _get_kwargs_from_page(self, page) -> dict[str, Any]:
         """This method calls ListPageSource.format_page class"""
         value = await super()._get_kwargs_from_page(page)
+        value = value or {}
         if "view" not in value:
             value.update({"view": self})
         return value
@@ -55,15 +58,16 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def last_page(self, interaction, clicked_button):
         await self.show_page(self._source.get_max_pages() - 1, interaction)
 
-    async def show_page(self, page_number, interaction: Interaction) -> None:
+    async def show_page(self, page_number, interaction: Interaction) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         page = await self._source.get_page(page_number)
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
         if interaction.response.is_done():
-            await interaction.followup.edit_message(interaction.message.id, **kwargs)
-        await interaction.response.edit_message(**kwargs)
+            if message := interaction.message:
+                await interaction.followup.edit_message(message.id, **kwargs)
+                await interaction.response.edit_message(**kwargs)
 
-    async def show_checked_page(self, page_number, interaction: Interaction) -> None:
+    async def show_checked_page(self, page_number, interaction: Interaction) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         max_pages = self._source.get_max_pages()
         try:
             if max_pages is None:
@@ -93,7 +97,7 @@ class MySource(menus.ListPageSource):
         super().__init__(data, per_page=4)
         self.embed = embed
 
-    async def format_page(self, menu, entries) -> discord.Embed:
+    async def format_page(self, menu, page) -> discord.Embed:
         page_info = await self.get_page(menu.current_page)
         desc = "\n".join(page_info)
         self.embed.description = desc

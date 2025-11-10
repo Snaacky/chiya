@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union
+from typing import Any
 
 import discord
 from discord.ext import commands
@@ -72,7 +72,7 @@ async def send_interaction_message(ctx: discord.Interaction, embed: discord.Embe
 
 
 async def send_success(
-    ctx: Union[commands.Context, discord.Interaction],
+    ctx: commands.Context[Any] | discord.Interaction,
     description: str,
     title: str = "Success",
 ) -> None:
@@ -87,7 +87,7 @@ async def send_success(
 
 
 async def send_error(
-    ctx: Union[commands.Context, discord.Interaction],
+    ctx: commands.Context[Any] | discord.Interaction,
     description: str,
     title: str = "Error:",
 ) -> None:
@@ -106,7 +106,7 @@ async def send_error(
 
 
 async def send_warning(
-    ctx: Union[commands.Context, discord.Interaction],
+    ctx: commands.Context[Any] | discord.Interaction,
     description: str,
     title: str = "Warning",
 ) -> None:
@@ -125,7 +125,7 @@ async def send_warning(
 
 
 def error_embed(
-    ctx: Union[commands.Context, discord.Interaction],
+    ctx: commands.Context[Any] | discord.Interaction,
     description: str,
     title: str | None = None,
     author: bool = True,

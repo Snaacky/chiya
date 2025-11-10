@@ -17,10 +17,10 @@ class PurgeCog(commands.Cog):
         development, logs, and tickets categories can't be purged for
         security reasons.
         """
-        if ctx.user.id == ctx.guild.owner.id:
+        if ctx.user.id == ctx.guild.owner.id:  # pyright: ignore[reportOptionalMemberAccess]
             return True
 
-        if ctx.channel.category_id in [
+        if ctx.channel.category_id in [  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
             config.categories.moderation,
             config.categories.development,
             config.categories.logs,
@@ -58,12 +58,12 @@ class PurgeCog(commands.Cog):
 
         embed = embeds.make_embed(
             title="Purged messages",
-            description=f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}.",
+            description=f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}.",  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
             thumbnail_url="https://i.imgur.com/EDy6jCp.png",
             color=discord.Color.red(),
             fields=[{"name": "Reason:", "value": reason, "inline": False}],
         )
-        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)
+        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
 

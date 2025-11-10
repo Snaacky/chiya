@@ -20,12 +20,13 @@ class ServerCog(commands.Cog):
     async def pop(self, ctx: discord.Interaction) -> None:
         """Send a message with the current guild member count."""
         await ctx.response.defer(thinking=True)
-        await ctx.followup.send(ctx.guild.member_count)
+        await ctx.followup.send(str(ctx.guild.member_count))  # pyright: ignore[reportOptionalMemberAccess]
 
     @server.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: discord.Interaction) -> None:
         """Send an embed listing all the current server boosters."""
         await ctx.response.defer(thinking=True, ephemeral=True)
+        assert ctx.guild
 
         embed = embeds.make_embed(
             title=f"Total boosts: {ctx.guild.premium_subscription_count}",

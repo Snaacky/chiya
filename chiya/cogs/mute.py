@@ -37,6 +37,8 @@ class MuteCog(commands.Cog):
         notification. The bot will let the invoking mod know if this
         is the case.
         """
+        assert ctx.guild  # This command is decorated with @app_commands.guild_only()
+
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
@@ -124,6 +126,8 @@ class MuteCog(commands.Cog):
         will be unable to receive the ban notification. The bot will let the
         invoking mod know if this is the case.
         """
+        assert ctx.guild  # This command is decorated with @app_commands.guild_only()
+
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
@@ -197,9 +201,9 @@ class MuteCog(commands.Cog):
         
         new = ModLog(
             user_id=after.id,
-            mod_id=logs[0].user.id,
+            mod_id=logs[0].user.id,  # pyright: ignore[reportOptionalMemberAccess]
             timestamp=arrow.utcnow().int_timestamp,
-            reason=logs[0].reason
+            reason=logs[0].reason,
         )
         
         if not before.timed_out_until:

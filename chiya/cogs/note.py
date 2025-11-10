@@ -33,7 +33,9 @@ class NoteCog(commands.Cog):
             timestamp=arrow.utcnow().int_timestamp,
             reason=note,
             type="note",
-        ).save()
+        )
+        db.session.add(log)
+        db.session.commit()
 
         embed = embeds.make_embed(
             title=f"Noting user: {user.name}",
@@ -58,7 +60,7 @@ class NoteCog(commands.Cog):
         self,
         ctx: discord.Interaction,
         user: discord.Member | discord.User,
-        action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] = None,
+        action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] | None = None,
     ) -> None:
         """
         Search for the mod actions and notes for a user. The search can be
@@ -73,7 +75,7 @@ class NoteCog(commands.Cog):
             results = db.session.scalars(select(ModLog).where(ModLog.user_id == user.id).order_by(ModLog.id.asc()))
 
         actions = []
-        for action in results:
+        for result in results:
             action_emoji = {
                 "mute": "🤐",
                 "unmute": "🗣",
@@ -83,14 +85,14 @@ class NoteCog(commands.Cog):
                 "note": "🗒️",
             }
 
-            action_string = f"""**{action_emoji[action.type]} {action.type.title()}**
-                **ID:** {action.id}
-                **Timestamp:** {arrow.get(action.timestamp)} UTC
-                **Moderator:** <@!{action.mod_id}>
-                **Reason:** {action.reason}"""
+            action_string = f"""**{action_emoji[result.type]} {result.type.title()}**
+                **ID:** {result.id}
+                **Timestamp:** {arrow.get(result.timestamp)} UTC
+                **Moderator:** <@!{result.mod_id}>
+                **Reason:** {result.reason}"""
 
-            if action.type == "mute":
-                action_string += f"\n**Duration:** {action.duration}"
+            if result.type == "mute":
+                action_string += f"\n**Duration:** {result.duration}"
 
             actions.append(action_string)
 
@@ -139,7 +141,7 @@ class NoteCog(commands.Cog):
             ],
         )
 
-        log.reason = note
+        log.reason = note  # pyright: ignore[reportAttributeAccessIssue]
         db.session.commit()
 
         await ctx.followup.send(embed=embed)
