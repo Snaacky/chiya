@@ -8,7 +8,6 @@ from sqlalchemy import select
 from chiya import db
 from chiya.config import config
 from chiya.models import Ticket
-from chiya.utils import embeds
 
 
 class TicketCog(commands.Cog):
@@ -164,6 +163,9 @@ class TicketCloseButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
+        if not ctx.guild or not ctx.channel or not isinstance(ctx.channel, discord.TextChannel):
+            return
+
         close_embed = discord.Embed()
         close_embed.color = discord.Color.blurple()
         close_embed.description = "This ticket will be archived and closed momentarily..."
@@ -214,26 +216,20 @@ class TicketCloseButton(discord.ui.View):
         log_embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
         ticket_log = discord.utils.get(ctx.guild.channels, id=config.channels.ticket_log)
-        await ticket_log.send(embed=log_embed)  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+        if ticket_log and isinstance(ticket_log, discord.TextChannel):
+            await ticket_log.send(embed=log_embed)
+
+        dm_embed = discord.Embed()
+        dm_embed.title = "Ticket closed"
+        dm_embed.description = (
+            "Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries."
+        )
+        dm_embed.color = discord.Color.blurple()
+        dm_embed.add_field(name="Server:", value=f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", inline=True)
+        dm_embed.add_field(name="Ticket Log:", value=url, inline=False)
+        dm_embed.set_image(url="https://i.imgur.com/bf3vqei.gif")
 
         try:
-            dm_embed = embeds.make_embed(
-                image_url="https://i.imgur.com/bf3vqei.gif",
-                color=discord.Color.blurple(),
-                title="Ticket closed",
-                description=(
-                    "Your ticket was closed. "
-                    "Please feel free to create a new ticket should you have any further inquiries."
-                ),
-                fields=[
-                    {
-                        "name": "Server:",
-                        "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})",
-                        "inline": True,
-                    },
-                    {"name": "Ticket Log:", "value": url, "inline": False},
-                ],
-            )
             await member.send(embed=dm_embed)
         except (discord.Forbidden, discord.HTTPException):
             logger.info(f"Unable to send ticket log to {member} because their DM is closed")
