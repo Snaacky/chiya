@@ -12,7 +12,7 @@ class ModLog(Base):
     user_id: Mapped[int]
     mod_id: Mapped[int]
     timestamp: Mapped[int]
-    reason = Mapped[str]
+    reason: Mapped[str | None]
     duration: Mapped[str | None]
     type: Mapped[str]
 

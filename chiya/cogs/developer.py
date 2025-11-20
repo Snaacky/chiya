@@ -29,7 +29,6 @@ class DeveloperCog(Cog):
     bot = BotGroup(name="bot", guild_ids=[config.guild_id])
 
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     async def eval(self, ctx: discord.Interaction, message: discord.Message) -> None | str:
         """Evaluates input as Python code."""
 
@@ -64,7 +63,7 @@ class DeveloperCog(Cog):
         if not body:
             for attach in message.attachments:
                 _, file_extension = os.path.splitext(attach.filename)
-                if "text/x-python" in attach.content_type and file_extension == ".py":
+                if attach.content_type and "text/x-python" in attach.content_type and file_extension == ".py":
                     read = await attach.read()
                     body = read.decode("utf-8")
                     break

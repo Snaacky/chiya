@@ -17,7 +17,6 @@ class MuteCog(commands.Cog):
 
     @app_commands.command(name="mute", description="Mutes a member in the server")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.describe(member="The member that will be muted")
     @app_commands.describe(reason="The reason why the member is being muted")
     @app_commands.describe(duration="The length of time the user will be muted for")
@@ -37,9 +36,10 @@ class MuteCog(commands.Cog):
         notification. The bot will let the invoking mod know if this
         is the case.
         """
-        assert ctx.guild  # This command is decorated with @app_commands.guild_only()
-
         await ctx.response.defer(thinking=True, ephemeral=True)
+
+        if not ctx.guild:
+            return
 
         if not isinstance(member, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
@@ -63,29 +63,22 @@ class MuteCog(commands.Cog):
         if muted_until >= arrow.utcnow().shift(days=+28):
             return await embeds.send_error(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
 
-        mod_embed = embeds.make_embed(
-            ctx=ctx,
-            title="Muted member",
-            description=f"{member.mention} was muted by {ctx.user.mention} for: {reason}",
-            thumbnail_url="https://files.catbox.moe/6rs4fn.png",
-            color=0xCD6D6D,
-            fields=[
-                {"name": "Expires:", "value": f"<t:{int(muted_until.int_timestamp)}:R>", "inline": True},
-                {"name": "Reason:", "value": reason, "inline": False},
-            ],
-        )
+        mod_embed = discord.Embed()
+        mod_embed.title = "Muted member"
+        mod_embed.description = f"{member.mention} was muted by {ctx.user.mention} for: {reason}"
+        mod_embed.color = 0xCD6D6D
+        mod_embed.add_field(name="Expires:", value=f"<t:{int(muted_until.int_timestamp)}:R>", inline=True)
+        mod_embed.add_field(name="Reason:", value=reason, inline=False)
+        mod_embed.set_thumbnail(url="https://files.catbox.moe/6rs4fn.png")
 
-        user_embed = embeds.make_embed(
-            title="Uh-oh, you've been muted!",
-            description="If you believe this was a mistake, contact staff.",
-            image_url="https://files.catbox.moe/b05gg3.gif",
-            color=discord.Color.blurple(),
-            fields=[
-                {"name": "Server:", "value": f"{ctx.guild.name}", "inline": True},
-                {"name": "Duration:", "value": f"<t:{int(muted_until.int_timestamp)}:R>", "inline": True},
-                {"name": "Reason:", "value": reason, "inline": False},
-            ],
-        )
+        user_embed = discord.Embed()
+        user_embed.title = "Uh-oh, you've been muted!"
+        user_embed.description = "If you believe this was a mistake, contact staff."
+        user_embed.color = discord.Color.blurple()
+        user_embed.add_field(name="Server:", value=f"{ctx.guild.name}", inline=True)
+        user_embed.add_field(name="Duration:", value=f"<t:{int(muted_until.int_timestamp)}:R>", inline=True)
+        user_embed.add_field(name="Reason:", value=reason, inline=False)
+        user_embed.set_image(url="https://files.catbox.moe/b05gg3.gif")
 
         try:
             await member.send(embed=user_embed)
@@ -109,7 +102,6 @@ class MuteCog(commands.Cog):
 
     @app_commands.command(name="unmute", description="Umutes a member in the server")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.describe(member="The member that will be unmuted")
     @app_commands.describe(reason="The reason why the member is being unmuted")
     async def unmute(
@@ -126,9 +118,10 @@ class MuteCog(commands.Cog):
         will be unable to receive the ban notification. The bot will let the
         invoking mod know if this is the case.
         """
-        assert ctx.guild  # This command is decorated with @app_commands.guild_only()
-
         await ctx.response.defer(thinking=True, ephemeral=True)
+
+        if not ctx.guild:
+            return
 
         if not isinstance(member, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
@@ -142,28 +135,21 @@ class MuteCog(commands.Cog):
         if len(reason) > 1024:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        mod_embed = embeds.make_embed(
-            ctx=ctx,
-            title="Unmuted member",
-            description=f"{member.mention} was unmuted by {ctx.user.mention}",
-            color=discord.Color.green(),
-            thumbnail_url="https://files.catbox.moe/izm83m.png",
-            fields=[
-                {"name": "Reason:", "value": reason, "inline": False},
-            ],
-        )
+        mod_embed = discord.Embed()
+        mod_embed.title = "Unmuted member"
+        mod_embed.description = f"{member.mention} was unmuted by {ctx.user.mention}"
+        mod_embed.color = discord.Color.green()
+        mod_embed.add_field(name="Reason:", value=reason, inline=False)
+        mod_embed.set_thumbnail(url="https://files.catbox.moe/izm83m.png")
 
-        user_embed = embeds.make_embed(
-            author=False,
-            title="Yay, you've been unmuted!",
-            description="Review our server rules to avoid being actioned again in the future.",
-            image_url="https://files.catbox.moe/razmf6.gif",
-            color=discord.Color.blurple(),
-            fields=[
-                {"name": "Server:", "value": ctx.guild.name, "inline": True},
-                {"name": "Reason:", "value": reason, "inline": False},
-            ],
-        )
+        user_embed = discord.Embed()
+        user_embed.title = "Yay, you've been unmuted!"
+        user_embed.description = "Review our server rules to avoid being actioned again in the future."
+        user_embed.color = discord.Color.blurple()
+        user_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)
+        user_embed.add_field(name="Reason:", value=reason, inline=False)
+        user_embed.set_image(url="https://files.catbox.moe/razmf6.gif")
+
         try:
             await member.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
@@ -192,25 +178,25 @@ class MuteCog(commands.Cog):
             return
 
         logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
-        
+
         if not logs:
             return
-        
+
         if logs[0].user == self.bot.user:
             return
-        
+
         new = ModLog(
             user_id=after.id,
             mod_id=logs[0].user.id,  # pyright: ignore[reportOptionalMemberAccess]
             timestamp=arrow.utcnow().int_timestamp,
             reason=logs[0].reason,
         )
-        
+
         if not before.timed_out_until:
             new.type = "mute"
         else:
             new.type = "unmute"
-            
+
         db.session.add(new)
         db.session.commit()
 

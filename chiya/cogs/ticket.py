@@ -31,12 +31,12 @@ class TicketCog(commands.Cog):
         """
         Command to create an embed that allows creating tickets.
         """
-        embed = embeds.make_embed(
-            title="📫  Open a ticket",
-            description="For serious inquiries, click the button below to create a ticket.",
-            footer="Any abuse of the ticket system will result in moderation action.",
-            color=discord.Color.blurple(),
-        )
+        embed = discord.Embed()
+        embed.title = "📫  Open a ticket"
+        embed.description = "For serious inquiries, click the button below to create a ticket."
+        embed.color = discord.Color.blurple()
+        embed.set_footer(text="Any abuse of the ticket system will result in moderation action.")
+
         await ctx.send(embed=embed, view=TicketCreateButton())
 
 
@@ -63,25 +63,27 @@ class TicketSubmissionModal(discord.ui.Modal):
             )
         )
 
-    async def on_submit(self, interaction: discord.Interaction) -> None:
-        assert interaction.guild is not None
+    async def on_submit(self, ctx: discord.Interaction) -> None:
+        await ctx.response.defer(thinking=True, ephemeral=True)
 
-        await interaction.response.defer(thinking=True, ephemeral=True)
-        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)
-        role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
+        if not ctx or not ctx.guild:
+            return
+
+        category = discord.utils.get(ctx.guild.categories, id=config.categories.tickets)
+        role_staff = discord.utils.get(ctx.guild.roles, id=config.roles.staff)
         permission = {
             role_staff: discord.PermissionOverwrite(read_messages=True),
-            interaction.guild.default_role: discord.PermissionOverwrite(
+            ctx.guild.default_role: discord.PermissionOverwrite(
                 read_messages=False,
                 manage_channels=False,
                 manage_permissions=False,
                 manage_messages=False,
             ),
-            interaction.user: discord.PermissionOverwrite(read_messages=True),
+            ctx.user: discord.PermissionOverwrite(read_messages=True),
         }
 
-        channel = await interaction.guild.create_text_channel(
-            name=f"ticket-{interaction.user.id}",
+        channel = await ctx.guild.create_text_channel(
+            name=f"ticket-{ctx.user.id}",
             category=category,
             overwrites=permission,
         )
@@ -89,33 +91,30 @@ class TicketSubmissionModal(discord.ui.Modal):
         ticket_subject = self.children[0].value  # pyright: ignore[reportAttributeAccessIssue]
         ticket_message = self.children[1].value  # pyright: ignore[reportAttributeAccessIssue]
 
-        embed = embeds.make_embed(
-            title="🎫  Ticket created",
-            description="Please wait patiently until a staff member is available to assist you.",
-            fields=[
-                {"name": "Ticket Creator:", "value": interaction.user.mention, "inline": False},
-                {"name": "Ticket Subject:", "value": ticket_subject, "inline": False},
-                {"name": "Ticket Message:", "value": ticket_message, "inline": False},
-            ],
-            color=discord.Color.blurple(),
-        )
+        embed = discord.Embed()
+        embed.title = "🎫  Ticket created"
+        embed.description = "Please wait patiently until a staff member is available to assist you."
+        embed.color = discord.Color.blurple()
+        embed.add_field(name="Ticket Creator:", value=ctx.user.mention, inline=False)
+        embed.add_field(name="Ticket Subject:", value=ticket_subject, inline=False)
+        embed.add_field(name="Ticket Message:", value=ticket_message, inline=False)
 
         message = await channel.send(embed=embed, view=TicketCloseButton())
         await message.pin()
 
-        ping = await channel.send(interaction.user.mention)
+        ping = await channel.send(ctx.user.mention)
         await ping.delete()
 
-        embed = embeds.make_embed(
-            title="Created a ticket",
-            description=f"Successfully opened a ticket: {channel.mention}",
-            color=discord.Color.blurple(),
-        )
-        await interaction.followup.send(embed=embed)
+        embed = discord.Embed()
+        embed.title = "Created a ticket"
+        embed.description = f"Successfully opened a ticket: {channel.mention}"
+        embed.color = discord.Color.blurple()
+
+        await ctx.followup.send(embed=embed)
 
         new = Ticket(
-            user_id=interaction.user.id,
-            guild=interaction.guild.id,
+            user_id=ctx.user.id,
+            guild=ctx.guild.id,
             timestamp=arrow.utcnow().int_timestamp,
             ticket_subject=ticket_subject,
             ticket_message=ticket_message,
@@ -131,26 +130,25 @@ class TicketCreateButton(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Create Ticket", style=discord.ButtonStyle.primary, custom_id="create_ticket", emoji="✉")
-    async def create_ticket(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def create_ticket(self, ctx: discord.Interaction, button: discord.ui.Button) -> None:
         """
         The create ticket button of the ticket embed, that prompts for
         confirmation before proceeding.
 
         The `button` parameter is positional and required despite unused.
         """
-        category = discord.utils.get(interaction.guild.categories, id=config.categories.tickets)  # pyright: ignore[reportOptionalMemberAccess]
-        ticket = discord.utils.get(category.text_channels, name=f"ticket-{interaction.user.id}")  # pyright: ignore[reportOptionalMemberAccess]
+        category = discord.utils.get(ctx.guild.categories, id=config.categories.tickets)  # pyright: ignore[reportOptionalMemberAccess]
+        ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.user.id}")  # pyright: ignore[reportOptionalMemberAccess]
 
         if ticket:
-            embed = embeds.make_embed(
-                color=discord.Color.red(),
-                title="Error:",
-                description=f"{interaction.user.mention}, you already have a ticket open at: {ticket.mention}",
-            )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            embed = discord.Embed()
+            embed.title = "Error:"
+            embed.description = f"{ctx.user.mention}, you already have a ticket open at: {ticket.mention}"
+            embed.color = discord.Color.red()
+            await ctx.response.send_message(embed=embed, ephemeral=True)
 
         modal = TicketSubmissionModal(title="Ticket Submission")
-        await interaction.response.send_modal(modal)
+        await ctx.response.send_modal(modal)
 
 
 class TicketCloseButton(discord.ui.View):
@@ -158,7 +156,7 @@ class TicketCloseButton(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close Ticket", style=discord.ButtonStyle.danger, custom_id="close_ticket", emoji="🔒")
-    async def close(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def close(self, ctx: discord.Interaction, button: discord.ui.Button) -> None:
         """
         The close ticket button. Iterates through the channel's messages to
         create a log, send it to PrivateBin, send an embed into the log
@@ -166,34 +164,32 @@ class TicketCloseButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        assert interaction.guild is not None
-        assert isinstance(interaction.channel, discord.TextChannel)
+        close_embed = discord.Embed()
+        close_embed.color = discord.Color.blurple()
+        close_embed.description = "This ticket will be archived and closed momentarily..."
 
-        close_embed = embeds.make_embed(
-            color=discord.Color.blurple(), description="This ticket will be archived and closed momentarily..."
-        )
-        await interaction.response.send_message(embed=close_embed)
+        await ctx.response.send_message(embed=close_embed)
 
-        user_id = int(interaction.channel.name.replace("ticket-", ""))  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
+        user_id = int(ctx.channel.name.replace("ticket-", ""))  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
         ticket = db.session.scalar(select(Ticket).where(Ticket.user_id == user_id, Ticket.status.is_(False)))
         assert ticket
 
-        ticket_creator_id = int(interaction.channel.name.replace("ticket-", ""))
+        ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
         ticket_subject = ticket.ticket_subject
         ticket_message = ticket.ticket_message
 
-        role_staff = discord.utils.get(interaction.guild.roles, id=config.roles.staff)
-        role_trial_mod = discord.utils.get(interaction.guild.roles, id=config.roles.trial)
+        role_staff = discord.utils.get(ctx.guild.roles, id=config.roles.staff)
+        role_trial_mod = discord.utils.get(ctx.guild.roles, id=config.roles.trial)
 
-        member = discord.utils.get(interaction.guild.members, id=ticket_creator_id)
+        member = discord.utils.get(ctx.guild.members, id=ticket_creator_id)
         if not member:
-            member = await interaction.client.fetch_user(ticket_creator_id)
+            member = await ctx.client.fetch_user(ticket_creator_id)
 
         mod_list = set()
         mod_roles = (role_staff, role_trial_mod)
         message_log = f"Ticket Creator: {member}\nTicket Subject: {ticket_subject}\nTicket Message: {ticket_message}\nUser ID: {member.id}\n\n"
 
-        async for message in interaction.channel.history(oldest_first=True, limit=None):
+        async for message in ctx.channel.history(oldest_first=True, limit=None):
             if message.author.bot:
                 continue
 
@@ -206,20 +202,18 @@ class TicketCloseButton(discord.ui.View):
         value = " ".join(mod.mention for mod in mod_list) if mod_list else mod_list.add("None")
         url = privatebinapi.send(config.privatebin.url, text=message_log, expiration="never")["full_url"]
 
-        log_embed = embeds.make_embed(
-            title=f"{interaction.channel.name} archived",
-            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
-            color=discord.Color.blurple(),
-            fields=[
-                {"name": "Ticket Creator:", "value": member.mention, "inline": True},
-                {"name": "Closed By:", "value": interaction.user.mention, "inline": True},
-                {"name": "Ticket Subject:", "value": ticket_subject, "inline": False},
-                {"name": "Ticket Message:", "value": ticket_message, "inline": False},
-                {"name": "Participating Moderators:", "value": value, "inline": False},
-                {"name": "Ticket Log:", "value": url, "inline": False},
-            ],
-        )
-        ticket_log = discord.utils.get(interaction.guild.channels, id=config.channels.ticket_log)
+        log_embed = discord.Embed()
+        log_embed.title = f"{ctx.channel.name} archived"
+        log_embed.color = discord.Color.blurple()
+        log_embed.add_field(name="Ticket Creator:", value=member.mention, inline=True)
+        log_embed.add_field(name="Closed By:", value=ctx.user.mention, inline=True)
+        log_embed.add_field(name="Ticket Subject:", value=ticket_subject, inline=False)
+        log_embed.add_field(name="Ticket Message:", value=ticket_message, inline=False)
+        log_embed.add_field(name="Participating Moderators:", value=value, inline=False)
+        log_embed.add_field(name="Ticket Log:", value=url, inline=False)
+        log_embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
+
+        ticket_log = discord.utils.get(ctx.guild.channels, id=config.channels.ticket_log)
         await ticket_log.send(embed=log_embed)  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
 
         try:
@@ -234,7 +228,7 @@ class TicketCloseButton(discord.ui.View):
                 fields=[
                     {
                         "name": "Server:",
-                        "value": f"[{interaction.guild.name}]({await interaction.guild.vanity_invite()})",
+                        "value": f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})",
                         "inline": True,
                     },
                     {"name": "Ticket Log:", "value": url, "inline": False},
@@ -248,7 +242,7 @@ class TicketCloseButton(discord.ui.View):
         ticket.log_url = url
         db.session.commit()
 
-        await interaction.channel.delete()
+        await ctx.channel.delete()
 
 
 async def setup(bot: commands.Bot) -> None:

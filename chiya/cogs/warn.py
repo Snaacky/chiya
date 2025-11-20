@@ -16,7 +16,6 @@ class WarnCog(commands.Cog):
 
     @app_commands.command(name="warn", description="Warn the member")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.describe(member="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")
     async def warn(self, ctx: discord.Interaction, member: discord.Member | discord.User, reason: str) -> None:
@@ -32,9 +31,8 @@ class WarnCog(commands.Cog):
         the bot blocked they will be unable to receive the ban notification.
         The bot will let the invoking mod know if this is the case.
         """
-        # This command is already decorated with @app_commands.guild_only()
-        # Unfortunately, that typecheckers do not understand that.
-        assert ctx.guild is not None
+        if not ctx.guild:
+            return
 
         await ctx.response.defer(thinking=True, ephemeral=True)
 
@@ -44,42 +42,35 @@ class WarnCog(commands.Cog):
         if len(reason) > 4096:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
-        mod_embed = embeds.make_embed(
-            ctx=ctx,
-            author=True,
-            title="Warned member",
-            description=f"{member.mention} was warned by {ctx.user.mention}",
-            thumbnail_url="https://files.catbox.moe/xbwoe8.png",
-            color=discord.Color.gold(),
-            fields=[
-                {"name": "Reason:", "value": reason, "inline": False},
-            ],
-        )
+        mod_embed = discord.Embed()
+        mod_embed.title = "Warned member"
+        mod_embed.description = f"{member.mention} was warned by {ctx.user.mention}"
+        mod_embed.color = discord.Color.gold()
+        mod_embed.add_field(name="Reason:", value=reason, inline=False)
+        mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        mod_embed.set_thumbnail(url="https://files.catbox.moe/xbwoe8.png")
+
+        user_embed = discord.Embed()
+        user_embed.title = "Uh-oh, you've received a warning!"
+        user_embed.description = "If you believe this was a mistake, contact staff."
+        user_embed.color = discord.Color.blurple()
+        user_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)
+        user_embed.add_field(name="Reason:", value=reason, inline=False)
+        user_embed.set_image(url="https://files.catbox.moe/2mscuu.gif")
 
         try:
-            user_embed = embeds.make_embed(
-                author=False,
-                title="Uh-oh, you've received a warning!",
-                description="If you believe this was a mistake, contact staff.",
-                image_url="https://files.catbox.moe/2mscuu.gif",
-                color=discord.Color.blurple(),
-                fields=[
-                    {"name": "Server:", "value": ctx.guild.name, "inline": True},
-                    {"name": "Reason:", "value": reason, "inline": False},
-                ],
-            )
             await member.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        new = ModLog(
-            user_id=member.id,
-            mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            reason=reason,
-            type="warn",
-        )
-        db.session.add(new)
+        mod_log = ModLog()
+        mod_log.user_id = member.id
+        mod_log.mod_id = ctx.user.id
+        mod_log.timestamp = arrow.utcnow().int_timestamp
+        mod_log.reason = reason
+        mod_log.type = "warn"
+
+        db.session.add(mod_log)
         db.session.commit()
 
         await ctx.followup.send(embed=mod_embed)

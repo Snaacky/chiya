@@ -20,7 +20,6 @@ class NoteCog(commands.Cog):
 
     @app_commands.command(name="addnote", description="Add a note to the users profile")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.describe(user="The user to add the note to")
     @app_commands.describe(note="The note to leave on the user")
     async def add_note(self, ctx: discord.Interaction, user: discord.Member | discord.User, note: str) -> None:
@@ -37,23 +36,19 @@ class NoteCog(commands.Cog):
         db.session.add(log)
         db.session.commit()
 
-        embed = embeds.make_embed(
-            title=f"Noting user: {user.name}",
-            description=f"{user.mention} was noted by {ctx.user.mention}",
-            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
-            color=discord.Color.blurple(),
-            fields=[
-                {"name": "ID:", "value": log.id, "inline": False},
-                {"name": "Note:", "value": log.reason, "inline": False},
-            ],
-        )
+        embed = discord.Embed()
+        embed.title = f"Noting user: {user.name}"
+        embed.description = f"{user.mention} was noted by {ctx.user.mention}"
+        embed.color = discord.Color.blurple()
+        embed.add_field(name="ID:", value=log.id, inline=False)
+        embed.add_field(name="Note:", value=log.reason, inline=False)
+        embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
 
     @app_commands.command(name="search", description="Search through a users notes and mod logs")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.describe(user="The user to lookup")
     @app_commands.describe(action="Filter specific actions")
     async def search_mod_actions(
@@ -70,7 +65,9 @@ class NoteCog(commands.Cog):
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         if action:
-            results = db.session.scalars(select(ModLog).where(ModLog.user_id == user.id, ModLog.type == action).order_by(ModLog.id.asc()))
+            results = db.session.scalars(
+                select(ModLog).where(ModLog.user_id == user.id, ModLog.type == action).order_by(ModLog.id.asc())
+            )
         else:
             results = db.session.scalars(select(ModLog).where(ModLog.user_id == user.id).order_by(ModLog.id.asc()))
 
@@ -99,7 +96,8 @@ class NoteCog(commands.Cog):
         if not actions:
             return await embeds.send_error(ctx=ctx, description="No mod actions found for that user!")
 
-        embed = embeds.make_embed(title="Mod Actions")
+        embed = discord.Embed()
+        embed.title = "Mod Actions"
         embed.set_author(name=user, icon_url=user.display_avatar)
 
         formatter = MySource(actions, embed)
@@ -108,7 +106,6 @@ class NoteCog(commands.Cog):
 
     @app_commands.command(name="editlog", description="Edit a user's notes and mod logs")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.describe(id="The ID of the log or note to be edited")
     @app_commands.describe(note="The updated message for the log or note")
     async def edit_log(self, ctx: discord.Interaction, id: int, note: str) -> None:
@@ -129,20 +126,17 @@ class NoteCog(commands.Cog):
         if not log:
             return await embeds.send_error(ctx=ctx, description="Could not find a log with that ID!")
 
-        user = await self.bot.fetch_user(log.user_id)
-        embed = embeds.make_embed(
-            title=f"Edited log: {user.name}",
-            description=f"Log #{id} for {user.mention} was updated by {ctx.user.mention}",
-            thumbnail_url="https://i.imgur.com/A4c19BJ.png",
-            color=discord.Color.green(),
-            fields=[
-                {"name": "Before:", "value": log.reason, "inline": False},
-                {"name": "After:", "value": note, "inline": False},
-            ],
-        )
-
-        log.reason = note  # pyright: ignore[reportAttributeAccessIssue]
+        log.reason = note
         db.session.commit()
+
+        user = await self.bot.fetch_user(log.user_id)
+        embed = discord.Embed()
+        embed.title = f"Edited log: {user.name}"
+        embed.description = f"Log #{id} for {user.mention} was updated by {ctx.user.mention}"
+        embed.color = discord.Color.green()
+        embed.add_field(name="Before:", value=log.reason, inline=False)
+        embed.add_field(name="After:", value=note, inline=False)
+        embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)

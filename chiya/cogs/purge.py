@@ -17,10 +17,16 @@ class PurgeCog(commands.Cog):
         development, logs, and tickets categories can't be purged for
         security reasons.
         """
-        if ctx.user.id == ctx.guild.owner.id:  # pyright: ignore[reportOptionalMemberAccess]
+        if not ctx.guild or not ctx.guild.owner:
+            return False
+
+        if ctx.user.id == ctx.guild.owner.id:
             return True
 
-        if ctx.channel.category_id in [  # pyright: ignore[reportOptionalMemberAccess, reportAttributeAccessIssue]
+        if not isinstance(ctx.channel, discord.TextChannel):
+            return False
+
+        if ctx.channel.category_id in [
             config.categories.moderation,
             config.categories.development,
             config.categories.logs,
@@ -32,7 +38,6 @@ class PurgeCog(commands.Cog):
 
     @app_commands.command(name="purge", description="Purge the last X amount of messages")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     @app_commands.checks.has_role(config.roles.staff)
     @app_commands.describe(amount="The amount of messages to be purged")
     @app_commands.describe(reason="The reason why the messages are being purged")
@@ -56,13 +61,16 @@ class PurgeCog(commands.Cog):
 
         amount = 100 if amount > 100 else amount
 
-        embed = embeds.make_embed(
-            title="Purged messages",
-            description=f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}.",  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
-            thumbnail_url="https://i.imgur.com/EDy6jCp.png",
-            color=discord.Color.red(),
-            fields=[{"name": "Reason:", "value": reason, "inline": False}],
-        )
+        if not isinstance(ctx.channel, discord.TextChannel):
+            return
+
+        embed = discord.Embed()
+        embed.title = "Purged messages"
+        embed.description = f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}."
+        embed.color = discord.Color.red()
+        embed.add_field(name="Reason:", value=reason, inline=False)
+        embed.set_thumbnail(url="https://i.imgur.com/EDy6jCp.png")
+
         await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)

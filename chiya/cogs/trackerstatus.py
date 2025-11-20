@@ -8,7 +8,6 @@ from discord.ext import commands, tasks
 from loguru import logger
 
 from chiya.config import config
-from chiya.utils import embeds
 from chiya.utils.embeds import error_embed
 
 
@@ -78,10 +77,9 @@ class TrackerStatusInfo(TrackerStatus):
             self.last_update = time.time()
 
     async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Tracker Status: {self.tracker}",
-        )
+        embed = discord.Embed()
+        embed.title = f"Tracker Status: {self.tracker}"
+        embed.color = self.get_embed_color(embed)
 
         if self.cache_data:
             self.last_update = 0
@@ -92,8 +90,6 @@ class TrackerStatusInfo(TrackerStatus):
             if key in ["tweet", "TrackerHTTPAddresses", "TrackerHTTPSAddresses"]:
                 continue
             embed.add_field(name=key, value=self.normalize_value(value), inline=True)
-
-        embed.color = self.get_embed_color(embed)
 
         return embed
 
@@ -107,10 +103,9 @@ class TrackerStatusAB(TrackerStatus):
         super().__init__("AB", "https://status.animebytes.tv/api/status")
 
     async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Tracker Status: {self.tracker}",
-        )
+        embed = discord.Embed()
+        embed.title = f"Tracker Status: {self.tracker}"
+        embed.color = self.get_embed_color(embed)
 
         if self.cache_data:
             await self.do_refresh()
@@ -120,8 +115,6 @@ class TrackerStatusAB(TrackerStatus):
 
         for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
-
-        embed.color = self.get_embed_color(embed)
 
         return embed
 
@@ -135,10 +128,9 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         super().__init__(tracker, url)
 
     async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Tracker Status: {self.tracker}",
-        )
+        embed = discord.Embed()
+        embed.title = f"Tracker Status: {self.tracker}"
+        embed.color = self.get_embed_color(embed)
 
         if self.cache_data:
             await self.do_refresh()
@@ -148,8 +140,6 @@ class TrackerStatusUptimeRobot(TrackerStatus):
         for monitor in monitors:
             dratio: dict = monitor.get("dailyRatios", [])[0]
             embed.add_field(name=monitor.get("name", "UNKNOWN"), value=self.normalize_value(dratio), inline=True)
-
-        embed.color = self.get_embed_color(embed)
 
         return embed
 

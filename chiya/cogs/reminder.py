@@ -28,11 +28,13 @@ class ReminderCog(commands.Cog):
         """
         await self.bot.wait_until_ready()
 
-        results = db.session.scalars(select(RemindMe).where(
-            RemindMe.date_to_remind < arrow.utcnow().int_timestamp,
-            RemindMe.sent.is_(False)
-        ))
-        
+        results = db.session.scalars(
+            select(RemindMe).where(
+                RemindMe.date_to_remind < arrow.utcnow().int_timestamp,
+                RemindMe.sent.is_(False),
+            )
+        )
+
         if not results:
             return
 
@@ -45,11 +47,10 @@ class ReminderCog(commands.Cog):
                 logger.warning(f"Reminder entry with ID {reminder.id} has an invalid user ID: {reminder.author_id}.")
                 continue
 
-            embed = embeds.make_embed(
-                title="Here is your reminder",
-                description=reminder.message,
-                color="blurple",
-            )
+            embed = discord.Embed()
+            embed.title = "Here is your reminder"
+            embed.description = reminder.message
+            embed.color = discord.Color.blurple()
 
             try:
                 channel = await user.create_dm()
@@ -67,27 +68,23 @@ class ReminderCog(commands.Cog):
 
         @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
         async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-            embed = embeds.make_embed(
-                description=f"{interaction.user.mention}, all your reminders have been cleared.",
-                color=discord.Color.green(),
-            )
-
+            embed = discord.Embed()
+            embed.description = f"{interaction.user.mention}, all your reminders have been cleared."
+            embed.color = discord.Color.green()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             self.value = True
             self.stop()
 
         @discord.ui.button(label="Cancel", style=discord.ButtonStyle.grey)
         async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
-            embed = embeds.make_embed(
-                description=f"{interaction.user.mention}, your request has been canceled.",
-                color=discord.Color.blurple(),
-            )
+            embed = discord.Embed()
+            embed.description = f"{interaction.user.mention}, your request has been canceled."
+            embed.color = discord.Color.blurple()
             await interaction.response.send_message(embed=embed, ephemeral=True)
             self.value = False
             self.stop()
 
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
     class ReminderGroup(app_commands.Group):
         pass
 
@@ -100,6 +97,9 @@ class ReminderCog(commands.Cog):
         """Creates a reminder message that will be sent at the specified time."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
+        if not ctx.channel:
+            return
+
         duration_string, end_time = get_duration(duration=duration)
         if not duration_string:
             return await embeds.send_error(
@@ -110,7 +110,6 @@ class ReminderCog(commands.Cog):
                 ),
             )
 
-        assert ctx.channel
         saved = RemindMe(
             reminder_location=ctx.channel.id,
             author_id=ctx.user.id,
@@ -120,19 +119,15 @@ class ReminderCog(commands.Cog):
         )
         db.session.add(saved)
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            author=True,
-            title="Reminder set",
-            description=f"I'll remind you about this <t:{end_time}:R>.",
-            thumbnail_url="https://i.imgur.com/VZV64W0.png",
-            color=discord.Color.blurple(),
-            fields=[
-                {"name": "ID:", "value": saved.id, "inline": False},
-                {"name": "Message:", "value": message, "inline": False},
-            ],
-            footer="Make sure your DMs are open or you won't receive your reminder.",
-        )
+        embed = discord.Embed()
+        embed.title = "Reminder set"
+        embed.description = f"I'll remind you about this <t:{end_time}:R>."
+        embed.color = discord.Color.blurple()
+        embed.add_field(name="ID:", value=saved.id, inline=False)
+        embed.add_field(name="Message:", value=message, inline=False)
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        embed.set_footer(text="Make sure your DMs are open or you won't receive your reminder.")
+        embed.set_thumbnail(url="https://i.imgur.com/VZV64W0.png")
 
         await ctx.followup.send(embed=embed)
 
@@ -144,7 +139,7 @@ class ReminderCog(commands.Cog):
         Edit a reminder message.
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
-        
+
         result = db.session.scalar(select(RemindMe).where(RemindMe.id == reminder_id))
         if not result:
             return await embeds.send_error(ctx, "That reminder ID doesn't exist.")
@@ -159,19 +154,15 @@ class ReminderCog(commands.Cog):
         result.message = new_message
         db.session.commit()
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            author=True,
-            title="Reminder set",
-            description="Your reminder was updated",
-            thumbnail_url="https://i.imgur.com/UUbR5J1.png",
-            color=discord.Color.green(),
-            fields=[
-                {"name": "ID:", "value": str(reminder_id), "inline": False},
-                {"name": "Old Message:", "value": old_message, "inline": False},
-                {"name": "New Message:", "value": new_message, "inline": False},
-            ],
-        )
+        embed = discord.Embed()
+        embed.title = "Reminder set"
+        embed.description = "Your reminder was updated"
+        embed.color = discord.Color.green()
+        embed.add_field(name="ID:", value=str(reminder_id), inline=False)
+        embed.add_field(name="Old Message:", value=old_message, inline=False)
+        embed.add_field(name="New Message:", value=new_message, inline=False)
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        embed.set_thumbnail(url="https://i.imgur.com/UUbR5J1.png")
 
         await ctx.followup.send(embed=embed)
 
@@ -180,17 +171,21 @@ class ReminderCog(commands.Cog):
         """List your reminders."""
         await ctx.response.defer(ephemeral=True)
 
-        results = db.session.scalars(select(RemindMe).where(RemindMe.author_id == ctx.user.id, RemindMe.sent.is_(False))).all()
+        results = db.session.scalars(
+            select(RemindMe).where(
+                RemindMe.author_id == ctx.user.id,
+                RemindMe.sent.is_(False),
+            )
+        ).all()
+
         if not results:
             return await embeds.send_error(ctx=ctx, description="No reminders found!")
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            author=True,
-            title="Reminders",
-            thumbnail_url="https://i.imgur.com/VZV64W0.png",
-            color=discord.Color.blurple(),
-        )
+        embed = discord.Embed()
+        embed.title = "Reminders"
+        embed.color = discord.Color.blurple()
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        embed.set_thumbnail(url="https://i.imgur.com/VZV64W0.png")
 
         reminders = []
         for result in results:
@@ -223,18 +218,15 @@ class ReminderCog(commands.Cog):
         result.sent = True
         db.session.commit()
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            author=True,
-            title="Reminder deleted",
-            description="Your reminder was deleted",
-            thumbnail_url="https://i.imgur.com/03bmvBX.png",
-            color=discord.Color.red(),
-            fields=[
-                {"name": "ID:", "value": str(reminder_id), "inline": False},
-                {"name": "Message:", "value": result.message, "inline": False},
-            ],
-        )
+        embed = discord.Embed()
+        embed.title = "Reminder deleted"
+        embed.description = "Your reminder was deleted"
+        embed.color = discord.Color.red()
+        embed.add_field(name="ID:", value=str(reminder_id), inline=False)
+        embed.add_field(name="Message:", value=result.message, inline=False)
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        embed.set_thumbnail(url="https://i.imgur.com/03bmvBX.png")
+
         await ctx.followup.send(embed=embed)
 
     @reminder.command(name="clear", description="Clears all of your existing reminders")
@@ -244,21 +236,27 @@ class ReminderCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        confirm_embed = embeds.make_embed(
-            description=f"{ctx.user.mention}, clear all your reminders?",
-            color=discord.Color.blurple(),
-        )
+        embed = discord.Embed()
+        embed.description = f"{ctx.user.mention}, clear all your reminders?"
+        embed.color = discord.Color.blurple()
 
         view = self.Confirm()
-        await ctx.followup.send(embed=confirm_embed, view=view)
+        await ctx.followup.send(embed=embed, view=view)
         await view.wait()
 
-        if not view.value or view.value is None:
+        if not view.value:
             return
 
-        results = db.session.scalars(select(RemindMe).where(RemindMe.author_id == ctx.user.id, RemindMe.sent_is(False)))  # pyright: ignore[reportAttributeAccessIssue]
+        results = db.session.scalars(
+            select(RemindMe).where(
+                RemindMe.author_id == ctx.user.id,
+                RemindMe.sent.is_(False),
+            )
+        )
+
         for result in results:
             result.sent = True
+
         db.session.commit()
 
 
