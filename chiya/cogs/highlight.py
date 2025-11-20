@@ -6,7 +6,7 @@ from collections import defaultdict
 from discord import app_commands
 from discord.ext import commands
 from loguru import logger
-from sqlalchemy import func, select
+from sqlalchemy import exists, func, select
 
 from chiya import db
 from chiya.config import config
@@ -37,7 +37,7 @@ class HighlightCog(commands.Cog):
         """
         Scan incoming messages for highlights and notify the subscribed users.
         """
-        if message.author.bot:
+        if message.author.bot or not message.guild or not isinstance(message.channel, discord.TextChannel):
             return
 
         # These are set as None here to reduce the number of queries to discord
@@ -65,7 +65,10 @@ class HighlightCog(commands.Cog):
                 chat += f"✨ **[<t:{int(message.created_at.timestamp())}:T>] {message.author.name}:** \
                     {message.clean_content[0:256]}\n"
 
-            embed = embeds.make_embed(title=term, description=chat, color=discord.Color.gold())
+            embed = discord.Embed()
+            embed.title = term
+            embed.description = chat
+            embed.color = discord.Color.gold()
             embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
 
             for subscriber in users:
@@ -107,26 +110,26 @@ class HighlightCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Highlighted terms must be less than 50 characters.")
 
         # 20 term limit because 20 * 50 = 1000 characters max and embeds are 4096 max.
-        if session.scalar(select(func.count()).select_from(Highlight).where(Highlight.user_id == ctx.user.id)) >= 20:
+        if db.session.scalar(select(func.count()).select_from(Highlight).where(Highlight.user_id == ctx.user.id)) >= 20:
             return await embeds.send_error(
                 ctx=ctx,
                 description="You may only have up to 20 highlighted terms at once.",
             )
 
         # Prevent users from tracking the same term more than once.
+        # TODO: if db.session.scalar(exists().select_from(Highlight).where(...))
         if Highlight.query.filter_by(user_id=ctx.user.id, term=term).first():
             return await embeds.send_error(ctx=ctx, description="You are already tracking that term.")
 
         row = Highlight(user_id=ctx.user.id, term=term).save()
         self.refresh_highlights()
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title="Highlight added",
-            description=f"The term `{row.term}` was added to your highlights list.",
-            color=discord.Color.green(),
-            author=True,
-        )
+        embed = discord.Embed()
+        embed.title = "Highlight added"
+        embed.description = f"The term `{row.term}` was added to your highlights list."
+        embed.color = discord.Color.green()
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+
         await ctx.followup.send(embed=embed)
 
     @highlight.command(name="list", description="Lists the terms you're currently tracking")
