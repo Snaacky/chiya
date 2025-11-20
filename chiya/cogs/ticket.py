@@ -111,16 +111,16 @@ class TicketSubmissionModal(discord.ui.Modal):
 
         await ctx.followup.send(embed=embed)
 
-        new = Ticket(
-            user_id=ctx.user.id,
-            guild=ctx.guild.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            ticket_subject=ticket_subject,
-            ticket_message=ticket_message,
-            log_url=None,
-            status=False,
-        )
-        db.session.add(new)
+        ticket = Ticket()
+        ticket.user_id = ctx.user.id
+        ticket.guild = ctx.guild.id
+        ticket.timestamp = arrow.utcnow().int_timestamp
+        ticket.ticket_subject = ticket_subject
+        ticket.ticket_message = ticket_message
+        ticket.log_url = None
+        ticket.status = False
+
+        db.session.add(ticket)
         db.session.commit()
 
 

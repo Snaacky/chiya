@@ -38,7 +38,7 @@ class Ticket(Base):
     timestamp: Mapped[int]
     ticket_subject: Mapped[int]
     ticket_message: Mapped[int]
-    log_url: Mapped[str]
+    log_url: Mapped[str | None]
     status: Mapped[bool]
 
 

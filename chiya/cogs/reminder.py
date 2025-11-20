@@ -106,13 +106,13 @@ class ReminderCog(commands.Cog):
                 ),
             )
 
-        saved = RemindMe(
-            reminder_location=ctx.channel.id,
-            author_id=ctx.user.id,
-            date_to_remind=end_time,
-            message=message,
-            sent=False,
-        )
+        saved = RemindMe()
+        saved.reminder_location = ctx.channel.id
+        saved.author_id = ctx.user.id
+        saved.date_to_remind = end_time
+        saved.message = message
+        saved.sent = False
+
         db.session.add(saved)
 
         embed = discord.Embed()

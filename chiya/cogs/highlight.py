@@ -116,7 +116,13 @@ class HighlightCog(commands.Cog):
         if Highlight.query.filter_by(user_id=ctx.user.id, term=term).first():
             return await embeds.send_error(ctx=ctx, description="You are already tracking that term.")
 
-        row = Highlight(user_id=ctx.user.id, term=term).save()
+        row = Highlight()
+        row.user_id = ctx.user.id
+        row.term = term
+
+        db.session.add(row)
+        db.session.commit()
+
         self.refresh_highlights()
 
         embed = discord.Embed()
