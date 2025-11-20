@@ -210,20 +210,33 @@ class JoyboardCog(commands.Cog):
         if not payload.guild_id:
             return
 
-        cache_data = (payload.message_id, payload.channel_id)
+        channel = self.bot.get_channel(payload.channel_id)
+        if not isinstance(channel, discord.TextChannel):
+            return
 
+        cache_data = (payload.message_id, payload.channel_id)
         if not self.check_emoji(payload.emoji, payload.guild_id) or cache_data in self.cache["remove"]:
             return
 
         self.cache["remove"].add(cache_data)
 
-        message = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
+        result = db.session.scalar(
+            select(Joyboard).where(
+                Joyboard.channel_id == payload.channel_id,
+                Joyboard.message_id == payload.message_id,
+            )
+        )
 
-        result = Joyboard.query.filter_by(channel_id=payload.channel_id, message_id=payload.message_id).first()
         if not result:
             self.cache["remove"].remove(cache_data)
 
+        message = await channel.fetch_message(payload.message_id)
+        if not message or not message.guild or not isinstance(message.channel, discord.TextChannel):
+            return
+
         joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
+        if not joyboard_channel or not isinstance(joyboard_channel, discord.TextChannel):
+            return
 
         try:
             joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
@@ -233,7 +246,8 @@ class JoyboardCog(commands.Cog):
         joy_count = await self.get_joy_count(message)
 
         if joy_count < config.joyboard.joy_limit:
-            result.delete()
+            db.session.delete(result)
+            db.session.commit()
             self.cache["remove"].remove(cache_data)
             return await joy_embed.delete()
 
@@ -252,14 +266,25 @@ class JoyboardCog(commands.Cog):
         """
         Automatically remove the joyboard embed if the message linked to it is deleted.
         """
-        result = Joyboard.query.filter_by(channel_id=payload.channel_id, message_id=payload.message_id).first()
+        result = db.session.scalar(
+            select(Joyboard).where(
+                Joyboard.channel_id == payload.channel_id,
+                Joyboard.message_id == payload.message_id,
+            )
+        )
+
         if not result:
             return
 
+        channel = self.bot.get_channel(config.joyboard.channel_id)
+        if not channel or not isinstance(channel, discord.TextChannel):
+            return
+
+        db.session.delete(result)
+        db.session.commit()
+
         try:
-            joyboard_channel = self.bot.get_channel(config.joyboard.channel_id)
-            joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
-            result.delete()
+            joy_embed = await channel.fetch_message(result.joy_embed_id)
             await joy_embed.delete()
         except discord.NotFound:
             return

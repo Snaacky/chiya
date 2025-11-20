@@ -8,8 +8,9 @@ from discord.ext import commands
 from loguru import logger
 from sqlalchemy import func, select
 
+from chiya import db
 from chiya.config import config
-from chiya.models import Highlight, session
+from chiya.models import Highlight
 from chiya.utils import embeds
 
 
@@ -18,9 +19,10 @@ class HighlightCog(commands.Cog):
         self.bot = bot
         self.refresh_highlights()
 
+    # TODO: user_id needs to be retooled as user_id!!
     def refresh_highlights(self) -> None:
         self.highlights = defaultdict(set)
-        for highlight in session.scalars(select(Highlight)):
+        for highlight in db.session.scalars(select(Highlight)):
             self.highlights[highlight.term].add(highlight.user_id)
 
     @app_commands.guilds(config.guild_id)
