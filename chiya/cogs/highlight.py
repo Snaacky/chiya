@@ -25,12 +25,7 @@ class HighlightCog(commands.Cog):
         for highlight in db.session.scalars(select(Highlight)):
             self.highlights[highlight.term].add(highlight.user_id)
 
-    @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
-    class HighlightGroup(app_commands.Group):
-        pass
-
-    highlight = HighlightGroup(name="hl", description="Highlight management commands", guild_ids=[config.guild_id])
+    group = app_commands.Group(name="hl", description="Highlight management commands", guild_ids=[config.guild_id])
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -96,7 +91,7 @@ class HighlightCog(commands.Cog):
                 except discord.Forbidden:
                     pass
 
-    @highlight.command(name="add", description="Adds a term to be tracked")
+    @group.command(name="add", description="Adds a term to be tracked")
     @app_commands.describe(term="Term to be highlighted")
     async def add_highlight(self, ctx: discord.Interaction, term: str) -> None:
         """
@@ -132,7 +127,7 @@ class HighlightCog(commands.Cog):
 
         await ctx.followup.send(embed=embed)
 
-    @highlight.command(name="list", description="Lists the terms you're currently tracking")
+    @group.command(name="list", description="Lists the terms you're currently tracking")
     async def list_highlights(self, ctx: discord.Interaction) -> None:
         """
         Renders a list showing all of the terms that the user currently has
@@ -152,7 +147,7 @@ class HighlightCog(commands.Cog):
         )
         await ctx.followup.send(embed=embed)
 
-    @highlight.command(name="remove", description="Remove a term from being tracked")
+    @group.command(name="remove", description="Remove a term from being tracked")
     @app_commands.describe(term="Term to be removed")
     async def remove_highlight(self, ctx: discord.Interaction, term: str) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
@@ -173,7 +168,7 @@ class HighlightCog(commands.Cog):
         await ctx.followup.send(embed=embed)
         self.listener.refresh_highlights()
 
-    @highlight.command(name="clear", description="Clears all terms being tracked")
+    @group.command(name="clear", description="Clears all terms being tracked")
     async def clear_highlights(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
 

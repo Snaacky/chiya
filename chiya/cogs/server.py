@@ -9,13 +9,9 @@ class ServerCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.checks.has_role(config.roles.staff)
-    class ServerGroup(app_commands.Group):
-        pass
+    group = app_commands.Group(name="server", description="Server management commands", guild_ids=[config.guild_id])
 
-    server = ServerGroup(name="server", guild_ids=[config.guild_id])
-
-    @server.command(name="pop", description="Gets the current server population")
+    @group.command(name="pop", description="Gets the current server population")
     async def pop(self, ctx: discord.Interaction) -> None:
         """Send a message with the current guild member count."""
         await ctx.response.defer(thinking=True)
@@ -25,7 +21,7 @@ class ServerCog(commands.Cog):
 
         await ctx.followup.send(str(ctx.guild.member_count))
 
-    @server.command(name="boosters", description="List all the server boosters")
+    @group.command(name="boosters", description="List all the server boosters")
     async def boosters(self, ctx: discord.Interaction) -> None:
         """Send an embed listing all the current server boosters."""
         await ctx.response.defer(thinking=True, ephemeral=True)

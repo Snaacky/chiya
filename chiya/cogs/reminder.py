@@ -84,13 +84,9 @@ class ReminderCog(commands.Cog):
             self.value = False
             self.stop()
 
-    @app_commands.guilds(config.guild_id)
-    class ReminderGroup(app_commands.Group):
-        pass
+    group = app_commands.Group(name="reminder", description="Reminder management commands", guild_ids=[config.guild_id])
 
-    reminder = ReminderGroup(name="reminder", guild_ids=[config.guild_id])
-
-    @reminder.command(name="create", description="Set a reminder")
+    @group.command(name="create", description="Set a reminder")
     @app_commands.describe(duration="Amount of time until the reminder is sent")
     @app_commands.describe(message="Reminder message")
     async def remindme(self, ctx: discord.Interaction, duration: str, message: str) -> None:
@@ -131,7 +127,7 @@ class ReminderCog(commands.Cog):
 
         await ctx.followup.send(embed=embed)
 
-    @reminder.command(name="edit", description="Edit an existing reminder")
+    @group.command(name="edit", description="Edit an existing reminder")
     @app_commands.describe(reminder_id="The ID of the reminder to be updated")
     @app_commands.describe(new_message="The updated message for the reminder")
     async def edit(self, ctx: discord.Interaction, reminder_id: int, new_message: str) -> None:
@@ -166,7 +162,7 @@ class ReminderCog(commands.Cog):
 
         await ctx.followup.send(embed=embed)
 
-    @reminder.command(name="list", description="List your existing reminders")
+    @group.command(name="list", description="List your existing reminders")
     async def list(self, ctx: discord.Interaction) -> None:
         """List your reminders."""
         await ctx.response.defer(ephemeral=True)
@@ -197,7 +193,7 @@ class ReminderCog(commands.Cog):
         menu = MyMenuPages(formatter)
         await menu.start(ctx)
 
-    @reminder.command(name="delete", description="Delete an existing reminder")
+    @group.command(name="delete", description="Delete an existing reminder")
     @app_commands.describe(reminder_id="The ID of the reminder to be deleted")
     async def delete(self, ctx: discord.Interaction, reminder_id: int) -> None:
         """
@@ -229,7 +225,7 @@ class ReminderCog(commands.Cog):
 
         await ctx.followup.send(embed=embed)
 
-    @reminder.command(name="clear", description="Clears all of your existing reminders")
+    @group.command(name="clear", description="Clears all of your existing reminders")
     async def clear(self, ctx: discord.Interaction) -> None:
         """
         Clears all reminders.

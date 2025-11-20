@@ -23,10 +23,7 @@ class DeveloperCog(Cog):
     def app_is_owner(self, interaction: discord.Interaction, *kwargs):
         return self.bot.is_owner(interaction.user)
 
-    class BotGroup(app_commands.Group):
-        pass
-
-    bot = BotGroup(name="bot", guild_ids=[config.guild_id])
+    group = app_commands.Group(name="bot", description="Developer management commands", guild_ids=[config.guild_id])
 
     @app_commands.guilds(config.guild_id)
     async def eval(self, ctx: discord.Interaction, message: discord.Message) -> None | str:
@@ -125,7 +122,7 @@ class DeveloperCog(Cog):
                 embed.add_field(name="Output:", value=output, inline=False)
                 await ctx.followup.send(embed=embed)
 
-    @bot.command(name="ping", description="Get bot latency")
+    @group.command(name="ping", description="Get bot latency")
     async def ping(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
         await ctx.followup.send(f"Pong! {round(self.bot.latency * 1000)}ms.")
