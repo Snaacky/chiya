@@ -122,12 +122,12 @@ class BanCog(commands.Cog):
         if len(reason) > 1024:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        mod_embed = discord.Embed()
-        mod_embed.title = f"Unbanning user: {user}"
-        mod_embed.description = f"{user.mention} was unbanned by {ctx.user.mention} for: {reason}"
-        mod_embed.color = discord.Color.green()
-        mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
-        mod_embed.set_thumbnail(url="https://files.catbox.moe/qhc82k.png")
+        embed = discord.Embed()
+        embed.title = f"Unbanning user: {user}"
+        embed.description = f"{user.mention} was unbanned by {ctx.user.mention} for: {reason}"
+        embed.color = discord.Color.green()
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        embed.set_thumbnail(url="https://files.catbox.moe/qhc82k.png")
 
         log = ModLog()
         log.user_id = user.id
@@ -140,8 +140,8 @@ class BanCog(commands.Cog):
         db.session.commit()
 
         await ctx.guild.unban(user, reason=reason)
-        await ctx.followup.send(embed=mod_embed)
-        await log_embed_to_channel(ctx=ctx, embed=mod_embed)
+        await ctx.followup.send(embed=embed)
+        await log_embed_to_channel(ctx=ctx, embed=embed)
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.Member | discord.User) -> None:

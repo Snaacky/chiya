@@ -26,13 +26,13 @@ class NoteCog(commands.Cog):
         """Adds a note to the specified user queryable via /search."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        log = ModLog(
-            user_id=user.id,
-            mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            reason=note,
-            type="note",
-        )
+        log = ModLog()
+        log.user_id = user.id
+        log.mod_id = ctx.user.id
+        log.timestamp = arrow.utcnow().int_timestamp
+        log.reason = note
+        log.type = "note"
+
         db.session.add(log)
         db.session.commit()
 
@@ -130,6 +130,7 @@ class NoteCog(commands.Cog):
         db.session.commit()
 
         user = await self.bot.fetch_user(log.user_id)
+
         embed = discord.Embed()
         embed.title = f"Edited log: {user.name}"
         embed.description = f"Log #{id} for {user.mention} was updated by {ctx.user.mention}"

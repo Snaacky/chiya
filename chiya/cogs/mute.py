@@ -85,15 +85,15 @@ class MuteCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        new = ModLog(
-            user_id=member.id,
-            mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            reason=reason,
-            duration=duration,
-            type="mute",
-        )
-        db.session.add(new)
+        log = ModLog()
+        log.user_id = member.id
+        log.mod_id = ctx.user.id
+        log.timestamp = arrow.utcnow().int_timestamp
+        log.reason = reason
+        log.duration = duration
+        log.type = "mute"
+
+        db.session.add(log)
         db.session.commit()
 
         await member.timeout(muted_until.datetime, reason=reason)
@@ -155,14 +155,14 @@ class MuteCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        new = ModLog(
-            user_id=member.id,
-            mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            reason=reason,
-            type="unmute",
-        )
-        db.session.add(new)
+        log = ModLog()
+        log.user_id = member.id
+        log.mod_id = ctx.user.id
+        log.timestamp = arrow.utcnow().int_timestamp
+        log.reason = reason
+        log.type = "unmute"
+
+        db.session.add(log)
         db.session.commit()
 
         await member.timeout(None, reason=reason)

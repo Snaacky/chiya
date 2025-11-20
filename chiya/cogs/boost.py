@@ -3,7 +3,6 @@ from discord.ext import commands
 from loguru import logger
 
 from chiya.config import config
-from chiya.utils import embeds
 
 
 class BoostCog(commands.Cog):

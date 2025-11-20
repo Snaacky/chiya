@@ -174,7 +174,6 @@ class TicketCloseButton(discord.ui.View):
 
         user_id = int(ctx.channel.name.replace("ticket-", ""))  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
         ticket = db.session.scalar(select(Ticket).where(Ticket.user_id == user_id, Ticket.status.is_(False)))
-        assert ticket
 
         ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
         ticket_subject = ticket.ticket_subject

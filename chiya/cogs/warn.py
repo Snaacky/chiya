@@ -63,14 +63,14 @@ class WarnCog(commands.Cog):
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        mod_log = ModLog()
-        mod_log.user_id = member.id
-        mod_log.mod_id = ctx.user.id
-        mod_log.timestamp = arrow.utcnow().int_timestamp
-        mod_log.reason = reason
-        mod_log.type = "warn"
+        log = ModLog()
+        log.user_id = member.id
+        log.mod_id = ctx.user.id
+        log.timestamp = arrow.utcnow().int_timestamp
+        log.reason = reason
+        log.type = "warn"
 
-        db.session.add(mod_log)
+        db.session.add(log)
         db.session.commit()
 
         await ctx.followup.send(embed=mod_embed)
