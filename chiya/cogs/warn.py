@@ -31,10 +31,10 @@ class WarnCog(commands.Cog):
         the bot blocked they will be unable to receive the ban notification.
         The bot will let the invoking mod know if this is the case.
         """
+        await ctx.response.defer(thinking=True, ephemeral=True)
+
         if not ctx.guild:
             return
-
-        await ctx.response.defer(thinking=True, ephemeral=True)
 
         if not isinstance(member, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")

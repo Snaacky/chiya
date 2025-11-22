@@ -19,7 +19,6 @@ class HighlightCog(commands.Cog):
         self.bot = bot
         self.refresh_highlights()
 
-    # TODO: user_id needs to be retooled as user_id!!
     def refresh_highlights(self) -> None:
         self.highlights = defaultdict(set)
         for highlight in db.session.scalars(select(Highlight)):
@@ -47,10 +46,10 @@ class HighlightCog(commands.Cog):
             if not result:
                 continue
 
-            if active_members is None:
+            if not active_members:
                 active_members = await self.active_members(message.channel)
 
-            if chat is None:
+            if not chat:
                 messages = [for_message async for for_message in message.channel.history(limit=4, before=message)]
                 chat = ""
                 for msg in reversed(messages):
@@ -105,15 +104,15 @@ class HighlightCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Highlighted terms must be less than 50 characters.")
 
         # 20 term limit because 20 * 50 = 1000 characters max and embeds are 4096 max.
-        if db.session.scalar(select(func.count()).select_from(Highlight).where(Highlight.user_id == ctx.user.id)) >= 20:
+        count = db.session.scalar(select(func.count()).select_from(Highlight).where(Highlight.user_id == ctx.user.id))
+        if count and count >= 20:
             return await embeds.send_error(
                 ctx=ctx,
                 description="You may only have up to 20 highlighted terms at once.",
             )
 
         # Prevent users from tracking the same term more than once.
-        # TODO: if db.session.scalar(exists().select_from(Highlight).where(...))
-        if Highlight.query.filter_by(user_id=ctx.user.id, term=term).first():
+        if db.session.scalar(select(exists()).select_from(Highlight).where(Highlight.user_id == ctx.user.id)):
             return await embeds.send_error(ctx=ctx, description="You are already tracking that term.")
 
         row = Highlight()
@@ -141,16 +140,16 @@ class HighlightCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        if not (results := Highlight.query.filter_by(user_id=ctx.user.id)):
+        terms = db.session.scalars(select(Highlight).where(Highlight.user_id == ctx.user.id)).all()
+        if not terms:
             return await embeds.send_error(ctx=ctx, description="You are not tracking any terms.")
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title="You're currently tracking the following words:",
-            description="\n".join([str(row.term) for row in results]),
-            color=discord.Color.green(),
-            author=True,
-        )
+        embed = discord.Embed()
+        embed.title = "You're currently tracking the following words:"
+        embed.description = "\n".join([str(row.term) for row in terms])
+        embed.color = discord.Color.green()
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+
         await ctx.followup.send(embed=embed)
 
     @group.command(name="remove", description="Remove a term from being tracked")
@@ -158,42 +157,43 @@ class HighlightCog(commands.Cog):
     async def remove_highlight(self, ctx: discord.Interaction, term: str) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        result = Highlight.query.filter_by(user_id=ctx.user.id, term=term).first()
+        result = db.session.scalar(select(Highlight).where(Highlight.term == term, Highlight.user_id == ctx.user.id))
         if not result:
             return await embeds.send_error(ctx=ctx, description="You are not tracking that term.")
 
-        result.delete()
+        db.session.delete(result)
+        db.session.commit()
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title="Highlight removed",
-            description=f"The term `{term}` was removed from your highlights list.",
-            color=discord.Color.green(),
-            author=True,
-        )
+        embed = discord.Embed()
+        embed.title = "Highlight removed"
+        embed.description = f"The term `{term}` was removed from your highlights list."
+        embed.color = discord.Color.green()
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+
+        self.refresh_highlights()
+
         await ctx.followup.send(embed=embed)
-        self.listener.refresh_highlights()
 
     @group.command(name="clear", description="Clears all terms being tracked")
     async def clear_highlights(self, ctx: discord.Interaction) -> None:
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        results = Highlight.query.filter_by(user_id=ctx.user.id).all()
+        results = db.session.scalars(select(Highlight).where(Highlight.user_id == ctx.user.id)).all()
         if not results:
             return await embeds.send_error(ctx=ctx, description="You are not tracking any terms.")
 
         for result in results:
-            result.delete()
+            db.session.delete(result)
+        db.session.commit()
 
-        self.listener.refresh_highlights()
+        self.refresh_highlights()
 
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title="Highlights cleared",
-            description="All of the terms in your highlight list were cleared.",
-            color=discord.Color.green(),
-            author=True,
-        )
+        embed = discord.Embed()
+        embed.title = "Highlights cleared"
+        embed.description = "All of the terms in your highlight list were cleared."
+        embed.color = discord.Color.green()
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+
         await ctx.followup.send(embed=embed)
 
     async def active_members(self, channel: discord.TextChannel) -> set:

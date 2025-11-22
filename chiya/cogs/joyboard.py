@@ -191,13 +191,11 @@ class JoyboardCog(commands.Cog):
         if result:
             result.joy_embed_id = joyed_message.id
         else:
-            db.session.add(
-                Joyboard(
-                    channel_id=payload.channel_id,
-                    message_id=payload.message_id,
-                    joy_embed_id=joyed_message.id,
-                )
-            )
+            new = Joyboard()
+            new.channel_id = payload.channel_id
+            new.message_id = payload.message_id
+            new.joy_embed_id = joyed_message.id
+            db.session.add(new)
 
         db.session.commit()
         self.cache["add"].remove(cache_data)

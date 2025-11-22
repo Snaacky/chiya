@@ -8,7 +8,8 @@ from chiya.config import config
 
 
 def can_action_member(ctx: discord.Interaction, member: discord.Member | discord.User) -> bool:
-    if not ctx.guild:
+    # Pre-requisites for operation to run correctly.
+    if not ctx.client.user or not ctx.guild:
         return False
 
     # Allow owner to override all limitations.
@@ -16,7 +17,7 @@ def can_action_member(ctx: discord.Interaction, member: discord.Member | discord
         return True
 
     # Stop mods from actioning on the bot.
-    if member.id == ctx.client.user.id:  # pyright: ignore[reportOptionalMemberAccess]
+    if member.id == ctx.client.user.id:
         return False
 
     # Skip over the rest of the checks if it's a discord.User and not a discord.Member.
@@ -28,7 +29,7 @@ def can_action_member(ctx: discord.Interaction, member: discord.Member | discord
         return False
 
     # Prevents mods from actioning other mods.
-    if ctx.user.top_role <= member.top_role:  # pyright: ignore[reportAttributeAccessIssue]
+    if ctx.user.top_role <= member.top_role:
         return False
 
     return True

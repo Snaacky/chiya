@@ -71,7 +71,7 @@ class PurgeCog(commands.Cog):
         embed.add_field(name="Reason:", value=reason, inline=False)
         embed.set_thumbnail(url="https://i.imgur.com/EDy6jCp.png")
 
-        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
+        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
 

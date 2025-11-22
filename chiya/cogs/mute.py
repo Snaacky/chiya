@@ -178,16 +178,12 @@ class MuteCog(commands.Cog):
             return
 
         logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
-
-        if not logs:
-            return
-
-        if logs[0].user == self.bot.user:
+        if not logs or not logs[0].user or logs[0].user == self.bot.user:
             return
 
         new = ModLog(
             user_id=after.id,
-            mod_id=logs[0].user.id,  # pyright: ignore[reportOptionalMemberAccess]
+            mod_id=logs[0].user.id,
             timestamp=arrow.utcnow().int_timestamp,
             reason=logs[0].reason,
         )

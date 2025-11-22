@@ -87,8 +87,8 @@ class TicketSubmissionModal(discord.ui.Modal):
             overwrites=permission,
         )
 
-        ticket_subject = self.children[0].value  # pyright: ignore[reportAttributeAccessIssue]
-        ticket_message = self.children[1].value  # pyright: ignore[reportAttributeAccessIssue]
+        ticket_subject = self.children[0].value
+        ticket_message = self.children[1].value
 
         embed = discord.Embed()
         embed.title = "🎫  Ticket created"
@@ -136,8 +136,14 @@ class TicketCreateButton(discord.ui.View):
 
         The `button` parameter is positional and required despite unused.
         """
-        category = discord.utils.get(ctx.guild.categories, id=config.categories.tickets)  # pyright: ignore[reportOptionalMemberAccess]
-        ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.user.id}")  # pyright: ignore[reportOptionalMemberAccess]
+        if not ctx.guild:
+            return
+
+        category = discord.utils.get(ctx.guild.categories, id=config.categories.tickets)
+        if not category:
+            return
+
+        ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.user.id}")
 
         if ticket:
             embed = discord.Embed()
@@ -172,8 +178,10 @@ class TicketCloseButton(discord.ui.View):
 
         await ctx.response.send_message(embed=close_embed)
 
-        user_id = int(ctx.channel.name.replace("ticket-", ""))  # pyright: ignore[reportAttributeAccessIssue, reportOptionalMemberAccess]
+        user_id = int(ctx.channel.name.replace("ticket-", ""))
         ticket = db.session.scalar(select(Ticket).where(Ticket.user_id == user_id, Ticket.status.is_(False)))
+        if not ticket:
+            return
 
         ticket_creator_id = int(ctx.channel.name.replace("ticket-", ""))
         ticket_subject = ticket.ticket_subject

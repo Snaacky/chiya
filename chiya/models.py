@@ -1,4 +1,3 @@
-from sqlalchemy import JSON
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -56,4 +55,4 @@ class Highlight(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     term: Mapped[str]
-    users: Mapped[list[int]] = mapped_column(JSON)
+    user_id: Mapped[int]

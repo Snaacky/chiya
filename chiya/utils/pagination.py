@@ -58,7 +58,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
     async def last_page(self, interaction, clicked_button):
         await self.show_page(self._source.get_max_pages() - 1, interaction)
 
-    async def show_page(self, page_number, interaction: Interaction) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+    async def show_page(self, page_number, interaction: Interaction) -> None:
         page = await self._source.get_page(page_number)
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
@@ -67,7 +67,7 @@ class MyMenuPages(ui.View, menus.MenuPages):
                 await interaction.followup.edit_message(message.id, **kwargs)
                 await interaction.response.edit_message(**kwargs)
 
-    async def show_checked_page(self, page_number, interaction: Interaction) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+    async def show_checked_page(self, page_number, interaction: Interaction) -> None:
         max_pages = self._source.get_max_pages()
         try:
             if max_pages is None:

@@ -143,7 +143,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
 
         return embed
 
-    def normalize_value(self, value: dict[str, Any]) -> str:  # pyright: ignore[reportIncompatibleMethodOverride]
+    def normalize_value(self, value: dict[str, Any]) -> str:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
@@ -208,12 +208,9 @@ class TrackerStatusCog(commands.Cog):
     @app_commands.guilds(config.guild_id)
     @app_commands.autocomplete(tracker=tracker_autocomplete)
     @app_commands.describe(tracker="Tracker to get uptime statuses for")
-    async def trackerstatus(
-        self,
-        ctx: discord.Interaction,
-        tracker: str,
-    ) -> None:
+    async def trackerstatus(self, ctx: discord.Interaction, tracker: str) -> None:
         await ctx.response.defer(ephemeral=True)
+
         tracker_status = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker), None)
 
         if tracker_status is None:
