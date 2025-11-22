@@ -17,7 +17,6 @@ class JoyboardCog(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self.cache = {"add": set(), "remove": set()}
 
     def generate_color(self, joy_count: int) -> int:
         """
@@ -35,6 +34,7 @@ class JoyboardCog(commands.Cog):
         return discord.Color.from_hsv(48 / 360, saturation, 1).value
 
     async def get_joy_count(self, message: discord.Message) -> int:
+        """Return the amount of joys that a message has, excluding the author of the message."""
         if not message.guild:
             return 0
 
@@ -74,19 +74,10 @@ class JoyboardCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
-        """
-        If a message was reacted with config.joyboard.joy_limit or more joys, send an embed to the joyboard channel,
-        as well as update the joy count in the embed if more joys were reacted.
-
-        Implements a cache to prevent race condition where if multiple joys were reacted on a message after it hits the
-        joy threshold and the IDs were not written to the database quickly enough, a duplicated joy embed would be sent.
-        """
         if not payload.guild_id or not payload.member:
             return
 
-        cache_data = (payload.message_id, payload.channel_id)
-
-        if not self.check_emoji(payload.emoji, payload.guild_id) or cache_data in self.cache["add"]:
+        if not self.check_emoji(payload.emoji, payload.guild_id):
             return
 
         channel = self.bot.get_channel(payload.channel_id)
@@ -117,8 +108,6 @@ class JoyboardCog(commands.Cog):
         ):
             return
 
-        self.cache["add"].add(cache_data)
-
         joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
         if not joyboard_channel or not isinstance(joyboard_channel, discord.TextChannel):
             return
@@ -137,8 +126,6 @@ class JoyboardCog(commands.Cog):
                 embed_dict = joy_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(joy_count=joy_count)
                 embed = discord.Embed.from_dict(embed_dict)
-
-                self.cache["add"].remove(cache_data)
 
                 await joy_embed.edit(
                     content=f"😂 **{joy_count}** {message.channel.mention}",
@@ -198,25 +185,30 @@ class JoyboardCog(commands.Cog):
             db.session.add(new)
 
         db.session.commit()
-        self.cache["add"].remove(cache_data)
 
     @commands.Cog.listener()
     async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent) -> None:
-        """
-        Update the joy count in the embed if the joys were reacted. Delete joy embed if the joy count is below threshold
-        """
         if not payload.guild_id:
             return
 
-        channel = self.bot.get_channel(payload.channel_id)
-        if not isinstance(channel, discord.TextChannel):
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
             return
 
-        cache_data = (payload.message_id, payload.channel_id)
-        if not self.check_emoji(payload.emoji, payload.guild_id) or cache_data in self.cache["remove"]:
+        channel = discord.utils.get(guild.text_channels, id=payload.channel_id)
+        if not channel:
             return
 
-        self.cache["remove"].add(cache_data)
+        message = await channel.fetch_message(payload.message_id)
+        if not message or not message.guild:
+            return
+
+        joyboard = discord.utils.get(guild.text_channels, id=config.joyboard.channel_id)
+        if not joyboard:
+            return
+
+        if not self.check_emoji(payload.emoji, payload.guild_id):
+            return
 
         result = db.session.scalar(
             select(Joyboard).where(
@@ -226,44 +218,42 @@ class JoyboardCog(commands.Cog):
         )
 
         if not result:
-            self.cache["remove"].remove(cache_data)
-
-        message = await channel.fetch_message(payload.message_id)
-        if not message or not message.guild or not isinstance(message.channel, discord.TextChannel):
-            return
-
-        joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
-        if not joyboard_channel or not isinstance(joyboard_channel, discord.TextChannel):
             return
 
         try:
-            joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
+            joy_embed = await joyboard.fetch_message(result.joy_embed_id)
         except discord.NotFound:
-            self.cache["remove"].remove(cache_data)
+            joy_embed = None
+
+        if not joy_embed:
+            db.session.delete(result)
+            db.session.commit()
+            return
 
         joy_count = await self.get_joy_count(message)
-
         if joy_count < config.joyboard.joy_limit:
             db.session.delete(result)
             db.session.commit()
-            self.cache["remove"].remove(cache_data)
-            return await joy_embed.delete()
+            await joy_embed.delete()
 
         embed_dict = joy_embed.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(joy_count=joy_count)
         embed = discord.Embed.from_dict(embed_dict)
-        await joy_embed.edit(
-            content=f"😂 **{joy_count}** {message.channel.mention}",
-            embed=embed,
-        )
-
-        self.cache["remove"].remove(cache_data)
+        await joy_embed.edit(content=f"😂 **{joy_count}** {channel.mention}", embed=embed)
 
     @commands.Cog.listener()
     async def on_raw_message_delete(self, payload) -> None:
         """
         Automatically remove the joyboard embed if the message linked to it is deleted.
         """
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
+            return
+
+        channel = discord.utils.get(guild.text_channels, id=config.joyboard.channel_id)
+        if not channel:
+            return
+
         result = db.session.scalar(
             select(Joyboard).where(
                 Joyboard.channel_id == payload.channel_id,
@@ -272,10 +262,6 @@ class JoyboardCog(commands.Cog):
         )
 
         if not result:
-            return
-
-        channel = self.bot.get_channel(config.joyboard.channel_id)
-        if not channel or not isinstance(channel, discord.TextChannel):
             return
 
         db.session.delete(result)

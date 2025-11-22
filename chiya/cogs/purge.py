@@ -53,6 +53,9 @@ class PurgeCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True)
 
+        if not isinstance(ctx.channel, discord.TextChannel) or not ctx.channel.last_message:
+            return
+
         if not self.can_purge_messages(ctx):
             return await embeds.send_error(ctx=ctx, description="You cannot use that command in this category.")
 
@@ -60,9 +63,6 @@ class PurgeCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         amount = 100 if amount > 100 else amount
-
-        if not isinstance(ctx.channel, discord.TextChannel):
-            return
 
         embed = discord.Embed()
         embed.title = "Purged messages"
