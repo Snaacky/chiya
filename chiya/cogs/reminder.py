@@ -3,13 +3,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from loguru import logger
+from pytimeparse2 import parse
 from sqlalchemy import select
 
 from chiya import db
 from chiya.config import config
 from chiya.models import RemindMe
 from chiya.utils import embeds
-from chiya.utils.helpers import get_duration
 from chiya.utils.pagination import MyMenuPages, MySource
 
 
@@ -96,20 +96,17 @@ class ReminderCog(commands.Cog):
         if not ctx.channel:
             return
 
-        duration_string, end_time = get_duration(duration=duration)
-        if not duration_string:
+        timestamp = parse(duration)
+        if not timestamp:
             return await embeds.send_error(
                 ctx=ctx,
-                description=(
-                    "Duration syntax: `y#mo#w#d#h#m#s` (year, month, week, day, hour, min, sec)\n"
-                    "You can specify up to all seven but you only need one."
-                ),
+                description="Could not understand that duration format, please try again.",
             )
 
         saved = RemindMe()
         saved.reminder_location = ctx.channel.id
         saved.author_id = ctx.user.id
-        saved.date_to_remind = end_time
+        saved.date_to_remind = arrow.utcnow().shift(seconds=timestamp).int_timestamp
         saved.message = message
         saved.sent = False
 
@@ -117,7 +114,7 @@ class ReminderCog(commands.Cog):
 
         embed = discord.Embed()
         embed.title = "Reminder set"
-        embed.description = f"I'll remind you about this <t:{end_time}:R>."
+        embed.description = f"I'll remind you about this <t:{saved.date_to_remind}:R>."
         embed.color = discord.Color.blurple()
         embed.add_field(name="ID:", value=saved.id, inline=False)
         embed.add_field(name="Message:", value=message, inline=False)

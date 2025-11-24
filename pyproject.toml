@@ -13,6 +13,7 @@ dependencies = [
     "parsedatetime==2.6",
     "privatebinapi==1.0.0",
     "pydantic==2.12.4",
+    "pytimeparse2==1.7.1",
     "sqlalchemy==2.0.44",
 ]
 
