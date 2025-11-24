@@ -15,15 +15,15 @@ class MuteCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @app_commands.command(name="mute", description="Mutes a member in the server")
+    @app_commands.command(name="mute", description="Mutes a user in the server")
     @app_commands.guilds(config.guild_id)
-    @app_commands.describe(member="The member that will be muted")
-    @app_commands.describe(reason="The reason why the member is being muted")
+    @app_commands.describe(user="The user that will be muted")
+    @app_commands.describe(reason="The reason why the user is being muted")
     @app_commands.describe(duration="The length of time the user will be muted for")
     async def mute(
         self,
         ctx: discord.Interaction,
-        member: discord.Member | discord.User,
+        user: discord.User | discord.Member,
         reason: str,
         duration: str,
     ) -> None:
@@ -41,14 +41,14 @@ class MuteCog(commands.Cog):
         if not ctx.guild:
             return
 
-        if not isinstance(member, discord.Member):
+        if not isinstance(user, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
 
-        if not can_action_member(ctx=ctx, member=member):
-            return await embeds.send_error(ctx=ctx, description=f"You cannot action {member.mention}.")
+        if not can_action_member(ctx=ctx, member=user):
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {user.mention}.")
 
-        if member.is_timed_out():
-            return await embeds.send_error(ctx=ctx, description=f"{member.mention} is already muted.")
+        if user.is_timed_out():
+            return await embeds.send_error(ctx=ctx, description=f"{user.mention} is already muted.")
 
         if len(reason) > 1024:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
@@ -65,7 +65,7 @@ class MuteCog(commands.Cog):
 
         mod_embed = discord.Embed()
         mod_embed.title = "Muted member"
-        mod_embed.description = f"{member.mention} was muted by {ctx.user.mention} for: {reason}"
+        mod_embed.description = f"{user.mention} was muted by {ctx.user.mention} for: {reason}"
         mod_embed.color = 0xCD6D6D
         mod_embed.add_field(name="Expires:", value=f"<t:{int(muted_until.int_timestamp)}:R>", inline=True)
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
@@ -81,12 +81,12 @@ class MuteCog(commands.Cog):
         user_embed.set_image(url="https://files.catbox.moe/b05gg3.gif")
 
         try:
-            await member.send(embed=user_embed)
+            await user.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
         log = ModLog()
-        log.user_id = member.id
+        log.user_id = user.id
         log.mod_id = ctx.user.id
         log.timestamp = arrow.utcnow().int_timestamp
         log.reason = reason
@@ -96,18 +96,18 @@ class MuteCog(commands.Cog):
         db.session.add(log)
         db.session.commit()
 
-        await member.timeout(muted_until.datetime, reason=reason)
+        await user.timeout(muted_until.datetime, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
     @app_commands.command(name="unmute", description="Umutes a member in the server")
     @app_commands.guilds(config.guild_id)
-    @app_commands.describe(member="The member that will be unmuted")
+    @app_commands.describe(user="The member that will be unmuted")
     @app_commands.describe(reason="The reason why the member is being unmuted")
     async def unmute(
         self,
         ctx: discord.Interaction,
-        member: discord.Member | discord.User,
+        user: discord.User | discord.Member,
         reason: str,
     ) -> None:
         """
@@ -123,21 +123,21 @@ class MuteCog(commands.Cog):
         if not ctx.guild:
             return
 
-        if not isinstance(member, discord.Member):
+        if not isinstance(user, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
 
-        if not can_action_member(ctx=ctx, member=member):
-            return await embeds.send_error(ctx=ctx, description=f"You cannot action {member.mention}.")
+        if not can_action_member(ctx=ctx, member=user):
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {user.mention}.")
 
-        if not member.is_timed_out():
-            return await embeds.send_error(ctx=ctx, description=f"{member.mention} is not muted.")
+        if not user.is_timed_out():
+            return await embeds.send_error(ctx=ctx, description=f"{user.mention} is not muted.")
 
         if len(reason) > 1024:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = discord.Embed()
         mod_embed.title = "Unmuted member"
-        mod_embed.description = f"{member.mention} was unmuted by {ctx.user.mention}"
+        mod_embed.description = f"{user.mention} was unmuted by {ctx.user.mention}"
         mod_embed.color = discord.Color.green()
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
         mod_embed.set_thumbnail(url="https://files.catbox.moe/izm83m.png")
@@ -151,12 +151,12 @@ class MuteCog(commands.Cog):
         user_embed.set_image(url="https://files.catbox.moe/razmf6.gif")
 
         try:
-            await member.send(embed=user_embed)
+            await user.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
         log = ModLog()
-        log.user_id = member.id
+        log.user_id = user.id
         log.mod_id = ctx.user.id
         log.timestamp = arrow.utcnow().int_timestamp
         log.reason = reason
@@ -165,7 +165,7 @@ class MuteCog(commands.Cog):
         db.session.add(log)
         db.session.commit()
 
-        await member.timeout(None, reason=reason)
+        await user.timeout(None, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 

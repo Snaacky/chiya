@@ -16,7 +16,7 @@ class GeneralCog(commands.Cog):
     async def pfp(
         self,
         ctx: discord.Interaction,
-        user: discord.Member | discord.User | None = None,
+        user: discord.User | discord.Member | None = None,
         profile: bool | None = None,
     ) -> None:
         """Send an embed with the specified users avatar."""

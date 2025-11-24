@@ -22,7 +22,7 @@ class NoteCog(commands.Cog):
     @app_commands.guilds(config.guild_id)
     @app_commands.describe(user="The user to add the note to")
     @app_commands.describe(note="The note to leave on the user")
-    async def add_note(self, ctx: discord.Interaction, user: discord.Member | discord.User, note: str) -> None:
+    async def add_note(self, ctx: discord.Interaction, user: discord.User | discord.Member, note: str) -> None:
         """Adds a note to the specified user queryable via /search."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
@@ -54,7 +54,7 @@ class NoteCog(commands.Cog):
     async def search_mod_actions(
         self,
         ctx: discord.Interaction,
-        user: discord.Member | discord.User,
+        user: discord.User | discord.Member,
         action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] | None = None,
     ) -> None:
         """

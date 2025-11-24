@@ -7,7 +7,7 @@ from chiya import db
 from chiya.config import config
 from chiya.models import ModLog
 from chiya.utils import embeds
-from chiya.utils.helpers import log_embed_to_channel
+from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
 class WarnCog(commands.Cog):
@@ -18,7 +18,7 @@ class WarnCog(commands.Cog):
     @app_commands.guilds(config.guild_id)
     @app_commands.describe(member="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")
-    async def warn(self, ctx: discord.Interaction, member: discord.Member | discord.User, reason: str) -> None:
+    async def warn(self, ctx: discord.Interaction, user: discord.User | discord.Member, reason: str) -> None:
         """
         Warn the user, log the action to the database, and attempt to send
         them a direct message alerting them of their mute.
@@ -36,15 +36,18 @@ class WarnCog(commands.Cog):
         if not ctx.guild:
             return
 
-        if not isinstance(member, discord.Member):
+        if not isinstance(user, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
+
+        if not can_action_member(ctx=ctx, member=user):
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if len(reason) > 4096:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         mod_embed = discord.Embed()
         mod_embed.title = "Warned member"
-        mod_embed.description = f"{member.mention} was warned by {ctx.user.mention}"
+        mod_embed.description = f"{user.mention} was warned by {ctx.user.mention}"
         mod_embed.color = discord.Color.gold()
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
         mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
@@ -59,12 +62,12 @@ class WarnCog(commands.Cog):
         user_embed.set_image(url="https://files.catbox.moe/2mscuu.gif")
 
         try:
-            await member.send(embed=user_embed)
+            await user.send(embed=user_embed)
         except (discord.Forbidden, discord.HTTPException):
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
         log = ModLog()
-        log.user_id = member.id
+        log.user_id = user.id
         log.mod_id = ctx.user.id
         log.timestamp = arrow.utcnow().int_timestamp
         log.reason = reason

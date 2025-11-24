@@ -15,7 +15,7 @@ class BanCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    async def is_user_banned(self, ctx: discord.Interaction, user: discord.Member | discord.User) -> bool:
+    async def is_user_banned(self, ctx: discord.Interaction, user: discord.User | discord.Member) -> bool:
         """Check if the user is banned from the context guild."""
         if not ctx.guild:
             return False
@@ -33,7 +33,7 @@ class BanCog(commands.Cog):
     async def ban(
         self,
         ctx: discord.Interaction,
-        user: discord.Member | discord.User,
+        user: discord.User | discord.Member,
         reason: str,
         daystodelete: app_commands.Range[int, 1, 7] | None = None,
     ) -> None:
@@ -103,7 +103,7 @@ class BanCog(commands.Cog):
     @app_commands.guilds(config.guild_id)
     @app_commands.describe(user="User to unban from the server")
     @app_commands.describe(reason="Reason why the user is being unbanned")
-    async def unban(self, ctx: discord.Interaction, user: discord.Member | discord.User, reason: str) -> None:
+    async def unban(self, ctx: discord.Interaction, user: discord.User | discord.Member, reason: str) -> None:
         """
         Unban the user from the server and log the action to the database.
 
@@ -144,7 +144,7 @@ class BanCog(commands.Cog):
         await log_embed_to_channel(ctx=ctx, embed=embed)
 
     @commands.Cog.listener()
-    async def on_member_ban(self, guild: discord.Guild, user: discord.Member | discord.User) -> None:
+    async def on_member_ban(self, guild: discord.Guild, user: discord.User | discord.Member) -> None:
         """
         Add the user's ban entry to the database if they were banned manually.
         """

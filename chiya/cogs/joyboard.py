@@ -4,7 +4,6 @@ from urllib.parse import urlparse
 import discord
 import httpx
 from discord.ext import commands
-from loguru import logger
 from sqlalchemy import select
 
 from chiya import db
@@ -77,26 +76,21 @@ class JoyboardCog(commands.Cog):
         if not payload.guild_id or not payload.member:
             return
 
-        if not self.check_emoji(payload.emoji, payload.guild_id):
+        guild = self.bot.get_guild(payload.guild_id)
+        if not guild:
             return
 
-        channel = self.bot.get_channel(payload.channel_id)
-        if not channel or not isinstance(channel, discord.TextChannel):
+        channel = discord.utils.get(guild.text_channels, id=payload.channel_id)
+        if not channel:
             return
 
         try:
             message = await channel.fetch_message(payload.message_id)
-        except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+        except discord.DiscordException:
             return
 
-        if not message.guild or not isinstance(message.channel, discord.TextChannel):
+        if not self.check_emoji(payload.emoji, payload.guild_id):
             return
-
-        time_since_message = datetime.datetime.now(datetime.timezone.utc) - message.created_at
-        if time_since_message.days > config.joyboard.timeout:
-            logger.info(
-                f"{payload.member.name} reacted to a message from {time_since_message.days} days ago - #{message.channel.name}-{message.id}"
-            )
 
         joy_count = await self.get_joy_count(message)
 
@@ -108,8 +102,8 @@ class JoyboardCog(commands.Cog):
         ):
             return
 
-        joyboard_channel = discord.utils.get(message.guild.channels, id=config.joyboard.channel_id)
-        if not joyboard_channel or not isinstance(joyboard_channel, discord.TextChannel):
+        joyboard_channel = discord.utils.get(guild.text_channels, id=config.joyboard.channel_id)
+        if not joyboard_channel:
             return
 
         result = db.session.scalar(
@@ -128,7 +122,7 @@ class JoyboardCog(commands.Cog):
                 embed = discord.Embed.from_dict(embed_dict)
 
                 await joy_embed.edit(
-                    content=f"😂 **{joy_count}** {message.channel.mention}",
+                    content=f"😂 **{joy_count}** {channel.mention}",
                     embed=embed,
                 )
 
@@ -152,7 +146,6 @@ class JoyboardCog(commands.Cog):
                 images.append(attachment.url)
 
         for message_embed in message.embeds:
-            # Other types may need to be added in future
             if message_embed.type in ["gif", "gifv"]:
                 if message_embed.provider and message_embed.provider.url:
                     urlinfo = urlparse(message_embed.provider.url)
@@ -163,14 +156,13 @@ class JoyboardCog(commands.Cog):
             elif message_embed.type in ["image"]:
                 images.append(message_embed.url)
 
-        # Prioritize the first image over sticker if possible.
         if images:
             embed.set_image(url=images[0])
         elif message.stickers:
             embed.set_image(url=message.stickers[0].url)
 
         joyed_message = await joyboard_channel.send(
-            content=f"😂 **{joy_count}** {message.channel.mention}",
+            content=f"😂 **{joy_count}** {channel.mention}",
             embed=embed,
         )
 
@@ -199,8 +191,9 @@ class JoyboardCog(commands.Cog):
         if not channel:
             return
 
-        message = await channel.fetch_message(payload.message_id)
-        if not message or not message.guild:
+        try:
+            message = await channel.fetch_message(payload.message_id)
+        except discord.DiscordException:
             return
 
         joyboard = discord.utils.get(guild.text_channels, id=config.joyboard.channel_id)

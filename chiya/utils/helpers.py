@@ -12,7 +12,7 @@ def can_action_member(ctx: discord.Interaction, member: discord.Member | discord
     if not ctx.client.user or not ctx.guild:
         return False
 
-    # Allow owner to override all limitations.
+    # Allow guild owner to override all limitations.
     if member.id == ctx.guild.owner_id:
         return True
 

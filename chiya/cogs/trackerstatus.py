@@ -48,7 +48,7 @@ class TrackerStatus:
 
         return discord.Color.red()
 
-    def normalize_value(self, value: str | int) -> str | None:
+    def normalize_value(self, value: Any) -> str | None:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
@@ -163,9 +163,6 @@ class TrackerStatusMAM(TrackerStatusUptimeRobot):
 
 
 class TrackerStatusCog(commands.Cog):
-    # TODO: Add support for trackers that offer their own status page.
-    # http://about.empornium.ph/
-    # http://is.morethantv.online/
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.refresh_data.start()
