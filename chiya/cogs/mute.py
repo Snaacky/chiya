@@ -60,8 +60,8 @@ class MuteCog(commands.Cog):
         # arrow will assume the struct is in UTC unless we manually set the timezone to the system timezone
         # and then convert it to UTC afterwards. We shouldn't need to do this again unless using parsedatetime.
         muted_until = arrow.get(*struct[:6]).replace(tzinfo=arrow.now().tzinfo).to("utc")
-        if muted_until >= arrow.utcnow().shift(days=+28):
-            return await embeds.send_error(ctx=ctx, description="Timeout duration cannot exceed 28 days.")
+        if muted_until >= arrow.utcnow().shift(days=+7):
+            return await embeds.send_error(ctx=ctx, description="Timeout duration cannot exceed 7 days.")
 
         mod_embed = discord.Embed()
         mod_embed.title = "Muted member"
