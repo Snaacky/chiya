@@ -75,7 +75,7 @@ class MuteCog(commands.Cog):
         user_embed.title = "Uh-oh, you've been muted!"
         user_embed.description = "If you believe this was a mistake, contact staff."
         user_embed.color = discord.Color.blurple()
-        user_embed.add_field(name="Server:", value=f"{ctx.guild.name}", inline=True)
+        user_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)
         user_embed.add_field(name="Duration:", value=f"<t:{int(muted_until.int_timestamp)}:R>", inline=True)
         user_embed.add_field(name="Reason:", value=reason, inline=False)
         user_embed.set_image(url="https://files.catbox.moe/b05gg3.gif")

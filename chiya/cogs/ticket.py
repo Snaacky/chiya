@@ -232,7 +232,7 @@ class TicketCloseButton(discord.ui.View):
             "Your ticket was closed. Please feel free to create a new ticket should you have any further inquiries."
         )
         dm_embed.color = discord.Color.blurple()
-        dm_embed.add_field(name="Server:", value=f"[{ctx.guild.name}]({await ctx.guild.vanity_invite()})", inline=True)
+        dm_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)
         dm_embed.add_field(name="Ticket Log:", value=url, inline=False)
         dm_embed.set_image(url="https://i.imgur.com/bf3vqei.gif")
 
