@@ -13,7 +13,7 @@ def can_action_member(ctx: discord.Interaction, member: discord.Member | discord
     if member.id == ctx.guild.owner_id:
         return True
 
-    # Stop mods from actioning on the bot.
+    # Prevent mods from actioning the bot.
     if member.id == ctx.client.user.id:
         return False
 
@@ -25,7 +25,7 @@ def can_action_member(ctx: discord.Interaction, member: discord.Member | discord
     if member.top_role >= member.guild.me.top_role:
         return False
 
-    # Prevents mods from actioning other mods.
+    # Prevents mods from actioning thesmelves or other mods.
     if ctx.user.top_role <= member.top_role:
         return False
 
