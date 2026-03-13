@@ -71,21 +71,20 @@ class NoteCog(commands.Cog):
             results = db.session.scalars(select(ModLog).where(ModLog.user_id == user.id).order_by(ModLog.id.asc()))
 
         actions = []
+        action_emoji = {
+            "mute": "🤐",
+            "unmute": "🗣",
+            "warn": "⚠",
+            "ban": "🔨",
+            "unban": "⚒",
+            "note": "🗒️",
+        }
         for result in results:
-            action_emoji = {
-                "mute": "🤐",
-                "unmute": "🗣",
-                "warn": "⚠",
-                "ban": "🔨",
-                "unban": "⚒",
-                "note": "🗒️",
-            }
-
             action_string = f"""**{action_emoji[result.type]} {result.type.title()}**
                 **ID:** {result.id}
-                **Timestamp:** {arrow.get(result.timestamp)} UTC
+                **Timestamp:** <t:{result.timestamp}:f>
                 **Moderator:** <@!{result.mod_id}>
-                **Reason:** {result.reason}"""
+                **Reason:** {result.display_reason}"""
 
             if result.type == "mute":
                 action_string += f"\n**Duration:** {result.duration}"
