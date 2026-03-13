@@ -63,9 +63,13 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
         if interaction.response.is_done():
-            if message := interaction.message:
-                await interaction.followup.edit_message(message.id, **kwargs)
-                await interaction.response.edit_message(**kwargs)
+            if self.message is not None:
+                await self.message.edit(**kwargs)
+            elif interaction.message is not None:
+                await interaction.followup.edit_message(interaction.message.id, **kwargs)
+            return
+
+        await interaction.response.edit_message(**kwargs)
 
     async def show_checked_page(self, page_number, interaction: Interaction) -> None:
         max_pages = self._source.get_max_pages()
@@ -88,8 +92,10 @@ class MyMenuPages(ui.View, menus.MenuPages):
         page = await self._source.get_page(0)
         kwargs = await self._get_kwargs_from_page(page)
         if ctx.response.is_done():
-            return await ctx.followup.send(**kwargs, ephemeral=True)
-        return await ctx.response.send_message(**kwargs, ephemeral=True)
+            return await ctx.followup.send(**kwargs, ephemeral=True, wait=True)
+
+        await ctx.response.send_message(**kwargs, ephemeral=True)
+        return await ctx.original_response()
 
 
 class MySource(menus.ListPageSource):
