@@ -16,7 +16,7 @@ class WarnCog(commands.Cog):
 
     @app_commands.command(name="warn", description="Warn the member")
     @app_commands.guilds(config.guild_id)
-    @app_commands.describe(member="The member that will be warned")
+    @app_commands.describe(user="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")
     async def warn(self, ctx: discord.Interaction, user: discord.User | discord.Member, reason: str) -> None:
         """
