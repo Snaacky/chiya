@@ -158,7 +158,7 @@ class BanCog(commands.Cog):
         log.mod_id = audit_log.user.id
         log.timestamp = int(ctx.created_at.timestamp())
         log.type = "ban"
-        log.reason = ban_entry.reason
+        log.reason = ban_entry.reason or "*User was manually banned.*"
 
         db.session.add(log)
         db.session.commit()
