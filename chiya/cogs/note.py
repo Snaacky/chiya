@@ -1,6 +1,5 @@
 from typing import Literal
 
-import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -29,7 +28,7 @@ class NoteCog(commands.Cog):
         log = ModLog()
         log.user_id = user.id
         log.mod_id = ctx.user.id
-        log.timestamp = arrow.utcnow().int_timestamp
+        log.timestamp = int(ctx.created_at.timestamp())
         log.reason = note
         log.type = "note"
 

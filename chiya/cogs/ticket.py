@@ -1,4 +1,3 @@
-import arrow
 import discord
 import privatebinapi
 from discord.ext import commands
@@ -114,7 +113,7 @@ class TicketSubmissionModal(discord.ui.Modal):
         ticket = Ticket()
         ticket.user_id = ctx.user.id
         ticket.guild = ctx.guild.id
-        ticket.timestamp = arrow.utcnow().int_timestamp
+        ticket.timestamp = int(ctx.created_at.timestamp())
         ticket.ticket_subject = ticket_subject
         ticket.ticket_message = ticket_message
         ticket.log_url = None

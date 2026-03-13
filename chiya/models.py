@@ -16,6 +16,12 @@ class ModLog(Base):
     duration: Mapped[str | None]
     type: Mapped[str]
 
+    @property
+    def display_reason(self) -> str:
+        if self.reason:
+            return self.reason.rstrip()
+        return "*No reason provided.*"
+
 
 class RemindMe(Base):
     __tablename__ = "remind_me"

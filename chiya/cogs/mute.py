@@ -1,8 +1,7 @@
-import arrow
 import discord
 from discord import app_commands
 from discord.ext import commands
-from parsedatetime import Calendar
+from pytimeparse2 import parse
 
 from chiya import db
 from chiya.config import config
@@ -53,21 +52,19 @@ class MuteCog(commands.Cog):
         if len(reason) > 1024:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
-        struct, status = Calendar().parse(duration)
-        if not status:
+        delta = parse(duration, as_timedelta=True)
+        if not delta:
             return await embeds.send_error(ctx=ctx, description="Unable to decipher duration, please try again")
 
-        # arrow will assume the struct is in UTC unless we manually set the timezone to the system timezone
-        # and then convert it to UTC afterwards. We shouldn't need to do this again unless using parsedatetime.
-        muted_until = arrow.get(*struct[:6]).replace(tzinfo=arrow.now().tzinfo).to("utc")
-        if muted_until >= arrow.utcnow().shift(days=+7):
+        muted_until = ctx.created_at + delta
+        if delta.days >= 7:
             return await embeds.send_error(ctx=ctx, description="Timeout duration cannot exceed 7 days.")
 
         mod_embed = discord.Embed()
         mod_embed.title = "Muted member"
         mod_embed.description = f"{user.mention} was muted by {ctx.user.mention} for: {reason}"
         mod_embed.color = 0xCD6D6D
-        mod_embed.add_field(name="Expires:", value=f"<t:{int(muted_until.int_timestamp)}:R>", inline=True)
+        mod_embed.add_field(name="Expires:", value=f"<t:{int(muted_until.timestamp())}:R>", inline=True)
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
         mod_embed.set_thumbnail(url="https://files.catbox.moe/6rs4fn.png")
 
@@ -76,7 +73,7 @@ class MuteCog(commands.Cog):
         user_embed.description = "If you believe this was a mistake, contact staff."
         user_embed.color = discord.Color.blurple()
         user_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)
-        user_embed.add_field(name="Duration:", value=f"<t:{int(muted_until.int_timestamp)}:R>", inline=True)
+        user_embed.add_field(name="Duration:", value=f"<t:{int(muted_until.timestamp())}:R>", inline=True)
         user_embed.add_field(name="Reason:", value=reason, inline=False)
         user_embed.set_image(url="https://files.catbox.moe/b05gg3.gif")
 
@@ -88,7 +85,7 @@ class MuteCog(commands.Cog):
         log = ModLog()
         log.user_id = user.id
         log.mod_id = ctx.user.id
-        log.timestamp = arrow.utcnow().int_timestamp
+        log.timestamp = int(ctx.created_at.timestamp())
         log.reason = reason
         log.duration = duration
         log.type = "mute"
@@ -96,7 +93,7 @@ class MuteCog(commands.Cog):
         db.session.add(log)
         db.session.commit()
 
-        await user.timeout(muted_until.datetime, reason=reason)
+        await user.timeout(muted_until, reason=reason)
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
@@ -158,7 +155,7 @@ class MuteCog(commands.Cog):
         log = ModLog()
         log.user_id = user.id
         log.mod_id = ctx.user.id
-        log.timestamp = arrow.utcnow().int_timestamp
+        log.timestamp = int(ctx.created_at.timestamp())
         log.reason = reason
         log.type = "unmute"
 
@@ -184,8 +181,8 @@ class MuteCog(commands.Cog):
         new = ModLog(
             user_id=after.id,
             mod_id=logs[0].user.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            reason=logs[0].reason,
+            timestamp=int(logs[0].created_at.timestamp()),
+            reason=logs[0].reason or "*User was manually muted.*",
         )
 
         if not before.timed_out_until:

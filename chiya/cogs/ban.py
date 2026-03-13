@@ -1,5 +1,3 @@
-import arrow
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -88,7 +86,7 @@ class BanCog(commands.Cog):
         log = ModLog()
         log.user_id = user.id
         log.mod_id = ctx.user.id
-        log.timestamp = arrow.utcnow().int_timestamp
+        log.timestamp = int(ctx.created_at.timestamp())
         log.reason = reason
         log.type = "ban"
 
@@ -132,7 +130,7 @@ class BanCog(commands.Cog):
         log = ModLog()
         log.user_id = user.id
         log.mod_id = ctx.user.id
-        log.timestamp = arrow.utcnow().int_timestamp
+        log.timestamp = int(ctx.created_at.timestamp())
         log.reason = reason
         log.type = "unban"
 
@@ -158,7 +156,7 @@ class BanCog(commands.Cog):
         log = ModLog()
         log.user_id = user.id
         log.mod_id = audit_log.user.id
-        log.timestamp = arrow.utcnow().int_timestamp
+        log.timestamp = int(ctx.created_at.timestamp())
         log.type = "ban"
         log.reason = ban_entry.reason
 
