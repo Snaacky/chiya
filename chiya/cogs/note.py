@@ -134,7 +134,7 @@ class NoteCog(commands.Cog):
         embed.title = f"Edited log: {user.name}"
         embed.description = f"Log #{id} for {user.mention} was updated by {ctx.user.mention}"
         embed.color = discord.Color.green()
-        embed.add_field(name="Before:", value=log.reason, inline=False)
+        embed.add_field(name="Before:", value=log.display_reason, inline=False)
         embed.add_field(name="After:", value=note, inline=False)
         embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
