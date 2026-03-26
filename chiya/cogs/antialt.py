@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 
+import discord
 from discord.ext import commands
 
 from chiya.utils import embeds
@@ -18,7 +19,7 @@ class AntiAltCog(commands.Cog):
                 image_url="https://files.catbox.moe/vp5op4.gif",
                 color=discord.Color.blurple(),
                 fields=[
-                    {"name": "Server:", "value": f"{ctx.guild.name}", "inline": True},
+                    {"name": "Server:", "value": f"{member.guild.name}", "inline": True},
                     {"name": "Reason:", "value": "We do not allow new Discord accounts to participate in our community to avoid bots and alt accounts. Please switch to your main account or try again at a later date.", "inline": False},
                 ],
             )
@@ -28,7 +29,7 @@ class AntiAltCog(commands.Cog):
             except (discord.Forbidden, discord.HTTPException):
                 pass
 
-            await member.kick(reason="Account younger than 6 months")
+            await member.kick(reason="Account <6 months old")
 
 
 async def setup(bot: commands.Bot) -> None:
