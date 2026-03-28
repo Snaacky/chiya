@@ -1,4 +1,5 @@
-import arrow
+from datetime import datetime, timedelta, timezone
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
@@ -30,7 +31,7 @@ class ReminderCog(commands.Cog):
 
         results = db.session.scalars(
             select(RemindMe).where(
-                RemindMe.date_to_remind < arrow.utcnow().int_timestamp,
+                RemindMe.date_to_remind < int(datetime.now(timezone.utc).timestamp()),
                 RemindMe.sent.is_(False),
             )
         )
@@ -106,7 +107,7 @@ class ReminderCog(commands.Cog):
         saved = RemindMe()
         saved.reminder_location = ctx.channel.id
         saved.author_id = ctx.user.id
-        saved.date_to_remind = arrow.utcnow().shift(seconds=timestamp).int_timestamp
+        saved.date_to_remind = int((datetime.now(timezone.utc) + timedelta(seconds=timestamp)).timestamp())
         saved.message = message
         saved.sent = False
 
