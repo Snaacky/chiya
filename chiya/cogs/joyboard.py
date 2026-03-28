@@ -39,9 +39,6 @@ class JoyboardCog(commands.Cog):
 
         unique_users = set()
         for reaction in message.reactions:
-            if not isinstance(reaction.emoji, (discord.PartialEmoji, discord.Emoji)):
-                continue
-
             if not self.check_emoji(reaction.emoji, message.guild.id):
                 continue
 
@@ -51,7 +48,7 @@ class JoyboardCog(commands.Cog):
 
         return len(unique_users)
 
-    def check_emoji(self, emoji: discord.PartialEmoji | discord.Emoji, guild_id: int) -> bool:
+    def check_emoji(self, emoji: str | discord.PartialEmoji | discord.Emoji, guild_id: int) -> bool:
         if isinstance(emoji, discord.PartialEmoji) and emoji.is_custom_emoji():
             guild = self.bot.get_guild(guild_id)
             if not guild:
@@ -116,6 +113,8 @@ class JoyboardCog(commands.Cog):
         if result:
             try:
                 joy_embed = await joyboard_channel.fetch_message(result.joy_embed_id)
+                if not joy_embed.embeds:
+                    await joy_embed.delete()
 
                 embed_dict = joy_embed.embeds[0].to_dict()
                 embed_dict["color"] = self.generate_color(joy_count=joy_count)
@@ -150,9 +149,12 @@ class JoyboardCog(commands.Cog):
                 if message_embed.provider and message_embed.provider.url:
                     urlinfo = urlparse(message_embed.provider.url)
                     if urlinfo.netloc in ["tenor.com", "tenor.co"]:
-                        async with httpx.AsyncClient() as client:
-                            req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
-                            images.append(req.url)
+                        try:
+                            async with httpx.AsyncClient() as client:
+                                req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
+                                images.append(req.url)
+                        except httpx.HTTPError:
+                            pass
             elif message_embed.type in ["image"]:
                 images.append(message_embed.url)
 
@@ -228,6 +230,13 @@ class JoyboardCog(commands.Cog):
             db.session.delete(result)
             db.session.commit()
             await joy_embed.delete()
+            return
+
+        if not joy_embed.embeds:
+            db.session.delete(result)
+            db.session.commit()
+            await joy_embed.delete()
+            return
 
         embed_dict = joy_embed.embeds[0].to_dict()
         embed_dict["color"] = self.generate_color(joy_count=joy_count)

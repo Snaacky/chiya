@@ -53,8 +53,8 @@ class PurgeCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True)
 
-        if not isinstance(ctx.channel, discord.TextChannel) or not ctx.channel.last_message:
-            return
+        if not isinstance(ctx.channel, discord.TextChannel):
+            return await embeds.send_error(ctx=ctx, description="This command can only be used in text channels.")
 
         if not self.can_purge_messages(ctx):
             return await embeds.send_error(ctx=ctx, description="You cannot use that command in this category.")
@@ -71,7 +71,7 @@ class PurgeCog(commands.Cog):
         embed.add_field(name="Reason:", value=reason, inline=False)
         embed.set_thumbnail(url="https://i.imgur.com/EDy6jCp.png")
 
-        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.channel.last_message.created_at)
+        await ctx.channel.purge(limit=amount, bulk=True, before=ctx.created_at)
         await ctx.followup.send(embed=embed)
         await log_embed_to_channel(ctx=ctx, embed=embed)
 

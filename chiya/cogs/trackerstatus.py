@@ -22,8 +22,12 @@ class TrackerStatus:
 
     async def do_refresh(self, session: aiohttp.ClientSession | None = None) -> None:
         try:
-            session = session or aiohttp.ClientSession()
-            async with session:
+            if session is None:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(self.url, timeout=aiohttp.ClientTimeout(10)) as response:
+                        response.raise_for_status()
+                        self.cache_data = await response.json()
+            else:
                 async with session.get(self.url, timeout=aiohttp.ClientTimeout(10)) as response:
                     response.raise_for_status()
                     self.cache_data = await response.json()
@@ -33,6 +37,8 @@ class TrackerStatus:
 
     def get_embed_color(self, embed: discord.Embed) -> discord.Color:
         status = list(set([field.value for field in embed.fields]))
+        if not status:
+            return discord.Color.red()
         if len(status) == 1:
             if status[0] == "🟢 Online":
                 return discord.Color.green()
@@ -79,18 +85,29 @@ class TrackerStatusInfo(TrackerStatus):
     async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
         embed = discord.Embed()
         embed.title = f"Tracker Status: {self.tracker}"
-        embed.color = self.get_embed_color(embed)
 
-        if self.cache_data:
+        if not self.cache_data:
             self.last_update = 0
             await self.do_refresh()
 
-        for key, value in self.cache_data[self.tracker.lower()]["Details"].items():
+        tracker_data = next(
+            (value for key, value in self.cache_data.items() if key.lower() == self.tracker.lower()),
+            None,
+        )
+        details = tracker_data.get("Details") if tracker_data else None
+
+        if not details:
+            embed.set_footer(text="?? API Failed")
+            embed.color = discord.Color.red()
+            return embed
+
+        for key, value in details.items():
             # Skip over any keys that we don't want to return in the embed.
             if key in ["tweet", "TrackerHTTPAddresses", "TrackerHTTPSAddresses"]:
                 continue
             embed.add_field(name=key, value=self.normalize_value(value), inline=True)
 
+        embed.color = self.get_embed_color(embed)
         return embed
 
 
@@ -105,9 +122,8 @@ class TrackerStatusAB(TrackerStatus):
     async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
         embed = discord.Embed()
         embed.title = f"Tracker Status: {self.tracker}"
-        embed.color = self.get_embed_color(embed)
 
-        if self.cache_data:
+        if not self.cache_data:
             await self.do_refresh()
 
         if not self.cache_data.get("status", False):
@@ -116,6 +132,7 @@ class TrackerStatusAB(TrackerStatus):
         for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
 
+        embed.color = self.get_embed_color(embed)
         return embed
 
 
@@ -130,9 +147,8 @@ class TrackerStatusUptimeRobot(TrackerStatus):
     async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
         embed = discord.Embed()
         embed.title = f"Tracker Status: {self.tracker}"
-        embed.color = self.get_embed_color(embed)
 
-        if self.cache_data:
+        if not self.cache_data:
             await self.do_refresh()
 
         monitors: list[dict] = self.cache_data.get("psp", {}).get("monitors", [])
@@ -141,6 +157,7 @@ class TrackerStatusUptimeRobot(TrackerStatus):
             dratio: dict = monitor.get("dailyRatios", [])[0]
             embed.add_field(name=monitor.get("name", "UNKNOWN"), value=self.normalize_value(dratio), inline=True)
 
+        embed.color = self.get_embed_color(embed)
         return embed
 
     def normalize_value(self, value: dict[str, Any]) -> str:

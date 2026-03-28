@@ -114,6 +114,10 @@ class MuteCog(commands.Cog):
         If the user has privacy settings enabled or has the bot blocked they
         will be unable to receive the ban notification. The bot will let the
         invoking mod know if this is the case.
+
+        TODO: Either setup a scheduler or check if an event is emitted when a
+        mute expires so that we can return the same unmute embed when the user
+        expires naturally.
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
@@ -171,23 +175,38 @@ class MuteCog(commands.Cog):
         """
         Add the user's mute entry to the database if they were timed out manually.
         """
-        if not before.timed_out_until and not after.timed_out_until:
+        if before.timed_out_until is None and after.timed_out_until is None:
             return
 
         logs = [log async for log in after.guild.audit_logs(limit=1, action=discord.AuditLogAction.member_update)]
         if not logs or not logs[0].user or logs[0].user == self.bot.user:
             return
 
-        new = ModLog(
-            user_id=after.id,
-            mod_id=logs[0].user.id,
-            timestamp=int(logs[0].created_at.timestamp()),
-            reason=logs[0].reason or "*User was manually muted.*",
-        )
+        if before.timed_out_until is None:
+            seconds = round((logs[0].after.timed_out_until - logs[0].created_at).total_seconds())
+            duration = {
+                60: "60 seconds",
+                300: "5 minutes",
+                600: "10 minutes",
+                3600: "1 hour",
+                86400: "1 day",
+                604800: "1 week",
+            }.get(seconds, f"{seconds} seconds")
 
-        if not before.timed_out_until:
+            new = ModLog()
+            new.user_id = after.id
+            new.mod_id = logs[0].user.id
+            new.timestamp = int(logs[0].created_at.timestamp())
+            new.reason = logs[0].reason or "*User was manually muted, no reason provided.*"
+            new.duration = duration
             new.type = "mute"
+
         else:
+            new = ModLog()
+            new.user_id = after.id
+            new.mod_id = logs[0].user.id
+            new.timestamp = int(logs[0].created_at.timestamp())
+            new.reason = logs[0].reason or "*User was manually unmuted, no reason provided.*"
             new.type = "unmute"
 
         db.session.add(new)

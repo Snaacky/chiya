@@ -11,7 +11,6 @@ class ParentModel(BaseModel):
 class Bot(ParentModel):
     token: str
     prefix: str
-    status: str
     log_level: str
 
 

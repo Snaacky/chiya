@@ -112,7 +112,7 @@ class HighlightCog(commands.Cog):
             )
 
         # Prevent users from tracking the same term more than once.
-        if db.session.scalar(select(exists()).select_from(Highlight).where(Highlight.user_id == ctx.user.id)):
+        if db.session.scalar(select(exists().where(Highlight.user_id == ctx.user.id, Highlight.term == term))):
             return await embeds.send_error(ctx=ctx, description="You are already tracking that term.")
 
         row = Highlight()

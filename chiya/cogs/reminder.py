@@ -111,6 +111,7 @@ class ReminderCog(commands.Cog):
         saved.sent = False
 
         db.session.add(saved)
+        db.session.commit()
 
         embed = discord.Embed()
         embed.title = "Reminder set"

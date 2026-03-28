@@ -13,19 +13,9 @@ class TicketCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_ready(self) -> None:
-        """
-        Register the embed button and ticket close button that persists
-        between bot restarts.
-        """
-        self.bot.add_view(TicketCreateButton())
-        self.bot.add_view(TicketCloseButton())
-
     @commands.is_owner()
     @commands.command(name="createticketembed")
     async def ticket(self, ctx: commands.Context) -> None:
-        # TODO: Move this into the commands/administration.py cog.
         """
         Command to create an embed that allows creating tickets.
         """
@@ -138,18 +128,14 @@ class TicketCreateButton(discord.ui.View):
         if not ctx.guild:
             return
 
-        category = discord.utils.get(ctx.guild.categories, id=config.categories.tickets)
-        if not category:
-            return
-
-        ticket = discord.utils.get(category.text_channels, name=f"ticket-{ctx.user.id}")
-
+        ticket = discord.utils.get(ctx.guild.text_channels, name=f"ticket-{ctx.user.id}")
         if ticket:
             embed = discord.Embed()
             embed.title = "Error:"
             embed.description = f"{ctx.user.mention}, you already have a ticket open at: {ticket.mention}"
             embed.color = discord.Color.red()
             await ctx.response.send_message(embed=embed, ephemeral=True)
+            return
 
         modal = TicketSubmissionModal(title="Ticket Submission")
         await ctx.response.send_modal(modal)
@@ -249,3 +235,5 @@ class TicketCloseButton(discord.ui.View):
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(TicketCog(bot))
+    bot.add_view(TicketCreateButton())
+    bot.add_view(TicketCloseButton())
