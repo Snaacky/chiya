@@ -1,13 +1,12 @@
-import arrow
-
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from chiya import db
 from chiya.config import config
 from chiya.models import ModLog
 from chiya.utils import embeds
-from chiya.utils.helpers import log_embed_to_channel
+from chiya.utils.helpers import can_action_member, log_embed_to_channel
 
 
 class WarnCog(commands.Cog):
@@ -16,10 +15,9 @@ class WarnCog(commands.Cog):
 
     @app_commands.command(name="warn", description="Warn the member")
     @app_commands.guilds(config.guild_id)
-    @app_commands.guild_only()
-    @app_commands.describe(member="The member that will be warned")
+    @app_commands.describe(user="The member that will be warned")
     @app_commands.describe(reason="The reason why the member is being warned")
-    async def warn(self, ctx: discord.Interaction, member: discord.Member | discord.User, reason: str) -> None:
+    async def warn(self, ctx: discord.Interaction, user: discord.User | discord.Member, reason: str) -> None:
         """
         Warn the user, log the action to the database, and attempt to send
         them a direct message alerting them of their mute.
@@ -34,47 +32,48 @@ class WarnCog(commands.Cog):
         """
         await ctx.response.defer(thinking=True, ephemeral=True)
 
-        if not isinstance(member, discord.Member):
+        if not ctx.guild:
+            return
+
+        if not isinstance(user, discord.Member):
             return await embeds.send_error(ctx=ctx, description="That user is not in the server.")
+
+        if not can_action_member(ctx=ctx, member=user):
+            return await embeds.send_error(ctx=ctx, description=f"You cannot action {user.mention}.")
 
         if len(reason) > 4096:
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
-        mod_embed = embeds.make_embed(
-            ctx=ctx,
-            author=True,
-            title="Warned member",
-            description=f"{member.mention} was warned by {ctx.user.mention}",
-            thumbnail_url="https://files.catbox.moe/xbwoe8.png",
-            color=discord.Color.gold(),
-            fields=[
-                {"name": "Reason:", "value": reason, "inline": False},
-            ],
-        )
+        mod_embed = discord.Embed()
+        mod_embed.title = "Warned member"
+        mod_embed.description = f"{user.mention} was warned by {ctx.user.mention}"
+        mod_embed.color = discord.Color.gold()
+        mod_embed.add_field(name="Reason:", value=reason, inline=False)
+        mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
+        mod_embed.set_thumbnail(url="https://files.catbox.moe/xbwoe8.png")
+
+        user_embed = discord.Embed()
+        user_embed.title = "Uh-oh, you've received a warning!"
+        user_embed.description = "If you believe this was a mistake, contact staff."
+        user_embed.color = discord.Color.blurple()
+        user_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)
+        user_embed.add_field(name="Reason:", value=reason, inline=False)
+        user_embed.set_image(url="https://files.catbox.moe/2mscuu.gif")
 
         try:
-            user_embed = embeds.make_embed(
-                author=False,
-                title="Uh-oh, you've received a warning!",
-                description="If you believe this was a mistake, contact staff.",
-                image_url="https://files.catbox.moe/2mscuu.gif",
-                color=discord.Color.blurple(),
-                fields=[
-                    {"name": "Server:", "value": ctx.guild.name, "inline": True},
-                    {"name": "Reason:", "value": reason, "inline": False},
-                ],
-            )
-            await member.send(embed=user_embed)
-        except (discord.Forbidden, discord.HTTPException):
+            await user.send(embed=user_embed)
+        except discord.Forbidden, discord.HTTPException:
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
-        ModLog(
-            user_id=member.id,
-            mod_id=ctx.user.id,
-            timestamp=arrow.utcnow().int_timestamp,
-            reason=reason,
-            type="warn",
-        ).save()
+        log = ModLog()
+        log.user_id = user.id
+        log.mod_id = ctx.user.id
+        log.timestamp = int(ctx.created_at.timestamp())
+        log.reason = reason
+        log.type = "warn"
+
+        db.session.add(log)
+        db.session.commit()
 
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)

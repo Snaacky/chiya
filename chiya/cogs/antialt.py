@@ -29,7 +29,7 @@ class AntiAltCog(commands.Cog):
 
             try:
                 await member.send(embed=user_embed)
-            except (discord.Forbidden, discord.HTTPException):
+            except discord.Forbidden, discord.HTTPException:
                 pass
 
             await member.kick(reason="Account <6 months old")

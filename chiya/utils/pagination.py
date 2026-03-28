@@ -1,3 +1,5 @@
+from typing import Any
+
 import discord
 from discord import Interaction, ui
 from discord.ext import menus
@@ -27,9 +29,10 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self.user = ctx.user
         self.message = await self.send_initial_message(ctx, ctx.channel)
 
-    async def _get_kwargs_from_page(self, page):
+    async def _get_kwargs_from_page(self, page) -> dict[str, Any]:
         """This method calls ListPageSource.format_page class"""
         value = await super()._get_kwargs_from_page(page)
+        value = value or {}
         if "view" not in value:
             value.update({"view": self})
         return value
@@ -44,15 +47,15 @@ class MyMenuPages(ui.View, menus.MenuPages):
         await self.show_page(0, interaction)
 
     @ui.button(emoji=discord.PartialEmoji(name="left_prev", id=1093296352626229348), style=discord.ButtonStyle.primary)
-    async def before_page(self, interaction, clicked_button):
+    async def before_page(self, interaction, clicked_button) -> None:
         await self.show_checked_page(self.current_page - 1, interaction)
 
     @ui.button(emoji=discord.PartialEmoji(name="right_next", id=1093296333156274186), style=discord.ButtonStyle.primary)
-    async def next_page(self, interaction, clicked_button):
+    async def next_page(self, interaction, clicked_button) -> None:
         await self.show_checked_page(self.current_page + 1, interaction)
 
     @ui.button(emoji=discord.PartialEmoji(name="right_end", id=1093296509442871448), style=discord.ButtonStyle.primary)
-    async def last_page(self, interaction, clicked_button):
+    async def last_page(self, interaction, clicked_button) -> None:
         await self.show_page(self._source.get_max_pages() - 1, interaction)
 
     async def show_page(self, page_number, interaction: Interaction) -> None:
@@ -60,7 +63,12 @@ class MyMenuPages(ui.View, menus.MenuPages):
         self.current_page = page_number
         kwargs = await self._get_kwargs_from_page(page)
         if interaction.response.is_done():
-            await interaction.followup.edit_message(interaction.message.id, **kwargs)
+            if self.message is not None:
+                await self.message.edit(**kwargs)
+            elif interaction.message is not None:
+                await interaction.followup.edit_message(interaction.message.id, **kwargs)
+            return
+
         await interaction.response.edit_message(**kwargs)
 
     async def show_checked_page(self, page_number, interaction: Interaction) -> None:
@@ -80,12 +88,16 @@ class MyMenuPages(ui.View, menus.MenuPages):
             # An error happened that can be handled, so ignore it.
             await interaction.response.send_message("This page would go out of bounds.", ephemeral=True)
 
-    async def send_initial_message(self, ctx: Interaction, channel):
+    async def send_initial_message(
+        self, ctx: Interaction, channel
+    ) -> discord.WebhookMessage | discord.InteractionMessage:
         page = await self._source.get_page(0)
         kwargs = await self._get_kwargs_from_page(page)
         if ctx.response.is_done():
-            return await ctx.followup.send(**kwargs, ephemeral=True)
-        return await ctx.response.send_message(**kwargs, ephemeral=True)
+            return await ctx.followup.send(**kwargs, ephemeral=True, wait=True)
+
+        await ctx.response.send_message(**kwargs, ephemeral=True)
+        return await ctx.original_response()
 
 
 class MySource(menus.ListPageSource):
@@ -93,9 +105,9 @@ class MySource(menus.ListPageSource):
         super().__init__(data, per_page=4)
         self.embed = embed
 
-    async def format_page(self, menu, entries) -> discord.Embed:
+    async def format_page(self, menu, page) -> discord.Embed:
         page_info = await self.get_page(menu.current_page)
-        desc = "\n".join(page_info)
+        desc = "\n\n".join(page_info)
         self.embed.description = desc
         self.embed.set_footer(text=f"Page {menu.current_page + 1}/{self.get_max_pages()}")
         return self.embed

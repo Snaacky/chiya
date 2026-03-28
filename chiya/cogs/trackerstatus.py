@@ -1,4 +1,6 @@
 import time
+from typing import Any
+
 import aiohttp
 import discord
 from discord import app_commands
@@ -6,30 +8,37 @@ from discord.ext import commands, tasks
 from loguru import logger
 
 from chiya.config import config
-from chiya.utils import embeds
 from chiya.utils.embeds import error_embed
 
 
 class TrackerStatus:
     def __init__(self, tracker: str, url: str) -> None:
         self.tracker = tracker
-        self.cache_data: dict = None
+        self.cache_data: dict[str, Any] = {}
         self.url = url
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
-        pass
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
+        raise NotImplementedError
 
-    async def do_refresh(self, session: aiohttp.ClientSession) -> None:
+    async def do_refresh(self, session: aiohttp.ClientSession | None = None) -> None:
         try:
-            async with session.get(self.url, timeout=10) as response:
-                response.raise_for_status()
-                self.cache_data = await response.json()
+            if session is None:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(self.url, timeout=aiohttp.ClientTimeout(10)) as response:
+                        response.raise_for_status()
+                        self.cache_data = await response.json()
+            else:
+                async with session.get(self.url, timeout=aiohttp.ClientTimeout(10)) as response:
+                    response.raise_for_status()
+                    self.cache_data = await response.json()
         except Exception:
             logger.debug(f"Unable to refresh {self.tracker} tracker status")
             pass
 
     def get_embed_color(self, embed: discord.Embed) -> discord.Color:
         status = list(set([field.value for field in embed.fields]))
+        if not status:
+            return discord.Color.red()
         if len(status) == 1:
             if status[0] == "🟢 Online":
                 return discord.Color.green()
@@ -45,7 +54,7 @@ class TrackerStatus:
 
         return discord.Color.red()
 
-    def normalize_value(self, value: str | int) -> str | None:
+    def normalize_value(self, value: Any) -> str | None:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
@@ -68,29 +77,37 @@ class TrackerStatusInfo(TrackerStatus):
     def __init__(self, tracker: str) -> None:
         super().__init__(tracker, "https://trackerstatus.info/api/list/")
 
-    async def do_refresh(self, session: aiohttp.ClientSession) -> None:
+    async def do_refresh(self, session: aiohttp.ClientSession | None = None) -> None:
         if time.time() - self.last_update > 10:
             await super().do_refresh(session)
             self.last_update = time.time()
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Tracker Status: {self.tracker}",
-        )
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
+        embed = discord.Embed()
+        embed.title = f"Tracker Status: {self.tracker}"
 
-        if self.cache_data is None:
+        if not self.cache_data:
             self.last_update = 0
-            self.do_refresh()
+            await self.do_refresh()
 
-        for key, value in self.cache_data[self.tracker.lower()]["Details"].items():
+        tracker_data = next(
+            (value for key, value in self.cache_data.items() if key.lower() == self.tracker.lower()),
+            None,
+        )
+        details = tracker_data.get("Details") if tracker_data else None
+
+        if not details:
+            embed.set_footer(text="?? API Failed")
+            embed.color = discord.Color.red()
+            return embed
+
+        for key, value in details.items():
             # Skip over any keys that we don't want to return in the embed.
             if key in ["tweet", "TrackerHTTPAddresses", "TrackerHTTPSAddresses"]:
                 continue
             embed.add_field(name=key, value=self.normalize_value(value), inline=True)
 
         embed.color = self.get_embed_color(embed)
-
         return embed
 
 
@@ -102,23 +119,20 @@ class TrackerStatusAB(TrackerStatus):
     def __init__(self) -> None:
         super().__init__("AB", "https://status.animebytes.tv/api/status")
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Tracker Status: {self.tracker}",
-        )
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
+        embed = discord.Embed()
+        embed.title = f"Tracker Status: {self.tracker}"
 
-        if self.cache_data is None:
-            self.do_refresh()
+        if not self.cache_data:
+            await self.do_refresh()
 
         if not self.cache_data.get("status", False):
-            embed.set_footer("🔴 API Failed")
+            embed.set_footer(text="🔴 API Failed")
 
         for key, value in self.cache_data.get("status", {}).items():
             embed.add_field(name=key, value=self.normalize_value(value.get("status")), inline=True)
 
         embed.color = self.get_embed_color(embed)
-
         return embed
 
 
@@ -130,14 +144,12 @@ class TrackerStatusUptimeRobot(TrackerStatus):
     def __init__(self, tracker: str, url: str) -> None:
         super().__init__(tracker, url)
 
-    def get_status_embed(self, ctx: discord.Interaction = None) -> discord.Embed:
-        embed = embeds.make_embed(
-            ctx=ctx,
-            title=f"Tracker Status: {self.tracker}",
-        )
+    async def get_status_embed(self, ctx: discord.Interaction | None = None) -> discord.Embed:
+        embed = discord.Embed()
+        embed.title = f"Tracker Status: {self.tracker}"
 
-        if self.cache_data is None:
-            self.do_refresh()
+        if not self.cache_data:
+            await self.do_refresh()
 
         monitors: list[dict] = self.cache_data.get("psp", {}).get("monitors", [])
 
@@ -146,17 +158,16 @@ class TrackerStatusUptimeRobot(TrackerStatus):
             embed.add_field(name=monitor.get("name", "UNKNOWN"), value=self.normalize_value(dratio), inline=True)
 
         embed.color = self.get_embed_color(embed)
-
         return embed
 
-    def normalize_value(self, value: dict) -> str:
+    def normalize_value(self, value: dict[str, Any]) -> str:
         """
         Converts API data values into user-friendly text with status availability icon.
         """
         if value.get("label") == "success":
             return "🟢 Online"
         ratio = float(value.get("ratio", "0"))
-        if float(value.get("ratio")) > 95:
+        if ratio > 95:
             return "🟠 Unstable"
         elif ratio > 0:
             return "🔴 Offline"
@@ -169,14 +180,11 @@ class TrackerStatusMAM(TrackerStatusUptimeRobot):
 
 
 class TrackerStatusCog(commands.Cog):
-    # TODO: Add support for trackers that offer their own status page.
-    # http://about.empornium.ph/
-    # http://is.morethantv.online/
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self.refresh_data.start()
 
-        self.trackers: tuple[TrackerStatus] = (
+        self.trackers: tuple[TrackerStatus, ...] = (
             TrackerStatusInfo("AR"),
             TrackerStatusInfo("BTN"),
             TrackerStatusInfo("GGn"),
@@ -190,7 +198,7 @@ class TrackerStatusCog(commands.Cog):
 
         self.trackers_list = tuple(sorted((tracker.tracker for tracker in self.trackers)))
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         self.refresh_data.cancel()
 
     @tasks.loop(seconds=60)
@@ -214,19 +222,16 @@ class TrackerStatusCog(commands.Cog):
     @app_commands.guilds(config.guild_id)
     @app_commands.autocomplete(tracker=tracker_autocomplete)
     @app_commands.describe(tracker="Tracker to get uptime statuses for")
-    async def trackerstatus(
-        self,
-        ctx: discord.Interaction,
-        tracker: str,
-    ) -> None:
+    async def trackerstatus(self, ctx: discord.Interaction, tracker: str) -> None:
         await ctx.response.defer(ephemeral=True)
-        tracker: TrackerStatus = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker))
 
-        if tracker is None:
+        tracker_status = next((tracker_e for tracker_e in self.trackers if tracker_e.tracker == tracker), None)
+
+        if tracker_status is None:
             await ctx.followup.send(embed=error_embed(ctx, "Please choose a listed tracker."))
             return
 
-        embed = tracker.get_status_embed(ctx)
+        embed = await tracker_status.get_status_embed(ctx)
         await ctx.followup.send(embed=embed)
 
 

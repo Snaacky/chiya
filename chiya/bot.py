@@ -8,8 +8,8 @@ from loguru import logger
 
 from chiya.config import config, workspace
 
+
 bot = commands.Bot(
-    activity=discord.Activity(type=discord.ActivityType.listening, name=config.bot.status),
     case_insensitive=True,
     command_prefix=config.bot.prefix,
     help_command=None,

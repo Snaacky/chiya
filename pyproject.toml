@@ -3,22 +3,21 @@ name = "chiya"
 version = "0.1.0"
 description = "A moderation-heavy general purpose Discord bot"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
-    "alembic==1.17.1",
-    "arrow==1.4.0",
+    "alembic==1.18.4",
     "discord-ext-menus>=1.1",
-    "discord-py[speed]==2.6.4",
+    "discord-py[speed]==2.7.1",
     "loguru==0.7.3",
-    "parsedatetime==2.6",
     "privatebinapi==1.0.0",
-    "pydantic==2.12.4",
-    "sqlalchemy==2.0.44",
+    "pydantic==2.12.5",
+    "pytimeparse2==1.7.1",
+    "sqlalchemy==2.0.48",
 ]
 
 [dependency-groups]
 dev = [
-    "ruff==0.14.4",
+    "ruff==0.15.8",
 ]
 
 [tool.ruff]

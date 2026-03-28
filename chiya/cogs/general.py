@@ -3,7 +3,6 @@ from discord import app_commands
 from discord.ext import commands
 
 from chiya.config import config
-from chiya.utils import embeds
 
 
 class GeneralCog(commands.Cog):
@@ -17,17 +16,21 @@ class GeneralCog(commands.Cog):
     async def pfp(
         self,
         ctx: discord.Interaction,
-        user: discord.Member | discord.User = None,
-        profile: bool = None,
+        user: discord.User | discord.Member | None = None,
+        profile: bool | None = None,
     ) -> None:
         """Send an embed with the specified users avatar."""
         await ctx.response.defer(thinking=True, ephemeral=True)
 
         user = user or ctx.user
+
         if profile and isinstance(user, discord.Member):
             user = ctx.client.get_user(user.id)
 
-        embed = embeds.make_embed()
+        if not user:
+            return
+
+        embed = discord.Embed()
         embed.set_author(icon_url=user.display_avatar.url, name=str(user))
         embed.set_image(url=user.display_avatar.url)
 

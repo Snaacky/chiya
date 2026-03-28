@@ -1,9 +1,8 @@
 guild_id = 111111111111111111
 
-[bot]    
+[bot]
 token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 prefix = "xxxxxxxxxxxxxx"
-status = "your commands!"
 log_level = "INFO"
 
 [database]
