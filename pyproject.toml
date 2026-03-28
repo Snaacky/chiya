@@ -16,7 +16,9 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["ruff==0.15.6"]
+dev = [
+    "ruff==0.15.8",
+]
 
 [tool.ruff]
 line-length = 120
