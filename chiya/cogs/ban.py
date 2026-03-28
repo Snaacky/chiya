@@ -80,7 +80,7 @@ class BanCog(commands.Cog):
 
         try:
             await user.send(embed=user_embed)
-        except (discord.Forbidden, discord.HTTPException):
+        except discord.Forbidden, discord.HTTPException:
             mod_embed.set_footer(text="⚠️ Unable to message user about this action.")
 
         log = ModLog()
