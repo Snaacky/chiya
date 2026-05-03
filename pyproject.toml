@@ -10,9 +10,9 @@ dependencies = [
     "discord-py[speed]==2.7.1",
     "loguru==0.7.3",
     "privatebinapi==1.0.0",
-    "pydantic==2.12.5",
+    "pydantic==2.13.3",
     "pytimeparse2==1.7.1",
-    "sqlalchemy==2.0.48",
+    "sqlalchemy==2.0.49",
 ]
 
 [dependency-groups]
