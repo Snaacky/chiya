@@ -54,7 +54,7 @@ class NoteCog(commands.Cog):
         self,
         ctx: discord.Interaction,
         user: discord.User | discord.Member,
-        action: Literal["ban", "unban", "mute", "unmute", "warn", "note"] | None = None,
+        action: Literal["ban", "unban", "kick", "purgekick", "mute", "unmute", "warn", "note"] | None = None,
     ) -> None:
         """
         Search for the mod actions and notes for a user. The search can be
@@ -75,6 +75,8 @@ class NoteCog(commands.Cog):
             "mute": "🤐",
             "unmute": "🗣",
             "warn": "⚠",
+            "kick": "👠",
+            "purgekick": "🧹",
             "ban": "🔨",
             "unban": "⚒",
             "note": "🗒️",
