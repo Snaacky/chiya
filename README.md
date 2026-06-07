@@ -15,7 +15,6 @@
 * Notes
 * Reminders
 * Server information
-* Tracker status
 * Unbans
 * Unmutes
 * Warns
