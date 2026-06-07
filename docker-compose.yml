@@ -1,8 +1,9 @@
 services:
   chiya:
     container_name: chiya
-    image: ghcr.io/snaacky/chiya:latest
+    image: ghcr.io/snaacky/chiya
     restart: unless-stopped
     volumes:
         - ./config/config.toml:/app/config.toml
+        - ./config/chiya.db:/app/chiya.db
         - ./config/logs:/app/logs/
