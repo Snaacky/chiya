@@ -10,6 +10,7 @@
 ## Features
 * Avatar grabber
 * Bans
+* Kicks
 * Message purging
 * Mutes
 * Notes
