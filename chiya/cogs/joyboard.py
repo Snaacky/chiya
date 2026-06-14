@@ -1,5 +1,6 @@
 import datetime
-from urllib.parse import urlparse
+import re
+from urllib.parse import urlparse, urlunparse
 
 import discord
 import httpx
@@ -67,6 +68,13 @@ class JoyboardCog(commands.Cog):
 
         name = emoji if isinstance(emoji, str) else emoji.name
         return name in self.JOYS or name.startswith("joy_")
+
+    def convert_tenor_url(self, url: str) -> str:
+        parsed = urlparse(url)
+
+        new_url = urlunparse((parsed.scheme, "c.tenor.com", parsed.path[2:], "", "", ""))
+
+        return new_url
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent) -> None:
@@ -145,18 +153,28 @@ class JoyboardCog(commands.Cog):
                 images.append(attachment.url)
 
         for message_embed in message.embeds:
+            # Other types may need to be added in future
             if message_embed.type in ["gif", "gifv"]:
-                if message_embed.provider and message_embed.provider.url:
-                    urlinfo = urlparse(message_embed.provider.url)
-                    if urlinfo.netloc in ["tenor.com", "tenor.co"]:
-                        try:
-                            async with httpx.AsyncClient() as client:
-                                req = await client.head(f"{message_embed.url}.gif", follow_redirects=True)
-                                images.append(req.url)
-                        except httpx.HTTPError:
-                            pass
-            elif message_embed.type in ["image"]:
-                images.append(message_embed.url)
+                if message_embed.provider and message_embed.provider.name:
+                    async with httpx.AsyncClient() as client:
+                        if message_embed.provider.name == "Tenor":
+                            req = await client.head(f"{message_embed.url}.gif")
+                            if req.status_code == 302:
+                                images.append(self.convert_tenor_url(req.headers["Location"]))
+                        elif message_embed.provider.name == "Klipy":
+                            req = await client.get(f"{message_embed.url}/player")
+                            groups = re.search(
+                                r'<meta property="og:image" content="(https?:\/\/[\w\/\d\.\_]+\.gif)"\/>', req.text
+                            )
+                            if groups:
+                                images.append(groups.group(1))
+                        elif message_embed.provider.name == "Giphy":
+                            req = await client.get(f"https://giphy.com/embed/{str(message_embed.url).split('-')[-1]}")
+                            groups = re.search(
+                                r'<meta property="og:image" content="(https?:\/\/[\w\/\d\.\_]+\.gif)"\s*\/>', req.text
+                            )
+                            if groups:
+                                images.append(groups.group(1))
 
         if images:
             embed.set_image(url=images[0])
