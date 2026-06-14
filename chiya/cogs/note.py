@@ -36,11 +36,12 @@ class NoteCog(commands.Cog):
         db.session.commit()
 
         embed = discord.Embed()
-        embed.title = f"Noting user: {user.name}"
+        embed.title = f"Noted user: {user}"
         embed.description = f"{user.mention} was noted by {ctx.user.mention}"
         embed.color = discord.Color.blurple()
         embed.add_field(name="ID:", value=log.id, inline=False)
         embed.add_field(name="Note:", value=log.reason, inline=False)
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
         await ctx.followup.send(embed=embed)
@@ -98,6 +99,7 @@ class NoteCog(commands.Cog):
 
         embed = discord.Embed()
         embed.title = "Mod Actions"
+        embed.color = discord.Color.blurple()
         embed.set_author(name=user, icon_url=user.display_avatar)
 
         formatter = MySource(actions, embed)
@@ -132,11 +134,12 @@ class NoteCog(commands.Cog):
         user = await self.bot.fetch_user(log.user_id)
 
         embed = discord.Embed()
-        embed.title = f"Edited log: {user.name}"
+        embed.title = f"Edited log for: {user}"
         embed.description = f"Log #{id} for {user.mention} was updated by {ctx.user.mention}"
         embed.color = discord.Color.green()
         embed.add_field(name="Before:", value=log.display_reason, inline=False)
         embed.add_field(name="After:", value=note, inline=False)
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
         await ctx.followup.send(embed=embed)
