@@ -72,12 +72,7 @@ class JoyboardCog(commands.Cog):
     def convert_tenor_url(self, url: str) -> str:
         parsed = urlparse(url)
 
-        new_url = urlunparse((
-            parsed.scheme,
-            "c.tenor.com",
-            parsed.path[2:],
-            "", "", ""
-        ))
+        new_url = urlunparse((parsed.scheme, "c.tenor.com", parsed.path[2:], "", "", ""))
 
         return new_url
 
@@ -164,16 +159,20 @@ class JoyboardCog(commands.Cog):
                     async with httpx.AsyncClient() as client:
                         if message_embed.provider.name == "Tenor":
                             req = await client.head(f"{message_embed.url}.gif")
-                            if (req.status_code == 302):
+                            if req.status_code == 302:
                                 images.append(self.convert_tenor_url(req.headers["Location"]))
                         elif message_embed.provider.name == "Klipy":
                             req = await client.get(f"{message_embed.url}/player")
-                            groups = re.search(r'<meta property="og:image" content="(https?:\/\/[\w\/\d\.\_]+\.gif)"\/>', req.text)
+                            groups = re.search(
+                                r'<meta property="og:image" content="(https?:\/\/[\w\/\d\.\_]+\.gif)"\/>', req.text
+                            )
                             if groups:
                                 images.append(groups.group(1))
                         elif message_embed.provider.name == "Giphy":
                             req = await client.get(f"https://giphy.com/embed/{str(message_embed.url).split('-')[-1]}")
-                            groups = re.search(r'<meta property="og:image" content="(https?:\/\/[\w\/\d\.\_]+\.gif)"\s*\/>', req.text)
+                            groups = re.search(
+                                r'<meta property="og:image" content="(https?:\/\/[\w\/\d\.\_]+\.gif)"\s*\/>', req.text
+                            )
                             if groups:
                                 images.append(groups.group(1))
 
