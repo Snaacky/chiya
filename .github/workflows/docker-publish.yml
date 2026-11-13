@@ -9,10 +9,11 @@ on:
   pull_request:
 
 env:
+  REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/chiya
 
 jobs:
-  push:
+  docker:
     runs-on: ubuntu-latest
 
     permissions:
@@ -23,22 +24,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare metadata
+      - name: Docker metadata
         id: meta
-        shell: bash
-        run: |
-          if [[ "$GITHUB_REF" == refs/pull/* ]]; then
-            VERSION="pr-${GITHUB_REF#refs/pull/}"
-            VERSION="${VERSION%/merge}"
-          elif [[ "$GITHUB_REF" == refs/heads/* ]]; then
-            VERSION="${GITHUB_REF_NAME//\//-}"
-          else
-            VERSION="$GITHUB_REF_NAME"
-          fi
-
-          [[ "$VERSION" == "master" ]] && VERSION="latest"
-
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -47,7 +42,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -56,6 +51,7 @@ jobs:
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
