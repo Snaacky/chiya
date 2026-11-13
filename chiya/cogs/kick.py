@@ -51,7 +51,7 @@ class KickCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = discord.Embed()
-        mod_embed.title = "Kicked member"
+        mod_embed.title = f"Kicked member: {user}"
         mod_embed.description = f"{user.mention} was kicked by {ctx.user.mention}"
         mod_embed.color = 0xCD6D6D
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
@@ -85,13 +85,13 @@ class KickCog(commands.Cog):
         await ctx.followup.send(embed=mod_embed)
         await log_embed_to_channel(ctx=ctx, embed=mod_embed)
 
-    @app_commands.command(name="purgekick", description="Kick a member and delete their recent messages")
+    @app_commands.command(name="kickpurge", description="Kick a member and delete their recent messages")
     @app_commands.guilds(config.guild_id)
     @app_commands.describe(user="The member that will be kicked")
     @app_commands.describe(reason="The reason why the member is being kicked")
     @app_commands.describe(daystodelete="Days worth of messages to delete from the member, up to 7")
     @app_commands.autocomplete(reason=reasons)
-    async def purgekick(
+    async def kickpurge(
         self,
         ctx: discord.Interaction,
         user: discord.User | discord.Member,
@@ -125,7 +125,7 @@ class KickCog(commands.Cog):
         deleted_messages = f"{daystodelete} day" if daystodelete == 1 else f"{daystodelete} days"
 
         mod_embed = discord.Embed()
-        mod_embed.title = "Purge-kicked member"
+        mod_embed.title = f"Purge-kicked member: {user}"
         mod_embed.description = f"{user.mention} was purge-kicked by {ctx.user.mention}"
         mod_embed.color = 0xCD6D6D
         mod_embed.add_field(name="Deleted messages:", value=deleted_messages, inline=False)
@@ -151,7 +151,7 @@ class KickCog(commands.Cog):
         log.mod_id = ctx.user.id
         log.timestamp = int(ctx.created_at.timestamp())
         log.reason = reason
-        log.type = "purgekick"
+        log.type = "kickpurge"
 
         db.session.add(log)
         db.session.commit()

@@ -61,11 +61,12 @@ class MuteCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Timeout duration cannot exceed 7 days.")
 
         mod_embed = discord.Embed()
-        mod_embed.title = "Muted member"
-        mod_embed.description = f"{user.mention} was muted by {ctx.user.mention} for: {reason}"
+        mod_embed.title = f"Muted member: {user}"
+        mod_embed.description = f"{user.mention} was muted by {ctx.user.mention}"
         mod_embed.color = 0xCD6D6D
         mod_embed.add_field(name="Expires:", value=f"<t:{int(muted_until.timestamp())}:R>", inline=True)
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
+        mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         mod_embed.set_thumbnail(url="https://files.catbox.moe/6rs4fn.png")
 
         user_embed = discord.Embed()
@@ -137,10 +138,11 @@ class MuteCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = discord.Embed()
-        mod_embed.title = "Unmuted member"
+        mod_embed.title = f"Unmuted member: {user}"
         mod_embed.description = f"{user.mention} was unmuted by {ctx.user.mention}"
         mod_embed.color = discord.Color.green()
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
+        mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         mod_embed.set_thumbnail(url="https://files.catbox.moe/izm83m.png")
 
         user_embed = discord.Embed()

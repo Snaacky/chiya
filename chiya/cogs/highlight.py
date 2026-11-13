@@ -63,7 +63,7 @@ class HighlightCog(commands.Cog):
             embed.title = term
             embed.description = chat
             embed.color = discord.Color.gold()
-            embed.add_field(name="Source Message", value=f"[Jump to]({message.jump_url})")
+            embed.add_field(name="Source Message:", value=f"[Jump to]({message.jump_url})")
 
             for subscriber in users:
                 if subscriber == message.author.id or subscriber in active_members:

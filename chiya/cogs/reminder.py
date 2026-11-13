@@ -150,7 +150,7 @@ class ReminderCog(commands.Cog):
         db.session.commit()
 
         embed = discord.Embed()
-        embed.title = "Reminder set"
+        embed.title = "Reminder updated"
         embed.description = "Your reminder was updated"
         embed.color = discord.Color.green()
         embed.add_field(name="ID:", value=str(reminder_id), inline=False)
