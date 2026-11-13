@@ -126,6 +126,8 @@ class NoteCog(commands.Cog):
         if not log:
             return await embeds.send_error(ctx=ctx, description="Could not find a log with that ID!")
 
+        old_reason = log.display_reason
+
         log.reason = note
         db.session.commit()
 
@@ -135,7 +137,7 @@ class NoteCog(commands.Cog):
         embed.title = f"Edited log: {user.name}"
         embed.description = f"Log #{id} for {user.mention} was updated by {ctx.user.mention}"
         embed.color = discord.Color.green()
-        embed.add_field(name="Before:", value=log.display_reason, inline=False)
+        embed.add_field(name="Before:", value=old_reason, inline=False)
         embed.add_field(name="After:", value=note, inline=False)
         embed.set_thumbnail(url="https://i.imgur.com/A4c19BJ.png")
 
