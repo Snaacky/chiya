@@ -8,19 +8,18 @@ from loguru import logger
 
 from chiya.config import config, workspace
 
-
 bot = commands.Bot(
     case_insensitive=True,
     command_prefix=config.bot.prefix,
     help_command=None,
-    intents=discord.Intents.default()
+    intents=discord.Intents.default(),
 )
 
 
 @bot.event
 async def on_ready() -> None:
     "Called when the client is done preparing the data received from Discord."
-    logger.info(f"Logged in as: {str(bot.user)}")
+    logger.info(f"Logged in as: {bot.user!s}")
     await bot.tree.sync(guild=discord.Object(config.guild_id))
 
 
