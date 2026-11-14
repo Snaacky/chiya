@@ -14,6 +14,12 @@ class Bot(ParentModel):
     log_level: str
 
 
+class Intents(ParentModel):
+    members: bool
+    presences: bool
+    message_content: bool
+
+
 class Database(ParentModel):
     url: str
 
@@ -56,6 +62,7 @@ class PrivateBin(ParentModel):
 class ChiyaConfig(ParentModel):
     guild_id: int
     bot: Bot
+    intents: Intents
     database: Database
     roles: Roles
     categories: Categories

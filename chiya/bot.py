@@ -12,7 +12,11 @@ bot = commands.Bot(
     case_insensitive=True,
     command_prefix=config.bot.prefix,
     help_command=None,
-    intents=discord.Intents.default(),
+    intents=discord.Intents(
+        members=config.intents.members,
+        presences=config.intents.presences,
+        message_content=config.intents.message_content,
+    ),
 )
 
 
