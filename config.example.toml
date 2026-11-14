@@ -5,6 +5,11 @@ token = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 prefix = "xxxxxxxxxxxxxx"
 log_level = "INFO"
 
+[intents]
+members = false
+presences = false
+message_content = false
+
 [database]
 "url" = "sqlite:///chiya.db?charset=utf8mb4"
 
