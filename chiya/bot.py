@@ -8,15 +8,16 @@ from loguru import logger
 
 from chiya.config import config, workspace
 
+intents = discord.Intents.default()
+intents.members = config.intents.members
+intents.presences = config.intents.presences
+intents.message_content = config.intents.message_content
+
 bot = commands.Bot(
     case_insensitive=True,
     command_prefix=config.bot.prefix,
     help_command=None,
-    intents=discord.Intents(
-        members=config.intents.members,
-        presences=config.intents.presences,
-        message_content=config.intents.message_content,
-    ),
+    intents=intents,
 )
 
 
