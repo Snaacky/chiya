@@ -45,7 +45,7 @@ class WarnCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 4096 characters.")
 
         mod_embed = discord.Embed()
-        mod_embed.title = "Warned member"
+        mod_embed.title = f"Warned member: {user}"
         mod_embed.description = f"{user.mention} was warned by {ctx.user.mention}"
         mod_embed.color = discord.Color.gold()
         mod_embed.add_field(name="Reason:", value=reason, inline=False)
@@ -53,7 +53,7 @@ class WarnCog(commands.Cog):
         mod_embed.set_thumbnail(url="https://files.catbox.moe/xbwoe8.png")
 
         user_embed = discord.Embed()
-        user_embed.title = "Uh-oh, you've received a warning!"
+        user_embed.title = "Uh-oh, you've been warned!"
         user_embed.description = "If you believe this was a mistake, contact staff."
         user_embed.color = discord.Color.blurple()
         user_embed.add_field(name="Server:", value=ctx.guild.name, inline=True)

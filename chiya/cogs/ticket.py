@@ -7,6 +7,7 @@ from sqlalchemy import select
 from chiya import db
 from chiya.config import config
 from chiya.models import Ticket
+from chiya.utils import embeds
 
 
 class TicketCog(commands.Cog):
@@ -130,12 +131,10 @@ class TicketCreateButton(discord.ui.View):
 
         ticket = discord.utils.get(ctx.guild.text_channels, name=f"ticket-{ctx.user.id}")
         if ticket:
-            embed = discord.Embed()
-            embed.title = "Error:"
-            embed.description = f"{ctx.user.mention}, you already have a ticket open at: {ticket.mention}"
-            embed.color = discord.Color.red()
-            await ctx.response.send_message(embed=embed, ephemeral=True)
-            return
+            return await embeds.send_error(
+                ctx=ctx,
+                description=f"You already have a ticket open at: {ticket.mention}",
+            )
 
         modal = TicketSubmissionModal(title="Ticket Submission")
         await ctx.response.send_modal(modal)

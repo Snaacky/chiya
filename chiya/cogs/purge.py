@@ -67,8 +67,9 @@ class PurgeCog(commands.Cog):
         embed = discord.Embed()
         embed.title = "Purged messages"
         embed.description = f"{ctx.user.mention} purged {amount} message(s) in {ctx.channel.mention}."
-        embed.color = discord.Color.red()
+        embed.color = 0xCD6D6D
         embed.add_field(name="Reason:", value=reason, inline=False)
+        embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         embed.set_thumbnail(url="https://i.imgur.com/EDy6jCp.png")
 
         await ctx.channel.purge(limit=amount, bulk=True, before=ctx.created_at)

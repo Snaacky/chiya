@@ -61,9 +61,10 @@ class BanCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         mod_embed = discord.Embed()
-        mod_embed.title = f"Banning user: {user}"
-        mod_embed.description = f"{user.mention} was banned by {ctx.user.mention} for: {reason}"
+        mod_embed.title = f"Banned user: {user}"
+        mod_embed.description = f"{user.mention} was banned by {ctx.user.mention}"
         mod_embed.color = 0xCD6D6D
+        mod_embed.add_field(name="Reason:", value=reason, inline=False)
         mod_embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         mod_embed.set_thumbnail(url="https://files.catbox.moe/6hd0uw.png")
 
@@ -121,9 +122,10 @@ class BanCog(commands.Cog):
             return await embeds.send_error(ctx=ctx, description="Reason must be less than 1024 characters.")
 
         embed = discord.Embed()
-        embed.title = f"Unbanning user: {user}"
-        embed.description = f"{user.mention} was unbanned by {ctx.user.mention} for: {reason}"
+        embed.title = f"Unbanned user: {user}"
+        embed.description = f"{user.mention} was unbanned by {ctx.user.mention}"
         embed.color = discord.Color.green()
+        embed.add_field(name="Reason:", value=reason, inline=False)
         embed.set_author(icon_url=ctx.user.display_avatar, name=ctx.user.name)
         embed.set_thumbnail(url="https://files.catbox.moe/qhc82k.png")
 
